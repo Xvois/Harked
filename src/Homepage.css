@@ -21,7 +21,18 @@
   left: 0;
 }
 
-.elementContainer{
+.main-text{
+
+}
+
+.Homepage-body{
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  border: 1px solid green;
+}
+
+.element-container{
   display: flex;
   justify-content: space-between;
 }
