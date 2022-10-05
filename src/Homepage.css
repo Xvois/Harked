@@ -1,0 +1,28 @@
+.Homepage {
+  text-align: center;
+}
+
+
+
+.Homepage-header {
+  height: min-content;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.photon-logo{
+  width: calc(660px/3);
+  height: calc(220px/3);
+  position: relative;
+  vertical-align: top;
+  display: inline-block;
+  left: 0;
+}
+
+.elementContainer{
+  display: flex;
+  justify-content: space-between;
+}
+
