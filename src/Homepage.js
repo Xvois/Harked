@@ -14,6 +14,7 @@ function Homepage() {
       </header>
       <div className="Homepage-body">
         <h1 className="main-text">Get true insights on your Spotify profile</h1>
+        <a className="auth-button" href=''>Log-in with Spotify</a>
       </div>
     </div>
   );
