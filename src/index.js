@@ -2,16 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import Homepage from './Homepage';
-import reportWebVitals from './reportWebVitals';
-
-import { BrowserRouter, Route, Routes } from "react-router-dom"; // To redirect the user to different pages.
 import Authentication from './Authentication';
+import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
+      <Routes> //Routes to pages
         <Route index element={<Homepage />} />
         <Route path="authentication" element={<Authentication />}/>
       </Routes>
