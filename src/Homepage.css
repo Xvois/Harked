@@ -35,6 +35,10 @@
   color: white;
 }
 
+.error-message{
+  color: red;
+}
+
 .Homepage-body{
   position: absolute;
   top: 30%;
