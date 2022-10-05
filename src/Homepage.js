@@ -5,7 +5,7 @@ function Homepage() {
   return (
     <div className="Homepage">
       <header className="Homepage-header">
-        <img className="photon-logo" src={require('./PhotonLogo.png')} alt="Photon logo"></img>
+        <a href=''><img className="photon-logo" src={require('./PhotonLogo.png')} alt="Photon logo"></img></a>
         <div className = "element-container">
           <p style={{marginRight: "50px", fontWeight: "bold", fontSize: "20px"}}>Search</p>
           <p style={{marginRight: "50px", fontWeight: "bold", fontSize: "20px"}}>Profile</p>
