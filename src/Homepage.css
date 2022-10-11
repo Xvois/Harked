@@ -1,53 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
+
+
 .Homepage {
   text-align: center;
 }
 
 
-
-.Homepage-header {
-  height: min-content;
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.photon-logo{
-  width: calc(660px/3);
-  height: calc(220px/3);
-  position: relative;
-  vertical-align: top;
-  display: inline-block;
-  left: 0;
-}
-
 .main-text{
+  font-family: 'Inter Tight', sans-serif;
+  text-transform: uppercase;
   position: relative;
   font-size: 50px;
 }
 
 .auth-button{
+  text-transform: uppercase;
+  padding-left: 100px;
+  padding-right: 100px;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
   background-color: #17C857;
   border: 10px solid #17C857;
   border-radius: 40px;
   text-decoration: none;
   font-size: 20px;
-  color: white;
+  color: black;
+}
+
+.auth-button:hover{
+  background-color: #39cd6f;
+  border: 10px solid #39cd6f;
 }
 
 .error-message{
+  font-family: 'Raleway';
+  font-weight: 700;
+  font-size: 20px;
+  margin-top: 30px;
   color: red;
 }
 
 .Homepage-body{
   position: absolute;
-  top: 30%;
+  top: 300px;
   height: min-content;
   width: 100%;
 }
-
-.element-container{
-  display: flex;
-  justify-content: space-between;
-}
-
