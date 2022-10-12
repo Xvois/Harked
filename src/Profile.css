@@ -1,9 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
+.simple-container{
+    
+}
+
 
 .user-container{
     padding: 20px;
     display: flex;
-    margin: 50px;
+    margin: 20px;
     width: max-content;
 }
 
@@ -18,6 +22,7 @@
     font-family: 'Raleway';
     font-weight: 500;
     padding: 5px;
+    margin-top: 10px;
     font-size: 20px;
 }
 
