@@ -29,6 +29,7 @@ const Profile = () => {
                 setUsername(result.display_name);
             });
         }
+        document.title = `Photon | ${username}`;
     }, [profilePicture, username, media, mediaLink])
   return (
       <div className='user-container'>

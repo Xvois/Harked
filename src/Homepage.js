@@ -13,6 +13,7 @@ function Homepage() {
         setUsername(result.display_name)
       })
     }
+    document.title = "Photon"
   }, [token])
   const [username, setUsername] = useState("")
   let mainText;
