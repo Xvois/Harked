@@ -1,7 +1,7 @@
 import { authURI } from './Authentication';
 import { useEffect, useState } from 'react';
 import './Homepage.css';
-import { fetchData } from './APIFuncs'
+import { fetchData } from './API'
 
 function Homepage() {
   const [token, setToken] = useState("")

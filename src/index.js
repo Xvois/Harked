@@ -6,6 +6,7 @@ import Authentication from './Authentication';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './TopBar';
+import Profile from './Profile';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -15,6 +16,7 @@ root.render(
       <Routes> (//Routes to pages)
         <Route index element={<Homepage />} />
         <Route path="authentication" element={<Authentication />}/>
+        <Route path="profile" element={<Profile />}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
