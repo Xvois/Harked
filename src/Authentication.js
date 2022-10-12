@@ -10,8 +10,8 @@ export const authURI = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${R
 function Authentication(){
 
   const navigate = useNavigate();
-  const redirect = useCallback( () => {
-    navigate("/profile#me")
+  const redirect = useCallback( (path) => {
+    navigate(path)
     },
   [navigate],); 
 
@@ -25,8 +25,9 @@ function Authentication(){
       window.location.hash = ""
       window.localStorage.setItem("token", local_token)
     }if(!local_token && !hash) {window.localStorage.setItem("token", "denied-scopes")}
-    console.log("Authentication complete with token: " + local_token);
-    redirect()
+    console.log(local_token)
+    if(window.localStorage.getItem("token") !== "denied-scopes") { redirect("/profile#me"); }
+    else { redirect("/"); }
   }, [redirect])
 
   return (

@@ -7,16 +7,19 @@
     justify-content: space-between;
 }
 
-.element-container{
-    display: flex;
-    justify-content: space-between;
+.element{
+    padding: 10px;
+    font-size: 20px;
+    font-weight: 600;
+    color: black;
+    text-decoration: none;
+    text-transform: uppercase;
 }
-  
-.photon-logo{
-    width: calc(660px/3);
-    height: calc(220px/3);
-    position: relative;
-    vertical-align: top;
-    display: inline-block;
-    left: 0;
+
+.element-container{
+    margin: 20px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
 }
