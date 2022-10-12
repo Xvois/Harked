@@ -26,7 +26,7 @@ function Authentication(){
       window.localStorage.setItem("token", local_token)
     }if(!local_token && !hash) {window.localStorage.setItem("token", "denied-scopes")}
     console.log("Authentication complete with token: " + local_token);
-    redirect('/profile#me')
+    redirect()
   }, [redirect])
 
   return (
