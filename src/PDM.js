@@ -24,7 +24,7 @@ export const updateCachedUser = async function(userID){
         cachedUser.userID = userID;
         await fetchData("me").then(function(result){ //get profile details
             cachedUser.username = result.display_name;
-            cachedUser.profilePicture = result.images[0].url;
+            cachedUser.profilePicture = result.images[0].url; //TODO: ADD CHECK FOR IF THEY DON'T HAVE PFP
         })
         await fetchData("me/player").then(function(result){ //get media details
             cachedUser.media = parseSong(result.item)
@@ -47,6 +47,7 @@ export const getDatapoint = async function(userID, term){
     let datapoint = {
         topSongs: [],
         topArtists: [],
+        topGenres: [],
     }
     if(userID === "me"){
         let topTracks;
@@ -59,8 +60,25 @@ export const getDatapoint = async function(userID, term){
         for(let i = 0; i < 3; i++){
             datapoint.topArtists.push(topArtists[i].name)
         }
+        datapoint.topGenres = calculateTopGenres(topArtists);
     }else{
         //LATER CODE FOR INTERACTING WITH DATABASE
     }
     return datapoint;
+}
+
+const calculateTopGenres = function(artists){
+    let topGenres = [];
+    artists.forEach(function(artist, i){
+        artist.genres.forEach(function(genre){
+            if(topGenres.some(e => e.genre === genre)){ //is genre already in array?
+                var index = topGenres.map(function(e){ return e.genre }).indexOf(genre); //get index
+                topGenres[index].weight += artists.length - i; //combine wieghts
+            }else{
+                topGenres.push({genre: genre, weight: artists.length - i})
+            }
+        })
+    })
+    topGenres.sort((a,b) => b.weight - a.weight) //sort based on weight diffs
+    return topGenres;
 }
