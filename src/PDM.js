@@ -58,7 +58,7 @@ export const getDatapoint = async function(userID, term){
         let topArtists;
         await fetchData(`me/top/artists?time_range=${term}`).then(function(result){ topArtists = result.items })
         for(let i = 0; i < 3; i++){
-            datapoint.topArtists.push(topArtists[i].name)
+            datapoint.topArtists.push({name: topArtists[i].name, image: topArtists[i].images[1].url})
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
     }else{

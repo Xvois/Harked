@@ -15,6 +15,21 @@ const Profile = () => {
         document.title = `Photon | ${currentUser.username}`;
         setLoaded(true)
     }
+    const [coverArt, setCoverArt] = useState("")
+    const [coverArtist, setCoverArtist] = useState("")
+    const [showArt, setShowArt] = useState(false)
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+    async function listItemClick(item){
+        if(item.image === coverArt && showArt === "stick"){
+            setShowArt(false)
+        }else{
+            setShowArt(false)
+            await delay(500);
+            setCoverArt(item.image);
+            setCoverArtist(item.name)
+            setShowArt("stick")
+        }
+    }
 
     useEffect(() => {
         loadPage();
@@ -41,9 +56,9 @@ const Profile = () => {
                     <div className='datapoint-container'>
                         <p className='datapoint-title'>Top artists</p>
                         <ul>
-                            <li className='list-item'>{datapoint.topArtists[0]}</li>
-                            <li className='list-item'>{datapoint.topArtists[1]}</li>
-                            <li className='list-item'>{datapoint.topArtists[2]}</li>
+                            <li className='list-item'  onClick={() => listItemClick(datapoint.topArtists[0])}>{datapoint.topArtists[0].name}</li>
+                            <li className='list-item'  onClick={() => listItemClick(datapoint.topArtists[1])}>{datapoint.topArtists[1].name}</li>
+                            <li className='list-item'  onClick={() => listItemClick(datapoint.topArtists[2])}>{datapoint.topArtists[2].name}</li>
                         </ul>
                     </div>
                     <div className='datapoint-container'>
@@ -63,6 +78,11 @@ const Profile = () => {
                         </ul>
                     </div> 
                 </div>
+                <div className='art-container'>
+                    <img className={showArt ? 'art-shown' : 'art-hidden' } src={coverArt} alt='Cover art'></img>
+                    <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{coverArtist}</h1>
+                </div>
+
             </div>
         }
         </>
