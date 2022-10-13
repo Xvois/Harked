@@ -30,7 +30,7 @@ const Profile = () => {
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div className='text-container'>
                             <div className='username'>{currentUser.username}</div>
-                            {true ? 
+                            {currentUser.media ? 
                             <div className='currently-listening-media'>Currently listening to: <br></br>{currentUser.media}</div>
                             :
                             <></>

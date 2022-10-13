@@ -10,6 +10,7 @@ let cachedUser = {
 
 
 export const parseSong = function(song){ //takes in the song item
+    if(!song){ cachedUser.media = false; return; }
     let tempSong = song.name + " -";
     song.artists.forEach(function(element, i){ //add commas for songs with multiple artists
         tempSong +=  " " + element.name;
