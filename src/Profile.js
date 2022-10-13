@@ -1,39 +1,24 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import './Profile.css';
-import { fetchData } from './API'
-import { parseSong } from './PDM';
+import { cachedUser, updateCachedUser } from './PDM';
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
-    const [username, setUsername] = useState("");
-    const [profilePicture, setProfilePicture] = useState("");
-    const [media, setMedia] = useState("")
+    let finished = false;
     useEffect(() => {
-        document.title = `Photon | ${username}`;
-        if(userID === "me"){ //if we are on the logged in user's page
-            fetchData("me").then(function(result){ //get profile details
-                setUsername(result.display_name)
-                setProfilePicture(result.images[0].url)
-            })
-            fetchData("me/player").then(function(result){ //get media details
-                setMedia(parseSong(result))
-            })
-        }else{
-            fetchData(`users/${userID}`).then(function(result){ //if we are not, get their details
-                setProfilePicture(result.images[0].url)
-                setUsername(result.display_name);
-            });
-        }
-    }, [profilePicture, username, userID, media])
+        finished = updateCachedUser(userID)
+        document.title = `Photon | ${cachedUser.username}`;
+        console.log(cachedUser)
+    }, [userID, cachedUser, finished])
   return (
       <>
         <div className='user-container'>
-                <img className='profile-picture' alt='Profile' src={profilePicture}></img>
+                <img className='profile-picture' alt='Profile' src={cachedUser.profilePicture}></img>
                 <div className='text-container'>
-                    <div className='username'>{username}</div>
-                    {media ? 
-                    <div className='currently-listening-media'>Currently listening to: <br></br>{media}</div>
+                    <div className='username'>{cachedUser.username}</div>
+                    {cachedUser.media ? 
+                    <div className='currently-listening-media'>Currently listening to: <br></br>{cachedUser.media}</div>
                     :
                     <></>
                     }
