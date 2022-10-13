@@ -1,18 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@500&display=swap');
+.wrapper{
+    animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }
+
 .simple-container{
     margin: 20px;
+    margin-top: -40px;
     padding: 20px;
     width: 50%;
+    max-width: 800px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.list-item{
+.datapoint-container{
     text-align: center;
-    margin: 10px;
-    margin-left: -30px;
-    margin-right: 40px;
+}
+
+.datapoint-container ul{
+    display: contents;
+    justify-content: center;
+}
+.datapoint-title{
+    font-family: 'Ubuntu';
+    text-transform: uppercase;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.list-item{
+    padding: 5px;
+    font-family: 'Ubuntu';
+    font-weight: 100;
+    list-style-type: none;
 }
 
 .user-container{
@@ -30,7 +56,7 @@
 }
 
 .currently-listening-media{
-    font-family: 'Raleway';
+    font-family: 'Ubuntu';
     font-weight: 500;
     padding: 5px;
     margin-top: 10px;
@@ -44,7 +70,7 @@
     width: 125px;
     height: 125px;
     object-fit: cover;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.4)
 }
 
 .username{
@@ -56,4 +82,77 @@
     text-transform: uppercase;
     position: relative;
     height: max-content;
+}
+
+/* LOADING ANIM */
+.lds-grid {
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 80px;
+    height: 80px;
+  }
+    .lds-grid div {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgb(0, 0, 0);
+    animation: lds-grid 1.2s linear infinite;
+    }
+.lds-grid div:nth-child(1) {
+top: 8px;
+left: 8px;
+animation-delay: 0s;
+}
+.lds-grid div:nth-child(2) {
+top: 8px;
+left: 32px;
+animation-delay: -0.4s;
+}
+.lds-grid div:nth-child(3) {
+top: 8px;
+left: 56px;
+animation-delay: -0.8s;
+}
+.lds-grid div:nth-child(4) {
+top: 32px;
+left: 8px;
+animation-delay: -0.4s;
+}
+.lds-grid div:nth-child(5) {
+top: 32px;
+left: 32px;
+animation-delay: -0.8s;
+}
+.lds-grid div:nth-child(6) {
+top: 32px;
+left: 56px;
+animation-delay: -1.2s;
+}
+.lds-grid div:nth-child(7) {
+top: 56px;
+left: 8px;
+animation-delay: -0.8s;
+}
+.lds-grid div:nth-child(8) {
+top: 56px;
+left: 32px;
+animation-delay: -1.2s;
+}
+.lds-grid div:nth-child(9) {
+top: 56px;
+left: 56px;
+animation-delay: -1.6s;
+}
+@keyframes lds-grid {
+0%, 100% {
+    opacity: 0.33;
+}
+50% {
+    opacity: 1;
+}
 }

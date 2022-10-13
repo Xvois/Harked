@@ -9,7 +9,6 @@ function Homepage() {
     setToken(window.localStorage.getItem("token"))
     if(token && token !== "denied-scopes"){
       fetchData("me").then(function(result){
-        console.log(result.display_name)
         setUsername(result.display_name)
       })
     }
