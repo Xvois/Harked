@@ -2,33 +2,30 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import './Profile.css';
 import { fetchData } from './API'
+import { parseSong } from './PDM';
 
 const Profile = () => {
-    const [username, setUsername] = useState(window.location.hash.split("#")[1]);
+    const userID = window.location.hash.split("#")[1];
+    const [username, setUsername] = useState("");
     const [profilePicture, setProfilePicture] = useState("");
     const [media, setMedia] = useState("")
     useEffect(() => {
-        if(username === "me"){ //if we are on the logged in user's page
+        document.title = `Photon | ${username}`;
+        if(userID === "me"){ //if we are on the logged in user's page
             fetchData("me").then(function(result){ //get profile details
                 setUsername(result.display_name)
                 setProfilePicture(result.images[0].url)
             })
             fetchData("me/player").then(function(result){ //get media details
-                let tempMedia = result.item.name + " -";
-                result.item.artists.forEach(function(element, i){ //add commas for songs with multiple artists
-                    tempMedia +=  " " + element.name;
-                    if(i !== (result.item.artists).length - 1){ tempMedia += ","; } //stop adding commas if we are one before the end
-                })
-                setMedia(tempMedia)
+                setMedia(parseSong(result))
             })
         }else{
-            fetchData(`users/${username}`).then(function(result){ //if we are not, get their details
+            fetchData(`users/${userID}`).then(function(result){ //if we are not, get their details
                 setProfilePicture(result.images[0].url)
                 setUsername(result.display_name);
             });
         }
-        document.title = `Photon | ${username}`;
-    }, [profilePicture, username, media])
+    }, [profilePicture, username, userID, media])
   return (
       <>
         <div className='user-container'>
@@ -42,7 +39,32 @@ const Profile = () => {
                     }
                 </div>
         </div>
-        <div className='simple-container'></div>
+        <div className='simple-container'>
+            <div>
+                <h1 style={{paddingLeft: '22px'}}>Top artists</h1>
+                <ul>
+                    <li className='list-item'>Song - Artists, Artists</li>
+                    <li className='list-item'>This is a random piece of text.</li>
+                    <li className='list-item'>Song - Artists, Artists</li>
+                </ul>
+            </div>
+            <div style={{marginBottom: "30px"}}>
+                <h1 style={{paddingLeft: '22px'}}>Top songs</h1>
+                <ul>
+                    <li className='list-item'>Song - Artists, Artists</li>
+                    <li className='list-item'>This is a random piece of text.</li>
+                    <li className='list-item'>Song - Artists, Artists</li>
+                </ul>
+            </div>
+            <div>
+                <h1 style={{paddingLeft: '22px'}}>Top genres</h1>
+                <ul>
+                    <li className='list-item'>Song - Artists, Artists</li>
+                    <li className='list-item'>This is a random piece of text.</li>
+                    <li className='list-item'>Song - Artists, Artists</li>
+                </ul>
+            </div> 
+        </div>
       </>
   )
 }

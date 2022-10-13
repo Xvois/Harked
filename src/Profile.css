@@ -1,6 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
 .simple-container{
-    
+    margin: 20px;
+    padding: 20px;
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item{
+    text-align: center;
+    margin: 10px;
+    margin-left: -30px;
+    margin-right: 40px;
 }
 
 
