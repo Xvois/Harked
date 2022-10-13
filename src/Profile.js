@@ -12,7 +12,6 @@ const Profile = () => {
     const loadPage = async() => {
         setCurrentUser(await updateCachedUser(userID));
         setDatapoint(await getDatapoint(userID, "long_term"));
-        document.title = `Photon | ${currentUser.username}`;
         setLoaded(true)
     }
     const [coverArt, setCoverArt] = useState("")
@@ -33,7 +32,8 @@ const Profile = () => {
 
     useEffect(() => {
         loadPage();
-    }, [])
+        document.title = `Photon | ${currentUser.username}`;
+    }, [userID, currentUser])
 
   return (
         <>
