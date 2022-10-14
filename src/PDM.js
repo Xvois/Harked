@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { fetchData } from "./API";
 
 let cachedUser = {
