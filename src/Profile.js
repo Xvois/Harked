@@ -14,18 +14,37 @@ const Profile = () => {
         setDatapoint(await getDatapoint(userID, "long_term"));
         setLoaded(true)
     }
-    const [coverArt, setCoverArt] = useState("")
-    const [coverArtist, setCoverArtist] = useState("")
     const [showArt, setShowArt] = useState(false)
+    const [focus, setFocus] = useState({
+        title: '',
+        secondary: '',
+        tertiary: '',
+        image: '',
+        link: '',
+    })
     const delay = ms => new Promise(res => setTimeout(res, ms));
-    async function listItemClick(item){
-        if(item.image === coverArt && showArt === "stick"){
+    async function updateFocus(item, tertairyText){
+        if(item.image === focus.image && showArt === "stick"){
+            let localState = focus;
+            localState.link = null;
+            setFocus(localState);
             setShowArt(false)
         }else{
             setShowArt(false)
             await delay(500);
-            setCoverArt(item.image);
-            setCoverArtist(item.name)
+            let localState = focus;
+            if(item.song){
+                localState.title = item.title;
+                localState.secondary = `by ${item.artist}`;
+                localState.tertiary = tertairyText;
+            }else if(item.artist){
+                localState.title = item.name;
+                localState.secondary = item.genre;
+                localState.tertiary = tertairyText;
+            }
+            localState.image = item.image;
+            localState.link = item.link;
+            setFocus(localState);
             setShowArt("stick")
         }
     }
@@ -56,17 +75,17 @@ const Profile = () => {
                     <div className='datapoint-container'>
                         <p className='datapoint-title'>Top artists</p>
                         <ul>
-                            <li className='list-item'  onClick={() => listItemClick(datapoint.topArtists[0])}>{datapoint.topArtists[0].name}</li>
-                            <li className='list-item'  onClick={() => listItemClick(datapoint.topArtists[1])}>{datapoint.topArtists[1].name}</li>
-                            <li className='list-item'  onClick={() => listItemClick(datapoint.topArtists[2])}>{datapoint.topArtists[2].name}</li>
+                            <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
+                            <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
+                            <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
                         </ul>
                     </div>
                     <div className='datapoint-container'>
                         <p className='datapoint-title'>Top songs</p>
                         <ul>
-                            <li className='list-item'>{datapoint.topSongs[0]}</li>
-                            <li className='list-item'>{datapoint.topSongs[1]}</li>
-                            <li className='list-item'>{datapoint.topSongs[2]}</li>
+                            <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[0], `${userID === "me" ? `Your top song.` : `${currentUser.username}'s top song.`}`)}>{datapoint.topSongs[0].name}</li>
+                            <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[1], `${userID === "me" ? `Your second to top song.` : `${currentUser.username}'s second to top song.`}`)}>{datapoint.topSongs[1].name}</li>
+                            <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[2], `${userID === "me" ? `Your third to top song.` : `${currentUser.username}'s third to top song.`}`)}>{datapoint.topSongs[2].name}</li>
                         </ul>
                     </div>
                     <div className='datapoint-container'>
@@ -79,8 +98,19 @@ const Profile = () => {
                     </div> 
                 </div>
                 <div className='art-container'>
-                    <img className={showArt ? 'art-shown' : 'art-hidden' } src={coverArt} alt='Cover art'></img>
-                    <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{coverArtist}</h1>
+                    <a className={showArt ? 'play-wrapper' : '' } href={focus.link} target="_blank">
+                        <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
+                    </a>
+                    <div className='art-text-container'>
+                        <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                    </div>
+                    {showArt?
+                    <button className='art-container-button' onClick={() => setShowArt(false)}>Hide</button>
+                        :
+                    <></>
+                    }
                 </div>
 
             </div>

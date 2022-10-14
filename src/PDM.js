@@ -53,12 +53,25 @@ export const getDatapoint = async function(userID, term){
         let topTracks;
         await fetchData(`me/top/tracks?time_range=${term}`).then(function(result){ topTracks = result.items });
         for(let i = 0; i < 3; i++){
-            datapoint.topSongs.push(parseSong(topTracks[i]))
+            datapoint.topSongs.push({
+                song: true,
+                name: parseSong(topTracks[i]),
+                title: topTracks[i].name,
+                artist: topTracks[i].artists[0].name,
+                image: topTracks[i].album.images[1].url, 
+                link: topTracks[i].external_urls.spotify,
+            })
         }
         let topArtists;
         await fetchData(`me/top/artists?time_range=${term}`).then(function(result){ topArtists = result.items })
         for(let i = 0; i < 3; i++){
-            datapoint.topArtists.push({name: topArtists[i].name, image: topArtists[i].images[1].url})
+            datapoint.topArtists.push({
+                artist: true,
+                name: topArtists[i].name, 
+                image: topArtists[i].images[1].url, 
+                link: `https://open.spotify.com/artist/${topArtists[i].id}`,
+                genre: topArtists[i].genres[0]
+            })
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
     }else{
