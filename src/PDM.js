@@ -85,7 +85,7 @@ const calculateTopGenres = function(artists){
         artist.genres.forEach(function(genre){
             if(topGenres.some(e => e.genre === genre)){ //is genre already in array?
                 var index = topGenres.map(function(e){ return e.genre }).indexOf(genre); //get index
-                topGenres[index].weight += artists.length - i; //combine wieghts
+                topGenres[index].weight += artists.length - i; //combine weights
             }else{
                 topGenres.push({genre: genre, weight: artists.length - i})
             }

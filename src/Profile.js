@@ -16,9 +16,9 @@ const Profile = () => {
     }
     const [showArt, setShowArt] = useState(false)
     const [focus, setFocus] = useState({
-        title: '',
-        secondary: '',
-        tertiary: '',
+        title: '', //main text
+        secondary: '', //sub-title
+        tertiary: '', //desc
         image: '',
         link: '',
     })
@@ -60,59 +60,65 @@ const Profile = () => {
             <div className="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
         :
             <div className='wrapper'>
-                <div className='user-container'>
-                        <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
-                        <div className='text-container'>
-                            <div className='username'>{currentUser.username}</div>
-                            {currentUser.media ? 
-                            <div className='currently-listening-media'>Currently listening to: <br></br>{currentUser.media}</div>
-                            :
-                            <></>
-                            }
+                <div className='left'>
+                    <div className='user-container'>
+                            <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
+                            <div className='text-container'>
+                                <div className='username'>{currentUser.username}</div>
+                                {currentUser.media ? 
+                                <div className='currently-listening-media'>Currently listening to: <br></br>{currentUser.media}</div>
+                                :
+                                <></>
+                                }
+                            </div>
+                    </div>
+                    <div className='simple-container'>
+                        <div className='datapoint-container'>
+                            <p className='datapoint-title'>Top artists</p>
+                            <ul>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
+                            </ul>
                         </div>
-                </div>
-                <div className='simple-container'>
-                    <div className='datapoint-container'>
-                        <p className='datapoint-title'>Top artists</p>
-                        <ul>
-                            <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
-                            <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
-                            <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
-                        </ul>
+                        <div className='datapoint-container'>
+                            <p className='datapoint-title'>Top songs</p>
+                            <ul>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[0], `${userID === "me" ? `Your top song.` : `${currentUser.username}'s top song.`}`)}>{datapoint.topSongs[0].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[1], `${userID === "me" ? `Your second to top song.` : `${currentUser.username}'s second to top song.`}`)}>{datapoint.topSongs[1].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[2], `${userID === "me" ? `Your third to top song.` : `${currentUser.username}'s third to top song.`}`)}>{datapoint.topSongs[2].name}</li>
+                            </ul>
+                        </div>
+                        <div className='datapoint-container'>
+                            <p className='datapoint-title'>Top genres</p>
+                            <ul>
+                                <li className='list-item'>{datapoint.topGenres[0].genre}</li>
+                                <li className='list-item'>{datapoint.topGenres[1].genre}</li>
+                                <li className='list-item'>{datapoint.topGenres[2].genre}</li>
+                            </ul>
+                        </div> 
                     </div>
-                    <div className='datapoint-container'>
-                        <p className='datapoint-title'>Top songs</p>
-                        <ul>
-                            <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[0], `${userID === "me" ? `Your top song.` : `${currentUser.username}'s top song.`}`)}>{datapoint.topSongs[0].name}</li>
-                            <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[1], `${userID === "me" ? `Your second to top song.` : `${currentUser.username}'s second to top song.`}`)}>{datapoint.topSongs[1].name}</li>
-                            <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[2], `${userID === "me" ? `Your third to top song.` : `${currentUser.username}'s third to top song.`}`)}>{datapoint.topSongs[2].name}</li>
-                        </ul>
+                    <div className='art-container'>
+                        <a className={showArt ? 'play-wrapper' : '' } href={focus.link} target="_blank">
+                            <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
+                        </a>
+                        <div className='art-text-container'>
+                            <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                            <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                            <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                        </div>
+                        {showArt?
+                        <button className='art-container-button' onClick={() => setShowArt(false)}>Hide</button>
+                            :
+                        <></>
+                        }
                     </div>
-                    <div className='datapoint-container'>
-                        <p className='datapoint-title'>Top genres</p>
-                        <ul>
-                            <li className='list-item'>{datapoint.topGenres[0].genre}</li>
-                            <li className='list-item'>{datapoint.topGenres[1].genre}</li>
-                            <li className='list-item'>{datapoint.topGenres[2].genre}</li>
-                        </ul>
-                    </div> 
                 </div>
-                <div className='art-container'>
-                    <a className={showArt ? 'play-wrapper' : '' } href={focus.link} target="_blank">
-                        <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
-                    </a>
-                    <div className='art-text-container'>
-                        <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
-                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                <div className='right'>
+                    <div className='complex-container'>
+                        <h1>complex</h1>
                     </div>
-                    {showArt?
-                    <button className='art-container-button' onClick={() => setShowArt(false)}>Hide</button>
-                        :
-                    <></>
-                    }
                 </div>
-
             </div>
         }
         </>
