@@ -17,20 +17,18 @@ to {opacity: 0; }
     .wrapper{ flex-direction:column; }
 }
 .left{
-    border: 1px solid green;
     width: auto;
     min-width: 50%;
 }
 .right{
-    border: 1px solid red;
     width: auto;
     min-width: 50%;
+    border: 1px solid red;
 }
 
 .complex-container{
     margin: 20px;
     width: 10%;
-    border: 1px solid red;
 }
 
 .art-container{
@@ -64,7 +62,6 @@ to {opacity: 0; }
     from{ transform: scale(110%); }
     to{ transform: scale(100%); }
 }
-
 
 .play-wrapper{
     margin-right: 15px;
@@ -219,9 +216,49 @@ to {opacity: 0; }
 .user-container{
     padding: 20px;
     display: flex;
+    flex-direction: row;
     margin: 20px;
-    width: max-content;
+    max-width: 100%;
     margin-bottom: 0px;
+}
+
+.term-button-container{ 
+    margin-left: auto;
+    order: 2;
+    margin-top: 0px;
+    border-radius: 0px;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    height: min-content;
+}
+
+.term-button{
+    border-radius: 10px;
+    height: 5px;
+    width: 5px;
+    border: 1px solid black;
+    padding: 9.5px;
+    margin: 5px;
+    background-color: white;
+    
+}
+.term-button-selected{
+    border-radius: 10px;
+    height: 5px;
+    width: 5px;
+    border: 1px solid black;
+    padding: 9.5px;
+    margin: 5px;
+    background-color: rgb(24, 24, 24);
+    animation: scaleIn 0.1s ease-out;
+}
+
+.term-button-desc{
+    text-transform: uppercase;
+    font-family: 'Ubuntu';
+    margin-top: 6px;
+    margin-bottom: 15px;
 }
 
 .text-container{
@@ -277,7 +314,7 @@ to {opacity: 0; }
     height: 16px;
     border-radius: 50%;
     background: rgb(0, 0, 0);
-    animation: lds-grid 1.2s linear infinite;
+    animation: lds-grid 1.2s ease-in infinite;
     }
 .lds-grid div:nth-child(1) {
 top: 8px;

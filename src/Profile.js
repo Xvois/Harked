@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import './Profile.css';
 import { getDatapoint, updateCachedUser } from './PDM';
 
@@ -7,11 +7,12 @@ const Profile = () => {
     const userID = window.location.hash.split("#")[1];
     const [loaded, setLoaded] = useState(false);
     let [currentUser, setCurrentUser] = useState("")
-    let [datapoint, setDatapoint] = useState("Initial value")
+    let [datapoint, setDatapoint] = useState("")
+    let [term , setTerm] = useState("long_term")
 
     const loadPage = async() => {
         setCurrentUser(await updateCachedUser(userID));
-        setDatapoint(await getDatapoint(userID, "long_term"));
+        setDatapoint(await getDatapoint(userID, term));
         setLoaded(true)
     }
     const [showArt, setShowArt] = useState(false)
@@ -24,7 +25,7 @@ const Profile = () => {
     })
     const delay = ms => new Promise(res => setTimeout(res, ms));
     async function updateFocus(item, tertairyText){
-        if(item.image === focus.image && showArt === "stick"){
+        if(item.title === focus.title && showArt === "stick"){
             let localState = focus;
             localState.link = null;
             setFocus(localState);
@@ -52,7 +53,7 @@ const Profile = () => {
     useEffect(() => {
         loadPage();
         document.title = `Photon | ${currentUser.username}`;
-    }, [userID, currentUser])
+    }, [userID, currentUser, term])
 
   return (
         <>
@@ -70,6 +71,23 @@ const Profile = () => {
                                 :
                                 <></>
                                 }
+                            </div>
+                            <div className='term-button-container'>
+                                <div style={{display: 'flex', flexDirection: 'column', height: 'min-content'}}>
+                                    <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
+                                        <button onClick={() => setTerm("short_term")} className={term === "short_term" ? 'term-button-selected' : 'term-button'}></button>
+                                        <p className='term-button-desc'>4 weeks</p>
+                                    </div>
+                                    <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
+                                        <button onClick={() => setTerm("medium_term")} className={term === "medium_term" ? 'term-button-selected' : 'term-button'}></button>
+                                        <p className='term-button-desc'>6 months</p>
+                                    </div>
+                                    <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
+                                        <button onClick={() => setTerm("long_term")} className={term === "long_term" ? 'term-button-selected' : 'term-button'}></button>
+                                        <p className='term-button-desc'>All time</p>
+                                    </div>
+
+                                </div>
                             </div>
                     </div>
                     <div className='simple-container'>
@@ -116,7 +134,7 @@ const Profile = () => {
                 </div>
                 <div className='right'>
                     <div className='complex-container'>
-                        <h1>complex</h1>
+                        <h1></h1>
                     </div>
                 </div>
             </div>
