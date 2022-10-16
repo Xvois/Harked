@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import './Profile.css';
 import { getDatapoint, updateCachedUser } from './PDM';
 
@@ -117,7 +117,7 @@ const Profile = () => {
                         </div> 
                     </div>
                     <div className='art-container'>
-                        <a className={showArt ? 'play-wrapper' : '' } href={focus.link} target="_blank">
+                        <a className={showArt ? 'play-wrapper' : '' } href={focus.link} rel="noopener noreferrer" target="_blank">
                             <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
                         </a>
                         <div className='art-text-container'>
@@ -134,7 +134,6 @@ const Profile = () => {
                 </div>
                 <div className='right'>
                     <div className='complex-container'>
-                        <h1></h1>
                     </div>
                 </div>
             </div>
