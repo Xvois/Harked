@@ -34,6 +34,8 @@ const Profile = () => {
             setShowArt(false)
             await delay(500);
             let localState = focus;
+            localState.image = item.image;
+            localState.link = item.link;
             if(item.song){
                 localState.title = item.title;
                 localState.secondary = `by ${item.artist}`;
@@ -43,8 +45,6 @@ const Profile = () => {
                 localState.secondary = item.genre;
                 localState.tertiary = tertairyText;
             }
-            localState.image = item.image;
-            localState.link = item.link;
             setFocus(localState);
             setShowArt("stick")
         }

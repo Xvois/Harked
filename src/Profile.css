@@ -243,6 +243,10 @@ to {opacity: 0; }
     background-color: white;
     
 }
+.term-button:hover{
+    transform: scale(110%);
+    animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+}
 .term-button-selected{
     border-radius: 10px;
     height: 5px;
@@ -251,7 +255,6 @@ to {opacity: 0; }
     padding: 9.5px;
     margin: 5px;
     background-color: rgb(24, 24, 24);
-    animation: scaleIn 0.1s ease-out;
 }
 
 .term-button-desc{
