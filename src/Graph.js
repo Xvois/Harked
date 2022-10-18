@@ -1,10 +1,11 @@
 import React from 'react'
 
-const constructGraph = (object) => {
+const constructGraph = (object, x, y) => {
+  object.forEach(element => {
+    console.log(element[x] + " " + element[y]);
+  });
   return (
-      <>
-      <p>Graph is here.</p>
-      </>
+    <h1>HELLO</h1>
   )
 }
 

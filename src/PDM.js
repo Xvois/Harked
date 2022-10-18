@@ -55,7 +55,6 @@ export const getDatapoint = async function(userID, term){
         let analytics;
         for(let i = 0; i < topTracks.length; i++){ analyticsQueue.push(fetchData(`audio-features/${topTracks[i].id}`)) }
         await Promise.all(analyticsQueue).then(function(result){ analytics = result; })
-        console.log(analytics)
         for(let i = 0; i < topTracks.length; i++){
             datapoint.topSongs.push({
                 song: true,
@@ -64,6 +63,7 @@ export const getDatapoint = async function(userID, term){
                 artist: topTracks[i].artists[0].name,
                 image: topTracks[i].album.images[1].url, 
                 link: topTracks[i].external_urls.spotify,
+                analytics: analytics[i]
             })
         }
         let topArtists;

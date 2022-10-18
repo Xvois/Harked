@@ -15,10 +15,17 @@ const Profile = () => {
         
     const loadPage = async() => {
         console.time('loadPage')
-        if(!loaded){ setCurrentUser(await updateCachedUser(userID)); }
+        if(!loaded){ await updateCachedUser(userID).then(function(result){
+            setCurrentUser(result);  
+            document.title = `Photon | ${result.username}`;
+        })}
         await getDatapoint(userID, term).then(function(result){
             setDatapoint(result)
-            constructGraph(result.topSongs)
+            if(!graph) {
+                const analyticsList = [];
+                result.topSongs.forEach(song => analyticsList.push(song.analytics))
+                setGraph(constructGraph(analyticsList, "tempo", "loudness")) 
+            } 
         })
         setLoaded(true);
         console.timeEnd('loadPage')
@@ -60,8 +67,7 @@ const Profile = () => {
 
     useEffect(() => {
         loadPage();
-        document.title = `Photon | ${currentUser.username}`;
-    }, [term])
+    }, [term, graph])
 
   return (
         <>

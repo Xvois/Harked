@@ -19,18 +19,23 @@ to {opacity: 0; }
 .left{
     width: auto;
     min-width: 50%;
+    height: 100%;
 }
 .right{
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     width: auto;
+    min-height: 500px;
     min-width: 50%;
     border: 1px solid red;
 }
 
 .complex-container{
-    margin: 0% 5% 0% 5%;
-    height: 50%;
+    float: right;
+    padding: 5px;
+    margin: 5%;
+    height: 300px;
     border: 1px solid green;
 }
 
