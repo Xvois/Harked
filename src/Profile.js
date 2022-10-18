@@ -24,7 +24,7 @@ const Profile = () => {
             if(!graph) {
                 const analyticsList = [];
                 result.topSongs.forEach(song => analyticsList.push(song.analytics))
-                setGraph(constructGraph(analyticsList, "tempo", "loudness")) 
+                setGraph(constructGraph(analyticsList, "loudness", "tempo", "track_href")) 
             } 
         })
         setLoaded(true);
