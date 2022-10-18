@@ -7,6 +7,7 @@ export const fetchData = async(path) => {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
     }).catch(function(err){
+        if(!err.response){ console.log("No error yet failure to fetch."); }
         if(err.response.status === 401){
             window.localStorage.setItem("token", "");
             window.location.replace(authURI)

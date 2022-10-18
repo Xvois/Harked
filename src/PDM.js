@@ -51,7 +51,12 @@ export const getDatapoint = async function(userID, term){
     if(userID === "me"){
         let topTracks;
         await fetchData(`me/top/tracks?time_range=${term}`).then(function(result){ topTracks = result.items });
-        for(let i = 0; i < 3; i++){
+        const analyticsQueue = [];
+        let analytics;
+        for(let i = 0; i < topTracks.length; i++){ analyticsQueue.push(fetchData(`audio-features/${topTracks[i].id}`)) }
+        await Promise.all(analyticsQueue).then(function(result){ analytics = result; })
+        console.log(analytics)
+        for(let i = 0; i < topTracks.length; i++){
             datapoint.topSongs.push({
                 song: true,
                 name: parseSong(topTracks[i]),

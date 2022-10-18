@@ -2,18 +2,26 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import './Profile.css';
 import { getDatapoint, updateCachedUser } from './PDM';
+import constructGraph from './Graph';
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
     const [loaded, setLoaded] = useState(false);
-    let [currentUser, setCurrentUser] = useState("")
-    let [datapoint, setDatapoint] = useState("")
-    let [term , setTerm] = useState("long_term")
+    let [currentUser, setCurrentUser] = useState("");
+    let [datapoint, setDatapoint] = useState("initVal");
+    let [term , setTerm] = useState("long_term");
+    let [graph, setGraph] = useState();
 
+        
     const loadPage = async() => {
-        setCurrentUser(await updateCachedUser(userID));
-        setDatapoint(await getDatapoint(userID, term));
-        setLoaded(true)
+        console.time('loadPage')
+        if(!loaded){ setCurrentUser(await updateCachedUser(userID)); }
+        await getDatapoint(userID, term).then(function(result){
+            setDatapoint(result)
+            constructGraph(result.topSongs)
+        })
+        setLoaded(true);
+        console.timeEnd('loadPage')
     }
     const [showArt, setShowArt] = useState(false)
     const [focus, setFocus] = useState({
@@ -25,11 +33,11 @@ const Profile = () => {
     })
     const delay = ms => new Promise(res => setTimeout(res, ms));
     async function updateFocus(item, tertairyText){
-        if(item.title === focus.title && showArt === "stick"){
+        if( ( item.title === focus.title || item.name === focus.title )&& showArt === "stick"){
             let localState = focus;
             localState.link = null;
             setFocus(localState);
-            setShowArt(false)
+            setShowArt(false);
         }else{
             setShowArt(false)
             await delay(500);
@@ -53,7 +61,7 @@ const Profile = () => {
     useEffect(() => {
         loadPage();
         document.title = `Photon | ${currentUser.username}`;
-    }, [userID, currentUser, term])
+    }, [term])
 
   return (
         <>
@@ -134,6 +142,10 @@ const Profile = () => {
                 </div>
                 <div className='right'>
                     <div className='complex-container'>
+                        {graph}
+                    </div>
+                    <div className='complex-container'>
+                        {graph}
                     </div>
                 </div>
             </div>
