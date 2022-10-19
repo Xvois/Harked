@@ -68,11 +68,9 @@ const Profile = () => {
         })}
         await getDatapoint(userID, term).then(function(result){
             setDatapoint(result)
-            if(!graph) {
-                const analyticsList = [];
-                result.topSongs.forEach(song => analyticsList.push(song.analytics))
-                setGraph(constructGraph(analyticsList, "tempo", "loudness")) 
-            } 
+            const analyticsList = [];
+            result.topSongs.forEach(song => analyticsList.push(song.analytics))
+            setGraph(constructGraph(analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs)) 
         })
         setLoaded(true);
         console.timeEnd('loadPage')
