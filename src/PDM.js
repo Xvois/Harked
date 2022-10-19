@@ -50,7 +50,7 @@ export const getDatapoint = async function(userID, term){
     }
     if(userID === "me"){
         let topTracks;
-        await fetchData(`me/top/tracks?time_range=${term}`).then(function(result){ topTracks = result.items });
+        await fetchData(`me/top/tracks?time_range=${term}&limit=50`).then(function(result){ topTracks = result.items });
         const analyticsQueue = [];
         let analytics;
         for(let i = 0; i < topTracks.length; i++){ analyticsQueue.push(fetchData(`audio-features/${topTracks[i].id}`)) }

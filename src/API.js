@@ -8,12 +8,12 @@ export const fetchData = async(path) => {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
     }).catch(function(err){
-        if(!err.response){ console.warn("[Error in API call] " + err); }
+        if(err.response == undefined){ console.warn("[Error in API call] " + err); }
         if(err.response.status === 401){
             window.localStorage.setItem("token", "");
             window.location.replace(authURI)
         }else if(err.response.status === 429){
-            alert("Too many API calls made! Don't worry, just refresh the page.")
+            alert("Too many API calls made! Take a deep breath and refresh the page.")
         }else{
             alert(err);
         }

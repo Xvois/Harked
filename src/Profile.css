@@ -24,14 +24,12 @@ to {opacity: 0; }
 .right{
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    width: auto;
     min-height: 500px;
     min-width: 50%;
-    border: 1px solid red;
 }
 
 .complex-container{
+    display: flex;
     float: right;
     padding: 5px;
     margin: 5%;
