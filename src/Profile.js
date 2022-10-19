@@ -1,8 +1,8 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import './Profile.css';
+import './Graph.css'
 import { getDatapoint, updateCachedUser } from './PDM';
-import constructGraph from './Graph';
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
@@ -11,6 +11,53 @@ const Profile = () => {
     let [datapoint, setDatapoint] = useState("initVal");
     let [term , setTerm] = useState("long_term");
     let [graph, setGraph] = useState();
+
+    const getQualities = (val1, type1, val2 , type2) => {
+        let message = "";
+        if(val1 > 75){
+            message += `High ${type1}`;
+        }else if(val1 > 25){
+            message += `Medium ${type1}`;
+        }else{
+            message += `Low ${type1}`;
+        }
+        if(val2){
+            message += ", ";
+            message += getQualities(val2, type2);
+        }
+        return message;
+    }
+
+
+    const constructGraph = (object, x, xLimits, y, yLimits, key, parent) => { //ALL VALUES SHOULD BE POSITIVE, SEE https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-features
+        const maxX = xLimits[1];
+        const maxY = yLimits[1];
+        const minX = xLimits[0];
+        const minY = yLimits[0];
+        const points = [];
+        object.forEach( (element,i)=> {
+            //coords as a percentage
+            let pointX = ((element[x] - minX) * 100 )/ (maxX - minX); 
+            let pointY = ((element[y] - minY) * 100 )/ (maxY - minY);
+            let message = getQualities(pointX, x, pointY, y);
+            points.push(<div key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></div>)
+        });
+
+    return (
+        <>
+        <div className='graph-container'>
+            <div className='top'>
+                <div className='point-container'>{points}</div>
+                <p className='y-title'>{y}</p>
+            </div>
+            <div className='bottom'>
+                <p className='x-title'>{x}</p>
+            </div>
+        </div>
+        </>
+
+    )
+    }
 
         
     const loadPage = async() => {
@@ -21,11 +68,9 @@ const Profile = () => {
         })}
         await getDatapoint(userID, term).then(function(result){
             setDatapoint(result)
-            if(!graph) {
-                const analyticsList = [];
-                result.topSongs.forEach(song => analyticsList.push(song.analytics))
-                setGraph(constructGraph(analyticsList, "tempo", "loudness")) 
-            } 
+            const analyticsList = [];
+            result.topSongs.forEach(song => analyticsList.push(song.analytics))
+            setGraph(constructGraph(analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs)) 
         })
         setLoaded(true);
         console.timeEnd('loadPage')
@@ -40,7 +85,7 @@ const Profile = () => {
     })
     const delay = ms => new Promise(res => setTimeout(res, ms));
     async function updateFocus(item, tertairyText){
-        if( ( item.title === focus.title || item.name === focus.title )&& showArt === "stick"){
+        if( (focus.tertiary === tertairyText )&& showArt === "stick"){
             let localState = focus;
             localState.link = null;
             setFocus(localState);
@@ -67,7 +112,7 @@ const Profile = () => {
 
     useEffect(() => {
         loadPage();
-    }, [term, graph])
+    }, [term])
 
   return (
         <>
@@ -147,12 +192,7 @@ const Profile = () => {
                     </div>
                 </div>
                 <div className='right'>
-                    <div className='complex-container'>
-                        {graph}
-                    </div>
-                    <div className='complex-container'>
-                        {graph}
-                    </div>
+                    {graph}
                 </div>
             </div>
         }

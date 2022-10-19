@@ -1,0 +1,55 @@
+.graph-container{
+    display: flex;
+    flex-direction: column;
+}
+
+.top{
+    display: flex;
+    flex-direction: row;
+    height: 300px;
+}
+
+.y-title{
+    margin-top: 0px;
+    height: min-content;
+    text-align: center;
+    text-transform: uppercase;
+    font-style: bold;
+    margin: 20px;
+    vertical-align: middle;
+    word-break: break-word;
+    width: min-content;
+}
+
+.point-container{
+    display: flex;
+    float: right;
+    width: 98%;
+    height: 100%;
+    background-size: 40px 40px;
+    background-image: radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px);
+}
+
+.point{
+    --diameter: 5px;
+    width: var(--diameter);
+    height: var(--diameter);
+    padding: 1px;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 20px;
+    margin: calc(-1*var(--diameter) + 0.5px);
+    position: relative;
+    align-self: flex-end;
+}
+.point:hover{
+    transform: scale(120%);
+    z-index: 10;
+}
+
+.x-title{
+    width: 100%;
+    text-align: center;
+    text-transform: uppercase;
+    margin: none;
+}
