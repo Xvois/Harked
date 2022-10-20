@@ -26,9 +26,8 @@
 }
 
 .error-message{
+  margin-left: 20px;
   color: red;
-  padding-left: 150px;
-  margin-top: -26px;
 }
 
 .Homepage-body{
