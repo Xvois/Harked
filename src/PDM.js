@@ -21,13 +21,15 @@ export const parseSong = function(song){ //takes in the song item
 export const updateCachedUser = async function(userID){
     if(userID === "me"){ //if we are on the logged in user's page
         cachedUser.userID = userID;
-        await fetchData("me").then(function(result){ //get profile details
+        let profilePromise = fetchData("me").then(function(result){ //get profile details
             cachedUser.username = result.display_name;
             cachedUser.profilePicture = result.images[0].url; //TODO: ADD CHECK FOR IF THEY DON'T HAVE PFP
         })
-        await fetchData("me/player").then(function(result){ //get media details
+        let mediaPromise = fetchData("me/player").then(function(result){ //get media details
             cachedUser.media = parseSong(result.item)
         })
+        await profilePromise;
+        await mediaPromise;
     }else if (userID !== cachedUser.userID){
         cachedUser.userID = userID;
         await fetchData(`users/${userID}`).then(function(result){ //if we are not, get their details
@@ -50,11 +52,16 @@ export const getDatapoint = async function(userID, term){
     }
     if(userID === "me"){
         let topTracks;
-        await fetchData(`me/top/tracks?time_range=${term}&limit=50`).then(function(result){ topTracks = result.items });
-        const analyticsQueue = [];
+        let topArtists;
+        let analyticsIDs = "";
         let analytics;
-        for(let i = 0; i < topTracks.length; i++){ analyticsQueue.push(fetchData(`audio-features/${topTracks[i].id}`)) }
-        await Promise.all(analyticsQueue).then(function(result){ analytics = result; })
+        let promises = [fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}`)];
+        await Promise.all(promises).then(function(result){
+            topTracks = result[0].items;
+            topArtists = result[1].items;
+        })
+        topTracks.forEach(track => analyticsIDs += track.id + ',')
+        await fetchData(`audio-features?ids=${analyticsIDs}`).then(function(result) { analytics = result.audio_features })
         for(let i = 0; i < topTracks.length; i++){
             datapoint.topSongs.push({
                 song: true,
@@ -66,9 +73,7 @@ export const getDatapoint = async function(userID, term){
                 analytics: analytics[i]
             })
         }
-        let topArtists;
-        await fetchData(`me/top/artists?time_range=${term}`).then(function(result){ topArtists = result.items })
-        for(let i = 0; i < 3; i++){
+        for(let i = 0; i < topArtists.length; i++){
             datapoint.topArtists.push({
                 artist: true,
                 name: topArtists[i].name, 

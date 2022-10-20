@@ -27,8 +27,6 @@ const Profile = () => {
         }
         return message;
     }
-
-
     const constructGraph = (title, object, x, xLimits, y, yLimits, key, parent) => { //ALL VALUES SHOULD BE POSITIVE, SEE https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-features
         const maxX = xLimits[1];
         const maxY = yLimits[1];
@@ -62,8 +60,7 @@ const Profile = () => {
 
         
     const loadPage = async() => {
-        console.time('loadPage')
-        if(!loaded){ await updateCachedUser(userID).then(function(result){
+        if(!loaded){ updateCachedUser(userID).then(function(result){
             setCurrentUser(result);  
             document.title = `Photon | ${result.username}`;
         })}
@@ -74,7 +71,6 @@ const Profile = () => {
             setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs))
         })
         setLoaded(true);
-        console.timeEnd('loadPage')
     }
     const [showArt, setShowArt] = useState(false)
     const [focus, setFocus] = useState({
@@ -86,7 +82,7 @@ const Profile = () => {
     })
     const delay = ms => new Promise(res => setTimeout(res, ms));
     async function updateFocus(item, tertairyText){
-        if( (focus.tertiary === tertairyText )&& showArt === "stick"){
+        if((focus.tertiary === tertairyText && (focus.title === item.title || focus.title === item.name))&& showArt === "stick"){
             let localState = focus;
             localState.link = null;
             setFocus(localState);
