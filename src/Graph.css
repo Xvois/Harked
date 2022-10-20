@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;500&family=Ubuntu:wght@500;700&display=swap');
+
 .graph-container{
     display: flex;
     flex-direction: column;
@@ -7,6 +9,15 @@
     display: flex;
     flex-direction: row;
     height: 300px;
+}
+
+.graph-title{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 500;
+    font-size: 1em;
+    text-transform: uppercase;
+    text-align: center;
+    width: 100%;
 }
 
 .y-title{
@@ -43,8 +54,7 @@
     align-self: flex-end;
 }
 .point:hover{
-    transform: scale(120%);
-    z-index: 10;
+    transform: scale(150%);
 }
 
 .x-title{

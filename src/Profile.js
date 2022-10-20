@@ -10,7 +10,7 @@ const Profile = () => {
     let [currentUser, setCurrentUser] = useState("");
     let [datapoint, setDatapoint] = useState("initVal");
     let [term , setTerm] = useState("long_term");
-    let [graph, setGraph] = useState();
+    let [graph, setGraph] = useState("")
 
     const getQualities = (val1, type1, val2 , type2) => {
         let message = "";
@@ -29,7 +29,7 @@ const Profile = () => {
     }
 
 
-    const constructGraph = (object, x, xLimits, y, yLimits, key, parent) => { //ALL VALUES SHOULD BE POSITIVE, SEE https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-features
+    const constructGraph = (title, object, x, xLimits, y, yLimits, key, parent) => { //ALL VALUES SHOULD BE POSITIVE, SEE https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-features
         const maxX = xLimits[1];
         const maxY = yLimits[1];
         const minX = xLimits[0];
@@ -40,12 +40,13 @@ const Profile = () => {
             let pointX = ((element[x] - minX) * 100 )/ (maxX - minX); 
             let pointY = ((element[y] - minY) * 100 )/ (maxY - minY);
             let message = getQualities(pointX, x, pointY, y);
-            points.push(<div key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></div>)
+            points.push(<img alt="" src={parent[i].image} key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
         });
 
     return (
         <>
         <div className='graph-container'>
+            <h1 className='graph-title'>{title}</h1>
             <div className='top'>
                 <div className='point-container'>{points}</div>
                 <p className='y-title'>{y}</p>
@@ -70,7 +71,7 @@ const Profile = () => {
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph(analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs)) 
+            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs))
         })
         setLoaded(true);
         console.timeEnd('loadPage')
