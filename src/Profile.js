@@ -10,7 +10,7 @@ const Profile = () => {
     let [currentUser, setCurrentUser] = useState("");
     let [datapoint, setDatapoint] = useState("initVal");
     let [term , setTerm] = useState("long_term");
-    let [graph, setGraph] = useState();
+    let [graph, setGraph] = useState("")
 
     const getQualities = (val1, type1, val2 , type2) => {
         let message = "";
@@ -40,7 +40,7 @@ const Profile = () => {
             let pointX = ((element[x] - minX) * 100 )/ (maxX - minX); 
             let pointY = ((element[y] - minY) * 100 )/ (maxY - minY);
             let message = getQualities(pointX, x, pointY, y);
-            points.push(<img src={parent[i].image} key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
+            points.push(<img alt="" src={parent[i].image} key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
         });
 
     return (
@@ -71,7 +71,7 @@ const Profile = () => {
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs)) 
+            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs))
         })
         setLoaded(true);
         console.timeEnd('loadPage')
@@ -193,7 +193,6 @@ const Profile = () => {
                     </div>
                 </div>
                 <div className='right'>
-                    {graph}
                     {graph}
                 </div>
             </div>
