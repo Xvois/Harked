@@ -7,7 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './TopBar';
 import Profile from './Profile';
-import { getDatapoint } from './PDM';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

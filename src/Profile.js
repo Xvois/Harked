@@ -27,7 +27,7 @@ const Profile = () => {
         }
         return message;
     }
-    const constructGraph = (title, object, x, xLimits, y, yLimits, key, parent) => { //ALL VALUES SHOULD BE POSITIVE, SEE https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-features
+    const constructGraph = (title, object, x, xLimits, y, yLimits, key, parent) => {
         const maxX = xLimits[1];
         const maxY = yLimits[1];
         const minX = xLimits[0];
@@ -57,8 +57,6 @@ const Profile = () => {
 
     )
     }
-
-        
     const loadPage = async() => {
         if(!loaded){ updateCachedUser(userID).then(function(result){
             setCurrentUser(result);  
@@ -107,9 +105,9 @@ const Profile = () => {
         }
     }
 
-    useEffect(() => {
+    useEffect(() => {        
         loadPage();
-    }, [term])
+    },[term])
 
   return (
         <>

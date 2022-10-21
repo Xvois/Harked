@@ -31,10 +31,7 @@ function Authentication(){
   }, [redirect])
 
   return (
-    <>
       <div>Redirecting to the home page...</div>
-    </>
-
   )
 }
 
