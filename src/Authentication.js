@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useNavigate  } from "react-router-dom";
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
-const REDIRECT_URI = "http://localhost:3000/authentication";
+const REDIRECT_URI = "https://xvois.github.io/photon/#/authentication";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 const RESPONSE_TYPE = "token";
 const SCOPES = "user-read-currently-playing, user-read-playback-state, user-top-read"
