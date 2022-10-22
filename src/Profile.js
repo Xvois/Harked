@@ -5,7 +5,7 @@ import './Graph.css'
 import { getDatapoint, updateCachedUser } from './PDM';
 
 const Profile = () => {
-    const userID = window.location.href.split("?")[1];
+    const userID = window.location.hash.split("#")[1];
     const [loaded, setLoaded] = useState(false);
     let [currentUser, setCurrentUser] = useState("");
     let [datapoint, setDatapoint] = useState("initVal");

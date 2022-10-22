@@ -4,7 +4,7 @@ import './index.css';
 import Homepage from './Homepage';
 import Authentication from './Authentication';
 import reportWebVitals from './reportWebVitals';
-import { HashRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
+import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './TopBar';
 import Profile from './Profile';
 
@@ -12,20 +12,13 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <TopBar></TopBar>
-    <HashRouter>
+    <BrowserRouter>
       <Routes> (//Routes to pages)
-        <Route 
-        index 
-        element={<Homepage />} 
-        />
-        <Route 
-        path="/" 
-        element={<Authentication />}/>
-        <Route 
-        path="/profile" 
-        element={<Profile />}/>
+        <Route index element={<Homepage />} />
+        <Route path="authentication" element={<Authentication />}/>
+        <Route path="profile" element={<Profile />}/>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   </React.StrictMode>
 );
 
