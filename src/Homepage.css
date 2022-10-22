@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
 
+
 .main-text{
   text-transform: uppercase;
   font-family: 'Inter Tight', sans-serif;
@@ -30,11 +31,7 @@
   color: red;
 }
 
-.Homepage-body{
+.homepage-container{
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: left;
-  margin: 25vh 50px 0px 50px;
-
+  flex-direction: row;
 }
