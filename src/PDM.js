@@ -64,6 +64,7 @@ export const getDatapoint = async function(userID, term){
         await fetchData(`audio-features?ids=${analyticsIDs}`).then(function(result) { analytics = result.audio_features })
         for(let i = 0; i < topTracks.length; i++){
             datapoint.topSongs.push({
+                id: topTracks[i].id,
                 song: true,
                 name: parseSong(topTracks[i]),
                 title: topTracks[i].name,
@@ -74,18 +75,21 @@ export const getDatapoint = async function(userID, term){
             })
         }
         for(let i = 0; i < topArtists.length; i++){
-            datapoint.topArtists.push({
+            try{datapoint.topArtists.push({
                 artist: true,
                 name: topArtists[i].name, 
                 image: topArtists[i].images[1].url, 
                 link: `https://open.spotify.com/artist/${topArtists[i].id}`,
                 genre: topArtists[i].genres[0]
-            })
+            })}catch(error){ //catch error when artist does not have PFP
+                console.warn(error)
+            }
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
     }else{
         //LATER CODE FOR INTERACTING WITH DATABASE
     }
+    console.log(datapoint.topSongs)
     return datapoint;
 }
 
