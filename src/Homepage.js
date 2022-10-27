@@ -17,7 +17,7 @@ function Homepage() {
   const [username, setUsername] = useState("")
   let mainText;
   if(token && token !== "denied-scopes"){
-    mainText = `Welcome ${username}`
+    mainText = `Welcome ${username}!`
   }else{
     mainText = `Get true insights on your Spotify profile.`
   }
