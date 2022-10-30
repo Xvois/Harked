@@ -20,3 +20,22 @@ export const fetchData = async(path) => {
     })
     return data;
 }
+
+export const fetchLocalData = async(path) => {
+    console.info("Local API call made to " + path);
+    const {data} = await axios.get(`http://localhost:9000/${path}`).catch(
+        function(err){
+            console.warn(err)
+        }
+    )
+    console.log(data)
+}
+
+export const postUser = async(user) => {
+    console.info("User " + user.userID + " posted.");
+    await axios.post(`http://localhost:9000/addUser`, user).catch(
+        function(err){
+            console.warn(err)
+        }
+    )
+}

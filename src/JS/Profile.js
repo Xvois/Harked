@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import './Profile.css';
-import './Graph.css'
+import './../CSS/Profile.css';
+import './../CSS/Graph.css'
 import { getDatapoint, updateCachedUser } from './PDM';
 
 const Profile = () => {

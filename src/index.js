@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import Homepage from './Homepage';
-import Authentication from './Authentication';
-import reportWebVitals from './reportWebVitals';
+import './CSS/index.css';
+import Homepage from './JS/Homepage';
+import Authentication from './JS/Authentication';
+import reportWebVitals from './JS/reportWebVitals';
 import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
-import TopBar from './TopBar';
-import Profile from './Profile';
+import TopBar from './JS/TopBar';
+import Profile from './JS/Profile';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -1,14 +1,17 @@
 import { authURI } from './Authentication';
 import { useEffect, useState } from 'react';
-import './Homepage.css';
-import { fetchData } from './API'
+import './../CSS/Homepage.css';
+import { fetchData, fetchLocalData, postUser } from './API'
+import {updateCachedUser} from './PDM'
 
 function Homepage() {
   const [token, setToken] = useState("")
   useEffect(() => {
+    fetchLocalData("t");
     setToken(window.localStorage.getItem("token"))
     if(token && token !== "denied-scopes"){
       fetchData("me").then(function(result){
+        postUser(updateCachedUser(result.id))
         setUsername(result.display_name)
       })
     }
