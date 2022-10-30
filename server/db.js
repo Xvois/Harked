@@ -4,7 +4,7 @@
 const path = require('path')
 
 // Get the location of database.sqlite file
-const dbPath = path.resolve(__dirname, 'db/database.sqlite')
+const dbPath = path.resolve(__dirname, 'db/database.db')
 
 // Create connection to SQLite database
 const knex = require('knex')({
@@ -29,8 +29,6 @@ knex.schema
         // and increment "id" with every new record (book)
         return knex.schema.createTable('users', (table)  => {
           table.string('user_id').primary()
-          table.string('username').
-          table.string('picture_url')
         })
         .then(() => {
           // Log success message
