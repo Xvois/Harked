@@ -7,11 +7,9 @@ import {updateCachedUser} from './PDM'
 function Homepage() {
   const [token, setToken] = useState("")
   useEffect(() => {
-    fetchLocalData("t");
     setToken(window.localStorage.getItem("token"))
     if(token && token !== "denied-scopes"){
       fetchData("me").then(function(result){
-        postUser(updateCachedUser(result.id))
         setUsername(result.display_name)
       })
     }
@@ -47,7 +45,8 @@ function Homepage() {
           <></>
         }
         </div>
-        <button>DB Test</button>
+        <button onClick={() => fetchLocalData("all")}>PH: GET ALL USERS</button>
+        <button onClick={() => fetchData("me").then(function(response){updateCachedUser(response.id).then(function(user){postUser(user)})})}>PH: POST CURR USER</button>
     </div>
   );
 }

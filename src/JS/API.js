@@ -23,7 +23,7 @@ export const fetchData = async(path) => {
 
 export const fetchLocalData = async(path) => {
     console.info("Local API call made to " + path);
-    const {data} = await axios.get(`http://localhost:9000/${path}`).catch(
+    const {data} = await axios.get(`http://localhost:9000/PRDB/${path}`).catch(
         function(err){
             console.warn(err)
         }
@@ -32,8 +32,8 @@ export const fetchLocalData = async(path) => {
 }
 
 export const postUser = async(user) => {
-    console.info("User " + user.userID + " posted.");
-    await axios.post(`http://localhost:9000/addUser`, user).catch(
+    console.info("User " + user.username + " posted.");
+    await axios.post(`http://localhost:9000/PRDB/create`, user).then(function(result){console.warn(result)}).catch(
         function(err){
             console.warn(err)
         }

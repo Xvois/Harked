@@ -33,7 +33,7 @@ export const updateCachedUser = async function(userID){
     }else if (userID !== cachedUser.userID){
         cachedUser.userID = userID;
         await fetchData(`users/${userID}`).then(function(result){ //if we are not, get their details
-            cachedUser.media = result.images[0].url
+            cachedUser.profilePicture = result.images[0].url
             cachedUser.username = result.display_name;
         });
     }else{ //if the user is already cached, just update their play status
@@ -41,6 +41,7 @@ export const updateCachedUser = async function(userID){
             cachedUser.media = parseSong(result)
         })
     }
+    console.log(cachedUser)
     return cachedUser;
 }
 

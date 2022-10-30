@@ -25,7 +25,6 @@ function Authentication(){
       window.location.hash = ""
       window.localStorage.setItem("token", local_token)
     }if(!local_token && !hash) {window.localStorage.setItem("token", "denied-scopes")}
-    console.log(local_token)
     if(window.localStorage.getItem("token") !== "denied-scopes") { redirect("/profile#me"); }
     else { redirect("/"); }
   }, [redirect])

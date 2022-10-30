@@ -1,5 +1,3 @@
-// bookshelf-app/server/db.js
-
 // Import path module
 const path = require('path')
 
@@ -22,13 +20,12 @@ knex.schema
   .hasTable('users')
     .then((exists) => {
       if (!exists) {
-        // If no "books" table exists
-        // create new, with "id", "author", "title",
-        // "pubDate" and "rating" columns
-        // and use "id" as a primary identification
-        // and increment "id" with every new record (book)
+        // If no user table exists
+        // create new
         return knex.schema.createTable('users', (table)  => {
-          table.string('user_id').primary()
+          table.string('user_id').primary();
+          table.string("username");
+          table.string("picture_url");
         })
         .then(() => {
           // Log success message
@@ -48,7 +45,6 @@ knex.schema
     })
 
 // Just for debugging purposes:
-// Log all data in "books" table
 knex.select('*').from('users')
   .then(data => console.log('data:', data))
   .catch(err => console.log(err))
