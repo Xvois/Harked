@@ -14,9 +14,6 @@ const PORT = process.env.PORT || 9000
 // Create express app
 const app = express()
 
-// Apply middleware
-// Note: Keep this at the top, above routes
-app.use(cors())
 app.use(helmet())
 app.use(compression())
 app.use(bodyParser.urlencoded({ extended: false }))

@@ -15,7 +15,7 @@ const knex = require('knex')({
 
 // Create a table
 knex.schema
-  // Make sure no "books" table exists
+  // Make sure no "users" table exists
   // before trying to create new
   .hasTable('users')
     .then((exists) => {
