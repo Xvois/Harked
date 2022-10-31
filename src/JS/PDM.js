@@ -17,7 +17,7 @@ export const parseSong = function(song){ //takes in the song item
     })
     return tempSong;
 }
-
+//TODO: updateCachedUser needs a refactor
 export const updateCachedUser = async function(userID){
     if(userID === "me"){ //if we are on the logged in user's page
         cachedUser.userID = userID;
@@ -90,7 +90,7 @@ export const getDatapoint = async function(userID, term){
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
     }else{
-        //LATER CODE FOR INTERACTING WITH DATABASE
+        //TODO: LATER CODE FOR INTERACTING WITH DATABASE
     }
     return datapoint;
 }
