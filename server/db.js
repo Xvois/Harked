@@ -13,10 +13,9 @@ const knex = require('knex')({
   useNullAsDefault: true
 })
 
-// Create a table
+// Create users table
 knex.schema
   // Make sure no "users" table exists
-  // before trying to create new
   .hasTable('users')
     .then((exists) => {
       if (!exists) {
@@ -36,14 +35,144 @@ knex.schema
         })
       }
     })
-    .then(() => {
-      // Log success message
-      console.log('done')
-    })
-    .catch((error) => {
-      console.error(`There was an error setting up the database: ${error}`)
-    })
-
+// Create datapoint table
+knex.schema
+    // Make sure no "datapoints" table exists
+    .hasTable('datapoints')
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('datapoints', (table) => {
+                    table.increments('datapoint_id').primary();
+                    table.string('user_id').references('user_id').inTable('users');
+                    table.string('term');
+                    table.dateTime('collection_date');
+                    table.integer('top_songs_id').references('ref').inTable('songs_ref');
+                    table.integer('top_artists_id').references('ref').inTable('artists_ref');
+                    table.integer('top_genres_id').references('id').inTable('genre_array');
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'datapoints\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
+// Create songs_ref table
+knex.schema
+    // Make sure no "songs_ref" table exists
+    .hasTable('songs_ref')
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('songs_ref', (table) => {
+                    table.increments('id').primary();
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'songs_ref\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
+// Create songs table
+knex.schema
+    // Make sure no "songs" table exists
+    .hasTable('songs')
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('songs', (table) => {
+                    table.string('song_id').primary().references('song_id').inTable('analytics');
+                    table.string('artist');
+                    table.string('image');
+                    table.string('link');
+                    table.string('name');
+                    table.bool('song');
+                    table.string('title');
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'songs\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
+// Create analytics table
+knex.schema
+    // Make sure no "analytics" table exists
+    .hasTable('analytics')
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('analytics', (table) => {
+                    table.string('song_id').primary();
+                    table.float('acousticness');
+                    table.float('danceability');
+                    table.float('duration_ms');
+                    table.float('energy');
+                    table.float('instrumentalness');
+                    table.integer('key');
+                    table.float('liveness');
+                    table.float('loudness');
+                    table.integer('mode');
+                    table.float('speechiness');
+                    table.float('tempo');
+                    table.integer('time_signature');
+                    table.float('valence');
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'analytics\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
+// Create artists_ref table
+knex.schema
+    // Make sure no "artists_ref" table exists
+    .hasTable('artists_ref')
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('artists_ref', (table) => {
+                    table.increments('id').primary();
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'artists_ref\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
+// Create artists table
+knex.schema
+    // Make sure no "artists" table exists
+    .hasTable('artists')
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('artists', (table) => {
+                    table.string('id').primary();
+                    table.bool('artist');
+                    table.string('genre');
+                    table.string('image');
+                    table.string('link');
+                    table.string('name');
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'artists\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
 // Just for debugging purposes:
 knex.select('*').from('users')
   .then(data => console.log('data:', data))

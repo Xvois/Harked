@@ -10,8 +10,9 @@ const router = express.Router()
 
 router.get('/all', userRoots.getUsers)
 
-
 router.post('/create', userRoots.createUser)
+
+router.post('/addDatapoint', userRoots.postDatapoint)
 
 router.put('/delete', userRoots.deleteUser)
 

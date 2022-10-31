@@ -47,6 +47,8 @@ export const updateCachedUser = async function(userID){
 
 export const getDatapoint = async function(userID, term){
     let datapoint = {
+        collectionDate: Date.now(),
+        term: term,
         topSongs: [],
         topArtists: [],
         topGenres: [],
@@ -91,6 +93,7 @@ export const getDatapoint = async function(userID, term){
         //LATER CODE FOR INTERACTING WITH DATABASE
     }
     console.log(datapoint.topSongs)
+    console.log(datapoint.topArtists)
     return datapoint;
 }
 
