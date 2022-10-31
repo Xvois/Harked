@@ -41,7 +41,6 @@ export const updateCachedUser = async function(userID){
             cachedUser.media = parseSong(result)
         })
     }
-    console.log(cachedUser)
     return cachedUser;
 }
 
@@ -79,6 +78,7 @@ export const getDatapoint = async function(userID, term){
         }
         for(let i = 0; i < topArtists.length; i++){
             try{datapoint.topArtists.push({
+                id: topArtists[i].id,
                 artist: true,
                 name: topArtists[i].name, 
                 image: topArtists[i].images[1].url, 
@@ -92,8 +92,6 @@ export const getDatapoint = async function(userID, term){
     }else{
         //LATER CODE FOR INTERACTING WITH DATABASE
     }
-    console.log(datapoint.topSongs)
-    console.log(datapoint.topArtists)
     return datapoint;
 }
 

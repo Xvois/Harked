@@ -43,10 +43,9 @@ export const postUser = async(user) => {
 }
 
 export const postDatapoint = async(datapoint) => {
-    console.info("Datapoint posted.");
-    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then(function(result){console.warn(result)}).catch(
+    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then(function(result){console.info(result)}).catch(
         function(err){
-            console.warn(err)
+            console.warn("Axios error: " + err.message)
         }
     )
 }

@@ -1,6 +1,31 @@
 // Import database
 const knex = require('./../db')
 
+// --- EXTRA FUNCS --- //
+
+charsum = function(s) {
+  var i, sum = 0;
+  for (i = 0; i < s.length; i++) {
+    sum += (s.charCodeAt(i) * (i+1));
+  }
+  return sum
+}
+
+array_hash = function(a) {
+  var i, sum = 0, product = 1
+  for (i = 0; i < a.length; i++) {
+    var cs = charsum(a[i])
+    if (product % cs > 0) {
+      product = product * cs
+      sum = sum + (65027 / cs)  
+    }
+  }
+  return ("" + sum).slice(0, 16)
+}
+
+// --- END OF EXTRA FUNCS --- //
+
+
 // Retrieve all users
 exports.getUsers = async (req, res) => {
   // Get all users from database
@@ -22,37 +47,125 @@ exports.createUser = async (req, res) => {
   // Add new user to database
   knex('users')
     .insert({ // insert new record, a user
-      'user_id': req.body.user.userID,
-      'username': req.body.user.username,
-      'picture_url': req.body.user.profilePicture,
-    })
+      'user_id': req.body.userID,
+      'username': req.body.username,
+      'picture_url': req.body.profilePicture,
+    }).catch(function(err){res.json({message: `Error creating user: ${err}`})})
 }
-
 exports.postDatapoint = async (req, res) => {
-  // Get the index of current top_songs reference
-  knex('songs_ref').count('id').then(function(result){
-    const id = result;
-    knex('songs_ref').insert();
+
+  let songs_ref_id;
+  const song_ids = [];
+  // Push all the song ids to an array
+  req.body.topSongs.forEach(function(song){
+    song_ids.push(song.id);
   })
-  req.body.topSongs.forEach(function(song,i){ // If the song already exists do nothing
-    console.log(song);
+  // Hash the array to get the id
+  songs_ref_id = array_hash(song_ids);
+
+  let artists_ref_id;
+  const artist_ids = [];
+  // Push all the artist ids to an array
+  req.body.topArtists.forEach(function(artist){
+    artist_ids.push(artist.id);
+  })
+  // Hash the array to get the id
+  artists_ref_id = array_hash(artist_ids);
+
+  // Check if the song id already exists
+  knex('songs_ref').where('id', songs_ref_id).select("*").then(function(results){
+    if(results.length === 0){
+      // If not add the record
+      knex('songs_ref')
+        .insert({
+          'id': songs_ref_id
+        }).catch(function(err){res.status(500).json({message : `Error making record: ${err}`})})
+    }
+  })
+
+  // Check if the artist id already exists
+  knex('artists_ref').where('id', artists_ref_id).select("*").then(function(results){
+    if(results.length === 0){
+      // If not add the record
+      knex('artists_ref')
+        .insert({
+          'id': artists_ref_id
+        }).catch(function(err){res.status(500).json({message : `Error making record: ${err}`})})
+    }
+  })
+
+  // Update the record with all the song's information
+  req.body.topSongs.forEach(function(song,i){
     knex('songs').where('song_id', song.id).select("*").then(function(results){
-      if(results == []){
-        console.log("Adding song.")
-        knex('songs').insert({
-          'song_id': song.id,
-          'artist': song.artist,
-          'image': song.image,
-          'link': song.link,
-          'name': song.name,
-          'title': song.title,
-          'song': true
-        }).catch(function(err){res.json({message: `Error adding song: ${err}`})})
-      }else{
-        console.log("Song exists!")
+      if(results.length === 0){ // If the song doesn't exist add it
+        console.log("Adding song: " + song.name)
+        knex('songs')
+          .insert({
+            'song_id': song.id,
+            'artist': song.artist,
+            'image': song.image,
+            'link': song.link,
+            'name': song.name,
+            'title': song.title,
+            'song': true
+         }).catch(function(err){res.status(500).json({message: `Error adding song: ${err}`})})
+         knex('analytics')
+          .insert({
+            'song_id': song.id,
+            'acousticness': song.analytics.acousticness,
+            'danceability': song.analytics.danceability,
+            'duration_ms': song.analytics.duration_ms,
+            'energy': song.analytics.energy,
+            'instrumentalness': song.analytics.instrumentalness,
+            'key': song.analytics.key,
+            'liveness': song.analytics.liveness,
+            'loudness': song.analytics.loudness,
+            'mode': song.analytics.mode,
+            'speechiness': song.analytics.speechiness,
+            'tempo': song.analytics.tempo,
+            'time_signature': song.analytics.time_signature,
+            'valence': song.analytics.valence
+          }).catch(function(err){res.status(500).json({message: `Error creating analytics record: ${err}`})})
       }
     })
+    // Generate correct column name
+    const column = "song_id_" + String(i+1);
+    // Update existing columns to have
+    // the correct IDs + data
+    knex(`songs_ref`)
+    .where('id', songs_ref_id)
+      .update({
+        [column]: song.id
+      }).catch(function(err){res.status(500).json({message : `Error making song column: ${err}`})})
+  }) 
+
+  // Update the record with all the artist's information
+  req.body.topArtists.forEach(function(artist,i){
+    knex('artists').where('artist_id', artist.id).select("*").then(function(results){
+      if(results.length === 0){ // If the song doesn't exist add it
+        console.log("Adding artist: " + artist.name)
+        knex('artists')
+          .insert({
+            'artist_id': artist.id,
+            'artist': true,
+            'genre': artist.genre,
+            'image': artist.image,
+            'link': artist.link,
+            'name': artist.name,
+          }).catch(function(err){res.status(500).json({message : `Error adding artist: ${err}`})})
+      }
+    })
+    // Generate correct column name
+    const column = "artist_id_" + String(i+1);
+    // Update existing columns to have
+    // the correct IDs + data
+    knex(`artists_ref`)
+    .where('id', artists_ref_id)
+      .update({
+        [column]: artist.id
+      }).catch(function(err){res.status(500).json({message : `Error making artist column: ${err}`})})
   })
+  res.status(201).json({message : "Datapoint successfully posted."})
 }
 // Remove specific user
 exports.deleteUser = async (req, res) => {

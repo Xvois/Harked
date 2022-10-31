@@ -66,7 +66,10 @@ knex.schema
         .then((exists) => {
             if(!exists){
                 return knex.schema.createTable('songs_ref', (table) => {
-                    table.increments('id').primary();
+                    table.float('id').primary();
+                    for(var i = 1; i < 51; i++){
+                      table.string(`song_id_${i}`).references('song_id').inTable('songs')
+                    }
                 })
                 .then(() => {
                     // Log success message
@@ -139,7 +142,10 @@ knex.schema
         .then((exists) => {
             if(!exists){
                 return knex.schema.createTable('artists_ref', (table) => {
-                    table.increments('id').primary();
+                    table.float('id').primary();
+                      for(var i = 1; i < 21; i++){
+                        table.string(`artist_id_${i}`).references('artist_id').inTable('artists')
+                      }
                 })
                 .then(() => {
                     // Log success message
@@ -157,7 +163,7 @@ knex.schema
         .then((exists) => {
             if(!exists){
                 return knex.schema.createTable('artists', (table) => {
-                    table.string('id').primary();
+                    table.string('artist_id').primary();
                     table.bool('artist');
                     table.string('genre');
                     table.string('image');
