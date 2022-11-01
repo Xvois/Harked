@@ -179,6 +179,27 @@ knex.schema
                   })
             }
         })
+// Create genres table
+knex.schema
+    // Make sure no "genres" table exists
+    .hasTable("genres")
+        .then((exists) => {
+            if(!exists){
+                return knex.schema.createTable('genres', (table) => {
+                    table.float('id').primary();
+                    for(var i = 1; i < 51; i++){
+                        table.string(`genre_${i}`)
+                      }
+                })
+                .then(() => {
+                    // Log success message
+                    console.log('Table \'genres\' created')
+                  })
+                  .catch((error) => {
+                    console.error(`There was an error creating table: ${error}`)
+                  })
+            }
+        })
 // Just for debugging purposes:
 knex.select('*').from('users')
   .then(data => console.log('data:', data))

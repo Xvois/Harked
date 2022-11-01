@@ -45,7 +45,11 @@ export const updateCachedUser = async function(userID){
 }
 
 export const getDatapoint = async function(userID, term){
+    var globalUserID;
+    // Convert "me" into the user's userID if needed.
+    if(userID === "me"){await fetchData(userID).then(function(result){globalUserID = result.id})}else{globalUserID = userID}
     let datapoint = {
+        userID: globalUserID,
         collectionDate: Date.now(),
         term: term,
         topSongs: [],
@@ -92,6 +96,7 @@ export const getDatapoint = async function(userID, term){
     }else{
         //TODO: LATER CODE FOR INTERACTING WITH DATABASE
     }
+    console.log(datapoint)
     return datapoint;
 }
 

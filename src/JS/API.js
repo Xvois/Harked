@@ -35,7 +35,7 @@ export const fetchLocalData = async(path) => {
 export const postUser = async(user) => {
     console.info("User " + user.username + " posted.");
     const datapoint = await getDatapoint(user.userID)
-    await axios.post(`http://localhost:9000/PRDB/create`, user).then(function(result){console.warn(result)}).catch(
+    await axios.post(`http://localhost:9000/PRDB/create`, user).then(function(result){console.info(result)}).catch(
         function(err){
             console.warn(err)
         }

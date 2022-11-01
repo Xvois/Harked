@@ -51,6 +51,7 @@ exports.createUser = async (req, res) => {
       'username': req.body.username,
       'picture_url': req.body.profilePicture,
     }).catch(function(err){res.json({message: `Error creating user: ${err}`})})
+  res.status(201).json({message : `User created.`})
 }
 exports.postDatapoint = async (req, res) => {
 
@@ -71,6 +72,15 @@ exports.postDatapoint = async (req, res) => {
   })
   // Hash the array to get the id
   artists_ref_id = array_hash(artist_ids);
+
+  let genres_id;
+  const genres = [];
+  // Push all the genres to an array
+  req.body.topGenres.forEach(function(inst){ //get each instance of a genre
+    genres.push(inst.genre);
+  })
+  // Hash the array to get the id
+  genres_id = array_hash(genres);
 
   // Check if the song id already exists
   knex('songs_ref').where('id', songs_ref_id).select("*").then(function(results){
@@ -165,7 +175,50 @@ exports.postDatapoint = async (req, res) => {
         [column]: artist.id
       }).catch(function(err){res.status(500).json({message : `Error making artist column: ${err}`})})
   })
-  res.status(201).json({message : "Datapoint successfully posted."})
+
+  knex('genres').where('id', genres_id).select("*").then(function(results){
+    if(results.length === 0 ){
+      knex('genres')
+        .insert({
+          'id': genres_id
+        }).catch(function(err){res.status(500).json({message : `Error adding genres record: ${err}`})})
+      req.body.topGenres.forEach(function(inst,i){
+        // Generate correct column name
+        const column = "genre_" + String(i+1);
+        // Update existing columns to have
+        // the correct IDs + data
+        knex(`genres`)
+        .where('id', genres_id)
+          .update({
+            [column]: inst.genre
+          }).catch(function(err){res.status(500).json({message : `Error making genre column: ${err}`})})
+      })
+    }
+  })
+  const WEEK_IN_SECONDS = 604800;
+  knex('datapoints')
+    .where({user_id: req.body.userID, term: req.body.term})
+      .select('collection_date')
+        .then(oldDate => {
+          // Check that any existing datapoint is older than a week
+          // before adding a new one
+          if(req.body.collectionDate - oldDate > WEEK_IN_SECONDS){
+            // Make the final datapoint with all of the data
+            knex('datapoints').insert({
+              // User ID will not be unique
+              // there is an autoincrementing id
+              'user_id': req.body.userID,
+              'term': req.body.term,
+              'collection_date': req.body.collectionDate,
+              'top_songs_id': songs_ref_id,
+              'top_artists_id': artists_ref_id,
+              'top_genres_id': genres_id
+            }).catch(function(err){res.status(500).json({message : `Error making datapoint record: ${err}`})})
+          }
+        }).catch(function(err){console.log(`Error finding existing datapoint: ${err}`)})
+
+
+  res.status(201).json({message : "Datapoint successfully posted."});
 }
 // Remove specific user
 exports.deleteUser = async (req, res) => {
