@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { authURI } from './Authentication';
-import { getDatapoint } from './PDM';
 
 export const fetchData = async(path) => {
     console.info("API call made to " + path)
@@ -34,7 +33,6 @@ export const fetchLocalData = async(path) => {
 
 export const postUser = async(user) => {
     console.info("User " + user.username + " posted.");
-    const datapoint = await getDatapoint(user.userID)
     await axios.post(`http://localhost:9000/PRDB/create`, user).then(function(result){console.info(result)}).catch(
         function(err){
             console.warn(err)
@@ -48,4 +46,11 @@ export const postDatapoint = async(datapoint) => {
             console.warn("Axios error: " + err.message)
         }
     )
+}
+
+export const retrieveDatapoint = async(userID, term) => {
+    console.log(`Retrieve datapoint run with ${userID} and ${term}`)
+    await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}`).then(result => {
+        console.info(result.data)
+    })
 }

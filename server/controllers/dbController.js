@@ -44,15 +44,66 @@ exports.getUsers = async (req, res) => {
 
 // Create new user
 exports.createUser = async (req, res) => {
+  var errorMessage;
   // Add new user to database
   knex('users')
     .insert({ // insert new record, a user
       'user_id': req.body.userID,
       'username': req.body.username,
       'picture_url': req.body.profilePicture,
-    }).catch(function(err){res.json({message: `Error creating user: ${err}`})})
-  res.status(201).json({message : `User created.`})
+    }).catch(function(err){errorMessage = err})
+    if(!errorMessage){
+      res.status(201).json({message : `User created.`})
+    }else{
+      res.status(500).json({message : errorMessage})
+    }
 }
+
+exports.getDatapoint = async (req, res) => {
+  const user_id = req.query.userID;
+  const term = req.query.term;
+  let datapoint = {
+    userID: user_id,
+    collectionDate: null,
+    term: term,
+    topSongs: [],
+    topArtists: [],
+    topGenres: [],
+}
+await knex('datapoints')
+  .select('collection_date', 'top_songs_id', 'top_artists_id', 'top_genres_id')
+    .where({user_id: user_id})
+    // Get the most recent datapoint
+      .orderBy('collection_date')
+        .then(function(result){
+          // The datapoint contains the references
+          // to the other tables
+          const references = result[0];
+          datapoint.collectionDate = references.collection_date;
+          knex('songs_ref')
+          // Find the top songs reference
+            .where('id', references.top_songs_id)
+              .select('*')
+              // Add the results
+                .then(function(song_ids){
+                  for(let i = 1; i < 51; i++){
+                    knex('songs')
+                      .where('song_id', song_ids[0][`song_id_${i}`])
+                        .select('*')
+                          .then(function(result){
+                            let song = result[0]
+                            //TODO: FIX THAT DATAPOINTS ARE 
+                            // NOT BEING PUSHED
+                            datapoint.topSongs.push({name : "Test!"})
+                          })
+                  }
+                })
+        })
+        .catch(err => console.log(`Error finding datapoint: ${err}`))
+
+  res.json(datapoint);
+}
+
 exports.postDatapoint = async (req, res) => {
 
   let songs_ref_id;

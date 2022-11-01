@@ -14,6 +14,8 @@ router.post('/create', userRoots.createUser)
 
 router.post('/addDatapoint', userRoots.postDatapoint)
 
+router.get('/getDatapoint', userRoots.getDatapoint)
+
 router.put('/delete', userRoots.deleteUser)
 
 router.put('/reset', userRoots.resetUsers)

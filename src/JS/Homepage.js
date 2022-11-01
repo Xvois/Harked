@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import './../CSS/Homepage.css';
 import { fetchData, fetchLocalData, postUser } from './API'
 import {getDatapoint, updateCachedUser} from './PDM'
-import { postDatapoint } from './API';
+import { postDatapoint, retrieveDatapoint } from './API';
 
 function Homepage() {
   const [token, setToken] = useState("")
@@ -49,6 +49,7 @@ function Homepage() {
         <button onClick={() => fetchLocalData("all")}>PH: GET ALL USERS</button>
         <button onClick={() => fetchData("me").then(function(response){updateCachedUser(response.id).then(function(user){postUser(user)})})}>PH: POST CURR USER</button>
         <button onClick={() => getDatapoint("me", "long_term").then(function(datapoint){postDatapoint(datapoint)})}>PH: POST DATAPOINT</button>
+        <button onClick={() => retrieveDatapoint("sonn-gb", "long_term")}>PH: RETRIEVE DATAPOINT</button>
     </div>
   );
 }
