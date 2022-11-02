@@ -113,5 +113,9 @@ const calculateTopGenres = function(artists){
         })
     })
     topGenres.sort((a,b) => b.weight - a.weight) //sort based on weight diffs
+    // DECONSTRUCTS THE OBJECT OF A GENRE TO SIMPLY BE A STRING:
+    topGenres.forEach((genre, i) => topGenres[i] = genre.genre)
+    // LOOKS INSANE BUT A GENRE IN THIS FUNCTION IS AN OBJECT OF ITS NAME
+    // AND WEIGHT. THAT LINE SIMPLY TURNS IT FROM AN OBJECT INTO A STRING
     return topGenres;
 }

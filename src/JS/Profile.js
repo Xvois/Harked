@@ -164,9 +164,9 @@ const Profile = () => {
                         <div className='datapoint-container'>
                             <p className='datapoint-title'>Top genres</p>
                             <ul>
-                                <li className='list-item'>{datapoint.topGenres[0].genre}</li>
-                                <li className='list-item'>{datapoint.topGenres[1].genre}</li>
-                                <li className='list-item'>{datapoint.topGenres[2].genre}</li>
+                                <li className='list-item'>{datapoint.topGenres[0]}</li>
+                                <li className='list-item'>{datapoint.topGenres[1]}</li>
+                                <li className='list-item'>{datapoint.topGenres[2]}</li>
                             </ul>
                         </div> 
                     </div>

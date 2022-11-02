@@ -75,32 +75,56 @@ await knex('datapoints')
     .where({user_id: user_id})
     // Get the most recent datapoint
       .orderBy('collection_date')
-        .then(function(result){
+        .then(async function(result){
           // The datapoint contains the references
           // to the other tables
           const references = result[0];
           datapoint.collectionDate = references.collection_date;
-          knex('songs_ref')
+          await knex('songs_ref')
           // Find the top songs reference
             .where('id', references.top_songs_id)
               .select('*')
               // Add the results
-                .then(function(song_ids){
+                .then(async function(song_ids){
                   for(let i = 1; i < 51; i++){
-                    knex('songs')
+                    await knex('songs')
                       .where('song_id', song_ids[0][`song_id_${i}`])
                         .select('*')
                           .then(function(result){
                             let song = result[0]
-                            //TODO: FIX THAT DATAPOINTS ARE 
-                            // NOT BEING PUSHED
-                            datapoint.topSongs.push({name : "Test!"})
+                            datapoint.topSongs.push(song)
                           })
                   }
                 })
+          await knex('artists_ref')
+          // Find the top songs reference
+            .where('id', references.top_artists_id)
+              .select('*')
+              // Add the results
+                .then(async function(artist_ids){
+                  for(let i = 1; i < 21; i++){
+                    await knex('artists')
+                      .where('artist_id', artist_ids[0][`artist_id_${i}`])
+                        .select('*')
+                          .then(function(result){
+                            let artist = result[0]
+                            datapoint.topArtists.push(artist)
+                          })
+                  }
+                })
+          await knex('genres')
+          .where('id', references.top_genres_id)
+            .select('*')
+              .then(async function(genres){
+                for(let i = 1; i < 51; i++){
+                  let genre = genres[0][`genre_${i}`];
+                  if(genre != null){
+                    datapoint.topGenres.push(genre);
+                  }
+                }
+              })
         })
         .catch(err => console.log(`Error finding datapoint: ${err}`))
-
   res.json(datapoint);
 }
 
@@ -127,8 +151,8 @@ exports.postDatapoint = async (req, res) => {
   let genres_id;
   const genres = [];
   // Push all the genres to an array
-  req.body.topGenres.forEach(function(inst){ //get each instance of a genre
-    genres.push(inst.genre);
+  req.body.topGenres.forEach(function(genre){
+    genres.push(genre);
   })
   // Hash the array to get the id
   genres_id = array_hash(genres);
@@ -246,6 +270,7 @@ exports.postDatapoint = async (req, res) => {
       })
     }
   })
+
   const WEEK_IN_SECONDS = 604800;
   knex('datapoints')
     .where({user_id: req.body.userID, term: req.body.term})
@@ -254,6 +279,7 @@ exports.postDatapoint = async (req, res) => {
           // Check that any existing datapoint is older than a week
           // before adding a new one
           if(req.body.collectionDate - oldDate > WEEK_IN_SECONDS){
+            console.log("New datapoint being made!")
             // Make the final datapoint with all of the data
             knex('datapoints').insert({
               // User ID will not be unique
@@ -264,12 +290,12 @@ exports.postDatapoint = async (req, res) => {
               'top_songs_id': songs_ref_id,
               'top_artists_id': artists_ref_id,
               'top_genres_id': genres_id
-            }).catch(function(err){res.status(500).json({message : `Error making datapoint record: ${err}`})})
+            }).catch(function(err){console.status(500).json({message : `Error making datapoint record: ${err}`})})
           }
-        }).catch(function(err){console.log(`Error finding existing datapoint: ${err}`)})
+        }).catch(function(err){console.status(500).json({message : `Error finding existing datapoint record: ${err}`})})
 
-
-  res.status(201).json({message : "Datapoint successfully posted."});
+  
+  res.status(201).json({message : "Datapoint successfully compiled."});
 }
 // Remove specific user
 exports.deleteUser = async (req, res) => {
