@@ -2,7 +2,6 @@ import axios from 'axios';
 import { authURI } from './Authentication';
 
 export const fetchData = async(path) => {
-    console.info("API call made to " + path)
     const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
@@ -40,17 +39,23 @@ export const postUser = async(user) => {
     )
 }
 
-export const postDatapoint = async(datapoint) => {
+export const postDatapoint = async(datapoint) => {  
     await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then(function(result){console.info(result)}).catch(
         function(err){
-            console.warn("Axios error: " + err.message)
+            console.warn("Error posting datapoint: " + err)
         }
     )
 }
 
-export const retrieveDatapoint = async(userID, term) => {
+export const getDatapoint = async(userID, term) => {
     console.log(`Retrieve datapoint run with ${userID} and ${term}`)
     await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}`).then(result => {
-        console.info(result.data)
-    })
-}
+        if(result.data != null){ // Does the datapoint exist? (Has the collectionDate been overwritten?)
+            console.log("Datapoint found!");
+            console.log(result.data);
+            return result.data
+        }else{
+            console.log("No datapoint found.")
+            return false;
+        }
+})}

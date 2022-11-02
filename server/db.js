@@ -200,10 +200,5 @@ knex.schema
                   })
             }
         })
-// Just for debugging purposes:
-knex.select('*').from('users')
-  .then(data => console.log('data:', data))
-  .catch(err => console.log(err))
-
 // Export the database
 module.exports = knex

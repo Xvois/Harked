@@ -1,4 +1,4 @@
-import { fetchData } from "./API";
+import { getDatapoint, postDatapoint, fetchData } from "./API";
 
 let cachedUser = {
     userID: '',
@@ -44,30 +44,48 @@ export const updateCachedUser = async function(userID){
     return cachedUser;
 }
 
-export const getDatapoint = async function(userID, term){
+export const retrieveDatapoint = async function(userID, term){
     var globalUserID;
+    let currDatapoint;
     // Convert "me" into the user's userID if needed.
     if(userID === "me"){await fetchData(userID).then(function(result){globalUserID = result.id})}else{globalUserID = userID}
-    let datapoint = {
-        userID: globalUserID,
-        collectionDate: Date.now(),
-        term: term,
-        topSongs: [],
-        topArtists: [],
-        topGenres: [],
+    await getDatapoint(globalUserID, term).then(result => {currDatapoint = result});
+    if(!currDatapoint){
+        await hydrateDatapoints(globalUserID);
+        await getDatapoint(globalUserID, term).then(result => {currDatapoint = result});
     }
-    if(userID === "me"){
+    return currDatapoint;
+}
+// Update all of the datapoints for the logged in user
+// with the parameter being their global user id.
+export const hydrateDatapoints = async function(globalUserID){
+    console.warn("Hydrating...");
+    ['short_term', 'medium_term', 'long_term'].forEach(async term => {
+        console.warn("Hydrating: "+ term)
+        let datapoint = {
+            userID: globalUserID,
+            collectionDate: Date.now(),
+            term: term,
+            topSongs: [],
+            topArtists: [],
+            topGenres: [],
+        }
         let topTracks;
         let topArtists;
         let analyticsIDs = "";
         let analytics;
+        // Queue up promises
         let promises = [fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}`)];
+        // Await the promises for the arrays of data
         await Promise.all(promises).then(function(result){
             topTracks = result[0].items;
             topArtists = result[1].items;
         })
+        // Concatenate the strings so they can be 
+        // used in the analytics call
         topTracks.forEach(track => analyticsIDs += track.id + ',')
         await fetchData(`audio-features?ids=${analyticsIDs}`).then(function(result) { analytics = result.audio_features })
+        // Add all of the songs
         for(let i = 0; i < topTracks.length; i++){
             datapoint.topSongs.push({
                 id: topTracks[i].id,
@@ -80,6 +98,7 @@ export const getDatapoint = async function(userID, term){
                 analytics: analytics[i]
             })
         }
+        // Add all of the artists
         for(let i = 0; i < topArtists.length; i++){
             try{datapoint.topArtists.push({
                 id: topArtists[i].id,
@@ -93,11 +112,9 @@ export const getDatapoint = async function(userID, term){
             }
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
-    }else{
-        //TODO: LATER CODE FOR INTERACTING WITH DATABASE
-    }
-    console.log(datapoint)
-    return datapoint;
+        await postDatapoint(datapoint);
+    })
+    console.warn("Hydration over.")
 }
 
 const calculateTopGenres = function(artists){

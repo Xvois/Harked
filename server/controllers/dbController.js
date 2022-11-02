@@ -60,6 +60,7 @@ exports.createUser = async (req, res) => {
 }
 
 exports.getDatapoint = async (req, res) => {
+  console.log("getDatapoint called")
   const user_id = req.query.userID;
   const term = req.query.term;
   let datapoint = {
@@ -69,63 +70,72 @@ exports.getDatapoint = async (req, res) => {
     topSongs: [],
     topArtists: [],
     topGenres: [],
-}
-await knex('datapoints')
-  .select('collection_date', 'top_songs_id', 'top_artists_id', 'top_genres_id')
-    .where({user_id: user_id})
-    // Get the most recent datapoint
-      .orderBy('collection_date')
-        .then(async function(result){
-          // The datapoint contains the references
-          // to the other tables
-          const references = result[0];
-          datapoint.collectionDate = references.collection_date;
-          await knex('songs_ref')
-          // Find the top songs reference
-            .where('id', references.top_songs_id)
-              .select('*')
-              // Add the results
-                .then(async function(song_ids){
-                  for(let i = 1; i < 51; i++){
-                    await knex('songs')
-                      .where('song_id', song_ids[0][`song_id_${i}`])
-                        .select('*')
-                          .then(function(result){
-                            let song = result[0]
-                            datapoint.topSongs.push(song)
-                          })
-                  }
-                })
-          await knex('artists_ref')
-          // Find the top songs reference
-            .where('id', references.top_artists_id)
-              .select('*')
-              // Add the results
-                .then(async function(artist_ids){
-                  for(let i = 1; i < 21; i++){
-                    await knex('artists')
-                      .where('artist_id', artist_ids[0][`artist_id_${i}`])
-                        .select('*')
-                          .then(function(result){
-                            let artist = result[0]
-                            datapoint.topArtists.push(artist)
-                          })
-                  }
-                })
-          await knex('genres')
-          .where('id', references.top_genres_id)
-            .select('*')
-              .then(async function(genres){
-                for(let i = 1; i < 51; i++){
-                  let genre = genres[0][`genre_${i}`];
-                  if(genre != null){
-                    datapoint.topGenres.push(genre);
-                  }
-                }
-              })
-        })
-        .catch(err => console.log(`Error finding datapoint: ${err}`))
-  res.json(datapoint);
+  }
+  await knex('datapoints')
+    .select('collection_date', 'top_songs_id', 'top_artists_id', 'top_genres_id')
+      .where({user_id: user_id})
+      // Get the most recent datapoint
+        .orderBy('collection_date')
+          .then(async function(results){
+            // Return null if there are no matching datapoints
+            console.log(`Results of searching for datapoint for ${user_id}: ${results}`)
+            if(results.length === 0){ console.log("Datapoint requested but nullified: none found."); res.json(null);}
+            // The datapoint contains the references
+            // to the other tables
+            const references = results[0];
+            datapoint.collectionDate = references.collection_date;
+            const WEEK_IN_SECONDS = 604800;
+            if(Date.now() - datapoint.collectionDate < WEEK_IN_SECONDS){
+              await knex('songs_ref')
+              // Find the top songs reference
+                .where('id', references.top_songs_id)
+                  .select('*')
+                  // Add the results
+                    .then(async function(song_ids){
+                      for(let i = 1; i < 51; i++){
+                        await knex('songs')
+                          .where('song_id', song_ids[0][`song_id_${i}`])
+                            .select('*')
+                              .then(function(result){
+                                let song = result[0]
+                                datapoint.topSongs.push(song)
+                              })
+                      }
+                    })
+              await knex('artists_ref')
+              // Find the top songs reference
+                .where('id', references.top_artists_id)
+                  .select('*')
+                  // Add the results
+                    .then(async function(artist_ids){
+                      for(let i = 1; i < 21; i++){
+                        await knex('artists')
+                          .where('artist_id', artist_ids[0][`artist_id_${i}`])
+                            .select('*')
+                              .then(function(result){
+                                let artist = result[0]
+                                datapoint.topArtists.push(artist)
+                              })
+                      }
+                    })
+              await knex('genres')
+              .where('id', references.top_genres_id)
+                .select('*')
+                  .then(async function(genres){
+                    for(let i = 1; i < 51; i++){
+                      let genre = genres[0][`genre_${i}`];
+                      if(genre != null){
+                        datapoint.topGenres.push(genre);
+                      }
+                    }
+                  })
+            }else{
+              // Return null if the latest datapoint is old
+              console.log("Datapoint requested but nullified: old.");
+              res.json(null);
+            }
+          })
+  res.json(datapoint)
 }
 
 exports.postDatapoint = async (req, res) => {

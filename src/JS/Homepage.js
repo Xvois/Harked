@@ -1,22 +1,14 @@
 import { authURI } from './Authentication';
 import { useEffect, useState } from 'react';
 import './../CSS/Homepage.css';
-import { fetchData, fetchLocalData, postUser } from './API'
-import {getDatapoint, updateCachedUser} from './PDM'
-import { postDatapoint, retrieveDatapoint } from './API';
 
 function Homepage() {
   const [token, setToken] = useState("")
+  const [username, setUsername] = useState("PH: USERNAME BEING REWORKED")
   useEffect(() => {
     setToken(window.localStorage.getItem("token"))
-    if(token && token !== "denied-scopes"){
-      fetchData("me").then(function(result){
-        setUsername(result.display_name)
-      })
-    }
     document.title = "Photon"
   }, [token])
-  const [username, setUsername] = useState("")
   let mainText;
   if(token && token !== "denied-scopes"){
     mainText = `Welcome ${username}!`
@@ -46,10 +38,6 @@ function Homepage() {
           <></>
         }
         </div>
-        <button onClick={() => fetchLocalData("all")}>PH: GET ALL USERS</button>
-        <button onClick={() => fetchData("me").then(function(response){updateCachedUser(response.id).then(function(user){postUser(user)})})}>PH: POST CURR USER</button>
-        <button onClick={() => getDatapoint("me", "long_term").then(function(datapoint){postDatapoint(datapoint)})}>PH: POST DATAPOINT</button>
-        <button onClick={() => retrieveDatapoint("sonn-gb", "long_term")}>PH: RETRIEVE DATAPOINT</button>
     </div>
   );
 }

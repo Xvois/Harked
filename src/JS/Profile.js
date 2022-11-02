@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import { getDatapoint, updateCachedUser } from './PDM';
+import { retrieveDatapoint, updateCachedUser } from './PDM';
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
@@ -62,7 +62,7 @@ const Profile = () => {
             setCurrentUser(result);  
             document.title = `Photon | ${result.username}`;
         })}
-        await getDatapoint(userID, term).then(function(result){
+        await retrieveDatapoint(userID, term).then(function(result){
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
