@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useNavigate  } from "react-router-dom";
+import { hydrateDatapoints, postLoggedUser } from './PDM';
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
 const REDIRECT_URI = "http://localhost:3000/authentication";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
@@ -10,7 +11,9 @@ export const authURI = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${R
 function Authentication(){
 
   const navigate = useNavigate();
-  const redirect = useCallback( (path) => {
+  const redirect = useCallback( async (path) => {
+    await postLoggedUser();
+    await hydrateDatapoints();
     navigate(path)
     },
   [navigate],); 

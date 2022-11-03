@@ -42,21 +42,57 @@ exports.getUsers = async (req, res) => {
     })
 }
 
+exports.getUser = async (req, res) => {
+  var errorMessage;
+  let user = {
+    userID: req.query.userID,
+    username: '',
+    profilePicture: '',
+    media: null
+}
+  await knex('users')
+    .where({user_id: req.query.userID})
+      .select('*')
+        .then(function(results){
+          const record = results[0];
+          user.username = record.username;
+          user.profilePicture = record.picture_url;
+        }).catch(function(err){errorMessage = err})
+  if(!errorMessage){
+    res.status(200).json(user);
+  }else{
+    console.log(errorMessage)
+  }   
+}
+
 // Create new user
 exports.createUser = async (req, res) => {
   var errorMessage;
   // Add new user to database
   knex('users')
-    .insert({ // insert new record, a user
-      'user_id': req.body.userID,
-      'username': req.body.username,
-      'picture_url': req.body.profilePicture,
-    }).catch(function(err){errorMessage = err})
-    if(!errorMessage){
-      res.status(201).json({message : `User created.`})
-    }else{
-      res.status(500).json({message : errorMessage})
-    }
+    .where({user_id: req.body.userID})
+      .then(function(results){
+        if(results.length === 0){
+          knex('users')
+          .insert({ // insert new record, a user
+            'user_id': req.body.userID,
+            'username': req.body.username,
+            'picture_url': req.body.profilePicture,
+          }).catch(function(err){errorMessage = err})
+        }else{
+          knex('users')
+          .where({user_id: req.body.userID})
+            .update({
+              username: req.body.username,
+              picture_url: req.body.profilePicture,
+            }).catch(function(err){errorMessage = err})
+        }
+      })
+  if(!errorMessage){
+    res.status(201).json({message : `User created.`})
+  }else{
+    console.log(errorMessage)
+  }
 }
 
 exports.getDatapoint = async (req, res) => {
@@ -73,68 +109,76 @@ exports.getDatapoint = async (req, res) => {
   }
   await knex('datapoints')
     .select('collection_date', 'top_songs_id', 'top_artists_id', 'top_genres_id')
-      .where({user_id: user_id})
+      .where({user_id: user_id, term: term})
       // Get the most recent datapoint
         .orderBy('collection_date')
           .then(async function(results){
             // Return null if there are no matching datapoints
-            console.log(`Results of searching for datapoint for ${user_id}: ${results}`)
-            if(results.length === 0){ console.log("Datapoint requested but nullified: none found."); res.json(null);}
-            // The datapoint contains the references
-            // to the other tables
-            const references = results[0];
-            datapoint.collectionDate = references.collection_date;
-            const WEEK_IN_SECONDS = 604800;
-            if(Date.now() - datapoint.collectionDate < WEEK_IN_SECONDS){
-              await knex('songs_ref')
-              // Find the top songs reference
-                .where('id', references.top_songs_id)
+            console.log(`Results of searching for datapoint for ${user_id}: ${results.length} datapoint(s).`)
+            if(results.length === 0){ console.log("Datapoint requested but nullified: none found."); }
+            else{
+              // The datapoint contains the references
+              // to the other tables
+              const references = results[0];
+              datapoint.collectionDate = references.collection_date;
+              const WEEK_IN_SECONDS = 604800 * 1000;
+              //const WEEK_IN_SECONDS = 0;
+              if(Date.now() - datapoint.collectionDate < WEEK_IN_SECONDS){
+                await knex('songs_ref')
+                // Find the top songs reference
+                  .where('id', references.top_songs_id)
+                    .select('*')
+                    // Add the results
+                      .then(async function(song_ids){
+                        for(let i = 1; i < 51; i++){
+                          await knex('songs')
+                            .where('song_id', song_ids[0][`song_id_${i}`])
+                              .select('*')
+                                .then(async function(result){
+                                  let song = result[0]
+                                  datapoint.topSongs.push(song)
+                                  await knex('analytics')
+                                    .where({song_id: song.song_id})
+                                      .then(function(analytic){
+                                        datapoint.topSongs[i-1]['analytics'] = analytic[0];
+                                      })
+                                })
+                        }
+                      })
+                await knex('artists_ref')
+                // Find the top songs reference
+                  .where('id', references.top_artists_id)
+                    .select('*')
+                    // Add the results
+                      .then(async function(artist_ids){
+                        for(let i = 1; i < 21; i++){
+                          await knex('artists')
+                            .where('artist_id', artist_ids[0][`artist_id_${i}`])
+                              .select('*')
+                                .then(function(result){
+                                  let artist = result[0]
+                                  datapoint.topArtists.push(artist)
+                                })
+                        }
+                      })
+                await knex('genres')
+                .where('id', references.top_genres_id)
                   .select('*')
-                  // Add the results
-                    .then(async function(song_ids){
-                      for(let i = 1; i < 51; i++){
-                        await knex('songs')
-                          .where('song_id', song_ids[0][`song_id_${i}`])
-                            .select('*')
-                              .then(function(result){
-                                let song = result[0]
-                                datapoint.topSongs.push(song)
-                              })
-                      }
-                    })
-              await knex('artists_ref')
-              // Find the top songs reference
-                .where('id', references.top_artists_id)
-                  .select('*')
-                  // Add the results
-                    .then(async function(artist_ids){
-                      for(let i = 1; i < 21; i++){
-                        await knex('artists')
-                          .where('artist_id', artist_ids[0][`artist_id_${i}`])
-                            .select('*')
-                              .then(function(result){
-                                let artist = result[0]
-                                datapoint.topArtists.push(artist)
-                              })
-                      }
-                    })
-              await knex('genres')
-              .where('id', references.top_genres_id)
-                .select('*')
-                  .then(async function(genres){
-                    for(let i = 1; i < 51; i++){
-                      let genre = genres[0][`genre_${i}`];
-                      if(genre != null){
+                    .then(async function(genres){
+                      for(let i = 1; i < 51 && genres[0][`genre_${i}`] != undefined; i++){
+                        const genre = genres[0][`genre_${i}`];
                         datapoint.topGenres.push(genre);
                       }
-                    }
-                  })
-            }else{
-              // Return null if the latest datapoint is old
-              console.log("Datapoint requested but nullified: old.");
-              res.json(null);
+                    })
+              }else{
+                // Return null if the latest datapoint is old
+                console.log("Datapoint requested but nullified: old.");
+              }
             }
           })
+  if(datapoint.topSongs.length === 0){ // Has the request been nullified?
+    datapoint = null;
+  }
   res.json(datapoint)
 }
 
@@ -174,7 +218,7 @@ exports.postDatapoint = async (req, res) => {
       knex('songs_ref')
         .insert({
           'id': songs_ref_id
-        }).catch(function(err){res.status(500).json({message : `Error making record: ${err}`})})
+        }).catch(function(err){console.log(`Error making record: ${err}`)})
     }
   })
 
@@ -185,7 +229,7 @@ exports.postDatapoint = async (req, res) => {
       knex('artists_ref')
         .insert({
           'id': artists_ref_id
-        }).catch(function(err){res.status(500).json({message : `Error making record: ${err}`})})
+        }).catch(function(err){console.log(`Error making record: ${err}`)})
     }
   })
 
@@ -203,7 +247,7 @@ exports.postDatapoint = async (req, res) => {
             'name': song.name,
             'title': song.title,
             'song': true
-         }).catch(function(err){res.status(500).json({message: `Error adding song: ${err}`})})
+         }).catch(function(err){console.log(`Error adding song: ${err}`)})
          knex('analytics')
           .insert({
             'song_id': song.id,
@@ -220,7 +264,7 @@ exports.postDatapoint = async (req, res) => {
             'tempo': song.analytics.tempo,
             'time_signature': song.analytics.time_signature,
             'valence': song.analytics.valence
-          }).catch(function(err){res.status(500).json({message: `Error creating analytics record: ${err}`})})
+          }).catch(function(err){console.log(`Error creating analytics record: ${err}`)})
       }
     })
     // Generate correct column name
@@ -231,7 +275,7 @@ exports.postDatapoint = async (req, res) => {
     .where('id', songs_ref_id)
       .update({
         [column]: song.id
-      }).catch(function(err){res.status(500).json({message : `Error making song column: ${err}`})})
+      }).catch(function(err){console.log(`Error making song column: ${err}`)})
   }) 
 
   // Update the record with all the artist's information
@@ -247,7 +291,7 @@ exports.postDatapoint = async (req, res) => {
             'image': artist.image,
             'link': artist.link,
             'name': artist.name,
-          }).catch(function(err){res.status(500).json({message : `Error adding artist: ${err}`})})
+          }).catch(function(err){console.log(`Error adding artist: ${err}`)})
       }
     })
     // Generate correct column name
@@ -258,7 +302,7 @@ exports.postDatapoint = async (req, res) => {
     .where('id', artists_ref_id)
       .update({
         [column]: artist.id
-      }).catch(function(err){res.status(500).json({message : `Error making artist column: ${err}`})})
+      }).catch(function(err){console.log(`Error making artist column: ${err}`)})
   })
 
   knex('genres').where('id', genres_id).select("*").then(function(results){
@@ -266,8 +310,8 @@ exports.postDatapoint = async (req, res) => {
       knex('genres')
         .insert({
           'id': genres_id
-        }).catch(function(err){res.status(500).json({message : `Error adding genres record: ${err}`})})
-      req.body.topGenres.forEach(function(inst,i){
+        }).catch(function(err){console.log(`Error adding genres record: ${err}`)})
+      req.body.topGenres.forEach(function(genre,i){
         // Generate correct column name
         const column = "genre_" + String(i+1);
         // Update existing columns to have
@@ -275,8 +319,8 @@ exports.postDatapoint = async (req, res) => {
         knex(`genres`)
         .where('id', genres_id)
           .update({
-            [column]: inst.genre
-          }).catch(function(err){res.status(500).json({message : `Error making genre column: ${err}`})})
+            [column]: genre
+          }).catch(function(err){console.log(`Error making genre column: ${err}`)})
       })
     }
   })
@@ -300,9 +344,9 @@ exports.postDatapoint = async (req, res) => {
               'top_songs_id': songs_ref_id,
               'top_artists_id': artists_ref_id,
               'top_genres_id': genres_id
-            }).catch(function(err){console.status(500).json({message : `Error making datapoint record: ${err}`})})
+            }).catch(function(err){console.log(`Error making datapoint record: ${err}`)})
           }
-        }).catch(function(err){console.status(500).json({message : `Error finding existing datapoint record: ${err}`})})
+        }).catch(function(err){console.log(`Error finding existing datapoint record: ${err}`)})
 
   
   res.status(201).json({message : "Datapoint successfully compiled."});

@@ -1,4 +1,8 @@
-import { getDatapoint, postDatapoint, fetchData } from "./API";
+
+import { getDatapoint, postDatapoint, fetchData, postUser, getUser } from "./API";
+
+// TODO: REPLACE ALL OF THE GLOBAL USERID CONVERSIONS TO SIMPLY ACCESS A CONSTANT
+// OF THE LOGGED IN USER'S
 
 let cachedUser = {
     userID: '',
@@ -17,48 +21,71 @@ export const parseSong = function(song){ //takes in the song item
     })
     return tempSong;
 }
-//TODO: updateCachedUser needs a refactor
-export const updateCachedUser = async function(userID){
-    if(userID === "me"){ //if we are on the logged in user's page
-        cachedUser.userID = userID;
-        let profilePromise = fetchData("me").then(function(result){ //get profile details
-            cachedUser.username = result.display_name;
-            cachedUser.profilePicture = result.images[0].url; //TODO: ADD CHECK FOR IF THEY DON'T HAVE PFP
-        })
-        let mediaPromise = fetchData("me/player").then(function(result){ //get media details
-            cachedUser.media = parseSong(result.item)
-        })
-        await profilePromise;
-        await mediaPromise;
-    }else if (userID !== cachedUser.userID){
-        cachedUser.userID = userID;
-        await fetchData(`users/${userID}`).then(function(result){ //if we are not, get their details
-            cachedUser.profilePicture = result.images[0].url
-            cachedUser.username = result.display_name;
-        });
-    }else{ //if the user is already cached, just update their play status
-        await fetchData("me/player").then(function(result){ //get media details
-            cachedUser.media = parseSong(result)
-        })
+export const retrieveUser = async function(userID){
+    if(userID === 'me'){
+        if(cachedUser.userID !== 'me'){
+            await updateCachedUser(userID);
+        }
+        await updateMedia();
+    }else{
+        if(cachedUser.userID !== userID){
+            await updateCachedUser(userID);
+        }
     }
     return cachedUser;
 }
 
+export const updateCachedUser = async function(userID){
+    // Convert "me" into the user's userID if needed.
+    var globalUserID;
+    if(userID === "me"){await fetchData(userID).then(function(result){globalUserID = result.id})}else{globalUserID = userID}
+    await getUser(globalUserID).then(function(user){cachedUser = user});
+}
+
+export const updateMedia = async function(){
+    await fetchData("me/player").then(function(result){ //get media details
+        cachedUser.media = parseSong(result.item)
+    })
+}
+
+export const postLoggedUser = async function(){
+    // Convert "me" into the user's userID if needed.
+    var globalUserID;
+    await fetchData("me").then(function(result){globalUserID = result.id})
+    let user = {
+        userID: globalUserID,
+        username: '',
+        profilePicture: '',
+        media: null,
+    }
+    let profilePromise = fetchData("me").then(function(result){ //get profile details
+        user.username = result.display_name;
+        user.profilePicture = result.images[0].url; //TODO: ADD CHECK FOR IF THEY DON'T HAVE PFP
+    })
+    await profilePromise;
+    postUser(user);
+}
+
 export const retrieveDatapoint = async function(userID, term){
     var globalUserID;
-    let currDatapoint;
+    var currDatapoint;
     // Convert "me" into the user's userID if needed.
     if(userID === "me"){await fetchData(userID).then(function(result){globalUserID = result.id})}else{globalUserID = userID}
-    await getDatapoint(globalUserID, term).then(result => {currDatapoint = result});
-    if(!currDatapoint){
+    await getDatapoint(globalUserID, term).then(function(result){
+        currDatapoint = result;
+    })
+    if(currDatapoint === null){
         await hydrateDatapoints(globalUserID);
-        await getDatapoint(globalUserID, term).then(result => {currDatapoint = result});
+        await getDatapoint(globalUserID, term).then(function(result){
+            currDatapoint = result;
+        })
     }
     return currDatapoint;
 }
 // Update all of the datapoints for the logged in user
 // with the parameter being their global user id.
 export const hydrateDatapoints = async function(globalUserID){
+    var posts = []
     console.warn("Hydrating...");
     ['short_term', 'medium_term', 'long_term'].forEach(async term => {
         console.warn("Hydrating: "+ term)
@@ -112,8 +139,9 @@ export const hydrateDatapoints = async function(globalUserID){
             }
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
-        await postDatapoint(datapoint);
+        posts.push(postDatapoint(datapoint).then(console.log(`Hydration of ${term} over.`)).catch(err => console.log(`Err hydrating ${term}: ${err}`)));
     })
+    await Promise.all(posts);
     console.warn("Hydration over.")
 }
 

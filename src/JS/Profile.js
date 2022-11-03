@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import { retrieveDatapoint, updateCachedUser } from './PDM';
+import { retrieveDatapoint, retrieveUser, updateCachedUser } from './PDM';
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
@@ -58,15 +58,15 @@ const Profile = () => {
     )
     }
     const loadPage = async() => {
-        if(!loaded){ updateCachedUser(userID).then(function(result){
-            setCurrentUser(result);  
+        if(!loaded){ await retrieveUser(userID).then(function(result){
+            setCurrentUser(result);
             document.title = `Photon | ${result.username}`;
         })}
         await retrieveDatapoint(userID, term).then(function(result){
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "id", result.topSongs))
+            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "song_id", result.topSongs))
         })
         setLoaded(true);
     }
@@ -79,8 +79,8 @@ const Profile = () => {
         link: '',
     })
     const delay = ms => new Promise(res => setTimeout(res, ms));
-    async function updateFocus(item, tertairyText){
-        if((focus.tertiary === tertairyText && (focus.title === item.title || focus.title === item.name))&& showArt === "stick"){
+    async function updateFocus(item, tertiaryText){
+        if((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name))&& showArt === "stick"){
             let localState = focus;
             localState.link = null;
             setFocus(localState);
@@ -94,11 +94,11 @@ const Profile = () => {
             if(item.song){
                 localState.title = item.title;
                 localState.secondary = `by ${item.artist}`;
-                localState.tertiary = tertairyText;
+                localState.tertiary = tertiaryText;
             }else if(item.artist){
                 localState.title = item.name;
                 localState.secondary = item.genre;
-                localState.tertiary = tertairyText;
+                localState.tertiary = tertiaryText;
             }
             setFocus(localState);
             setShowArt("stick")

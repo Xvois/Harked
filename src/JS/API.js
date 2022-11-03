@@ -30,11 +30,25 @@ export const fetchLocalData = async(path) => {
     console.log(data)
 }
 
+export const getUser = async(userID) => {
+    var user;
+    await axios.get(`http://localhost:9000/PRDB/getUser?userID=${userID}`).then(
+        function(result){
+            user = result.data;
+        }
+    ).catch(
+        function(err){
+            console.warn("Error getting user: ");
+            console.warn(err);
+        }
+    )
+    return user;
+}
 export const postUser = async(user) => {
     console.info("User " + user.username + " posted.");
     await axios.post(`http://localhost:9000/PRDB/create`, user).then(function(result){console.info(result)}).catch(
         function(err){
-            console.warn(err)
+            console.warn(err);
         }
     )
 }
@@ -42,20 +56,20 @@ export const postUser = async(user) => {
 export const postDatapoint = async(datapoint) => {  
     await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then(function(result){console.info(result)}).catch(
         function(err){
-            console.warn("Error posting datapoint: " + err)
+            console.warn("Error posting datapoint: ");
+            console.warn(err);
         }
     )
 }
 
 export const getDatapoint = async(userID, term) => {
-    console.log(`Retrieve datapoint run with ${userID} and ${term}`)
+    let returnRes;
     await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}`).then(result => {
         if(result.data != null){ // Does the datapoint exist? (Has the collectionDate been overwritten?)
-            console.log("Datapoint found!");
-            console.log(result.data);
-            return result.data
+            returnRes = result.data;
         }else{
-            console.log("No datapoint found.")
-            return false;
+            returnRes = false;
         }
-})}
+    })
+    return returnRes;
+}
