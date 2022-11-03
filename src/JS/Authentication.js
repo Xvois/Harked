@@ -12,8 +12,8 @@ function Authentication(){
 
   const navigate = useNavigate();
   const redirect = useCallback( async (path) => {
+    console.warn("Redirecting...")
     await postLoggedUser();
-    await hydrateDatapoints();
     navigate(path)
     },
   [navigate],); 

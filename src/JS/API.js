@@ -46,7 +46,7 @@ export const getUser = async(userID) => {
 }
 export const postUser = async(user) => {
     console.info("User " + user.username + " posted.");
-    await axios.post(`http://localhost:9000/PRDB/create`, user).then(function(result){console.info(result)}).catch(
+    await axios.post(`http://localhost:9000/PRDB/create`, user).catch(
         function(err){
             console.warn(err);
         }
@@ -54,7 +54,7 @@ export const postUser = async(user) => {
 }
 
 export const postDatapoint = async(datapoint) => {  
-    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then(function(result){console.info(result)}).catch(
+    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).catch(
         function(err){
             console.warn("Error posting datapoint: ");
             console.warn(err);
@@ -71,5 +71,6 @@ export const getDatapoint = async(userID, term) => {
             returnRes = false;
         }
     })
+    console.log(returnRes)
     return returnRes;
 }

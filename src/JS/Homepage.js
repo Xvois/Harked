@@ -1,12 +1,7 @@
 import { authURI } from './Authentication';
 import { useEffect, useState } from 'react';
 import './../CSS/Homepage.css';
-import { hydrateDatapoints } from './PDM';
-
-//TEMP
-import {getDatapoint} from './API'
-//TEMP
-
+import { hydrateDatapoints, retrieveDatapoint } from './PDM'; 
 function Homepage() {
   const [token, setToken] = useState("")
   const [username, setUsername] = useState("PH: USERNAME BEING REWORKED")
@@ -44,7 +39,7 @@ function Homepage() {
         }
         </div>
         <button onClick={() => hydrateDatapoints("sonn-gb")}>PH: HYDRATE sonn-gb</button>
-        <button onClick={() => getDatapoint("sonn-gb", "long_term")}>PH: GET sonn-gb DP</button>
+        <button onClick={() => retrieveDatapoint("me", "long_term")}>PH: GET CURR USER DP</button>
     </div>
   );
 }

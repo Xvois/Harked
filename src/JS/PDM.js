@@ -74,20 +74,18 @@ export const retrieveDatapoint = async function(userID, term){
     await getDatapoint(globalUserID, term).then(function(result){
         currDatapoint = result;
     })
-    if(currDatapoint === null){
+    if(!currDatapoint){
         await hydrateDatapoints(globalUserID);
-        await getDatapoint(globalUserID, term).then(function(result){
-            currDatapoint = result;
-        })
+        await getDatapoint(globalUserID, term);
     }
     return currDatapoint;
 }
 // Update all of the datapoints for the logged in user
 // with the parameter being their global user id.
 export const hydrateDatapoints = async function(globalUserID){
-    var posts = []
     console.warn("Hydrating...");
-    ['short_term', 'medium_term', 'long_term'].forEach(async term => {
+    const terms = ['short_term', 'medium_term', 'long_term'];
+    for(const term of terms){
         console.warn("Hydrating: "+ term)
         let datapoint = {
             userID: globalUserID,
@@ -102,7 +100,7 @@ export const hydrateDatapoints = async function(globalUserID){
         let analyticsIDs = "";
         let analytics;
         // Queue up promises
-        let promises = [fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}`)];
+        let promises = [await fetchData(`me/top/tracks?time_range=${term}&limit=50`), await fetchData(`me/top/artists?time_range=${term}`)];
         // Await the promises for the arrays of data
         await Promise.all(promises).then(function(result){
             topTracks = result[0].items;
@@ -115,7 +113,7 @@ export const hydrateDatapoints = async function(globalUserID){
         // Add all of the songs
         for(let i = 0; i < topTracks.length; i++){
             datapoint.topSongs.push({
-                id: topTracks[i].id,
+                song_id: topTracks[i].id,
                 song: true,
                 name: parseSong(topTracks[i]),
                 title: topTracks[i].name,
@@ -128,7 +126,7 @@ export const hydrateDatapoints = async function(globalUserID){
         // Add all of the artists
         for(let i = 0; i < topArtists.length; i++){
             try{datapoint.topArtists.push({
-                id: topArtists[i].id,
+                artist_id: topArtists[i].id,
                 artist: true,
                 name: topArtists[i].name, 
                 image: topArtists[i].images[1].url, 
@@ -139,9 +137,8 @@ export const hydrateDatapoints = async function(globalUserID){
             }
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
-        posts.push(postDatapoint(datapoint).then(console.log(`Hydration of ${term} over.`)).catch(err => console.log(`Err hydrating ${term}: ${err}`)));
-    })
-    await Promise.all(posts);
+        await postDatapoint(datapoint).then(console.log(term + " success!"));
+    }
     console.warn("Hydration over.")
 }
 

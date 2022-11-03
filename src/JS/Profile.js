@@ -105,7 +105,8 @@ const Profile = () => {
         }
     }
 
-    useEffect(() => {        
+    useEffect(() => {      
+        console.warn("useEffect called.")  
         loadPage();
     },[term])
 
