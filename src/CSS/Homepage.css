@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
+
+
+.main-text{
+  text-transform: uppercase;
+  font-family: 'Inter Tight', sans-serif;
+  font-weight: 900;
+  font-size: 5ex;
+  padding-left: 20px;
+}
+
+.auth-button{
+  text-decoration: none;
+  text-transform: uppercase;
+  border-radius: 20px;
+  border: 1px solid black;
+  color: black;
+  width: max-content;
+  padding: 5px 30px 5px 30px;
+  margin-left: 20px;
+}
+
+.under-text{
+  font-size: 16.5px;
+  padding-left: 20px;
+  margin-top: -30px;
+}
+
+.error-message{
+  margin-left: 20px;
+  color: red;
+}
+
+.homepage-container{
+  display: flex;
+  flex-direction: row;
+}
