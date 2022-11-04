@@ -113,7 +113,6 @@ exports.getDatapoint = async (req, res) => {
         .orderBy('collection_date')
           .then(async function(results){
             // Return null if there are no matching datapoints
-            console.log(`Results of searching for datapoint for ${user_id} at ${term}: ${results.length} datapoint(s).`)
             if(results.length === 0){ console.log("Datapoint requested but nullified: none found."); }
             else{
               // The datapoint contains the references

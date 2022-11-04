@@ -6,26 +6,7 @@ import { getDatapoint, postDatapoint, fetchData, postUser, getUser } from "./API
 
 // TODO: REMOVE ALL OF THE CACHED USER SYSTEM (IT DOES NOT WORK AT ALL, USERS ARE NOT CACHED)
 
-let cachedUser = {
-    userID: '',
-    username: '',
-    profilePicture: '',
-    media: '',
-}
-
-const getGlobalID = async function(userID){
-    let globalUserID;
-    if(userID === "me"){
-        await fetchData(userID).then(function(result){globalUserID = result.id})
-    }else{
-        globalUserID = userID;
-    }
-    return globalUserID;
-}
-
-
 export const parseSong = function(song){ //takes in the song item
-    if(!song){ cachedUser.media = false; return; }
     let tempSong = song.name + " -";
     song.artists.forEach(function(element, i){ //add commas for songs with multiple artists
         tempSong +=  " " + element.name;
@@ -34,36 +15,35 @@ export const parseSong = function(song){ //takes in the song item
     return tempSong;
 }
 export const retrieveUser = async function(userID){
-    console.log("Retrieving user. Current cached user: ");
-    console.log(cachedUser)
+    let globalUserID = userID;
+    if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
+    let user = {
+    userID: globalUserID,
+    username: '',
+    profilePicture: '',
+    media: '',
+    }
     if(userID === 'me'){
-        if(cachedUser.userID !== 'me'){
-            await updateCachedUser(userID);
+        if(user.userID !== 'me'){
+            await getUser(globalUserID).then(result => user = result);
         }
-        await updateMedia();
+        user.media = await updateMedia();
     }else{
-        if(cachedUser.userID !== userID){
-            await updateCachedUser(userID);
+        if(user.userID !== userID){
+            await getUser(globalUserID).then(result => user = result);
         }
     }
-    return cachedUser;
-}
-
-export const updateCachedUser = async function(userID){
-    // Convert "me" into the user's userID if needed.
-    var globalUserID = await getGlobalID(userID);
-    await getUser(globalUserID).then(function(user){cachedUser = user});
+    return user;
 }
 
 export const updateMedia = async function(){
-    await fetchData("me/player").then(function(result){ //get media details
-        cachedUser.media = parseSong(result.item)
-    })
+    return await fetchData("me/player").item;
 }
 
 export const postLoggedUser = async function(){
     var globalUserID;
     await fetchData("me").then(function(result){globalUserID = result.id})
+    console.log(globalUserID)
     let user = {
         userID: globalUserID,
         username: '',
@@ -79,10 +59,9 @@ export const postLoggedUser = async function(){
 }
 
 export const retrieveDatapoint = async function(userID, term){
-    var globalUserID;
     var currDatapoint;
-    // Convert "me" into the user's userID if needed.
-    var globalUserID = await getGlobalID(userID);
+    let globalUserID = userID;
+    if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
     await getDatapoint(globalUserID, term).then(function(result){
         currDatapoint = result;
     })
