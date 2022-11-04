@@ -2,7 +2,7 @@
 .wrapper{
     display: flex;
     flex-direction:row;
-    animation: fadeIn 1s ease-out;
+    animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {

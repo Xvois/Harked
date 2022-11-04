@@ -1,20 +1,17 @@
 import { authURI } from './Authentication';
 import { useEffect, useState } from 'react';
 import './../CSS/Homepage.css';
-import { hydrateDatapoints, retrieveDatapoint } from './PDM'; 
+import {retrieveUser } from './PDM'; 
 function Homepage() {
   const [token, setToken] = useState("")
-  const [username, setUsername] = useState("PH: USERNAME BEING REWORKED")
+  const [username, setUsername] = useState(false)
   useEffect(() => {
     setToken(window.localStorage.getItem("token"))
+    if(token && token !== "denied-scopes"){
+      retrieveUser("me").then(user => setUsername(user.username)) // TODO: FIX THIS, THIS TAKES AGES
+    }
     document.title = "Photon"
   }, [token])
-  let mainText;
-  if(token && token !== "denied-scopes"){
-    mainText = `Welcome ${username}!`
-  }else{
-    mainText = `Get true insights on your Spotify profile.`
-  }
 
 
   let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
@@ -22,7 +19,11 @@ function Homepage() {
   return (
     <div className='homepage-container'>
       <div style={{position: 'absolute', top: '300px', marginLeft: '50px'}}>
-        <h1 className="main-text">{mainText}</h1>
+        {username ?
+        <h1 className="main-text">Welcome {username}!</h1>
+        :
+        <h1 className="main-text">Get true insights on your Spotify profile.</h1>
+        }
         <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
         {!token || token === "denied-scopes" ?
           <a className="auth-button" href={authURI}>Log-in</a>
@@ -38,8 +39,6 @@ function Homepage() {
           <></>
         }
         </div>
-        <button onClick={() => hydrateDatapoints("sonn-gb")}>PH: HYDRATE sonn-gb</button>
-        <button onClick={() => retrieveDatapoint("me", "long_term")}>PH: GET CURR USER DP</button>
     </div>
   );
 }

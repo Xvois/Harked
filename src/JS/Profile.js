@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import { retrieveDatapoint, retrieveUser, updateCachedUser } from './PDM';
+import { retrieveDatapoint, retrieveUser } from './PDM';
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];

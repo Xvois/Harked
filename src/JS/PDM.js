@@ -1,11 +1,6 @@
 
 import { getDatapoint, postDatapoint, fetchData, postUser, getUser } from "./API";
 
-// TODO: REPLACE ALL OF THE GLOBAL USERID CONVERSIONS TO SIMPLY ACCESS A CONSTANT
-// OF THE LOGGED IN USER'S
-
-// TODO: REMOVE ALL OF THE CACHED USER SYSTEM (IT DOES NOT WORK AT ALL, USERS ARE NOT CACHED)
-
 export const parseSong = function(song){ //takes in the song item
     let tempSong = song.name + " -";
     song.artists.forEach(function(element, i){ //add commas for songs with multiple artists
@@ -15,42 +10,42 @@ export const parseSong = function(song){ //takes in the song item
     return tempSong;
 }
 export const retrieveUser = async function(userID){
-    let globalUserID = userID;
-    if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
     let user = {
-    userID: globalUserID,
+    userID: '',
     username: '',
     profilePicture: '',
     media: '',
     }
+    // Are we retrieving ourself?
     if(userID === 'me'){
-        if(user.userID !== 'me'){
-            await getUser(globalUserID).then(result => user = result);
-        }
-        user.media = await updateMedia();
+        // Resolve the relative userID
+        // into a global userID (will always be a valid Spotify ID)
+        let globalUserID;
+        await fetchData('me').then(result => globalUserID = result.id)
+        user.userID = globalUserID;
+        await getUser(globalUserID).then(result => user = result);
+        // Update the player
+        // TODO: FIX THIS! THIS TAKES SO LONG!!!
+        await fetchData("me/player").then(result => user.media = parseSong(result.item));
     }else{
-        if(user.userID !== userID){
-            await getUser(globalUserID).then(result => user = result);
-        }
+        // Get the user if they are not ourself
+        await getUser(userID).then(result => user = result);
     }
     return user;
 }
 
-export const updateMedia = async function(){
-    return await fetchData("me/player").item;
-}
-
 export const postLoggedUser = async function(){
+    // Get our global userID
     var globalUserID;
     await fetchData("me").then(function(result){globalUserID = result.id})
-    console.log(globalUserID)
     let user = {
         userID: globalUserID,
         username: '',
         profilePicture: '',
         media: null,
     }
-    let profilePromise = fetchData("me").then(function(result){ //get profile details
+    // Get the profile details
+    let profilePromise = fetchData("me").then(function(result){
         user.username = result.display_name;
         user.profilePicture = result.images[0].url; //TODO: ADD CHECK FOR IF THEY DON'T HAVE PFP
     })
