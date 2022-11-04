@@ -4,11 +4,23 @@ import { getDatapoint, postDatapoint, fetchData, postUser, getUser } from "./API
 // TODO: REPLACE ALL OF THE GLOBAL USERID CONVERSIONS TO SIMPLY ACCESS A CONSTANT
 // OF THE LOGGED IN USER'S
 
+// TODO: REMOVE ALL OF THE CACHED USER SYSTEM (IT DOES NOT WORK AT ALL, USERS ARE NOT CACHED)
+
 let cachedUser = {
     userID: '',
     username: '',
     profilePicture: '',
     media: '',
+}
+
+const getGlobalID = async function(userID){
+    let globalUserID;
+    if(userID === "me"){
+        await fetchData(userID).then(function(result){globalUserID = result.id})
+    }else{
+        globalUserID = userID;
+    }
+    return globalUserID;
 }
 
 
@@ -22,6 +34,8 @@ export const parseSong = function(song){ //takes in the song item
     return tempSong;
 }
 export const retrieveUser = async function(userID){
+    console.log("Retrieving user. Current cached user: ");
+    console.log(cachedUser)
     if(userID === 'me'){
         if(cachedUser.userID !== 'me'){
             await updateCachedUser(userID);
@@ -37,8 +51,7 @@ export const retrieveUser = async function(userID){
 
 export const updateCachedUser = async function(userID){
     // Convert "me" into the user's userID if needed.
-    var globalUserID;
-    if(userID === "me"){await fetchData(userID).then(function(result){globalUserID = result.id})}else{globalUserID = userID}
+    var globalUserID = await getGlobalID(userID);
     await getUser(globalUserID).then(function(user){cachedUser = user});
 }
 
@@ -49,7 +62,6 @@ export const updateMedia = async function(){
 }
 
 export const postLoggedUser = async function(){
-    // Convert "me" into the user's userID if needed.
     var globalUserID;
     await fetchData("me").then(function(result){globalUserID = result.id})
     let user = {
@@ -70,7 +82,7 @@ export const retrieveDatapoint = async function(userID, term){
     var globalUserID;
     var currDatapoint;
     // Convert "me" into the user's userID if needed.
-    if(userID === "me"){await fetchData(userID).then(function(result){globalUserID = result.id})}else{globalUserID = userID}
+    var globalUserID = await getGlobalID(userID);
     await getDatapoint(globalUserID, term).then(function(result){
         currDatapoint = result;
     })
