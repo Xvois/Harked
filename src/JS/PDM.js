@@ -2,6 +2,7 @@
 import { getDatapoint, postDatapoint, fetchData, postUser, getUser } from "./API";
 
 export const parseSong = function(song){ //takes in the song item
+    if(!song){return;}
     let tempSong = song.name + " -";
     song.artists.forEach(function(element, i){ //add commas for songs with multiple artists
         tempSong +=  " " + element.name;
@@ -32,6 +33,15 @@ export const retrieveUser = async function(userID){
         await getUser(userID).then(result => user = result);
     }
     return user;
+}
+
+export const resolveUsername = async function(userID){
+    let username;
+    await getUser(userID).then(user =>
+        username = user.username
+    )
+    return username;
+    
 }
 
 export const postLoggedUser = async function(){

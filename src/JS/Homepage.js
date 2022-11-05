@@ -1,15 +1,11 @@
 import { authURI } from './Authentication';
 import { useEffect, useState } from 'react';
 import './../CSS/Homepage.css';
-import {retrieveUser } from './PDM'; 
 function Homepage() {
   const [token, setToken] = useState("")
   const [username, setUsername] = useState(false)
   useEffect(() => {
     setToken(window.localStorage.getItem("token"))
-    if(token && token !== "denied-scopes"){
-      retrieveUser("me").then(user => setUsername(user.username)) // TODO: FIX THIS, THIS TAKES AGES
-    }
     document.title = "Photon"
   }, [token])
 
@@ -19,8 +15,8 @@ function Homepage() {
   return (
     <div className='homepage-container'>
       <div style={{position: 'absolute', top: '300px', marginLeft: '50px'}}>
-        {username ?
-        <h1 className="main-text">Welcome {username}!</h1>
+        {token && token !== "denied-scopes" ?
+        <h1 className="main-text">Welcome to Photon.</h1>
         :
         <h1 className="main-text">Get true insights on your Spotify profile.</h1>
         }
