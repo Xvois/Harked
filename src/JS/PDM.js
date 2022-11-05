@@ -59,10 +59,10 @@ export const retrieveDatapoint = async function(userID, term){
     if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
     await getDatapoint(globalUserID, term).then(function(result){
         currDatapoint = result;
-    })
+    }).catch(err => console.warn(err))
     if(!currDatapoint){
         await hydrateDatapoints(globalUserID);
-        await getDatapoint(globalUserID, term);
+        currDatapoint = await getDatapoint(globalUserID, term);
     }
     return currDatapoint;
 }

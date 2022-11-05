@@ -216,7 +216,7 @@ exports.postDatapoint = async (req, res) => {
       knex('songs_ref')
         .insert({
           'id': songs_ref_id
-        }).catch()
+        }).catch(err => console.log(err))
     }
   })
 
@@ -227,7 +227,7 @@ exports.postDatapoint = async (req, res) => {
       knex('artists_ref')
         .insert({
           'id': artists_ref_id
-        }).catch()
+        }).catch(err => console.log(err))
     }
   })
 
@@ -244,7 +244,7 @@ exports.postDatapoint = async (req, res) => {
             'name': song.name,
             'title': song.title,
             'song': true
-         }).catch()
+         }).catch(err => console.log(err))
          knex('analytics')
           .insert({
             'song_id': song.song_id,
@@ -261,7 +261,7 @@ exports.postDatapoint = async (req, res) => {
             'tempo': song.analytics.tempo,
             'time_signature': song.analytics.time_signature,
             'valence': song.analytics.valence
-          }).catch()
+          }).catch(err => console.log(err))
       }
     }).catch(err => console.log(err))
     // Generate correct column name
@@ -287,7 +287,7 @@ exports.postDatapoint = async (req, res) => {
             'image': artist.image,
             'link': artist.link,
             'name': artist.name,
-          }).catch()
+          }).catch(err => console.log(err))
       }
     })
     // Generate correct column name
@@ -306,7 +306,7 @@ exports.postDatapoint = async (req, res) => {
       knex('genres')
         .insert({
           'id': genres_id
-        }).catch()
+        }).catch(err => console.log(err))
       req.body.topGenres.forEach(function(genre,i){
         // Generate correct column name
         const column = "genre_" + String(i+1);
@@ -316,10 +316,10 @@ exports.postDatapoint = async (req, res) => {
         .where('id', genres_id)
           .update({
             [column]: genre
-          }).catch()
+          }).catch(err => console.log(err))
       })
     }
-  }).catch()
+  }).catch(err => console.log(err))
 
   const WEEK_IN_SECONDS = 604800;
   await knex('datapoints')
