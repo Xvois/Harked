@@ -1,4 +1,5 @@
 import { authURI } from './Authentication';
+import { fillDatabase } from './PDM';
 import { useEffect, useState } from 'react';
 import './../CSS/Homepage.css';
 function Homepage() {
@@ -35,6 +36,7 @@ function Homepage() {
           <></>
         }
         </div>
+        <button onClick={() => fillDatabase()}>PH: FILL DATABASE</button>
     </div>
   );
 }

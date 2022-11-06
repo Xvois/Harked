@@ -98,6 +98,7 @@ exports.createUser = async (req, res) => {
 exports.getDatapoint = async (req, res) => {
   const user_id = req.query.userID;
   const term = req.query.term;
+  console.log(`Attempting to get datapoint for: ${user_id}, ${term}`)
   let datapoint = {
     userID: user_id,
     collectionDate: null,
