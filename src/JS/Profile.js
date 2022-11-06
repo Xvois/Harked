@@ -117,59 +117,61 @@ const Profile = () => {
         :
             <div className='wrapper'>
                 <div className='left'>
-                    <div className='user-container'>
-                            <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
-                            <div className='text-container'>
-                                <div className='username'>{currentUser.username}</div>
-                                {currentUser.media ? 
-                                <div className='currently-listening-media'>Currently listening to: <br></br>{currentUser.media}</div>
-                                :
-                                <></>
-                                }
-                            </div>
-                            <div className='term-button-container'>
-                                <div style={{display: 'flex', flexDirection: 'column', height: 'min-content'}}>
-                                    <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
-                                        <button onClick={() => setTerm("short_term")} className={term === "short_term" ? 'term-button-selected' : 'term-button'}></button>
-                                        <p className='term-button-desc'>4 weeks</p>
-                                    </div>
-                                    <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
-                                        <button onClick={() => setTerm("medium_term")} className={term === "medium_term" ? 'term-button-selected' : 'term-button'}></button>
-                                        <p className='term-button-desc'>6 months</p>
-                                    </div>
-                                    <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
-                                        <button onClick={() => setTerm("long_term")} className={term === "long_term" ? 'term-button-selected' : 'term-button'}></button>
-                                        <p className='term-button-desc'>All time</p>
-                                    </div>
-
+                    <div className='card'>
+                        <div className='user-container'>
+                                <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
+                                <div className='text-container'>
+                                    <div className='username'>{currentUser.username}</div>
+                                    {currentUser.media ? 
+                                    <div className='currently-listening-media'>Currently listening to: <br></br>{currentUser.media}</div>
+                                    :
+                                    <></>
+                                    }
                                 </div>
+                                <div className='term-button-container'>
+                                    <div style={{display: 'flex', flexDirection: 'column', height: 'min-content'}}>
+                                        <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
+                                            <button onClick={() => setTerm("short_term")} className={term === "short_term" ? 'term-button-selected' : 'term-button'}></button>
+                                            <p className='term-button-desc'>4 weeks</p>
+                                        </div>
+                                        <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
+                                            <button onClick={() => setTerm("medium_term")} className={term === "medium_term" ? 'term-button-selected' : 'term-button'}></button>
+                                            <p className='term-button-desc'>6 months</p>
+                                        </div>
+                                        <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
+                                            <button onClick={() => setTerm("long_term")} className={term === "long_term" ? 'term-button-selected' : 'term-button'}></button>
+                                            <p className='term-button-desc'>All time</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+                        </div>
+                        <div className='simple-container'>
+                            <div className='datapoint-container'>
+                                <p className='datapoint-title'>Top artists</p>
+                                <ul>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
+                                </ul>
                             </div>
-                    </div>
-                    <div className='simple-container'>
-                        <div className='datapoint-container'>
-                            <p className='datapoint-title'>Top artists</p>
-                            <ul>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
-                            </ul>
+                            <div className='datapoint-container'>
+                                <p className='datapoint-title'>Top songs</p>
+                                <ul>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[0], `${userID === "me" ? `Your top song.` : `${currentUser.username}'s top song.`}`)}>{datapoint.topSongs[0].name}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[1], `${userID === "me" ? `Your second to top song.` : `${currentUser.username}'s second to top song.`}`)}>{datapoint.topSongs[1].name}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[2], `${userID === "me" ? `Your third to top song.` : `${currentUser.username}'s third to top song.`}`)}>{datapoint.topSongs[2].name}</li>
+                                </ul>
+                            </div>
+                            <div className='datapoint-container'>
+                                <p className='datapoint-title'>Top genres</p>
+                                <ul>
+                                    <li className='list-item'>{datapoint.topGenres[0]}</li>
+                                    <li className='list-item'>{datapoint.topGenres[1]}</li>
+                                    <li className='list-item'>{datapoint.topGenres[2]}</li>
+                                </ul>
+                            </div> 
                         </div>
-                        <div className='datapoint-container'>
-                            <p className='datapoint-title'>Top songs</p>
-                            <ul>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[0], `${userID === "me" ? `Your top song.` : `${currentUser.username}'s top song.`}`)}>{datapoint.topSongs[0].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[1], `${userID === "me" ? `Your second to top song.` : `${currentUser.username}'s second to top song.`}`)}>{datapoint.topSongs[1].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[2], `${userID === "me" ? `Your third to top song.` : `${currentUser.username}'s third to top song.`}`)}>{datapoint.topSongs[2].name}</li>
-                            </ul>
-                        </div>
-                        <div className='datapoint-container'>
-                            <p className='datapoint-title'>Top genres</p>
-                            <ul>
-                                <li className='list-item'>{datapoint.topGenres[0]}</li>
-                                <li className='list-item'>{datapoint.topGenres[1]}</li>
-                                <li className='list-item'>{datapoint.topGenres[2]}</li>
-                            </ul>
-                        </div> 
                     </div>
                     <div className='art-container'>
                         <a className={showArt ? 'play-wrapper' : '' } href={focus.link} rel="noopener noreferrer" target="_blank">

@@ -1,7 +1,7 @@
 
 .header {
     height: min-content;
-    background-color: white;
+    background-color: black;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -11,7 +11,7 @@
     padding: 10px;
     font-size: 20px;
     font-weight: 600;
-    color: black;
+    color: white;
     text-decoration: none;
     text-transform: uppercase;
 }

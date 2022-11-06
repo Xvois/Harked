@@ -15,28 +15,42 @@ function Homepage() {
   let welcomeMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
   return (
     <div className='homepage-container'>
-      <div style={{position: 'absolute', top: '300px', marginLeft: '50px'}}>
-        {token && token !== "denied-scopes" ?
-        <h1 className="main-text">Welcome to Photon.</h1>
-        :
-        <h1 className="main-text">Get true insights on your Spotify profile.</h1>
-        }
-        <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
-        {!token || token === "denied-scopes" ?
-          <a className="auth-button" href={authURI}>Log-in</a>
+      <button onClick={() => fillDatabase()}>PH: FILL DATABASE</button>
+        <div className='top-container'>
+          {token && token !== "denied-scopes" ?
+          <h1 className="main-text">Welcome to Photon.</h1>
           :
-          <div>
-            <a className="auth-button" href='/profile#me'>Explore your profile</a>
-            <a className="auth-button" href=''>Compare to others</a>
+          <h1 className="main-text">Get true insights on your Spotify profile.</h1>
+          }
+          <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
+          {!token || token === "denied-scopes" ?
+            <a className="auth-button" href={authURI}>Log-in</a>
+            :
+            <div>
+              <a className="auth-button" href='/profile#me'>Explore your profile</a>
+              <a className="auth-button" href=''>Compare to others</a>
+            </div>
+          }
+          {token === "denied-scopes" ?
+            <p className="error-message">You need to accept the Spotify scopes to use Photon.</p>
+            :
+            <></>
+          }
           </div>
-        }
-        {token === "denied-scopes" ?
-          <p className="error-message">You need to accept the Spotify scopes to use Photon.</p>
-          :
-          <></>
-        }
-        </div>
-        <button onClick={() => fillDatabase()}>PH: FILL DATABASE</button>
+          <div className='container' style={{textAlign: 'right'}}>
+            <h2>Look at some music.</h2>
+            <p>Maybe even listen to some?</p>
+          </div>
+          <div className='container' style={{textAlign: 'left'}}>
+            <p>And here!</p>
+          </div>
+          <div className='container'>
+            <ol>
+              <li>Use the website.</li>
+              <li>Please.</li>
+              <li>Use the website.</li>
+            </ol>
+          </div>
     </div>
   );
 }

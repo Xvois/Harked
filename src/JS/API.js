@@ -2,7 +2,7 @@ import axios from 'axios';
 import { authURI } from './Authentication';
 
 export const fetchData = async(path) => {
-    //console.log("External API call made to: " + path)
+    console.log("External API call made to: " + path)
     const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
