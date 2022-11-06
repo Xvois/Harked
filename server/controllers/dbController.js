@@ -120,9 +120,9 @@ exports.getDatapoint = async (req, res) => {
               // to the other tables
               const references = results[0];
               datapoint.collectionDate = references.collection_date;
-              const WEEK_IN_SECONDS = 604800 * 1000;
+              const WEEK_IN_MILISECONDS = 604800 * 1000;
               //const WEEK_IN_SECONDS = 0;
-              if(Date.now() - datapoint.collectionDate < WEEK_IN_SECONDS){
+              if(Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS){
                 await knex('songs_ref')
                 // Find the top songs reference
                   .where('id', references.top_songs_id)
