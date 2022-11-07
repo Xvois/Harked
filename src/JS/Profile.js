@@ -112,87 +112,66 @@ const Profile = () => {
 
   return (
         <>
+        
         {!loaded ? 
             <div className="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
         :
             <div className='wrapper'>
-                <div className='left'>
-                    <div className='card'>
-                        <div className='user-container'>
-                                <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
-                                <div className='text-container'>
-                                    <div className='username'>{currentUser.username}</div>
+                    <div className='user-container'>
+                            <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
+                            <div className='text-container'>
+                                <div className='username'>{currentUser.username}</div>
+                                <div style={{display: "flex", flexDirection: "row", marginLeft: "10px"}}>
                                     {currentUser.media ? 
-                                    <div className='currently-listening-media'>Currently listening to: <br></br>{currentUser.media}</div>
+                                    <>
+                                    <div className='music-animatic'>
+                                            <div></div>
+                                            <div></div>
+                                            <div></div>
+                                        </div>
+                                        <p className='listening-media'>{currentUser.media}</p>
+                                    </>
                                     :
-                                    <></>
+                                    <button>COMPARE BUTTON HERE</button>
                                     }
                                 </div>
-                                <div className='term-button-container'>
-                                    <div style={{display: 'flex', flexDirection: 'column', height: 'min-content'}}>
-                                        <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
-                                            <button onClick={() => setTerm("short_term")} className={term === "short_term" ? 'term-button-selected' : 'term-button'}></button>
-                                            <p className='term-button-desc'>4 weeks</p>
-                                        </div>
-                                        <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
-                                            <button onClick={() => setTerm("medium_term")} className={term === "medium_term" ? 'term-button-selected' : 'term-button'}></button>
-                                            <p className='term-button-desc'>6 months</p>
-                                        </div>
-                                        <div style={{display: 'flex', flexDirection: 'row', height: 'min-content'}}>
-                                            <button onClick={() => setTerm("long_term")} className={term === "long_term" ? 'term-button-selected' : 'term-button'}></button>
-                                            <p className='term-button-desc'>All time</p>
-                                        </div>
-
-                                    </div>
+                            </div>
+                            <div className='user-details'>
+                                <a href = {`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" width="20px" version="1.1" viewBox="0 0 168 168">
+                                        <path fill="white" d="m83.996 0.277c-46.249 0-83.743 37.493-83.743 83.742 0 46.251 37.494 83.741 83.743 83.741 46.254 0 83.744-37.49 83.744-83.741 0-46.246-37.49-83.738-83.745-83.738l0.001-0.004zm38.404 120.78c-1.5 2.46-4.72 3.24-7.18 1.73-19.662-12.01-44.414-14.73-73.564-8.07-2.809 0.64-5.609-1.12-6.249-3.93-0.643-2.81 1.11-5.61 3.926-6.25 31.9-7.291 59.263-4.15 81.337 9.34 2.46 1.51 3.24 4.72 1.73 7.18zm10.25-22.805c-1.89 3.075-5.91 4.045-8.98 2.155-22.51-13.839-56.823-17.846-83.448-9.764-3.453 1.043-7.1-0.903-8.148-4.35-1.04-3.453 0.907-7.093 4.354-8.143 30.413-9.228 68.222-4.758 94.072 11.127 3.07 1.89 4.04 5.91 2.15 8.976v-0.001zm0.88-23.744c-26.99-16.031-71.52-17.505-97.289-9.684-4.138 1.255-8.514-1.081-9.768-5.219-1.254-4.14 1.08-8.513 5.221-9.771 29.581-8.98 78.756-7.245 109.83 11.202 3.73 2.209 4.95 7.016 2.74 10.733-2.2 3.722-7.02 4.949-10.73 2.739z"/>
+                                    </svg>
+                                    <p>Open profile in Spotify.</p>
+                                </a>
+                                <p>Followers: PH</p>
+                                <p>Playlists: PH</p>
+                            </div>
+                    </div>
+                    <div className='simple-container'>
+                            <h2 className='datapoint-title'>Top artists</h2>
+                            <ol>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
+                            </ol>
+                            <div className='art-container'>
+                                <a className={showArt ? 'play-wrapper' : '' } href={focus.link} rel="noopener noreferrer" target="_blank">
+                                    <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
+                                </a>
+                                <div className='art-text-container'>
+                                    <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                    <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                    <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                 </div>
-                        </div>
-                        <div className='simple-container'>
-                            <div className='datapoint-container'>
-                                <p className='datapoint-title'>Top artists</p>
-                                <ul>
-                                    <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
-                                    <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
-                                    <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
-                                </ul>
+                                {showArt?
+                                <button className='art-container-button' onClick={() => setShowArt(false)}>Hide</button>
+                                    :
+                                <></>
+                                }
                             </div>
-                            <div className='datapoint-container'>
-                                <p className='datapoint-title'>Top songs</p>
-                                <ul>
-                                    <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[0], `${userID === "me" ? `Your top song.` : `${currentUser.username}'s top song.`}`)}>{datapoint.topSongs[0].name}</li>
-                                    <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[1], `${userID === "me" ? `Your second to top song.` : `${currentUser.username}'s second to top song.`}`)}>{datapoint.topSongs[1].name}</li>
-                                    <li className='list-item' onClick={() => updateFocus(datapoint.topSongs[2], `${userID === "me" ? `Your third to top song.` : `${currentUser.username}'s third to top song.`}`)}>{datapoint.topSongs[2].name}</li>
-                                </ul>
-                            </div>
-                            <div className='datapoint-container'>
-                                <p className='datapoint-title'>Top genres</p>
-                                <ul>
-                                    <li className='list-item'>{datapoint.topGenres[0]}</li>
-                                    <li className='list-item'>{datapoint.topGenres[1]}</li>
-                                    <li className='list-item'>{datapoint.topGenres[2]}</li>
-                                </ul>
-                            </div> 
                         </div>
-                    </div>
-                    <div className='art-container'>
-                        <a className={showArt ? 'play-wrapper' : '' } href={focus.link} rel="noopener noreferrer" target="_blank">
-                            <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
-                        </a>
-                        <div className='art-text-container'>
-                            <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                            <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
-                            <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                        </div>
-                        {showArt?
-                        <button className='art-container-button' onClick={() => setShowArt(false)}>Hide</button>
-                            :
-                        <></>
-                        }
-                    </div>
-                </div>
-                <div className='right'>
                     {graph}
                 </div>
-            </div>
         }
         </>
   )

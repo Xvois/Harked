@@ -3,6 +3,8 @@
 .graph-container{
     display: flex;
     flex-direction: column;
+    border: 1px solid rgb(75, 73, 73);
+    background-color: rgb(26, 26, 26);
 }
 
 .top{
