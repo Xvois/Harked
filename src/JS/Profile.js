@@ -148,12 +148,15 @@ const Profile = () => {
                             </div>
                     </div>
                     <div className='simple-container'>
+                        <div id='left-click'></div>
+                        <div className='datapoint'>
                             <h2 className='datapoint-title'>Top artists</h2>
                             <ol>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your second to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your third to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
                             </ol>
+                        </div>
                             <div className='art-container'>
                                 <a className={showArt ? 'play-wrapper' : '' } href={focus.link} rel="noopener noreferrer" target="_blank">
                                     <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
@@ -169,6 +172,7 @@ const Profile = () => {
                                 <></>
                                 }
                             </div>
+                            <div id='right-click'></div>
                         </div>
                     {graph}
                 </div>

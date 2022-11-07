@@ -178,7 +178,7 @@ to {opacity: 0; }
     background: linear-gradient(rgb(26, 26, 26), black);
     padding: 20px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     height: 500px;
 }
 
@@ -187,6 +187,17 @@ to {opacity: 0; }
     align-items: left;
     list-style: none;
     counter-reset: item;
+}
+
+#left-click{
+    height: 100%;
+    width: 20px;
+}
+
+#right-click{
+    margin-left: auto;
+    height: 100%;
+    width: 20px;
 }
 
 .list-item{
@@ -211,7 +222,6 @@ to {opacity: 0; }
   }
 
 .datapoint-title{
-    border: 1px solid blue;
     font-family: 'Ubuntu';
     text-transform: uppercase;
     text-align: center;
@@ -225,13 +235,14 @@ to {opacity: 0; }
 
 
 .user-container{
-    border: 1px solid rgb(75, 73, 73);
-    background-color: rgb(26, 26, 26);
+    border: 2px solid rgb(77, 77, 77);
+    background-color: rgb(57, 57, 58);
     padding: 20px;
     display: flex;
     flex-direction: row;
     max-width: 100%;
     margin-bottom: 0px;
+    height: 110px;
 }
 
 .term-button-container{
@@ -289,6 +300,7 @@ to {opacity: 0; }
     align-items: right;
     justify-content: center;
     text-align: right;
+    height: 110px;
 }
 
 .user-details P{
@@ -316,15 +328,15 @@ to {opacity: 0; }
     font-family: 'Ubuntu';
     font-weight: 500;
     font-size: 20px;
-    margin-top: 17px;
-    margin-left: 20px;
-    color: rgb(160, 160, 160)
+    margin-top: 18px;
+    margin-left: 15px;
+    color: rgb(190, 190, 190)
 }
 
 .music-animatic{
     margin-top: 10px;
     display: flex;
-    width: 30px;
+    width: 15px;
     height: 40px;
     justify-content: center;
     align-items: center;
@@ -333,7 +345,7 @@ to {opacity: 0; }
 }
 
 .music-animatic div{
-    border: 4px solid rgb(160, 160, 160);
+    border: 1.5px solid rgb(190, 190, 190);
     border-radius: 20px;
     animation: playing 1.2s ease-in-out infinite;
 }
@@ -357,16 +369,17 @@ to {opacity: 0; }
     margin-right: 10px;
     border-radius: 100%;
     border: 4px solid white;
-    width: 175px;
-    height: 175px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.4)
 }
 
 .username{
     margin-right: 10px;
+    margin-top: -20px;
     font-family: 'Inter Tight', sans-serif;
-    font-size: 60px;
+    font-size: 40px;
     font-weight: 900;
     color: white;
     text-transform: uppercase;
