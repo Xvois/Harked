@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@500&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300&family=Lato:wght@900&family=Ubuntu:wght@500;700&display=swap');
 .wrapper{
     display: flex;
     flex-direction:column;
@@ -34,84 +35,95 @@ to {opacity: 0; }
     padding: 5px;
     margin: 5%;
     height: 300px;
-    border: 1px solid green;
 }
 
 .art-container{
-    margin: 20px;
-    margin-top: 0px;
-    padding: 20px;
     position: relative;
     display: flex;
+    flex-direction: row;
     word-break: break-word;
-    justify-content: center;
-    align-items: center;
-}
-.art-container-button{
-    text-decoration: none;
-    text-transform: uppercase;
-    border-radius: 20px;
-    border: 1px solid white;
-    padding: 5px 30px 5px 30px;
-    color: white;
-    background-color: black;
-    width: max-content;
-    position: absolute;
-    transform: translate(0, 120px);
-    animation: fadeIn 1s;
+    height: max-content;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 @keyframes scaleIn {
     from{ transform: scale(100%); }
-    to{ transform: scale(110%); }
+    to{ transform: scale(105%); }
 }
 @keyframes scaleOut {
-    from{ transform: scale(110%); }
+    from{ transform: scale(105%); }
     to{ transform: scale(100%); }
 }
 
 .play-wrapper{
-    margin-right: 15px;
+    display: flex;
+    width: 100%;
+    height: 100%;
     opacity: 1;
     animation: scaleOut 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
 }
-.play-wrapper:hover{
-    opacity: 0.9;
-    border-radius: 10%;
 
-    transform: scale(110%);
+.play-wrapper-hidden{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    animation: fadeOut 0.6s ease-out;
+}
+
+.play-wrapper:hover{
+    display: flex;
+    opacity: 0.9;
+    width: 100%;
+    height: 100%;
+    transform: scale(105%);
     animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)
 }
 
 .art-shown{
+    margin-left: auto;
+    margin-right: auto;
     border-radius: 10%;
-    width: 200px;
-    height: 200px;
+    width: 350px;
+    height: 350px;
     object-fit: cover;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.4);
     animation: fadeIn 0.6s ease-in-out;
+    overflow: hidden;
 }
 .art-hidden{
+    margin-left: auto;
+    margin-right: auto;
     border-radius: 10%;
-    width: 200px;
-    height: 200px;
+    width: 350px;
+    height: 350px;
     object-fit: cover;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.4);
     opacity: 0;
     animation: fadeOut 0.6s ease-out;
-
 }
 
-@keyframes swoopRight {
-    from { opacity: 0; transform: translate(-40px) }
+@keyframes swoopUp {
+    from { opacity: 0; transform: translate(0, 20px) }
     to {  opacity: 1; }
 }
-@keyframes swoopLeft {
+@keyframes swoopDown {
     from { opacity: 1; transform: translate(0px)}
-    to {  opacity: 0; transform: translate(-40px) }
+    to {  opacity: 0; transform: translate(0,-20px) }
 }
 .art-text-container{
+    position: absolute;
+    bottom: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 100%;
+    border-radius: 0px 0px 35px 35px;
+    height: max-content;
+    text-align: center;
     display: block;
+    backdrop-filter: blur(10px);
 }
 
 .art-name-shown{
@@ -125,7 +137,7 @@ to {opacity: 0; }
     position: relative;
     height: max-content;
     opacity: 1;
-    animation: swoopRight 0.5s ease-out;
+    animation: swoopUp 0.8s ease-out;
     z-index: 1;
 }
 
@@ -140,72 +152,77 @@ to {opacity: 0; }
     position: relative;
     height: max-content;
     opacity: 0;
-    animation: swoopLeft 0.25s ease-out;
+    animation: swoopDown 0.25s ease-out;
     z-index: 1;
 
 }
 
 .art-desc-shown{
     margin: 0;
+    padding: 0;
     font-family: 'Inter Tight', sans-serif;
-    font-size: 25px;
+    font-size: 20px;
     font-weight: 500;
     color: white;
     text-transform: uppercase;
     position: relative;
     height: max-content;
-    animation-name: swoopRight;
-    animation-duration: 0.8s;
-    animation-timing-function: ease-out;
+    animation: swoopUp 0.8s ease-out;
+    z-index: 1;
 
 }
 .art-desc-hidden{
     margin: 0;
+    padding: 0;
     font-family: 'Inter Tight', sans-serif;
-    font-size: 25px;
+    font-size: 20px;
     font-weight: 500;
     color: white;
     text-transform: uppercase;
     position: relative;
     height: max-content;
     opacity: 0;
-    animation: swoopLeft 0.25s ease-out;
-
+    animation: swoopDown 0.25s ease-out;
 }
 
 .simple-container{
     border: 1px solid red;
-    background: linear-gradient(rgb(26, 26, 26), black);
+    background: linear-gradient(rgb(12, 12, 12), black);
     padding: 20px;
     display: flex;
-    flex-direction: row;
     height: 500px;
 }
 
 .simple-container ol{
+    margin: 0;
     border: 1px solid blue;
-    align-items: left;
     list-style: none;
     counter-reset: item;
+    height: 100%;
 }
 
 #left-click{
+    cursor: pointer;
+    border: 1px solid yellow;
     height: 100%;
     width: 20px;
 }
 
 #right-click{
+    cursor: pointer;
+    border: 1px solid yellow;
     margin-left: auto;
     height: 100%;
     width: 20px;
 }
 
 .list-item{
-    font-size: 20px;
+    font-size: 25px;
     padding: 5px;
-    font-family: 'Ubuntu';
-    font-weight: 100;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
     counter-increment: item;
+    width: max-content;
 }
 .list-item:hover{
     cursor: pointer;
@@ -214,6 +231,7 @@ to {opacity: 0; }
 .list-item:before {
     margin-right: 10px;
     content: counter(item);
+    font-family: 'Roboto', sans-serif;
     font-size: 15px;
     width: 1.2em;
     text-align: center;
@@ -228,6 +246,11 @@ to {opacity: 0; }
     font-size: 40px;
     font-weight: 800;
 }
+
+.datapoint{
+    display: flex;
+}
+
 @keyframes hover {
     from {font-size: 16px;}
     to {font-size: 16.5px; font-weight: bold;}
@@ -235,8 +258,7 @@ to {opacity: 0; }
 
 
 .user-container{
-    border: 2px solid rgb(77, 77, 77);
-    background-color: rgb(57, 57, 58);
+    background: linear-gradient(rgb(255, 255, 255), rgb(247, 247, 247));
     padding: 20px;
     display: flex;
     flex-direction: row;
@@ -305,7 +327,7 @@ to {opacity: 0; }
 
 .user-details P{
     font-family: 'Ubuntu', sans-serif;
-    color: rgb(255, 255, 255);
+    color: black;
 }
 
 .spotify-link{
@@ -330,7 +352,7 @@ to {opacity: 0; }
     font-size: 20px;
     margin-top: 18px;
     margin-left: 15px;
-    color: rgb(190, 190, 190)
+    color: rgb(92, 91, 91)
 }
 
 .music-animatic{
@@ -345,7 +367,7 @@ to {opacity: 0; }
 }
 
 .music-animatic div{
-    border: 1.5px solid rgb(190, 190, 190);
+    border: 1.75px solid rgb(190, 190, 190);
     border-radius: 20px;
     animation: playing 1.2s ease-in-out infinite;
 }
@@ -367,10 +389,10 @@ to {opacity: 0; }
 
 .profile-picture{
     margin-right: 10px;
-    border-radius: 100%;
+    border-radius: 20%;
     border: 4px solid white;
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
     object-fit: cover;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.4)
 }
@@ -381,7 +403,7 @@ to {opacity: 0; }
     font-family: 'Inter Tight', sans-serif;
     font-size: 40px;
     font-weight: 900;
-    color: white;
+    color: black;
     text-transform: uppercase;
     position: relative;
     height: max-content;

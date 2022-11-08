@@ -1,7 +1,7 @@
 
 .header {
     height: min-content;
-    background-color: rgb(26, 26, 26);
+    background-color: rgb(255, 255, 255);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -11,7 +11,7 @@
     padding: 10px;
     font-size: 20px;
     font-weight: 600;
-    color: white;
+    color: black;
     text-decoration: none;
     text-transform: uppercase;
 }
