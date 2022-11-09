@@ -7,12 +7,96 @@ import { retrieveDatapoint, retrieveUser } from './PDM';
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
     const [loaded, setLoaded] = useState(false);
-    let [currentUser, setCurrentUser] = useState("");
-    let [datapoint, setDatapoint] = useState("initVal");
+    let [currentUser, setCurrentUser] = useState();
+    let [datapoint, setDatapoint] = useState("Datapoint not updated!");
     let [term , setTerm] = useState("long_term");
-    let [graph, setGraph] = useState("")
+    let [graph, setGraph] = useState("");
+    const [showArt, setShowArt] = useState(false)
+    const [focus, setFocus] = useState({
+        item: null,
+        title: '', //main text
+        secondary: '', //sub-title
+        tertiary: '', //desc
+        image: '',
+        link: '',
+    })
+    const [artistQualities, setArtistQualities] = useState();
+    const [focusMessage, setFocusMessage] = useState();
+    // Take it to be "X music"
+    const translateAnalytics = {
+        acousticness: 'acoustic',
+        danceability: 'danceable',
+        energy: 'energetic',
+        instrumentalness: 'instrumental',
+        liveness: 'live',
+        loudness: 'loud',
+        valence: 'positive'
+    }
 
-    const getQualities = (val1, type1, val2 , type2) => {
+    const updateArtistQualities = async function(data){
+        const songs = data.topSongs;
+        const artists = data.topArtists;
+        const genres = data.topGenres;
+        let result = {};
+        // The analytics from the datapoint that we will compare
+        const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
+        // Get the artist that has the max value in each
+        // metric
+        analyticsMetrics.forEach(metric => {
+            let max = {artist: '', value: 0};
+            for(let i = 0; i < 50; i++){
+                if(songs[i].analytics[metric] > max.value){
+                    max.artist = songs[i].artist;
+                    max.value = songs[i].analytics[metric];
+                }
+            }
+            // Append the result to the existing result object
+            result = {
+                ...result,
+                [max.artist]: { theme: metric }
+            }
+        })
+        // For every artist [in order of listen time]
+        await artists.forEach(async artist=> {
+            // Add the genre quality to them
+            // equal to their genre
+            if(genres.includes(artist.genre)){
+                genres.pop(artist.genre);
+                result[artist.name] = {
+                    ...result[artist.name],
+                    genre: artist.genre
+                }
+            }
+        })
+        setArtistQualities(result);
+    }
+
+    const updateFocusMessage = async function(){
+        console.log("updateFocusMessage called.")
+        const item = focus.item;
+        let message = '';
+        // ITEM IS AN ARTIST IN FOCUS
+        if(item.artist === 1){
+            message += ``;
+            if(artistQualities[`${item.name}`] === undefined){
+                message += `PH: NO ATTRIBUTES FOUND`
+            }else{
+                console.log(artistQualities[item.name].length)
+                Object.keys(artistQualities[item.name]).length > 1 ? 
+                message += `${item.name} not only represents your love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]]} music. They're your top artist for both.`
+                :
+                message += `${item.name} is an artist that we think defines your love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
+            }
+
+        // ITEM IS A SONG IN FOCUS
+        }else{
+
+        }
+
+        setFocusMessage(message);
+    }
+
+    const getGraphQualities = (val1, type1, val2 , type2) => {
         let message = "";
         if(val1 > 75){
             message += `High ${type1}`;
@@ -23,7 +107,7 @@ const Profile = () => {
         }
         if(val2){
             message += ", ";
-            message += getQualities(val2, type2);
+            message += getGraphQualities(val2, type2);
         }
         return message;
     }
@@ -37,7 +121,7 @@ const Profile = () => {
             //coords as a percentage
             let pointX = ((element[x] - minX) * 100 )/ (maxX - minX); 
             let pointY = ((element[y] - minY) * 100 )/ (maxY - minY);
-            let message = getQualities(pointX, x, pointY, y);
+            let message = getGraphQualities(pointX, x, pointY, y);
             points.push(<img alt="" src={parent[i].image} key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
         });
 
@@ -66,28 +150,23 @@ const Profile = () => {
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "song_id", result.topSongs))
+            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "song_id", result.topSongs));
+            updateArtistQualities(result);
         })
         setLoaded(true);
     }
-    const [showArt, setShowArt] = useState(false)
-    const [focus, setFocus] = useState({
-        title: '', //main text
-        secondary: '', //sub-title
-        tertiary: '', //desc
-        image: '',
-        link: '',
-    })
     const delay = ms => new Promise(res => setTimeout(res, ms));
     async function updateFocus(item, tertiaryText){
+        focus.item = item;
         if((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name))&& showArt === "stick"){
             let localState = focus;
             localState.link = null;
             setFocus(localState);
             setShowArt(false);
+            updateFocusMessage(datapoint);
         }else{
             setShowArt(false)
-            await delay(500);
+            await delay(300);
             let localState = focus;
             localState.image = item.image;
             localState.link = item.link;
@@ -102,7 +181,9 @@ const Profile = () => {
             }
             setFocus(localState);
             setShowArt("stick")
+            updateFocusMessage(datapoint);
         }
+        
     }
 
     useEffect(() => {      
@@ -149,12 +230,10 @@ const Profile = () => {
                     </div>
                     <h2 className='datapoint-title'>Top artists</h2>
                     <div className='simple-container'>
-                        <div id='left-click'></div>
-                        <div className='datapoint'>
                             <ol>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist.` : `${currentUser.username}'s top artist.`}`)}>{datapoint.topArtists[0].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your 2ⁿᵈ to top artist.` : `${currentUser.username}'s second to top artist.`}`)}>{datapoint.topArtists[1].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your 3ʳᵈ to top artist.` : `${currentUser.username}'s third to top artist.`}`)}>{datapoint.topArtists[2].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{datapoint.topArtists[0].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{datapoint.topArtists[1].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{datapoint.topArtists[2].name}</li>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[3], ``)}>{datapoint.topArtists[3].name}</li>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[4], ``)}>{datapoint.topArtists[4].name}</li>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[5], ``)}>{datapoint.topArtists[5].name}</li>
@@ -165,16 +244,15 @@ const Profile = () => {
                             </ol>
                             <div className='art-container'>
                                 <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
-                                    <img className={showArt ? 'art-shown' : 'art-hidden' } src={focus.image} alt='Cover art'></img>
+                                    <img className='art' src={focus.image} alt='Cover art'></img>
                                     <div className='art-text-container'>
-                                    <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                    <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
-                                    <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                                        <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                     </div>
                                 </a>
                             </div>
-                        </div>
-                            <div id='right-click'></div>
+                        <p className='focus-expansion'>{focusMessage}</p>
                         </div>
                     {graph}
                 </div>
