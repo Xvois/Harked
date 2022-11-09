@@ -72,27 +72,25 @@ const Profile = () => {
     }
 
     const updateFocusMessage = async function(){
-        console.log("updateFocusMessage called.")
+        let possessive;
+        userID === 'me' ? possessive = 'your' : possessive = `${userID}'s`
         const item = focus.item;
         let message = '';
-        // ITEM IS AN ARTIST IN FOCUS
         if(item.artist === 1){
             message += ``;
             if(artistQualities[`${item.name}`] === undefined){
-                message += `PH: NO ATTRIBUTES FOUND`
+                message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
             }else{
-                console.log(artistQualities[item.name].length)
                 Object.keys(artistQualities[item.name]).length > 1 ? 
-                message += `${item.name} not only represents your love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]]} music. They're your top artist for both.`
+                message += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]]} music.`
                 :
-                message += `${item.name} is an artist that we think defines your love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
+                message += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
             }
 
         // ITEM IS A SONG IN FOCUS
         }else{
 
         }
-
         setFocusMessage(message);
     }
 
@@ -155,16 +153,11 @@ const Profile = () => {
         })
         setLoaded(true);
     }
+
     const delay = ms => new Promise(res => setTimeout(res, ms));
     async function updateFocus(item, tertiaryText){
         focus.item = item;
-        if((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name))&& showArt === "stick"){
-            let localState = focus;
-            localState.link = null;
-            setFocus(localState);
-            setShowArt(false);
-            updateFocusMessage(datapoint);
-        }else{
+        if( !((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name)) && showArt === true)){
             setShowArt(false)
             await delay(300);
             let localState = focus;
@@ -180,10 +173,9 @@ const Profile = () => {
                 localState.tertiary = tertiaryText;
             }
             setFocus(localState);
-            setShowArt("stick")
+            setShowArt(true)
             updateFocusMessage(datapoint);
         }
-        
     }
 
     useEffect(() => {      
@@ -228,7 +220,11 @@ const Profile = () => {
                                 <p>Playlists: PH</p>
                             </div>
                     </div>
-                    <h2 className='datapoint-title'>Top artists</h2>
+                    <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`}}>
+                            <div>CLICK HERE</div>
+                            <h2 className='datapoint-title'>Top artists</h2>
+                            <div>CLICK HERE</div>
+                    </div>
                     <div className='simple-container'>
                             <ol>
                                 <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{datapoint.topArtists[0].name}</li>
@@ -246,13 +242,13 @@ const Profile = () => {
                                 <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
                                     <img className='art' src={focus.image} alt='Cover art'></img>
                                     <div className='art-text-container'>
-                                        <h1 className={showArt === "stick" ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
-                                        <p className={showArt === "stick" ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                                        <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                        <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                        <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                     </div>
                                 </a>
                             </div>
-                        <p className='focus-expansion'>{focusMessage}</p>
+                        <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
                         </div>
                     {graph}
                 </div>

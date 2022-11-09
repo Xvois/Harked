@@ -14,10 +14,17 @@ const PORT = process.env.PORT || 9000
 // Create express app
 const app = express()
 
+const corsOptions ={
+  origin:'*', 
+  credentials:true,            //access-control-allow-credentials:true
+  optionSuccessStatus:200,
+}
+
 app.use(helmet())
 app.use(compression())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cors(corsOptions)) // Use this after the variable declaration
 
 // Implement books route
 app.use('/PRDB', usersRouter)
