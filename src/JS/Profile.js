@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import { retrieveDatapoint, retrieveUser } from './PDM';
+import arrow from './Arrow.png'
 
 const Profile = () => {
     const userID = window.location.hash.split("#")[1];
@@ -11,7 +12,7 @@ const Profile = () => {
     let [datapoint, setDatapoint] = useState("Datapoint not updated!");
     let [term , setTerm] = useState("long_term");
     let [graph, setGraph] = useState("");
-    const [showArt, setShowArt] = useState(false)
+    const [showArt, setShowArt] = useState("empty")
     const [focus, setFocus] = useState({
         item: null,
         title: '', //main text
@@ -21,7 +22,9 @@ const Profile = () => {
         link: '',
     })
     const [artistQualities, setArtistQualities] = useState();
-    const [focusMessage, setFocusMessage] = useState();
+    const [focusMessage, setFocusMessage] = useState("And see what it says about you.");
+    const [simpleSelection, setSimpleSelection] = useState("Artists")
+    const simpleDatapoints = ["Artists", "Songs", "Genres"]
     // Take it to be "X music"
     const translateAnalytics = {
         acousticness: 'acoustic',
@@ -31,6 +34,22 @@ const Profile = () => {
         liveness: 'live',
         loudness: 'loud',
         valence: 'positive'
+    }
+
+    const incrementSimple = function(){
+        setShowArt("empty")
+        setFocusMessage("And see what it says about you.")
+        const index = simpleDatapoints.indexOf(simpleSelection);
+        index === 2 ? setSimpleSelection(simpleDatapoints[0]) : setSimpleSelection(simpleDatapoints[index+1]);
+        console.log(simpleSelection)
+    }
+
+    const decrementSimple = function(){
+        setShowArt("empty")
+        setFocusMessage("And see what it says about you.")
+        const index = simpleDatapoints.indexOf(simpleSelection);
+        index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index-1]);
+        console.log(simpleSelection)
     }
 
     const updateArtistQualities = async function(data){
@@ -221,24 +240,27 @@ const Profile = () => {
                             </div>
                     </div>
                     <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`}}>
-                            <div>CLICK HERE</div>
-                            <h2 className='datapoint-title'>Top artists</h2>
-                            <div>CLICK HERE</div>
+                            <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}} onClick={() => decrementSimple()}></img>
+                            <h2 className='datapoint-title'>Top {simpleSelection}</h2>
+                            <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}} onClick={() => incrementSimple()} ></img>
                     </div>
                     <div className='simple-container'>
                             <ol>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{datapoint.topArtists[0].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{datapoint.topArtists[1].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{datapoint.topArtists[2].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[3], ``)}>{datapoint.topArtists[3].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[4], ``)}>{datapoint.topArtists[4].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[5], ``)}>{datapoint.topArtists[5].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[6], ``)}>{datapoint.topArtists[6].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[7], ``)}>{datapoint.topArtists[7].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[8], ``)}>{datapoint.topArtists[8].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint.topArtists[9], ``)}>{datapoint.topArtists[9].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{datapoint[`top${simpleSelection}`][0].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{datapoint[`top${simpleSelection}`][1].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{datapoint[`top${simpleSelection}`][2].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][3], ``)}>{datapoint[`top${simpleSelection}`][3].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][4], ``)}>{datapoint[`top${simpleSelection}`][4].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][5], ``)}>{datapoint[`top${simpleSelection}`][5].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][6], ``)}>{datapoint[`top${simpleSelection}`][6].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][7], ``)}>{datapoint[`top${simpleSelection}`][7].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{datapoint[`top${simpleSelection}`][8].name}</li>
+                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{datapoint[`top${simpleSelection}`][9].name}</li>
                             </ol>
                             <div className='art-container'>
+                                {showArt === "empty" ? 
+                                <div className='play-wrapper-empty'>Select an item to view in focus.</div>
+                                :
                                 <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
                                     <img className='art' src={focus.image} alt='Cover art'></img>
                                     <div className='art-text-container'>
@@ -247,6 +269,7 @@ const Profile = () => {
                                         <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                     </div>
                                 </a>
+                                }
                             </div>
                         <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
                         </div>
