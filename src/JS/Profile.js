@@ -91,11 +91,11 @@ const Profile = () => {
             let localState = focus;
             localState.image = item.image;
             localState.link = item.link;
-            if(item.song){
+            if(item.type === "song"){
                 localState.title = item.title;
                 localState.secondary = `by ${item.artist}`;
                 localState.tertiary = tertiaryText;
-            }else if(item.artist){
+            }else if(item.type === "artist"){
                 localState.title = item.name;
                 localState.secondary = item.genre;
                 localState.tertiary = tertiaryText;
