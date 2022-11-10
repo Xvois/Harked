@@ -22,7 +22,8 @@ const Profile = () => {
         link: '',
     })
     const [artistQualities, setArtistQualities] = useState();
-    const [focusMessage, setFocusMessage] = useState("And see what it says about you.");
+    const [focusMessage, setFocusMessage] = useState("And see what it says.");
+    // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
     // Take it to be "X music"
@@ -35,23 +36,24 @@ const Profile = () => {
         loudness: 'loud',
         valence: 'positive'
     }
-
+    // Change the simple datapoint +1
     const incrementSimple = function(){
         setShowArt("empty")
-        setFocusMessage("And see what it says about you.")
+        setFocusMessage("And see what it says")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 2 ? setSimpleSelection(simpleDatapoints[0]) : setSimpleSelection(simpleDatapoints[index+1]);
         console.log(simpleSelection)
     }
-
+    // Change the simple datapoint -1
     const decrementSimple = function(){
         setShowArt("empty")
-        setFocusMessage("And see what it says about you.")
+        setFocusMessage("And see what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index-1]);
         console.log(simpleSelection)
     }
-
+    // Update the artist attributes that are used to make the foucs
+    // message.
     const updateArtistQualities = async function(data){
         const songs = data.topSongs;
         const artists = data.topArtists;
@@ -89,8 +91,10 @@ const Profile = () => {
         })
         setArtistQualities(result);
     }
-
+    // Update the focus message to be
+    // relevant to the current focus
     const updateFocusMessage = async function(){
+        // What do we use as our possessive? 
         let possessive;
         userID === 'me' ? possessive = 'your' : possessive = `${userID}'s`
         const item = focus.item;
@@ -98,6 +102,8 @@ const Profile = () => {
         if(item.type === "artist"){
             message += ``;
             if(artistQualities[`${item.name}`] === undefined){
+                // If the artist doesn't have a genre analysis then we assume
+                // that they are not wildly popular.
                 message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
             }else{
                 Object.keys(artistQualities[item.name]).length > 1 ? 
@@ -112,7 +118,7 @@ const Profile = () => {
         }
         setFocusMessage(message);
     }
-
+    // Construct the description for an item in a graph.
     const getGraphQualities = (val1, type1, val2 , type2) => {
         let message = "";
         if(val1 > 75){
@@ -128,20 +134,24 @@ const Profile = () => {
         }
         return message;
     }
+    // Construct the graph
     const constructGraph = (title, object, x, xLimits, y, yLimits, key, parent) => {
+        // Initialise limits
         const maxX = xLimits[1];
         const maxY = yLimits[1];
         const minX = xLimits[0];
         const minY = yLimits[0];
         const points = [];
         object.forEach( (element,i)=> {
-            //coords as a percentage
+            // Coords as a percentage
             let pointX = ((element[x] - minX) * 100 )/ (maxX - minX); 
             let pointY = ((element[y] - minY) * 100 )/ (maxY - minY);
             let message = getGraphQualities(pointX, x, pointY, y);
+            //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
             points.push(<img alt="" src={parent[i].image} key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
         });
-
+        // Return the whole structure so it can simply
+        // be dropped in
     return (
         <>
         <div className='graph-container'>
@@ -158,11 +168,14 @@ const Profile = () => {
 
     )
     }
+    // Function that loads the page when necessary
     const loadPage = async() => {
+        // If the page hasn't loaded then grab the user data
         if(!loaded){ await retrieveUser(userID).then(function(result){
             setCurrentUser(result);
             document.title = `Photon | ${result.username}`;
         })}
+        // Update the datapoint
         await retrieveDatapoint(userID, term).then(function(result){
             setDatapoint(result)
             const analyticsList = [];
@@ -170,16 +183,21 @@ const Profile = () => {
             setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "song_id", result.topSongs));
             updateArtistQualities(result);
         })
+        // Refresh the focus
+        setShowArt("empty")
+        setFocusMessage("And see what is has to say.")
+        // Indicate that the loading is over
         setLoaded(true);
     }
-
+    // Delay function mainly used for animations
     const delay = ms => new Promise(res => setTimeout(res, ms));
+    // The function that updates the focus.
     async function updateFocus(item, tertiaryText){
         focus.item = item;
         if( !((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name)) && showArt === true)){
-            setShowArt(false)
-            await delay(300);
+            setShowArt(false);
             let localState = focus;
+            await delay(300);
             localState.image = item.image;
             localState.link = item.link;
             if(item.type === "song"){
@@ -244,6 +262,16 @@ const Profile = () => {
                             <h2 className='datapoint-title'>Top {simpleSelection}</h2>
                             <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}} onClick={() => incrementSimple()} ></img>
                     </div>
+                    <div className='term-container'>
+                        <button onClick={() => setTerm("short_term")} style={term === "short_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
+                        <div></div>
+                        <div></div>
+                        <button onClick={() => setTerm("medium_term")} style={term === "medium_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
+                        <div></div>
+                        <div></div>
+                        <button onClick={() => setTerm("long_term")} style={term === "long_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
+                    </div>
+                    <p>{term}</p>
                     <div className='simple-container'>
                             <ol>
                                 <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{datapoint[`top${simpleSelection}`][0].name}</li>
