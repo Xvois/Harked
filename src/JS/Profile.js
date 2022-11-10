@@ -95,7 +95,7 @@ const Profile = () => {
         userID === 'me' ? possessive = 'your' : possessive = `${userID}'s`
         const item = focus.item;
         let message = '';
-        if(item.artist === 1){
+        if(item.type === "artist"){
             message += ``;
             if(artistQualities[`${item.name}`] === undefined){
                 message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
@@ -182,11 +182,11 @@ const Profile = () => {
             let localState = focus;
             localState.image = item.image;
             localState.link = item.link;
-            if(item.song){
+            if(item.type === "song"){
                 localState.title = item.title;
                 localState.secondary = `by ${item.artist}`;
                 localState.tertiary = tertiaryText;
-            }else if(item.artist){
+            }else if(item.type === "artist"){
                 localState.title = item.name;
                 localState.secondary = item.genre;
                 localState.tertiary = tertiaryText;
