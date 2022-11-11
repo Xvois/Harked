@@ -92,7 +92,7 @@ knex.schema
                     table.string('image');
                     table.string('link');
                     table.string('name');
-                    table.bool('song');
+                    table.string('type');
                     table.string('title');
                 })
                 .then(() => {
@@ -164,7 +164,7 @@ knex.schema
             if(!exists){
                 return knex.schema.createTable('artists', (table) => {
                     table.string('artist_id').primary();
-                    table.bool('artist');
+                    table.string('type');
                     table.string('genre');
                     table.string('image');
                     table.string('link');

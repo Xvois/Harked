@@ -283,7 +283,7 @@ exports.postDatapoint = async (req, res) => {
         knex('artists')
           .insert({
             'artist_id': artist.artist_id,
-            'type': "song",
+            'type': "artist",
             'genre': artist.genre,
             'image': artist.image,
             'link': artist.link,

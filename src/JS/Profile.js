@@ -36,13 +36,34 @@ const Profile = () => {
         loudness: 'loud',
         valence: 'positive'
     }
+    // Get the display name of the list item
+    const getLIName = function(data){
+        let result;
+        switch(data.type){
+            case "artist":
+                result = data.name;
+                break;
+            case "song":
+                result = data.title;
+                break;
+            case undefined:
+                result = data;
+                break;
+            default:
+                console.warn("getLIName error: No name returned.");
+                break;
+        }
+        if(result.length > 20){
+            result = result.substring(0,20) + "..."
+        }
+        return result;
+    }
     // Change the simple datapoint +1
     const incrementSimple = function(){
         setShowArt("empty")
         setFocusMessage("And see what it says")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 2 ? setSimpleSelection(simpleDatapoints[0]) : setSimpleSelection(simpleDatapoints[index+1]);
-        console.log(simpleSelection)
     }
     // Change the simple datapoint -1
     const decrementSimple = function(){
@@ -50,7 +71,6 @@ const Profile = () => {
         setFocusMessage("And see what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index-1]);
-        console.log(simpleSelection)
     }
     // Update the artist attributes that are used to make the foucs
     // message.
@@ -99,22 +119,40 @@ const Profile = () => {
         userID === 'me' ? possessive = 'your' : possessive = `${userID}'s`
         const item = focus.item;
         let message = '';
-        if(item.type === "artist"){
-            message += ``;
-            if(artistQualities[`${item.name}`] === undefined){
-                // If the artist doesn't have a genre analysis then we assume
-                // that they are not wildly popular.
-                message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
-            }else{
-                Object.keys(artistQualities[item.name]).length > 1 ? 
-                message += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]]} music.`
+        switch(item.type){
+            case "artist":
+                if(artistQualities[`${item.name}`] === undefined){
+                    // If the artist doesn't have a genre analysis then we assume
+                    // that they are not wildly popular.
+                    message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
+                }else{
+                    Object.keys(artistQualities[item.name]).length > 1 ? 
+                    message += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]]} music.`
+                    :
+                    message += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
+                }
+                break;
+            case "song":
+                message += `${item.title} is a song.`
+                break;
+            case undefined:
+                let relevantArtists = [];
+                for (var artist in artistQualities){
+                    if(artistQualities[artist].genre === item){relevantArtists.push(artist);}
+                }
+                datapoint.topArtists.forEach(artist => {if(artist.genre === item && !relevantArtists.includes(artist.name)){relevantArtists.push(artist.name)}});
+                relevantArtists.length > 1 ? 
+                    //          Capitalise the possessive
+                    message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `, ${relevantArtists[1]}` : "s"}.` 
                 :
-                message += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
-            }
-
-        // ITEM IS A SONG IN FOCUS
-        }else{
-
+                (relevantArtists.length === 1 ?
+                    message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by how much you listen to ${relevantArtists[0]}. (Change 'you')`
+                :    
+                    message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                )
+                break;
+            default:
+                console.warn("updateFocusMessage error: No focus type found.")
         }
         setFocusMessage(message);
     }
@@ -182,10 +220,11 @@ const Profile = () => {
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
             setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "song_id", result.topSongs));
             updateArtistQualities(result);
+            console.log(result)
         })
         // Refresh the focus
         setShowArt("empty")
-        setFocusMessage("And see what is has to say.")
+        setFocusMessage("And see what it says.")
         // Indicate that the loading is over
         setLoaded(true);
     }
@@ -208,6 +247,10 @@ const Profile = () => {
                 localState.title = item.name;
                 localState.secondary = item.genre;
                 localState.tertiary = tertiaryText;
+            }else{
+                localState.title = '';
+                localState.secondary = item;
+                localState.tertiary = '';
             }
             setFocus(localState);
             setShowArt(true)
@@ -257,50 +300,52 @@ const Profile = () => {
                                 <p>Playlists: PH</p>
                             </div>
                     </div>
-                    <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`}}>
-                            <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}} onClick={() => decrementSimple()}></img>
-                            <h2 className='datapoint-title'>Top {simpleSelection}</h2>
-                            <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}} onClick={() => incrementSimple()} ></img>
-                    </div>
-                    <div className='term-container'>
-                        <button onClick={() => setTerm("short_term")} style={term === "short_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
-                        <div></div>
-                        <div></div>
-                        <button onClick={() => setTerm("medium_term")} style={term === "medium_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
-                        <div></div>
-                        <div></div>
-                        <button onClick={() => setTerm("long_term")} style={term === "long_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
-                    </div>
-                    <p>{term}</p>
-                    <div className='simple-container'>
-                            <ol>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{datapoint[`top${simpleSelection}`][0].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{datapoint[`top${simpleSelection}`][1].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{datapoint[`top${simpleSelection}`][2].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][3], ``)}>{datapoint[`top${simpleSelection}`][3].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][4], ``)}>{datapoint[`top${simpleSelection}`][4].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][5], ``)}>{datapoint[`top${simpleSelection}`][5].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][6], ``)}>{datapoint[`top${simpleSelection}`][6].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][7], ``)}>{datapoint[`top${simpleSelection}`][7].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{datapoint[`top${simpleSelection}`][8].name}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{datapoint[`top${simpleSelection}`][9].name}</li>
-                            </ol>
-                            <div className='art-container'>
-                                {showArt === "empty" ? 
-                                <div className='play-wrapper-empty'>Select an item to view in focus.</div>
-                                :
-                                <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
-                                    <img className='art' src={focus.image} alt='Cover art'></img>
-                                    <div className='art-text-container'>
-                                        <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                        <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
-                                        <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                                    </div>
-                                </a>
-                                }
-                            </div>
-                        <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
+                    <div style={{background: `linear-gradient(rgb(0, 0, 0), rgb(40, 40, 40))`}}>
+                        <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`}}>
+                                <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}} onClick={() => decrementSimple()}></img>
+                                <h2 className='datapoint-title'>Top {simpleSelection}</h2>
+                                <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}} onClick={() => incrementSimple()} ></img>
                         </div>
+                        <div className='term-container'>
+                            <button onClick={() => setTerm("short_term")} style={term === "short_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
+                            <div></div>
+                            <div></div>
+                            <button onClick={() => setTerm("medium_term")} style={term === "medium_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
+                            <div></div>
+                            <div></div>
+                            <button onClick={() => setTerm("long_term")} style={term === "long_term" ? {backgroundColor: `#22C55E`} : {backgroundColor: `black`, cursor: `pointer`}}></button>
+                        </div>
+                        <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks" )}</h2>
+                        <div className='simple-container'>
+                                <ol>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][0])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][1])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][2])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][3], ``)}>{getLIName(datapoint[`top${simpleSelection}`][3])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][4], ``)}>{getLIName(datapoint[`top${simpleSelection}`][4])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][5], ``)}>{getLIName(datapoint[`top${simpleSelection}`][5])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][6], ``)}>{getLIName(datapoint[`top${simpleSelection}`][6])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][7], ``)}>{getLIName(datapoint[`top${simpleSelection}`][7])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{getLIName(datapoint[`top${simpleSelection}`][8])}</li>
+                                    <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{getLIName(datapoint[`top${simpleSelection}`][9])}</li>
+                                </ol>
+                                <div className='art-container'>
+                                    {showArt === "empty" ? 
+                                    <div className='play-wrapper-empty'>Select an item to view in focus.</div>
+                                    :
+                                    <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
+                                        <img className='art' src={focus.image} alt='Cover art'></img>
+                                        <div className='art-text-container'>
+                                            <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                            <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                            <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                                        </div>
+                                    </a>
+                                    }
+                                </div>
+                            <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
+                        </div>
+                    </div>
                     {graph}
                 </div>
         }
