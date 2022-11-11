@@ -3,6 +3,8 @@
 .graph-container{
     display: flex;
     flex-direction: column;
+    border: 1px solid rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);
 }
 
 .top{
@@ -38,7 +40,7 @@
     width: 98%;
     height: 100%;
     background-size: 40px 40px;
-    background-image: radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px);
+    background-image: radial-gradient(circle, rgb(0, 0, 0) 1px, rgba(0, 0, 0, 0) 1px);
 }
 
 .point{
