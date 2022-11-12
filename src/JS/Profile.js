@@ -12,6 +12,10 @@ const Profile = () => {
     let [datapoint, setDatapoint] = useState("Datapoint not updated!");
     let [term , setTerm] = useState("long_term");
     let [graph, setGraph] = useState("");
+    let [graphAxis, setGraphAxis] = useState({
+        x: "danceability",
+        y: "energy"
+    })
     const [showArt, setShowArt] = useState("empty")
     const [focus, setFocus] = useState({
         item: null,
@@ -133,6 +137,7 @@ const Profile = () => {
                 }
                 break;
             case "song":
+                // TODO: MAKE THIS A MORE ACCURATE
                 let maxAnalytic = "acousticness";
                 analyticsMetrics.forEach(analytic => {
                     console.log(item.analytics[analytic]);
@@ -154,7 +159,7 @@ const Profile = () => {
                 :
                 (relevantArtists.length === 1 ?
                     message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                :    
+                :    //TODO: THIS OCCURS WAYYY TOO OFTEN
                     message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
                 )
                 break;
@@ -180,33 +185,51 @@ const Profile = () => {
         return message;
     }
     // Construct the graph
-    const constructGraph = (title, object, x, xLimits, y, yLimits, key, parent) => {
+    const constructGraph = (object, key, parent) => {
         // Initialise limits
-        const maxX = xLimits[1];
-        const maxY = yLimits[1];
-        const minX = xLimits[0];
-        const minY = yLimits[0];
+        let maxX;
+        let minX;
+        if(graphAxis.x === "tempo"){minX = 50; maxX = 200}
+        else{minX = 0; maxX = 1}
+        let maxY;
+        let minY;
+        if(graphAxis.y === "tempo"){minY = 50; maxY = 200}
+        else{minY = 0; maxY = 1}
         const points = [];
         object.forEach( (element,i)=> {
             // Coords as a percentage
-            let pointX = ((element[x] - minX) * 100 )/ (maxX - minX); 
-            let pointY = ((element[y] - minY) * 100 )/ (maxY - minY);
-            let message = getGraphQualities(pointX, x, pointY, y);
+            let pointX = ((element[graphAxis.x] - minX) * 100 )/ (maxX - minX); 
+            let pointY = ((element[graphAxis.y] - minY) * 100 )/ (maxY - minY);
+            let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
             //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
-            points.push(<img alt="" src={parent[i].image} key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
+            points.push(<img alt="" key={element[key]} className='point' style={{left: `${pointX}%`, bottom: `${pointY}%`}} onClick={() => updateFocus(parent[i], message)}></img>)
         });
         // Return the whole structure so it can simply
         // be dropped in
     return (
         <>
         <div className='graph-container'>
-            <h1 className='graph-title'>{title}</h1>
+            <h1 className='graph-title'>
+                Your top 50 songs 
+                <select className='graph-dropdown' defaultValue={graphAxis.x} onChange={(event) => setGraphAxis({...graphAxis, x:event.target.value})}>
+                    {analyticsMetrics.map(function(analytic){
+                        if(analytic != graphAxis.y){return <option value={analytic}>{analytic}</option>}
+                    })}
+                </select>
+                 vs. 
+                <select className='graph-dropdown' defaultValue={graphAxis.y} onChange={(event) => setGraphAxis({...graphAxis, y:event.target.value})}>
+                    {analyticsMetrics.map(function(analytic){
+                        if(analytic != graphAxis.x){return <option value={analytic}>{analytic}</option>}
+
+                    })}
+                </select>
+            </h1>
             <div className='top'>
                 <div className='point-container'>{points}</div>
-                <p className='y-title'>{y}</p>
+                <p className='y-title'>{graphAxis.y}</p>
             </div>
             <div className='bottom'>
-                <p className='x-title'>{x}</p>
+                <p className='x-title'>{graphAxis.x}</p>
             </div>
         </div>
         </>
@@ -225,7 +248,7 @@ const Profile = () => {
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph("Top 50 Songs - Tempo vs. Energy", analyticsList, "tempo", [50,200], "energy", [0,1], "song_id", result.topSongs));
+            setGraph(constructGraph(analyticsList, "song_id", result.topSongs));
             updateArtistQualities(result);
             console.log(result)
         })
@@ -268,7 +291,7 @@ const Profile = () => {
     useEffect(() => {      
         console.warn("useEffect called.")  
         loadPage();
-    },[term])
+    },[term, graphAxis])
 
   return (
         <>

@@ -141,7 +141,7 @@ const createFauxUser = function(songs, analytics, artists){
             if(!usedSongSeeds.includes(songSeed)){
                 datapoint.topSongs.push({
                     song_id: songs[songSeed].id,
-                    song: true,
+                    type: "song",
                     name: parseSong(songs[songSeed]),
                     title: songs[songSeed].name,
                     artist: songs[songSeed].artists[0].name,
@@ -158,7 +158,7 @@ const createFauxUser = function(songs, analytics, artists){
             if(!usedArtistSeeds.includes(artistSeed)){
                 try{datapoint.topArtists.push({
                     artist_id: artists[artistSeed].id,
-                    artist: true,
+                    type: "artist",
                     name: artists[artistSeed].name, 
                     image: artists[artistSeed].images[1].url, 
                     link: `https://open.spotify.com/artist/${artists[artistSeed].id}`,

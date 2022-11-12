@@ -3,8 +3,8 @@
 .graph-container{
     display: flex;
     flex-direction: column;
-    border: 1px solid rgb(0, 0, 0);
-    background-color: rgb(255, 255, 255);
+    background: linear-gradient(rgb(40, 40, 40), rgb(0, 0, 0));
+    padding: 40px;
 }
 
 .top{
@@ -40,14 +40,13 @@
     width: 98%;
     height: 100%;
     background-size: 40px 40px;
-    background-image: radial-gradient(circle, rgb(0, 0, 0) 1px, rgba(0, 0, 0, 0) 1px);
+    background-image: radial-gradient(circle, #22c55e94 1px, rgba(0, 0, 0, 0) 1px);
 }
 
 .point{
     --diameter: 5px;
     width: var(--diameter);
     height: var(--diameter);
-    padding: 1px;
     background-color: white;
     border: 1px solid black;
     border-radius: 20px;
@@ -64,4 +63,16 @@
     text-align: center;
     text-transform: uppercase;
     margin: none;
+}
+
+.graph-dropdown{
+    background-color: transparent;
+    border: none;
+    text-transform: uppercase;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 800;
+    font-size: 1em;
+    text-align: center;
+    margin-right: 40px;
+    color: #22C55E;
 }
