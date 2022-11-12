@@ -22,10 +22,11 @@ const Profile = () => {
         link: '',
     })
     const [artistQualities, setArtistQualities] = useState();
-    const [focusMessage, setFocusMessage] = useState("And see what it says.");
+    const [focusMessage, setFocusMessage] = useState("See what it says.");
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
+    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
     // Take it to be "X music"
     const translateAnalytics = {
         acousticness: 'acoustic',
@@ -61,14 +62,14 @@ const Profile = () => {
     // Change the simple datapoint +1
     const incrementSimple = function(){
         setShowArt("empty")
-        setFocusMessage("And see what it says")
+        setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 2 ? setSimpleSelection(simpleDatapoints[0]) : setSimpleSelection(simpleDatapoints[index+1]);
     }
     // Change the simple datapoint -1
     const decrementSimple = function(){
         setShowArt("empty")
-        setFocusMessage("And see what it says.")
+        setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index-1]);
     }
@@ -80,7 +81,6 @@ const Profile = () => {
         const genres = data.topGenres;
         let result = {};
         // The analytics from the datapoint that we will compare
-        const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
         // Get the artist that has the max value in each
         // metric
         analyticsMetrics.forEach(metric => {
@@ -133,7 +133,14 @@ const Profile = () => {
                 }
                 break;
             case "song":
-                message += `${item.title} is a song.`
+                let maxAnalytic = "acousticness";
+                analyticsMetrics.forEach(analytic => {
+                    console.log(item.analytics[analytic]);
+                    if(item.analytics[analytic] > item.analytics[maxAnalytic]){
+                        maxAnalytic = analytic;
+                    }
+                })
+                message += `${item.title} is a very ${translateAnalytics[maxAnalytic]} song by ${item.artist}.`
                 break;
             case undefined:
                 let relevantArtists = [];
@@ -146,7 +153,7 @@ const Profile = () => {
                     message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `, ${relevantArtists[1]}` : "s"}.` 
                 :
                 (relevantArtists.length === 1 ?
-                    message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by how much you listen to ${relevantArtists[0]}. (Change 'you')`
+                    message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
                 :    
                     message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
                 )
@@ -160,11 +167,11 @@ const Profile = () => {
     const getGraphQualities = (val1, type1, val2 , type2) => {
         let message = "";
         if(val1 > 75){
-            message += `High ${type1}`;
+            message += `high ${type1}`;
         }else if(val1 > 25){
-            message += `Medium ${type1}`;
+            message += `medium ${type1}`;
         }else{
-            message += `Low ${type1}`;
+            message += `low ${type1}`;
         }
         if(val2){
             message += ", ";
@@ -224,7 +231,7 @@ const Profile = () => {
         })
         // Refresh the focus
         setShowArt("empty")
-        setFocusMessage("And see what it says.")
+        setFocusMessage("See what it says.")
         // Indicate that the loading is over
         setLoaded(true);
     }
@@ -329,20 +336,25 @@ const Profile = () => {
                                     <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{getLIName(datapoint[`top${simpleSelection}`][8])}</li>
                                     <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{getLIName(datapoint[`top${simpleSelection}`][9])}</li>
                                 </ol>
-                                <div className='art-container'>
-                                    {showArt === "empty" ? 
-                                    <div className='play-wrapper-empty'>Select an item to view in focus.</div>
+                                {simpleSelection !== "Genres" ? 
+                                    <div className='art-container'>
+                                        {showArt === "empty" ? 
+                                        <div className='play-wrapper-empty'>Select an item to view in focus.</div>
+                                        :
+                                        <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
+                                            <img className='art' src={focus.image} alt='Cover art'></img>
+                                            <div className='art-text-container'>
+                                                <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                                <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                                <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                                            </div>
+                                        </a>
+                                        }
+                                    </div>
                                     :
-                                    <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden' } href={focus.link} rel="noopener noreferrer" target="_blank">
-                                        <img className='art' src={focus.image} alt='Cover art'></img>
-                                        <div className='art-text-container'>
-                                            <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                            <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{fontSize: '40px'}}>{focus.secondary}</p>
-                                            <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                                        </div>
-                                    </a>
-                                    }
-                                </div>
+                                    <div style={{width: `20%`}}></div>
+                                }
+                                
                             <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
                         </div>
                     </div>
