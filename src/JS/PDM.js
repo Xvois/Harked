@@ -44,6 +44,16 @@ export const resolveUsername = async function(userID){
     
 }
 
+export const getPlaylists = async function(userID){
+    let globalUserID = userID;
+    let result;
+    if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
+    await fetchData(`users/${globalUserID}/playlists`).then(data => result = data.items);
+    await result.forEach(playlist => {if(playlist.owner.id !== globalUserID){result.splice(result.indexOf(playlist), 1)}})
+    console.log(result)
+    return result;
+}
+
 export const postLoggedUser = async function(){
     // Get our global userID
     var globalUserID;
