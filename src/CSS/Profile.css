@@ -29,14 +29,6 @@ to {opacity: 0; }
     min-width: 50%;
 }
 
-.complex-container{
-    display: flex;
-    float: right;
-    padding: 5px;
-    margin: 5%;
-    height: 300px;
-}
-
 .art-container{
     position: relative;
     display: grid;
@@ -47,7 +39,6 @@ to {opacity: 0; }
     margin-top: auto;
     margin-bottom: auto;
     padding-left: 10vw;
-    padding-right: 2.5vw;
 }
 
 .play-wrapper{
@@ -119,7 +110,7 @@ to {opacity: 0; }
     margin-left: -400px;
     height: max-content;
     width: 400px;
-    padding-top: 22px;
+    padding-top: 27px;
     padding-bottom: 20px;
     border-radius: 0px 0px 35px 35px;
     text-align: center;
@@ -241,8 +232,8 @@ to {opacity: 0; }
 
 .simple-container{
     display: flex;
-    height: 500px;
-    padding-bottom: 70px;
+    flex-direction: row;
+    height: max-content;
 }
 
 .simple-container ol{
@@ -251,7 +242,7 @@ to {opacity: 0; }
     counter-reset: item;
     height: 100%;
     justify-content: space-evenly;
-    margin-top: auto;
+    margin-top: 20px;
     margin-bottom: auto;
     height: max-content;
 }
@@ -285,6 +276,7 @@ to {opacity: 0; }
     font-weight: 600;
     counter-increment: item;
     width: max-content;
+    align-self: right;
 }
 .list-item:hover{
     cursor: pointer;
@@ -307,7 +299,7 @@ to {opacity: 0; }
     font-family: 'Ubuntu';
     text-transform: uppercase;
     text-align: center;
-    font-size: 4vw;
+    font-size: 50px;
     font-weight: 800;
     margin-top: auto;
     margin-bottom: auto;
@@ -475,13 +467,14 @@ to {opacity: 0; }
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    background: black;
     width: 100%;
     height: 500px;
 }
 
 .playlist-item{
     display: flex;
+    border-radius: 10%;
+    box-shadow: 0px 0px 100px rgba(255, 255, 255, 0.5);
 }
 
 .playlist-item-deselected{
@@ -491,6 +484,12 @@ to {opacity: 0; }
 
 .playlist-item:hover{
     transform: scale(105%);
+}
+
+.focus-container{
+    display: flex;
+    flex-direction: row;
+    margin: 50px;
 }
 @keyframes slide-right-out {
     0%{transform: translate(-400px) scale(100%); opacity: 1;}
@@ -512,6 +511,15 @@ to {opacity: 0; }
 @keyframes slide-left-in {
     from{transform: translate(400px) scale(75%); opacity: 0.3;}
     to{transform: translate(0px) scale(100%); opacity: 1;}
+}
+
+@media screen and (max-width: 1500px) {
+    .playlist-item-deselected{display: none;}
+    .focus-container{flex-direction: column; width: 70%;}
+    .focus-message-shown{text-align: center;}
+    .focus-message-hidden{text-align: center;}
+    .list-item{padding: 10px;}
+    .art-container{padding-left: 0px;}
 }
 
 /* LOADING ANIM */

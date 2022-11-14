@@ -33,7 +33,7 @@ const Profile = () => {
     const [playlistsIndex, setPlaylistsIndex] = useState(0)
     const [playlistSlide, setPlaylistSlide] = useState("none")
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
-    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
+    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     // Take it to be "X music"
     const translateAnalytics = {
         acousticness: 'acoustic',
@@ -42,7 +42,8 @@ const Profile = () => {
         instrumentalness: 'instrumental',
         liveness: 'live',
         loudness: 'loud',
-        valence: 'positive'
+        valence: 'positive',
+        tempo: `high tempo`
     }
     // Get the display name of the list item
     const getLIName = function (data) {
@@ -69,6 +70,14 @@ const Profile = () => {
     // Change the simple datapoint +1
     const incrementSimple = function () {
         setShowArt("empty")
+        setFocus({
+            item: null,
+            title: '', //main text
+            secondary: '', //sub-title
+            tertiary: '', //desc
+            image: '',
+            link: '',
+        })
         setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 2 ? setSimpleSelection(simpleDatapoints[0]) : setSimpleSelection(simpleDatapoints[index + 1]);
@@ -76,6 +85,14 @@ const Profile = () => {
     // Change the simple datapoint -1
     const decrementSimple = function () {
         setShowArt("empty")
+        setFocus({
+            item: null,
+            title: '', //main text
+            secondary: '', //sub-title
+            tertiary: '', //desc
+            image: '',
+            link: '',
+        })
         setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index - 1]);
@@ -144,7 +161,9 @@ const Profile = () => {
                 let maxAnalytic = "acousticness";
                 analyticsMetrics.forEach(analytic => {
                     console.log(item.analytics[analytic]);
-                    if (item.analytics[analytic] > item.analytics[maxAnalytic]) {
+                    let comparisonValue;
+                    if(analytic === "tempo"){comparisonValue = (item.analytics[analytic] - 50)/150}else{comparisonValue = item.analytics[analytic]}
+                    if (comparisonValue > item.analytics[maxAnalytic]) {
                         maxAnalytic = analytic;
                     }
                 })
@@ -365,52 +384,58 @@ const Profile = () => {
                                 <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{getLIName(datapoint[`top${simpleSelection}`][8])}</li>
                                 <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{getLIName(datapoint[`top${simpleSelection}`][9])}</li>
                             </ol>
-                            {simpleSelection !== "Genres" ?
-                                <div className='art-container'>
-                                    {showArt === "empty" ?
-                                        <div className='play-wrapper-empty'>Select an item to view in focus.</div>
-                                        :
-                                        <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'} href={focus.link} rel="noopener noreferrer" target="_blank">
-                                            <img className='art' src={focus.image} alt='Cover art'></img>
-                                            <div className='art-text-container'>
-                                                <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                                <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{ fontSize: '40px' }}>{focus.secondary}</p>
-                                                <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                                            </div>
-                                        </a>
-                                    }
-                                </div>
-                                :
-                                <div style={{ width: `20%` }}></div>
-                            }
+                            <div className='focus-container'>
+                                {simpleSelection !== "Genres" ?
+                                    <div className='art-container'>
+                                        {showArt === "empty" ?
+                                            <div className='play-wrapper-empty'>Select an item to view in focus.</div>
+                                            :
+                                            <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'} href={focus.link} rel="noopener noreferrer" target="_blank">
+                                                <img className='art' src={focus.image} alt='Cover art'></img>
+                                                <div className='art-text-container'>
+                                                    <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{ fontSize: '40px' }}>{focus.secondary}</p>
+                                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                                                </div>
+                                            </a>
+                                        }
+                                    </div>
+                                    :
+                                    <div style={{ width: `20%` }}></div>
+                                }
 
-                            <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
+                                <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
+                            </div>
                         </div>
                     </div>
                     {graph}
-                    <h2 style={{ textTransform: `uppercase`, textAlign: `centre`, margin: `auto`, fontSize: `50px` }}>{currentUser.username}'s playlists</h2>
+                    <h2 style={{ textTransform: `uppercase`, textAlign: `centre`, margin: `auto`, fontSize: `50px`, color: `#22C55E` }}>{currentUser.username}'s playlists</h2>
                     {playlists !== undefined ?
                         <div className='playlist-wrapper'>
-                            <img src={arrow} style={{ transform: `rotate(180deg) scale(50%)`, cursor: `pointer`, opacity: `0.5` }}
-                                onClick={async () => { if (playlistsIndex + 1 >= playlists.length) { setPlaylistsIndex(0) } else { setPlaylistsIndex(playlistsIndex + 1) } setPlaylistSlide("left"); await delay(330); setPlaylistSlide("none") }}
+                            <img src={arrow} style={{ transform: `rotate(180deg) scale(25%)`, cursor: `pointer`, opacity: `1` }}
+                               onClick={async () => { if (playlistsIndex - 1 < 0) { setPlaylistsIndex(playlists.length - 1); } else { setPlaylistsIndex(playlistsIndex - 1); } setPlaylistSlide("right"); await delay(330); setPlaylistSlide("none") }}
                             ></img>
-                            <div className='playlist-item-deselected' style={playlistSlide === "right" ? { animation: `slide-in 0.33s ease-in-out` } : (playlistSlide === "left" ? { animation: `slide-left-out 0.33s ease-in-out` } : {})}>
+                            <div className='playlist-item-deselected' style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? { animation: `slide-in 0.33s ease-in-out` } : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? { animation: `slide-left-out 0.33s ease-in-out` } : {})}>
                                 <img src={playlistsIndex - 1 < 0 ? playlists[playlists.length - 1].images[0].url : playlists[playlistsIndex - 1].images[0].url} className='art'></img>
                             </div>
 
-                            <a className='playlist-item' href={playlists[playlistsIndex].external_urls.spotify} style={playlistSlide === "right" ? { animation: `slide-right-in 0.33s ease-in-out` } : (playlistSlide === "left" ? { animation: `slide-left-in 0.33s ease-in-out` } : {})}>
+                            <a className='playlist-item' href={playlists[playlistsIndex].external_urls.spotify} style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? { animation: `slide-right-in 0.33s ease-in-out` } : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? { animation: `slide-left-in 0.33s ease-in-out` } : {})}>
                                 <img src={playlists[playlistsIndex].images[0].url} className='art'></img>
                                 <div className='art-text-container' style={{position: `absolute`, margin: `0px`}}>
                                     <h1 className="art-name-shown">{playlists[playlistsIndex].name}</h1>
                                     <p className="art-desc-shown" style={{ fontSize: '20px' }}>{playlists[playlistsIndex].description}</p>
                                 </div>
                             </a>
-                            <div className='playlist-item-deselected' style={playlistSlide === "right" ? { animation: `slide-right-out 0.33s ease-out` } : (playlistSlide === "left" ? { animation: `slide-in 0.33s ease-in-out` } : {})}>
+                            <div className='playlist-item-deselected' 
+                            style={playlistSlide === "right" ? 
+                            { animation: `slide-right-out 0.33s ease-out` } 
+                            : 
+                             (playlistSlide === "left" ? { animation: `slide-in 0.33s ease-in-out` } : {})}>
                                 <img src={playlistsIndex + 1 >= playlists.length ? playlists[0].images[0].url : playlists[playlistsIndex + 1].images[0].url} className='art'></img>
                             </div>
 
-                            <img src={arrow} style={{ transform: `scale(50%)`, cursor: `pointer`, opacity: `0.5` }}
-                                onClick={async () => { if (playlistsIndex - 1 < 0) { setPlaylistsIndex(playlists.length - 1); } else { setPlaylistsIndex(playlistsIndex - 1); } setPlaylistSlide("right"); await delay(330); setPlaylistSlide("none") }}
+                            <img src={arrow} style={{ transform: `scale(25%)`, cursor: `pointer`, opacity: `1` }}
+                                onClick={async () => { if (playlistsIndex + 1 >= playlists.length) { setPlaylistsIndex(0) } else { setPlaylistsIndex(playlistsIndex + 1) } setPlaylistSlide("left"); await delay(330); setPlaylistSlide("none") }}
                             ></img>
                         </div>
                         :
