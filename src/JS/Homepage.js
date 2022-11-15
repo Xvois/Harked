@@ -15,7 +15,6 @@ function Homepage() {
   let welcomeMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
   return (
     <div className='homepage-container'>
-      <button onClick={() => fillDatabase()}>PH: FILL DATABASE</button>
         <div className='top-container'>
           {token && token !== "denied-scopes" ?
           <h1 className="main-text">Welcome to Photon.</h1>

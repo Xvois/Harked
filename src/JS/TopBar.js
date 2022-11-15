@@ -3,8 +3,31 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import './../CSS/TopBar.css';
 import { ClickAwayListener, FormControl, InputAdornment, InputLabel } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { alpha, styled } from '@mui/material/styles';
 import { getAllUsers } from './API';
 import { useEffect, useState } from 'react';
+
+const SearchBar = styled(OutlinedInput)({
+  '&	label.Mui-focused':{
+    borderColor: `white`,
+  },
+  '& .MuiOutlinedInput-root':{
+    '& .MuiOutlinedInput fieldset': {
+      borderColor: `white`,
+    },
+  },
+  '	.MuiOutlinedInput-input':{
+    color: `white`,
+  },
+  '.MuiOutlinedInput-root':{
+    color: `white`,
+    borderColor: `green`,
+  },
+  '& input:valid + fieldset': {
+    borderColor: 'white',
+    borderWidth: 1,
+  },
+});
 
 
 const TopBar = () => {
@@ -74,8 +97,8 @@ const TopBar = () => {
           <div>
             <ClickAwayListener onClickAway={handleClickAway}>
               <FormControl>
-                <InputLabel>Search</InputLabel>
-                <OutlinedInput label = "Search" onChange={handleChange} onClick={handleChange}></OutlinedInput>
+                <InputLabel className='search-label'>Search</InputLabel>
+                <SearchBar type="search" className='search-bar' label = "Search" onChange={handleChange} onClick={handleChange}></SearchBar>
               </FormControl>
             </ClickAwayListener>
             {searchResults !== null ?

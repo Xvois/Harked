@@ -11,6 +11,7 @@ body {
 
 ::selection {
   background: #22C55E;
+  color: white;
 }
 
 
