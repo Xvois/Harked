@@ -108,14 +108,14 @@ export const fillDatabase = async function(){
     // THE FIRST VALUE IS ALWAYS NULL
     // THIS FIXED IT
     await fetchData(`artists/${songs[0].artists[0].id}`).then(result => artists[0] = result);
-    for(let i = 0; i < 100; i++){
-        console.time("Creating user: ")
+    for(let i = 0; i < 400; i++){
+        console.time("Creating user")
         const data = createFauxUser(songs, analytics, artists);
         await postUser(data.user);
         for(const datapoint of data.datapoints){
             await postDatapoint(datapoint);
         }
-        console.timeEnd("Creating user: ")
+        console.timeEnd("Creating user")
     }
 }
 

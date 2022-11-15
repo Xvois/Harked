@@ -185,6 +185,8 @@ exports.postDatapoint = async (req, res) => {
 
   let songs_ref_id;
   const song_ids = [];
+  //TODO : MAKE IT SO THE ORDER OF THE VALUES MATTERS
+  // IN THE HASH
   // Push all the song ids to an array
   req.body.topSongs.forEach(function(song){
     song_ids.push(song.song_id);

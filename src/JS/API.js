@@ -2,7 +2,7 @@ import axios from 'axios';
 import { authURI } from './Authentication';
 
 export const fetchData = async(path) => {
-    console.log("External API call made to: " + path)
+    //console.log("External API call made to: " + path)
     const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
@@ -45,8 +45,23 @@ export const getUser = async(userID) => {
     )
     return user;
 }
+
+export const getAllUsers = async() => {
+    var users;
+    await axios.get(`http://localhost:9000/PRDB/all`).then(
+        function(result){
+            users = result.data;
+        }
+        ).catch(
+        function(err){
+            console.warn(err);
+        }
+    )
+    return users;
+}
+
 export const postUser = async(user) => {
-    console.info("User " + user.username + " posted.");
+    //console.info("User " + user.username + " posted.");
     await axios.post(`http://localhost:9000/PRDB/create`, user).catch(
         function(err){
             console.warn(err);

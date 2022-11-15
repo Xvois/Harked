@@ -160,7 +160,6 @@ const Profile = () => {
                 // TODO: MAKE THIS A MORE ACCURATE
                 let maxAnalytic = "acousticness";
                 analyticsMetrics.forEach(analytic => {
-                    console.log(item.analytics[analytic]);
                     let comparisonValue;
                     if(analytic === "tempo"){comparisonValue = (item.analytics[analytic] - 50)/150}else{comparisonValue = item.analytics[analytic]}
                     if (comparisonValue > item.analytics[maxAnalytic]) {

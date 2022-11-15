@@ -321,7 +321,6 @@ to {opacity: 0; }
     height: 110px;
     overflow: hidden;
     top: 0;
-    z-index: 10;
 }
 
 .term-container{
