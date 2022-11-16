@@ -1,8 +1,5 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300&family=Lato:wght@900&family=Ubuntu:wght@500;700&display=swap');
-body{
-    background: linear-gradient(rgb(27, 27, 27), black);
-}
 .wrapper{
     display: flex;
     flex-direction:column;
@@ -51,6 +48,8 @@ to {opacity: 0; }
     width: auto;
     height: 400px;
     animation: fadeIn 0.35s ease-in;
+    border-radius: 10%;
+    box-shadow: 0px 0px 100px rgba(255, 255, 255, 0.178);
 }
 
 .play-wrapper-hidden{
@@ -76,6 +75,7 @@ to {opacity: 0; }
     height: 400px;
     border: 3px dotted white;
     border-radius: 10%;
+    box-shadow: 0px 0px 100px rgba(255, 255, 255, 0.178);
 }
 
 .play-wrapper:hover{
@@ -315,7 +315,6 @@ to {opacity: 0; }
 
 
 .user-container{
-    background: radial-gradient(circle at 50%,black, rgb(27, 27, 27));
     padding: 50px;
     display: flex;
     flex-direction: row;
@@ -324,7 +323,6 @@ to {opacity: 0; }
     height: 110px;
     overflow: hidden;
     top: 0;
-    border-bottom: 1px solid white;
 }
 
 .term-container{
@@ -446,7 +444,7 @@ to {opacity: 0; }
 .profile-picture{
     align-self: center;
     margin-right: 10px;
-    border-radius: 20%;
+    border-radius: 10%;
     border: 2px solid rgb(255, 255, 255);
     width: 150px;
     height: 150px;

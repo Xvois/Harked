@@ -1,31 +1,43 @@
 import React from 'react';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import './../CSS/TopBar.css';
-import { ClickAwayListener, FormControl, InputAdornment, InputLabel } from '@mui/material';
+import { ClickAwayListener, FormControl, Input, InputAdornment, InputLabel, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import HomeIcon from '@mui/icons-material/Home';
+import PersonIcon from '@mui/icons-material/Person';
 import { alpha, styled } from '@mui/material/styles';
 import { getAllUsers } from './API';
 import { useEffect, useState } from 'react';
 
-const SearchBar = styled(OutlinedInput)({
-  '&	label.Mui-focused':{
-    borderColor: `white`,
+const SearchBar = styled(TextField)({
+  '& label.Mui-focused': {
+    color: '#22C55E',
   },
-  '& .MuiOutlinedInput-root':{
-    '& .MuiOutlinedInput fieldset': {
-      borderColor: `white`,
+  '& .MuiInput-underline': {
+    color: `white`,
+  },
+  '& .MuiFormLabel-root.Mui-disabled': {
+    color: `white`,
+  },
+  '& .MuiInput-underline:after': {
+    borderBottomColor: '#22C55E',
+  },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: 'white',
+    },
+    '&:hover fieldset': {
+      borderColor: 'white',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#22C55E',
     },
   },
-  '	.MuiOutlinedInput-input':{
-    color: `white`,
+  '& label.Mui-focused': {
+    color: 'white',
   },
-  '.MuiOutlinedInput-root':{
-    color: `white`,
-    borderColor: `green`,
-  },
-  '& input:valid + fieldset': {
-    borderColor: 'white',
-    borderWidth: 1,
+  '& label.Mui': {
+      color: 'white',
   },
 });
 
@@ -92,19 +104,18 @@ const TopBar = () => {
   return (
     <header className="header">
         <div className = "element-container">
-          <a className='element' href='/'>Home</a>
-          <a className='element' href='profile#me'>Profile</a>
+          <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
+          <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
           <div>
             <ClickAwayListener onClickAway={handleClickAway}>
-              <FormControl>
-                <InputLabel className='search-label'>Search</InputLabel>
-                <SearchBar type="search" className='search-bar' label = "Search" onChange={handleChange} onClick={handleChange}></SearchBar>
+              <FormControl variant="standard">
+                <SearchBar className='search-bar' inputProps={{className: `search-label`}} onChange={handleChange} label="Search" startAdornment={<InputAdornment position="start"><SearchIcon color='white'/></InputAdornment>}></SearchBar>
               </FormControl>
             </ClickAwayListener>
             {searchResults !== null ?
               <div id="result">
               {searchResults.map(function (user) {
-                return <a href={`profile#${user.user_id}`}><img src={user.picture_url}></img>{user.username.length > 7 ? user.username.slice(0,7) + "..." : user.username}</a> })
+                return <a href={`profile#${user.user_id}`}><img src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0,14) + "..." : user.username}</a> })
               }</div>
               :
               <></>
