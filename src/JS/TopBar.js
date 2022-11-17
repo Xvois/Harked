@@ -25,19 +25,28 @@ const SearchBar = styled(TextField)({
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
       borderColor: 'white',
+      borderRadius: `40px`,
+      borderWidth: '2px',
+      transition: `all 0.1s ease-in`
     },
     '&:hover fieldset': {
       borderColor: 'white',
     },
     '&.Mui-focused fieldset': {
       borderColor: '#22C55E',
+      borderRadius: `5px`,
+      transition: `all 0.1s ease-in`
     },
   },
   '& label.Mui-focused': {
     color: 'white',
+    marginLeft: `3px`,
+    fontFamily: 'Inter Tight, sans-serif',
   },
-  '& label.Mui': {
+  '& .MuiFormLabel-root': {
       color: 'white',
+      marginLeft: `10px`,
+      fontFamily: 'Inter Tight, sans-serif',
   },
 });
 
@@ -54,8 +63,8 @@ const TopBar = () => {
       arr[i] = [i];
       for (let j = 1; j <= a.length; j++) {
         arr[i][j] =
-          i === 0
-            ? j
+          i === 0 ? 
+            j
             : 
             Math.min(
               arr[i - 1][j] + 1,
@@ -97,7 +106,6 @@ const TopBar = () => {
     })
   }
   useEffect(() => {
-    console.warn("useEffect called!")
     updateCachedUsers();
   }, [])
 
@@ -106,15 +114,16 @@ const TopBar = () => {
         <div className = "element-container">
           <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
           <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
-          <div>
+          <div className='element'>
             <ClickAwayListener onClickAway={handleClickAway}>
               <FormControl variant="standard">
-                <SearchBar className='search-bar' inputProps={{className: `search-label`}} onChange={handleChange} label="Search" startAdornment={<InputAdornment position="start"><SearchIcon color='white'/></InputAdornment>}></SearchBar>
+                <SearchBar className='search-bar' inputProps={{className: `search-label`}} onChange={handleChange} label="Search"></SearchBar>
               </FormControl>
             </ClickAwayListener>
             {searchResults !== null ?
               <div id="result">
               {searchResults.map(function (user) {
+                // TODO: MAKE IT SO IT AUTO LOADS THE NEW USER'S PAGE
                 return <a href={`profile#${user.user_id}`}><img src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0,14) + "..." : user.username}</a> })
               }</div>
               :

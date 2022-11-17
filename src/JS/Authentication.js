@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useNavigate  } from "react-router-dom";
 import { hydrateDatapoints, postLoggedUser } from './PDM';
+import { fetchData } from './API';
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
 const REDIRECT_URI = "http://localhost:3000/authentication";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
@@ -13,6 +14,7 @@ function Authentication(){
   const navigate = useNavigate();
   const redirect = useCallback( async (path) => {
     console.warn("Redirecting...")
+    await fetchData('me').then(result => window.localStorage.setItem("userID", result.id));
     await postLoggedUser();
     navigate(path)
     },
@@ -26,7 +28,7 @@ function Authentication(){
       const re = new RegExp('(?<=\\=)(.*?)(?=\\&)')
       local_token = hash.match(re)[0]
       window.location.hash = ""
-      window.localStorage.setItem("token", local_token)
+      window.localStorage.setItem("token", local_token);
     }if(!local_token && !hash) {window.localStorage.setItem("token", "denied-scopes")}
     if(window.localStorage.getItem("token") !== "denied-scopes") { redirect("/profile#me"); }
     else { redirect("/"); }

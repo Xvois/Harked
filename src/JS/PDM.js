@@ -11,6 +11,7 @@ export const parseSong = function(song){ //takes in the song item
     return tempSong;
 }
 export const retrieveUser = async function(userID){
+    console.log("Getting user!")
     let user = {
     userID: '',
     username: '',
@@ -21,8 +22,7 @@ export const retrieveUser = async function(userID){
     if(userID === 'me'){
         // Resolve the relative userID
         // into a global userID (will always be a valid Spotify ID)
-        let globalUserID;
-        await fetchData('me').then(result => globalUserID = result.id)
+        let globalUserID = window.localStorage.getItem("userID");
         user.userID = globalUserID;
         await getUser(globalUserID).then(result => user = result);
         // Update the player
@@ -32,6 +32,7 @@ export const retrieveUser = async function(userID){
         // Get the user if they are not ourself
         await getUser(userID).then(result => user = result);
     }
+    console.log(user)
     return user;
 }
 
@@ -47,17 +48,16 @@ export const resolveUsername = async function(userID){
 export const getPlaylists = async function(userID){
     let globalUserID = userID;
     let result;
-    if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
+    if(globalUserID === 'me'){globalUserID = window.localStorage.getItem("userID")}
     await fetchData(`users/${globalUserID}/playlists`).then(data => result = data.items);
     await result.forEach(playlist => {if(playlist.owner.id !== globalUserID){result.splice(result.indexOf(playlist), 1)}})
-    console.log(result)
     return result;
 }
 
 export const postLoggedUser = async function(){
     // Get our global userID
-    var globalUserID;
-    await fetchData("me").then(function(result){globalUserID = result.id})
+    var globalUserID = window.localStorage.getItem("userID");
+    console.log(globalUserID)
     let user = {
         userID: globalUserID,
         username: '',
@@ -70,17 +70,20 @@ export const postLoggedUser = async function(){
         user.profilePicture = result.images[0].url; //TODO: ADD CHECK FOR IF THEY DON'T HAVE PFP
     })
     await profilePromise;
-    postUser(user);
+    await postUser(user);
 }
 
 export const retrieveDatapoint = async function(userID, term){
+    console.log("Getting datapoint!")
     var currDatapoint;
     let globalUserID = userID;
-    if(globalUserID === 'me'){await fetchData('me').then(result => globalUserID = result.id)}
+    if(globalUserID === 'me'){globalUserID = window.localStorage.getItem("userID")}
     await getDatapoint(globalUserID, term).then(function(result){
+        console.log(result)
         currDatapoint = result;
     }).catch(err => console.warn(err))
     if(!currDatapoint){
+        console.log(currDatapoint)
         await hydrateDatapoints(globalUserID);
         currDatapoint = await getDatapoint(globalUserID, term);
     }

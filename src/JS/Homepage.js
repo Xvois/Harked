@@ -23,11 +23,14 @@ function Homepage() {
           }
           <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
           {!token || token === "denied-scopes" ?
+            <>
             <a className="auth-button" href={authURI}>Log-in</a>
+            </>
             :
             <div>
               <a className="auth-button" href='/profile#me'>Explore your profile</a>
               <a className="auth-button" href=''>Compare to others</a>
+              <a className="auth-button" onClick={fillDatabase}>PH: Fill database</a>
             </div>
           }
           {token === "denied-scopes" ?

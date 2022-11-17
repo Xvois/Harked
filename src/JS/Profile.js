@@ -339,7 +339,7 @@ const Profile = () => {
                                         <p className='listening-media'>{currentUser.media}</p>
                                     </>
                                     :
-                                    <button>COMPARE BUTTON HERE</button>
+                                    <>{userID === window.localStorage.getItem("userID") ? <p>Welcome to your own profile! (You shouldn't be able to do this!)</p> : <button>Hey!</button>}</>
                                 }
                             </div>
                         </div>

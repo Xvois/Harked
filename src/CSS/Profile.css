@@ -319,7 +319,8 @@ to {opacity: 0; }
     display: flex;
     flex-direction: row;
     max-width: 100%;
-    margin-bottom: 0px;
+    margin-top: 20px;
+    margin-bottom: 50px;
     height: 110px;
     overflow: hidden;
     top: 0;
