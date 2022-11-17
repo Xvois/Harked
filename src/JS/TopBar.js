@@ -40,12 +40,11 @@ const SearchBar = styled(TextField)({
   },
   '& label.Mui-focused': {
     color: 'white',
-    marginLeft: `3px`,
     fontFamily: 'Inter Tight, sans-serif',
   },
   '& .MuiFormLabel-root': {
       color: 'white',
-      marginLeft: `10px`,
+      marginLeft: `5px`,
       fontFamily: 'Inter Tight, sans-serif',
   },
 });
