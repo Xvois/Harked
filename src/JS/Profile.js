@@ -4,14 +4,29 @@ import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import { getPlaylists, retrieveDatapoint, retrieveUser } from './PDM';
 import arrow from './Arrow.png'
+import { Avatar, Chip } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@emotion/react';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+
 
 const Profile = () => {
-    const userID = window.location.hash.split("#")[1];
+    
+const theme = createTheme({
+    palette: {
+      primary: {
+        main: '#22C55E',
+      },
+
+    },
+  });
+    const [userID, setUserID] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
     let [currentUser, setCurrentUser] = useState();
     let [datapoint, setDatapoint] = useState("Datapoint not updated!");
     let [term, setTerm] = useState("long_term");
     let [graph, setGraph] = useState("");
+    let [chipletData, setChipletData] = useState(false)
     let [graphAxis, setGraphAxis] = useState({
         x: "danceability",
         y: "energy"
@@ -261,6 +276,8 @@ const Profile = () => {
     // Function that loads the page when necessary
     const loadPage = async () => {
         // If the page hasn't loaded then grab the user data
+        if(userID === window.localStorage.getItem("userID")){window.location.hash = "me"; setUserID("me")}else{setUserID(window.location.hash.split("#")[1])}
+        console.log(userID)
         if (!loaded) {
             await retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
@@ -275,6 +292,7 @@ const Profile = () => {
             setGraph(constructGraph(analyticsList, "song_id", result.topSongs));
             updateArtistQualities(result);
             getPlaylists(userID).then(result => setPlaylists(result))
+            if(!chipletData){setChipletData([result.topArtists[0] ,result.topGenres[0]])}
         })
         // Refresh the focus
         setShowArt("empty")
@@ -315,7 +333,7 @@ const Profile = () => {
     useEffect(() => {
         console.warn("useEffect called.")
         loadPage();
-    }, [term, graphAxis])
+    }, [term, graphAxis, userID])
 
     return (
         <>
@@ -326,21 +344,13 @@ const Profile = () => {
                 <div className='wrapper'>
                     <div className='user-container'>
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
-                        <div className='text-container'>
+                        <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <div className='username'>{currentUser.username}</div>
-                            <div style={{ display: "flex", flexDirection: "row", marginLeft: "10px" }}>
-                                {currentUser.media ?
-                                    <>
-                                        <div className='music-animatic'>
-                                            <div></div>
-                                            <div></div>
-                                            <div></div>
-                                        </div>
-                                        <p className='listening-media'>{currentUser.media}</p>
-                                    </>
-                                    :
-                                    <>{userID === window.localStorage.getItem("userID") ? <p>Welcome to your own profile! (You shouldn't be able to do this!)</p> : <button>Hey!</button>}</>
-                                }
+                            <div style={{display: `flex`,paddingTop: `5px` , gap: `20px`, width: `250px`,flexWrap: `wrap`}}>
+                                <ThemeProvider theme={theme}>
+                                    <Chip label={`${chipletData[0].name} fan`} avatar={<Avatar src=''/>} color='primary'/>
+                                    <Chip label={`${chipletData[1]} fan`} color='primary' variant='outlined' icon={<MusicNoteIcon fontSize='small'/>}/>
+                                </ThemeProvider>
                             </div>
                         </div>
                         <div className='user-details'>
@@ -353,6 +363,21 @@ const Profile = () => {
                             <p>Followers: PH</p>
                             <p>Playlists: PH</p>
                         </div>
+                    </div>
+                    <div className='media-container'>
+                        {currentUser.media ?
+                            <>
+                                <img className='media-preview' src={currentUser.media.image}></img>
+                                <div className='music-animatic'>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <p className='listening-media'>{currentUser.media.name}</p>
+                            </>
+                            :
+                            <>{userID === "me" ? <p>Welcome to your own profile!</p> : <button>Hey!</button>}</>
+                        }
                     </div>
                     <div>
                         <div style={{ display: `flex`, flexDirection: `row`, justifyContent: `space-evenly` }}>

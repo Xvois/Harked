@@ -320,7 +320,6 @@ to {opacity: 0; }
     flex-direction: row;
     max-width: 100%;
     margin-top: 20px;
-    margin-bottom: 50px;
     height: 110px;
     overflow: hidden;
     top: 0;
@@ -361,15 +360,6 @@ to {opacity: 0; }
     text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.363);
     text-transform: uppercase;
 }
-
-.text-container{
-    margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    height: max-content;
-    position: relative;
-}
-
 .user-details{
     margin-left: auto;
     display: flex;
@@ -396,10 +386,19 @@ to {opacity: 0; }
     text-decoration: none;
 }
 
+.spotify-link p:hover{
+    color: #22C55E;
+}
+
 .spotify-link p{
     margin-left: 10px;
 }
 
+.media-container{
+    display: flex;
+    padding: 0px 50px 0px 50px;
+    flex-direction: row;
+}
 
 .listening-media{
     font-family: 'Ubuntu';
@@ -407,7 +406,9 @@ to {opacity: 0; }
     font-size: 20px;
     margin-top: 18px;
     margin-left: 15px;
-    color: rgb(255, 255, 255)
+    color: rgb(255, 255, 255);
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .music-animatic{
@@ -419,6 +420,8 @@ to {opacity: 0; }
     align-items: center;
     flex-direction: row;
     justify-content: space-between;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .music-animatic div{
@@ -435,6 +438,14 @@ to {opacity: 0; }
     animation-delay: 0.4s;
 }
 
+.media-preview{
+    border-radius: 10%;
+    margin-right: 15px;
+    margin-top: auto;
+    margin-bottom: auto;
+    height: 50px;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.342);
+}
 
 @keyframes playing{
     0% {height: 10px;}
@@ -457,7 +468,7 @@ to {opacity: 0; }
     margin-right: 10px;
     margin-top: -20px;
     font-family: 'Inter Tight', sans-serif;
-    font-size: 40px;
+    font-size: 60px;
     font-weight: 900;
     color: rgb(255, 255, 255);
     text-transform: uppercase;

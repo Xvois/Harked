@@ -16,7 +16,7 @@ export const retrieveUser = async function(userID){
     userID: '',
     username: '',
     profilePicture: '',
-    media: '',
+    media: {name: '', image: ''},
     }
     // Are we retrieving ourself?
     if(userID === 'me'){
@@ -27,7 +27,7 @@ export const retrieveUser = async function(userID){
         await getUser(globalUserID).then(result => user = result);
         // Update the player
         // TODO: FIX THIS! THIS TAKES SO LONG!!!
-        await fetchData("me/player").then(result => user.media = parseSong(result.item));
+        await fetchData("me/player").then(function(result){if(result){user.media = {name: parseSong(result.item), image: result.item.album.images[2].url}}});
     }else{
         // Get the user if they are not ourself
         await getUser(userID).then(result => user = result);
