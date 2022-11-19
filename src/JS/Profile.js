@@ -1,36 +1,42 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import { getPlaylists, retrieveDatapoint, retrieveUser } from './PDM';
+import {getPlaylists, retrieveDatapoint, retrieveUser} from './PDM';
 import arrow from './Arrow.png'
-import { Avatar, Chip } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
-import { ThemeProvider } from '@emotion/react';
+import {Avatar, Chip} from '@mui/material';
+import {createTheme} from '@mui/material/styles';
+import {ThemeProvider} from '@emotion/react';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 
 const Profile = () => {
-    
-const theme = createTheme({
-    palette: {
-      primary: {
-        main: '#22C55E',
-      },
 
-    },
-  });
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: '#22C55E',
+            },
+
+        },
+    });
     const [userID, setUserID] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
-    let [currentUser, setCurrentUser] = useState();
-    let [datapoint, setDatapoint] = useState("Datapoint not updated!");
+    let [currentUser, setCurrentUser] = useState({
+        userID: '',
+        username: '',
+        profilePicture: '',
+        media: {name: '', image: ''},
+    });
+    let [datapoint, setDatapoint] = useState({
+        userID: '',
+        collectionDate: '',
+        term: '',
+        topSongs: [],
+        topArtists: [],
+        topGenres: [],
+    });
     let [term, setTerm] = useState("long_term");
-    let [graph, setGraph] = useState("");
     let [chipletData, setChipletData] = useState(false)
-    let [graphAxis, setGraphAxis] = useState({
-        x: "danceability",
-        y: "energy"
-    })
     const [showArt, setShowArt] = useState("empty")
     const [focus, setFocus] = useState({
         item: null,
@@ -44,7 +50,7 @@ const theme = createTheme({
     const [focusMessage, setFocusMessage] = useState("See what it says.");
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
-    const [playlists, setPlaylists] = useState()
+    const [playlists, setPlaylists] = useState([])
     const [playlistsIndex, setPlaylistsIndex] = useState(0)
     const [playlistSlide, setPlaylistSlide] = useState("none")
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
@@ -123,7 +129,7 @@ const theme = createTheme({
         // Get the artist that has the max value in each
         // metric
         analyticsMetrics.forEach(metric => {
-            let max = { artist: '', value: 0 };
+            let max = {artist: '', value: 0};
             for (let i = 0; i < 50; i++) {
                 if (songs[i].analytics[metric] > max.value) {
                     max.artist = songs[i].artist;
@@ -133,7 +139,7 @@ const theme = createTheme({
             // Append the result to the existing result object
             result = {
                 ...result,
-                [max.artist]: { theme: metric }
+                [max.artist]: {theme: metric}
             }
         })
         // For every artist [in order of listen time]
@@ -141,7 +147,6 @@ const theme = createTheme({
             // Add the genre quality to them
             // equal to their genre
             if (genres.includes(artist.genre)) {
-                genres.pop(artist.genre);
                 result[artist.name] = {
                     ...result[artist.name],
                     genre: artist.genre
@@ -176,7 +181,11 @@ const theme = createTheme({
                 let maxAnalytic = "acousticness";
                 analyticsMetrics.forEach(analytic => {
                     let comparisonValue;
-                    if(analytic === "tempo"){comparisonValue = (item.analytics[analytic] - 50)/150}else{comparisonValue = item.analytics[analytic]}
+                    if (analytic === "tempo") {
+                        comparisonValue = (item.analytics[analytic] - 50) / 150
+                    } else {
+                        comparisonValue = item.analytics[analytic]
+                    }
                     if (comparisonValue > item.analytics[maxAnalytic]) {
                         maxAnalytic = analytic;
                     }
@@ -185,18 +194,24 @@ const theme = createTheme({
                 break;
             case undefined:
                 let relevantArtists = [];
-                for (var artist in artistQualities) {
-                    if (artistQualities[artist].genre === item) { relevantArtists.push(artist); }
+                for (let artist in artistQualities) {
+                    if (artistQualities[artist].genre === item) {
+                        relevantArtists.push(artist);
+                    }
                 }
-                datapoint.topArtists.forEach(artist => { if (artist.genre === item && !relevantArtists.includes(artist.name)) { relevantArtists.push(artist.name) } });
+                datapoint.topArtists.forEach(artist => {
+                    if (artist.genre === item && !relevantArtists.includes(artist.name)) {
+                        relevantArtists.push(artist.name)
+                    }
+                });
                 relevantArtists.length > 1 ?
                     //          Capitalise the possessive
                     message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `, ${relevantArtists[1]}` : "s"}.`
                     :
                     (relevantArtists.length === 1 ?
-                        message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                        :    //TODO: THIS OCCURS WAYYY TOO OFTEN
-                        message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                            message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
+                            :    //TODO: THIS OCCURS WAYYY TOO OFTEN
+                            message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
                     )
                 break;
             default:
@@ -220,44 +235,81 @@ const theme = createTheme({
         }
         return message;
     }
-    // Construct the graph
-    const constructGraph = (object, key, parent) => {
-        // Initialise limits
+    // TODO: FIND A WAY TO INCLUDE THIS INTO THE GRAPH COMPONENT
+    const [graphAxis, setGraphAxis] = useState({
+        x: "danceability",
+        y: "energy"
+    })
+    /**
+     * The Graph is a dynamic component that creates a scatter plot
+     * from an array of objects. Its title is the in the format "{title} X vs Y".
+     * The keys can be changed using a drop-down menu and the array of
+     * these keys can be passed in as selections.
+     * @param props title, key, list, parentObject and selections.
+     * @returns {JSX.Element} HTML for a graph.
+     * @constructor
+     */
+    const Graph = (props) => {
+        const key = props.key;
+        const list = props.data;
+        const parentObj = props.parent;
+        const selections = props.selections;
+        const title = props.title;
         let maxX;
         let minX;
-        if (graphAxis.x === "tempo") { minX = 50; maxX = 200 }
-        else { minX = 0; maxX = 1 }
+        if (graphAxis.x === "tempo") {
+            minX = 50;
+            maxX = 200
+        } else {
+            minX = 0;
+            maxX = 1
+        }
         let maxY;
         let minY;
-        if (graphAxis.y === "tempo") { minY = 50; maxY = 200 }
-        else { minY = 0; maxY = 1 }
+        if (graphAxis.y === "tempo") {
+            minY = 50;
+            maxY = 200
+        } else {
+            minY = 0;
+            maxY = 1
+        }
         const points = [];
-        object.forEach((element, i) => {
+        list.forEach((element, i) => {
             // Coords as a percentage
             let pointX = ((element[graphAxis.x] - minX) * 100) / (maxX - minX);
             let pointY = ((element[graphAxis.y] - minY) * 100) / (maxY - minY);
             let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
             //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
-            points.push(<img alt="" key={element[key]} className='point' style={{ left: `${pointX}%`, bottom: `${pointY}%` }} onClick={() => updateFocus(parent[i], message)}></img>)
+            points.push(<div key={element[key]} className='point'
+                             style={{left: `${pointX}%`, bottom: `${pointY}%`}}
+                             onClick={() => updateFocus(parentObj[i], message)}></div>)
         });
-        // Return the whole structure so it can simply
+        // Return the whole structure, so it can simply
         // be dropped in
         return (
             <>
                 <div className='graph-container'>
                     <h1 className='graph-title'>
-                        Your top 50 songs
-                        <select className='graph-dropdown' defaultValue={graphAxis.x} onChange={(event) => setGraphAxis({ ...graphAxis, x: event.target.value })}>
-                            {analyticsMetrics.map(function (analytic) {
-                                if (analytic !== graphAxis.y) { return <option value={analytic}>{analytic}</option> }
-                                else { return <></> }
+                        {title}
+                        <select className='graph-dropdown' defaultValue={graphAxis.x}
+                                onChange={(event) => setGraphAxis({...graphAxis, x: event.target.value})}>
+                            {selections.map(function (option) {
+                                if (option !== graphAxis.y) {
+                                    return <option value={option}>{option}</option>
+                                } else {
+                                    return <></>
+                                }
                             })}
                         </select>
                         vs.
-                        <select className='graph-dropdown' defaultValue={graphAxis.y} onChange={(event) => setGraphAxis({ ...graphAxis, y: event.target.value })}>
-                            {analyticsMetrics.map(function (analytic) {
-                                if (analytic !== graphAxis.x) { return <option value={analytic}>{analytic}</option> }
-                                else { return <></> }
+                        <select className='graph-dropdown' defaultValue={graphAxis.y}
+                                onChange={(event) => setGraphAxis({...graphAxis, y: event.target.value})}>
+                            {selections.map(function (option) {
+                                if (option !== graphAxis.x) {
+                                    return <option value={option}>{option}</option>
+                                } else {
+                                    return <></>
+                                }
                             })}
                         </select>
                     </h1>
@@ -276,7 +328,12 @@ const theme = createTheme({
     // Function that loads the page when necessary
     const loadPage = async () => {
         // If the page hasn't loaded then grab the user data
-        if(userID === window.localStorage.getItem("userID")){window.location.hash = "me"; setUserID("me")}else{setUserID(window.location.hash.split("#")[1])}
+        if (userID === window.localStorage.getItem("userID")) {
+            window.location.hash = "me";
+            setUserID("me")
+        } else {
+            setUserID(window.location.hash.split("#")[1])
+        }
         console.log(userID)
         if (!loaded) {
             await retrieveUser(userID).then(function (result) {
@@ -289,10 +346,11 @@ const theme = createTheme({
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph(analyticsList, "song_id", result.topSongs));
-            updateArtistQualities(result);
-            getPlaylists(userID).then(result => setPlaylists(result))
-            if(!chipletData){setChipletData([result.topArtists[0] ,result.topGenres[0]])}
+            await updateArtistQualities(result);
+            await getPlaylists(userID).then(result => setPlaylists(result))
+            if (!chipletData) {
+                setChipletData([result.topArtists[0], result.topGenres[0]])
+            }
         })
         // Refresh the focus
         setShowArt("empty")
@@ -302,6 +360,7 @@ const theme = createTheme({
     }
     // Delay function mainly used for animations
     const delay = ms => new Promise(res => setTimeout(res, ms));
+
     // The function that updates the focus.
     async function updateFocus(item, tertiaryText) {
         focus.item = item;
@@ -325,49 +384,70 @@ const theme = createTheme({
                 localState.tertiary = '';
             }
             setFocus(localState);
+            await updateFocusMessage(datapoint);
             setShowArt(true)
-            updateFocusMessage(datapoint);
         }
     }
 
     useEffect(() => {
         console.warn("useEffect called.")
         loadPage();
-    }, [term, graphAxis, userID])
+    }, [term, userID])
 
     return (
         <>
 
             {!loaded ?
-                <div className="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                <div className="lds-grid">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
                 :
                 <div className='wrapper'>
                     <div className='user-container'>
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <div className='username'>{currentUser.username}</div>
-                            <div style={{display: `flex`,paddingTop: `5px` , gap: `20px`, width: `250px`,flexWrap: `wrap`}}>
+                            <div style={{
+                                display: `flex`,
+                                paddingTop: `5px`,
+                                gap: `20px`,
+                                width: `250px`,
+                                flexWrap: `wrap`
+                            }}>
                                 <ThemeProvider theme={theme}>
-                                    <Chip label={`${chipletData[0].name} fan`} avatar={<Avatar src=''/>} color='primary'/>
-                                    <Chip label={`${chipletData[1]} fan`} color='primary' variant='outlined' icon={<MusicNoteIcon fontSize='small'/>}/>
+                                    <Chip label={`${chipletData[0].name} fan`} avatar={<Avatar src=''/>}
+                                          color='primary'/>
+                                    <Chip label={`${chipletData[1]} fan`} color='primary' variant='outlined'
+                                          icon={<MusicNoteIcon fontSize='small'/>}/>
                                 </ThemeProvider>
                             </div>
                         </div>
                         <div className='user-details'>
                             <a href={`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link'>
-                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" width="20px" version="1.1" viewBox="0 0 168 168">
-                                    <path fill="#22C55E" d="m83.996 0.277c-46.249 0-83.743 37.493-83.743 83.742 0 46.251 37.494 83.741 83.743 83.741 46.254 0 83.744-37.49 83.744-83.741 0-46.246-37.49-83.738-83.745-83.738l0.001-0.004zm38.404 120.78c-1.5 2.46-4.72 3.24-7.18 1.73-19.662-12.01-44.414-14.73-73.564-8.07-2.809 0.64-5.609-1.12-6.249-3.93-0.643-2.81 1.11-5.61 3.926-6.25 31.9-7.291 59.263-4.15 81.337 9.34 2.46 1.51 3.24 4.72 1.73 7.18zm10.25-22.805c-1.89 3.075-5.91 4.045-8.98 2.155-22.51-13.839-56.823-17.846-83.448-9.764-3.453 1.043-7.1-0.903-8.148-4.35-1.04-3.453 0.907-7.093 4.354-8.143 30.413-9.228 68.222-4.758 94.072 11.127 3.07 1.89 4.04 5.91 2.15 8.976v-0.001zm0.88-23.744c-26.99-16.031-71.52-17.505-97.289-9.684-4.138 1.255-8.514-1.081-9.768-5.219-1.254-4.14 1.08-8.513 5.221-9.771 29.581-8.98 78.756-7.245 109.83 11.202 3.73 2.209 4.95 7.016 2.74 10.733-2.2 3.722-7.02 4.949-10.73 2.739z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" width="20px" version="1.1"
+                                     viewBox="0 0 168 168">
+                                    <path fill="#22C55E"
+                                          d="m83.996 0.277c-46.249 0-83.743 37.493-83.743 83.742 0 46.251 37.494 83.741 83.743 83.741 46.254 0 83.744-37.49 83.744-83.741 0-46.246-37.49-83.738-83.745-83.738l0.001-0.004zm38.404 120.78c-1.5 2.46-4.72 3.24-7.18 1.73-19.662-12.01-44.414-14.73-73.564-8.07-2.809 0.64-5.609-1.12-6.249-3.93-0.643-2.81 1.11-5.61 3.926-6.25 31.9-7.291 59.263-4.15 81.337 9.34 2.46 1.51 3.24 4.72 1.73 7.18zm10.25-22.805c-1.89 3.075-5.91 4.045-8.98 2.155-22.51-13.839-56.823-17.846-83.448-9.764-3.453 1.043-7.1-0.903-8.148-4.35-1.04-3.453 0.907-7.093 4.354-8.143 30.413-9.228 68.222-4.758 94.072 11.127 3.07 1.89 4.04 5.91 2.15 8.976v-0.001zm0.88-23.744c-26.99-16.031-71.52-17.505-97.289-9.684-4.138 1.255-8.514-1.081-9.768-5.219-1.254-4.14 1.08-8.513 5.221-9.771 29.581-8.98 78.756-7.245 109.83 11.202 3.73 2.209 4.95 7.016 2.74 10.733-2.2 3.722-7.02 4.949-10.73 2.739z"/>
                                 </svg>
                                 <p>Open profile in Spotify.</p>
                             </a>
                             <p>Followers: PH</p>
-                            <p>Playlists: PH</p>
+                            <p>Playlists: {playlists.length}</p>
                         </div>
                     </div>
                     <div className='media-container'>
                         {currentUser.media ?
                             <>
-                                <img className='media-preview' src={currentUser.media.image}></img>
+                                <img className='media-preview' src={currentUser.media.image}
+                                     alt={"media preview"}></img>
                                 <div className='music-animatic'>
                                     <div></div>
                                     <div></div>
@@ -380,33 +460,46 @@ const theme = createTheme({
                         }
                     </div>
                     <div>
-                        <div style={{ display: `flex`, flexDirection: `row`, justifyContent: `space-evenly` }}>
-                            <img src={arrow} style={{ transform: `rotate(180deg) scale(20%)`, cursor: `pointer` }} onClick={() => decrementSimple()}></img>
+                        <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`}}>
+                            <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}}
+                                 onClick={() => decrementSimple()} alt={"arrow"}></img>
                             <h2 className='datapoint-title'>Top {simpleSelection}</h2>
-                            <img src={arrow} style={{ transform: `scale(20%)`, cursor: `pointer` }} onClick={() => incrementSimple()} ></img>
+                            <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}}
+                                 onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
                         <div className='term-container'>
-                            <button onClick={() => setTerm("short_term")} style={term === "short_term" ? { backgroundColor: `#22C55E` } : { backgroundColor: `black`, cursor: `pointer` }}></button>
+                            <button onClick={() => setTerm("short_term")}
+                                    style={term === "short_term" ? {backgroundColor: `#22C55E`} : {
+                                        backgroundColor: `black`,
+                                        cursor: `pointer`
+                                    }}></button>
                             <div></div>
                             <div></div>
-                            <button onClick={() => setTerm("medium_term")} style={term === "medium_term" ? { backgroundColor: `#22C55E` } : { backgroundColor: `black`, cursor: `pointer` }}></button>
+                            <button onClick={() => setTerm("medium_term")}
+                                    style={term === "medium_term" ? {backgroundColor: `#22C55E`} : {
+                                        backgroundColor: `black`,
+                                        cursor: `pointer`
+                                    }}></button>
                             <div></div>
                             <div></div>
-                            <button onClick={() => setTerm("long_term")} style={term === "long_term" ? { backgroundColor: `#22C55E` } : { backgroundColor: `black`, cursor: `pointer` }}></button>
+                            <button onClick={() => setTerm("long_term")}
+                                    style={term === "long_term" ? {backgroundColor: `#22C55E`} : {
+                                        backgroundColor: `black`,
+                                        cursor: `pointer`
+                                    }}></button>
                         </div>
                         <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='simple-container'>
                             <ol>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][0])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][1])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][2])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][3], ``)}>{getLIName(datapoint[`top${simpleSelection}`][3])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][4], ``)}>{getLIName(datapoint[`top${simpleSelection}`][4])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][5], ``)}>{getLIName(datapoint[`top${simpleSelection}`][5])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][6], ``)}>{getLIName(datapoint[`top${simpleSelection}`][6])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][7], ``)}>{getLIName(datapoint[`top${simpleSelection}`][7])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{getLIName(datapoint[`top${simpleSelection}`][8])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{getLIName(datapoint[`top${simpleSelection}`][9])}</li>
+                                {datapoint[`top${simpleSelection}`].map(function (element, i) {
+                                    if (i < 10) {
+                                        const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
+                                        return <li className='list-item'
+                                                   onClick={() => updateFocus(element, message)}>{getLIName(element)}</li>
+                                    } else {
+                                        return <></>
+                                    }
+                                })}
                             </ol>
                             <div className='focus-container'>
                                 {simpleSelection !== "Genres" ?
@@ -414,53 +507,88 @@ const theme = createTheme({
                                         {showArt === "empty" ?
                                             <div className='play-wrapper-empty'>Select an item to view in focus.</div>
                                             :
-                                            <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'} href={focus.link} rel="noopener noreferrer" target="_blank">
+                                            <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
+                                               href={focus.link} rel="noopener noreferrer" target="_blank">
                                                 <img className='art' src={focus.image} alt='Cover art'></img>
                                                 <div className='art-text-container'>
                                                     <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"} style={{ fontSize: '40px' }}>{focus.secondary}</p>
+                                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
+                                                       style={{fontSize: '40px'}}>{focus.secondary}</p>
                                                     <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                                 </div>
                                             </a>
                                         }
                                     </div>
                                     :
-                                    <div style={{ width: `20%` }}></div>
+                                    <div style={{width: `20%`}}></div>
                                 }
 
                                 <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
                             </div>
                         </div>
                     </div>
-                    {graph}
-                    <h2 style={{ textTransform: `uppercase`, textAlign: `centre`, margin: `auto`, fontSize: `50px`, color: `#22C55E`, marginTop: `50px` }}>{currentUser.username}'s playlists</h2>
-                    {playlists !== undefined ?
+                    <Graph title="Your top 50 songs" key="song_id" selections={analyticsMetrics}
+                           data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
+                    <h2 style={{
+                        textTransform: `uppercase`,
+                        margin: `auto`,
+                        fontSize: `50px`,
+                        color: `#22C55E`,
+                        marginTop: `50px`
+                    }}>{currentUser.username}'s playlists</h2>
+                    {playlists.length !== 0 ?
                         <div className='playlist-wrapper'>
-                            <img src={arrow} style={{ transform: `rotate(180deg) scale(25%)`, cursor: `pointer`, opacity: `1` }}
-                               onClick={async () => { if (playlistsIndex - 1 < 0) { setPlaylistsIndex(playlists.length - 1); } else { setPlaylistsIndex(playlistsIndex - 1); } setPlaylistSlide("right"); await delay(330); setPlaylistSlide("none") }}
-                            ></img>
-                            <div className='playlist-item-deselected' style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? { animation: `slide-in 0.33s ease-in-out` } : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? { animation: `slide-left-out 0.33s ease-in-out` } : {})}>
-                                <img src={playlistsIndex - 1 < 0 ? playlists[playlists.length - 1].images[0].url : playlists[playlistsIndex - 1].images[0].url} className='art'></img>
+                            <img src={arrow}
+                                 style={{transform: `rotate(180deg) scale(25%)`, cursor: `pointer`, opacity: `1`}}
+                                 onClick={async () => {
+                                     if (playlistsIndex - 1 < 0) {
+                                         setPlaylistsIndex(playlists.length - 1);
+                                     } else {
+                                         setPlaylistsIndex(playlistsIndex - 1);
+                                     }
+                                     setPlaylistSlide("right");
+                                     await delay(330);
+                                     setPlaylistSlide("none")
+                                 }}
+                                 alt={"arrow"}></img>
+                            <div className='playlist-item-deselected'
+                                 style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? {animation: `slide-in 0.33s ease-in-out`} : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? {animation: `slide-left-out 0.33s ease-in-out`} : {})}>
+                                <img
+                                    src={playlistsIndex - 1 < 0 ? playlists[playlists.length - 1].images[0].url : playlists[playlistsIndex - 1].images[0].url}
+                                    className='art' alt={"art"}></img>
                             </div>
 
-                            <a className='playlist-item' href={playlists[playlistsIndex].external_urls.spotify} style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? { animation: `slide-right-in 0.33s ease-in-out` } : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? { animation: `slide-left-in 0.33s ease-in-out` } : {})}>
-                                <img src={playlists[playlistsIndex].images[0].url} className='art'></img>
+                            <a className='playlist-item' href={playlists[playlistsIndex].external_urls.spotify}
+                               style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? {animation: `slide-right-in 0.33s ease-in-out`} : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? {animation: `slide-left-in 0.33s ease-in-out`} : {})}>
+                                <img src={playlists[playlistsIndex].images[0].url} className='art' alt={"art"}></img>
                                 <div className='art-text-container' style={{position: `absolute`, margin: `0px`}}>
                                     <h1 className="art-name-shown">{playlists[playlistsIndex].name}</h1>
-                                    <p className="art-desc-shown" style={{ fontSize: '20px' }}>{playlists[playlistsIndex].description}</p>
+                                    <p className="art-desc-shown"
+                                       style={{fontSize: '20px'}}>{playlists[playlistsIndex].description}</p>
                                 </div>
                             </a>
-                            <div className='playlist-item-deselected' 
-                            style={playlistSlide === "right" ? 
-                            { animation: `slide-right-out 0.33s ease-out` } 
-                            : 
-                             (playlistSlide === "left" ? { animation: `slide-in 0.33s ease-in-out` } : {})}>
-                                <img src={playlistsIndex + 1 >= playlists.length ? playlists[0].images[0].url : playlists[playlistsIndex + 1].images[0].url} className='art'></img>
+                            <div className='playlist-item-deselected'
+                                 style={playlistSlide === "right" ?
+                                     {animation: `slide-right-out 0.33s ease-out`}
+                                     :
+                                     (playlistSlide === "left" ? {animation: `slide-in 0.33s ease-in-out`} : {})}>
+                                <img
+                                    src={playlistsIndex + 1 >= playlists.length ? playlists[0].images[0].url : playlists[playlistsIndex + 1].images[0].url}
+                                    className='art' alt={"art"}></img>
                             </div>
 
-                            <img src={arrow} style={{ transform: `scale(25%)`, cursor: `pointer`, opacity: `1` }}
-                                onClick={async () => { if (playlistsIndex + 1 >= playlists.length) { setPlaylistsIndex(0) } else { setPlaylistsIndex(playlistsIndex + 1) } setPlaylistSlide("left"); await delay(330); setPlaylistSlide("none") }}
-                            ></img>
+                            <img src={arrow} style={{transform: `scale(25%)`, cursor: `pointer`, opacity: `1`}}
+                                 onClick={async () => {
+                                     if (playlistsIndex + 1 >= playlists.length) {
+                                         setPlaylistsIndex(0)
+                                     } else {
+                                         setPlaylistsIndex(playlistsIndex + 1)
+                                     }
+                                     setPlaylistSlide("left");
+                                     await delay(330);
+                                     setPlaylistSlide("none")
+                                 }}
+                                 alt={"arrow"}></img>
                         </div>
                         :
                         <></>

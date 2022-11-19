@@ -67,8 +67,8 @@ knex.schema
             if(!exists){
                 return knex.schema.createTable('songs_ref', (table) => {
                     table.float('id').primary();
-                    for(var i = 1; i < 51; i++){
-                      table.string(`song_id_${i}`).references('song_id').inTable('songs')
+                    for (let i = 1; i < 51; i++) {
+                        table.string(`song_id_${i}`).references('song_id').inTable('songs')
                     }
                 })
                 .then(() => {
@@ -143,9 +143,9 @@ knex.schema
             if(!exists){
                 return knex.schema.createTable('artists_ref', (table) => {
                     table.float('id').primary();
-                      for(var i = 1; i < 21; i++){
+                    for (let i = 1; i < 21; i++) {
                         table.string(`artist_id_${i}`).references('artist_id').inTable('artists')
-                      }
+                    }
                 })
                 .then(() => {
                     // Log success message
@@ -187,9 +187,9 @@ knex.schema
             if(!exists){
                 return knex.schema.createTable('genres', (table) => {
                     table.float('id').primary();
-                    for(var i = 1; i < 51; i++){
+                    for (let i = 1; i < 51; i++) {
                         table.string(`genre_${i}`)
-                      }
+                    }
                 })
                 .then(() => {
                     // Log success message

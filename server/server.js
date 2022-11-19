@@ -30,13 +30,13 @@ app.use(cors(corsOptions)) // Use this after the variable declaration
 app.use('/PRDB', usersRouter)
 
 // Implement 500 error route
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
   console.error(err.stack)
-  res.status(500).send('Something is broken.')
+  res.status(404).send('Something is broken.')
 })
 
 // Implement 404 error route
-app.use(function (req, res, next) {
+app.use(function (req, res) {
   res.status(404).send('Sorry we could not find that.')
 })
 
