@@ -12,25 +12,32 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 const Profile = () => {
     
-const theme = createTheme({
-    palette: {
-      primary: {
-        main: '#22C55E',
-      },
+    const theme = createTheme({
+        palette: {
+          primary: {
+            main: '#22C55E',
+          },
 
-    },
-  });
+        },
+      });
     const [userID, setUserID] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
-    let [currentUser, setCurrentUser] = useState();
-    let [datapoint, setDatapoint] = useState("Datapoint not updated!");
+    let [currentUser, setCurrentUser] = useState({
+        userID: '',
+        username: '',
+        profilePicture: '',
+        media: {name: '', image: ''},
+    });
+    let [datapoint, setDatapoint] = useState({
+        userID: '',
+        collectionDate: '',
+        term: '',
+        topSongs: [],
+        topArtists: [],
+        topGenres: [],
+    });
     let [term, setTerm] = useState("long_term");
-    let [graph, setGraph] = useState("");
     let [chipletData, setChipletData] = useState(false)
-    let [graphAxis, setGraphAxis] = useState({
-        x: "danceability",
-        y: "energy"
-    })
     const [showArt, setShowArt] = useState("empty")
     const [focus, setFocus] = useState({
         item: null,
@@ -44,7 +51,7 @@ const theme = createTheme({
     const [focusMessage, setFocusMessage] = useState("See what it says.");
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
-    const [playlists, setPlaylists] = useState()
+    const [playlists, setPlaylists] = useState([])
     const [playlistsIndex, setPlaylistsIndex] = useState(0)
     const [playlistSlide, setPlaylistSlide] = useState("none")
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
@@ -137,11 +144,12 @@ const theme = createTheme({
             }
         })
         // For every artist [in order of listen time]
-        await artists.forEach(async artist => {
+        artists.forEach(artist => {
             // Add the genre quality to them
             // equal to their genre
             if (genres.includes(artist.genre)) {
-                genres.pop(artist.genre);
+                const index = genres.indexOf(artist.genre);
+                genres.splice(index, 1);
                 result[artist.name] = {
                     ...result[artist.name],
                     genre: artist.genre
@@ -185,7 +193,7 @@ const theme = createTheme({
                 break;
             case undefined:
                 let relevantArtists = [];
-                for (var artist in artistQualities) {
+                for (let artist in artistQualities) {
                     if (artistQualities[artist].genre === item) { relevantArtists.push(artist); }
                 }
                 datapoint.topArtists.forEach(artist => { if (artist.genre === item && !relevantArtists.includes(artist.name)) { relevantArtists.push(artist.name) } });
@@ -221,8 +229,15 @@ const theme = createTheme({
         return message;
     }
     // Construct the graph
-    const constructGraph = (object, key, parent) => {
+    const Graph = (props) => {
         // Initialise limits
+        const [graphAxis, setGraphAxis] = useState({
+            x: "danceability",
+            y: "energy"
+        })
+        const key = props.key;
+        const list = props.data;
+        const parentObj = props.parent;
         let maxX;
         let minX;
         if (graphAxis.x === "tempo") { minX = 50; maxX = 200 }
@@ -232,15 +247,15 @@ const theme = createTheme({
         if (graphAxis.y === "tempo") { minY = 50; maxY = 200 }
         else { minY = 0; maxY = 1 }
         const points = [];
-        object.forEach((element, i) => {
+        list.forEach((element, i) => {
             // Coords as a percentage
             let pointX = ((element[graphAxis.x] - minX) * 100) / (maxX - minX);
             let pointY = ((element[graphAxis.y] - minY) * 100) / (maxY - minY);
             let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
             //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
-            points.push(<img alt="" key={element[key]} className='point' style={{ left: `${pointX}%`, bottom: `${pointY}%` }} onClick={() => updateFocus(parent[i], message)}></img>)
+            points.push(<img alt="" key={element[key]} className='point' style={{ left: `${pointX}%`, bottom: `${pointY}%` }} onClick={() => updateFocus(parentObj[i], message)}></img>)
         });
-        // Return the whole structure so it can simply
+        // Return the whole structure, so it can simply
         // be dropped in
         return (
             <>
@@ -289,9 +304,8 @@ const theme = createTheme({
             setDatapoint(result)
             const analyticsList = [];
             result.topSongs.forEach(song => analyticsList.push(song.analytics))
-            setGraph(constructGraph(analyticsList, "song_id", result.topSongs));
-            updateArtistQualities(result);
-            getPlaylists(userID).then(result => setPlaylists(result))
+            await updateArtistQualities(result);
+            await getPlaylists(userID).then(result => setPlaylists(result))
             if(!chipletData){setChipletData([result.topArtists[0] ,result.topGenres[0]])}
         })
         // Refresh the focus
@@ -326,14 +340,14 @@ const theme = createTheme({
             }
             setFocus(localState);
             setShowArt(true)
-            updateFocusMessage(datapoint);
+            await updateFocusMessage(datapoint);
         }
     }
 
     useEffect(() => {
         console.warn("useEffect called.")
-        loadPage();
-    }, [term, graphAxis, userID])
+        loadPage().then(() => console.log("Loaded!")).catch(err => console.error(err));
+    }, [term, userID])
 
     return (
         <>
@@ -367,7 +381,7 @@ const theme = createTheme({
                     <div className='media-container'>
                         {currentUser.media ?
                             <>
-                                <img className='media-preview' src={currentUser.media.image}></img>
+                                <img alt="song image" className='media-preview' src={currentUser.media.image}></img>
                                 <div className='music-animatic'>
                                     <div></div>
                                     <div></div>
@@ -381,9 +395,9 @@ const theme = createTheme({
                     </div>
                     <div>
                         <div style={{ display: `flex`, flexDirection: `row`, justifyContent: `space-evenly` }}>
-                            <img src={arrow} style={{ transform: `rotate(180deg) scale(20%)`, cursor: `pointer` }} onClick={() => decrementSimple()}></img>
+                            <img alt="Arrow" src={arrow} style={{ transform: `rotate(180deg) scale(20%)`, cursor: `pointer` }} onClick={() => decrementSimple()}></img>
                             <h2 className='datapoint-title'>Top {simpleSelection}</h2>
-                            <img src={arrow} style={{ transform: `scale(20%)`, cursor: `pointer` }} onClick={() => incrementSimple()} ></img>
+                            <img alt="Arrow" src={arrow} style={{ transform: `scale(20%)`, cursor: `pointer` }} onClick={() => incrementSimple()} ></img>
                         </div>
                         <div className='term-container'>
                             <button onClick={() => setTerm("short_term")} style={term === "short_term" ? { backgroundColor: `#22C55E` } : { backgroundColor: `black`, cursor: `pointer` }}></button>
@@ -397,16 +411,13 @@ const theme = createTheme({
                         <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='simple-container'>
                             <ol>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][0], `${userID === "me" ? `Your top artist` : `${currentUser.username}'s top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][0])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][1], `${userID === "me" ? `Your 2ⁿᵈ to top artist` : `${currentUser.username}'s second to top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][1])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][2], `${userID === "me" ? `Your 3ʳᵈ to top artist` : `${currentUser.username}'s third to top artist`}`)}>{getLIName(datapoint[`top${simpleSelection}`][2])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][3], ``)}>{getLIName(datapoint[`top${simpleSelection}`][3])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][4], ``)}>{getLIName(datapoint[`top${simpleSelection}`][4])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][5], ``)}>{getLIName(datapoint[`top${simpleSelection}`][5])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][6], ``)}>{getLIName(datapoint[`top${simpleSelection}`][6])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][7], ``)}>{getLIName(datapoint[`top${simpleSelection}`][7])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][8], ``)}>{getLIName(datapoint[`top${simpleSelection}`][8])}</li>
-                                <li className='list-item' onClick={() => updateFocus(datapoint[`top${simpleSelection}`][9], ``)}>{getLIName(datapoint[`top${simpleSelection}`][9])}</li>
+                                {datapoint[`top${simpleSelection}`].map(function(element, i){
+                                    if(i < 10){
+                                        const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to`: `3ʳᵈ to`) : ``} top ${element.type}` : ``;
+                                        return <li className='list-item' onClick={() => updateFocus(element, message)}>{getLIName(element)}</li>
+                                    }
+                                    else{return <></>}
+                                })}
                             </ol>
                             <div className='focus-container'>
                                 {simpleSelection !== "Genres" ?
@@ -432,19 +443,18 @@ const theme = createTheme({
                             </div>
                         </div>
                     </div>
-                    {graph}
-                    <h2 style={{ textTransform: `uppercase`, textAlign: `centre`, margin: `auto`, fontSize: `50px`, color: `#22C55E`, marginTop: `50px` }}>{currentUser.username}'s playlists</h2>
+                    <Graph key="song_id" data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
+                    <h2 style={{ textTransform: `uppercase`, margin: `auto`, fontSize: `50px`, color: `#22C55E`, marginTop: `50px` }}>{currentUser.username}'s playlists</h2>
                     {playlists !== undefined ?
                         <div className='playlist-wrapper'>
-                            <img src={arrow} style={{ transform: `rotate(180deg) scale(25%)`, cursor: `pointer`, opacity: `1` }}
+                            <img alt="Arrow" src={arrow} style={{ transform: `rotate(180deg) scale(25%)`, cursor: `pointer`, opacity: `1` }}
                                onClick={async () => { if (playlistsIndex - 1 < 0) { setPlaylistsIndex(playlists.length - 1); } else { setPlaylistsIndex(playlistsIndex - 1); } setPlaylistSlide("right"); await delay(330); setPlaylistSlide("none") }}
                             ></img>
                             <div className='playlist-item-deselected' style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? { animation: `slide-in 0.33s ease-in-out` } : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? { animation: `slide-left-out 0.33s ease-in-out` } : {})}>
-                                <img src={playlistsIndex - 1 < 0 ? playlists[playlists.length - 1].images[0].url : playlists[playlistsIndex - 1].images[0].url} className='art'></img>
+                                <img alt="Playlist art" src={playlistsIndex - 1 < 0 ? playlists[playlists.length - 1].images[0].url : playlists[playlistsIndex - 1].images[0].url} className='art'></img>
                             </div>
-
                             <a className='playlist-item' href={playlists[playlistsIndex].external_urls.spotify} style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? { animation: `slide-right-in 0.33s ease-in-out` } : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? { animation: `slide-left-in 0.33s ease-in-out` } : {})}>
-                                <img src={playlists[playlistsIndex].images[0].url} className='art'></img>
+                                <img alt="Playlist art" src={playlists[playlistsIndex].images[0].url} className='art'></img>
                                 <div className='art-text-container' style={{position: `absolute`, margin: `0px`}}>
                                     <h1 className="art-name-shown">{playlists[playlistsIndex].name}</h1>
                                     <p className="art-desc-shown" style={{ fontSize: '20px' }}>{playlists[playlistsIndex].description}</p>
@@ -455,10 +465,10 @@ const theme = createTheme({
                             { animation: `slide-right-out 0.33s ease-out` } 
                             : 
                              (playlistSlide === "left" ? { animation: `slide-in 0.33s ease-in-out` } : {})}>
-                                <img src={playlistsIndex + 1 >= playlists.length ? playlists[0].images[0].url : playlists[playlistsIndex + 1].images[0].url} className='art'></img>
+                                <img alt="Playlist art" src={playlistsIndex + 1 >= playlists.length ? playlists[0].images[0].url : playlists[playlistsIndex + 1].images[0].url} className='art'></img>
                             </div>
 
-                            <img src={arrow} style={{ transform: `scale(25%)`, cursor: `pointer`, opacity: `1` }}
+                            <img alt="Arrow" src={arrow} style={{ transform: `scale(25%)`, cursor: `pointer`, opacity: `1` }}
                                 onClick={async () => { if (playlistsIndex + 1 >= playlists.length) { setPlaylistsIndex(0) } else { setPlaylistsIndex(playlistsIndex + 1) } setPlaylistSlide("left"); await delay(330); setPlaylistSlide("none") }}
                             ></img>
                         </div>
