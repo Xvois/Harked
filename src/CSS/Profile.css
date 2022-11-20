@@ -47,7 +47,7 @@
 .compare-button:hover{
     background-color: rgb(255, 255, 255);
     color: black;
-    box-shadow: 0 0 100px rgba(255, 255, 255, 0.81);
+    box-shadow: 0 0 45px rgba(255, 255, 255, 0.81);
 }
 
 .art-container {
@@ -346,6 +346,7 @@
 .term-container {
     display: flex;
     flex-direction: row;
+    gap: 20px;
     justify-content: center;
     width: max-content;
     margin: -50px auto 20px;
@@ -363,8 +364,9 @@
     height: 30px;
     width: 30px;
     border: 2px solid white;
-    border-radius: 100%;
+    border-radius: 10%;
     background-color: black;
+    transition: all 0.25s ease-in-out;
 }
 
 .term {

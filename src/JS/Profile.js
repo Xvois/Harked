@@ -3,10 +3,11 @@ import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {getPlaylists, retrieveDatapoint, retrieveUser} from './PDM';
 import arrow from './Arrow.png'
-import {Avatar, Chip} from '@mui/material';
+import {Chip} from '@mui/material';
 import {createTheme} from '@mui/material/styles';
 import {ThemeProvider} from '@emotion/react';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PersonIcon from '@mui/icons-material/Person';
 
 
 const Profile = () => {
@@ -36,6 +37,7 @@ const Profile = () => {
         topGenres: [],
     });
     let [term, setTerm] = useState("long_term");
+    const terms = ["short_term", "medium_term", "long_term"];
     let [chipletData, setChipletData] = useState(false)
     const [showArt, setShowArt] = useState("empty")
     const [focus, setFocus] = useState({
@@ -344,8 +346,6 @@ const Profile = () => {
         // Update the datapoint
         await retrieveDatapoint(userID, term).then(async function (result) {
             setDatapoint(result)
-            const analyticsList = [];
-            result.topSongs.forEach(song => analyticsList.push(song.analytics))
             await updateArtistQualities(result);
             await getPlaylists(userID).then(result => setPlaylists(result))
             if (!chipletData) {
@@ -423,9 +423,10 @@ const Profile = () => {
                                 flexWrap: `wrap`
                             }}>
                                 <ThemeProvider theme={theme}>
-                                    <Chip label={`${chipletData[0].name} fan`} avatar={<Avatar src=''/>}
+                                    <Chip label={`${chipletData[0].name} fan`} style={{borderWidth: `2px`}} variant='outlined'
+                                          icon={<PersonIcon fontSize='small' />}
                                           color='primary'/>
-                                    <Chip label={`${chipletData[1]} fan`} color='primary' variant='outlined'
+                                    <Chip label={`${chipletData[1]} fan`} style={{borderWidth: `2px`}} color='primary' variant='outlined'
                                           icon={<MusicNoteIcon fontSize='small'/>}/>
                                 </ThemeProvider>
                             </div>
@@ -468,25 +469,15 @@ const Profile = () => {
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
                         <div className='term-container'>
-                            <button onClick={() => setTerm("short_term")}
-                                    style={term === "short_term" ? {backgroundColor: `#22C55E`} : {
-                                        backgroundColor: `black`,
-                                        cursor: `pointer`
-                                    }}></button>
-                            <div></div>
-                            <div></div>
-                            <button onClick={() => setTerm("medium_term")}
-                                    style={term === "medium_term" ? {backgroundColor: `#22C55E`} : {
-                                        backgroundColor: `black`,
-                                        cursor: `pointer`
-                                    }}></button>
-                            <div></div>
-                            <div></div>
-                            <button onClick={() => setTerm("long_term")}
-                                    style={term === "long_term" ? {backgroundColor: `#22C55E`} : {
-                                        backgroundColor: `black`,
-                                        cursor: `pointer`
-                                    }}></button>
+                            <div/>
+                            {terms.map(function(element){
+                                return         <button onClick={() => setTerm(element)}
+                                               style={term === element ? {backgroundColor: `#22CC5E`, transform: 'scale(95%)'} : {
+                                                   backgroundColor: `black`,
+                                                   cursor: `pointer`,
+                                               }}></button>
+                            })}
+                            <div/>
                         </div>
                         <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='simple-container'>
