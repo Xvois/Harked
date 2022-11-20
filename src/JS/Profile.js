@@ -456,7 +456,7 @@ const Profile = () => {
                                 <p className='listening-media'>{currentUser.media.name}</p>
                             </>
                             :
-                            <>{userID === "me" ? <p>Welcome to your own profile!</p> : <button>Hey!</button>}</>
+                            <>{userID === "me" ?  <button className={"compare-button"}>Compare</button> : <button>Hey!</button>}</>
                         }
                     </div>
                     <div>

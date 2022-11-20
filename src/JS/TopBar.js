@@ -9,6 +9,9 @@ import {styled} from '@mui/material/styles';
 import {getAllUsers} from './API';
 
 const SearchBar = styled(TextField)({
+    "& .MuiInputBase-root": {
+        color: 'white'
+    },
     '& .MuiInput-underline': {
         color: `white`,
     },

@@ -30,6 +30,26 @@
     }
 }
 
+.compare-button{
+    background: none;
+    text-decoration: none;
+    text-transform: uppercase;
+    border-radius: 20px;
+    border: 2px solid white;
+    color: white;
+    width: max-content;
+    padding: 5px 30px 5px 30px;
+    margin-left: 15px;
+    margin-top: -12px;
+    transition: all 0.2s ease-out;
+}
+
+.compare-button:hover{
+    background-color: rgb(255, 255, 255);
+    color: black;
+    box-shadow: 0 0 100px rgba(255, 255, 255, 0.81);
+}
+
 .art-container {
     position: relative;
     display: grid;
@@ -51,6 +71,7 @@
     animation: fadeIn 0.35s ease-in;
     border-radius: 10%;
     box-shadow: 0 0 100px rgba(255, 255, 255, 0.178);
+    transition: all 0.05s ease-out;
 }
 
 .play-wrapper-hidden {
@@ -132,13 +153,11 @@
     border-radius: 0 0 35px 35px;
     text-align: center;
     backdrop-filter: blur(20px);
-    animation: fadeIn 0.5s ease-out;
-    animation-fill-mode: forwards;
+    transition: all 0.4s ease-out;
 }
 
 .art-text-container:hover {
-    animation: fadeOut 0.35s ease-out;
-    animation-fill-mode: forwards;
+   opacity: 0;
 }
 
 .art-name-shown {
@@ -271,12 +290,14 @@
     font-weight: 600;
     counter-increment: item;
     width: max-content;
+    transition: all 0.1s ease-out;
 }
 
 .list-item:hover {
     cursor: pointer;
     color: #22C55E;
     transform: scale(110%);
+    text-shadow: 0 0 75px #22C55E;
 }
 
 .list-item:before {

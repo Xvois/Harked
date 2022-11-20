@@ -1,14 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
 
-@keyframes invertBtW {
-  from {background-color: black; color: white;}
-  to {background-color: white; color: black;}
-}
-
-@keyframes invertWtB {
-  from {background-color: white; color: black;}
-  to {background-color: black; color: white;}
-}
 
 .main-text{
   text-transform: uppercase;
@@ -37,13 +28,13 @@
   width: max-content;
   padding: 5px 30px 5px 30px;
   margin-left: 20px;
-  animation: invertWtB 0.2s ease-out;
+  transition: all 0.2s ease-out;
 }
 
 .auth-button:hover{
-  animation: invertBtW 0.2s ease-out;
-  background-color: white;
+  background-color: rgb(255, 255, 255);
   color: black;
+  box-shadow: 0 0 100px rgba(255, 255, 255, 0.81);
 }
 
 .under-text{
