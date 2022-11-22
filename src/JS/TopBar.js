@@ -54,11 +54,14 @@ const TopBar = () => {
     const [cachedUsers, setCachedUsers] = useState(null)
 
     const Levenshtein = (a, b) => {
+        // First two conditions
         if (!a.length) return b.length;
         if (!b.length) return a.length;
         const arr = [];
+        // Populate array with b
         for (let i = 0; i <= b.length; i++) {
             arr[i] = [i];
+            // Populate array with a and compare
             for (let j = 1; j <= a.length; j++) {
                 arr[i][j] =
                     i === 0 ?
@@ -71,6 +74,7 @@ const TopBar = () => {
                         );
             }
         }
+        // Return the result
         return arr[b.length][a.length];
     }
 
@@ -79,9 +83,11 @@ const TopBar = () => {
     }
 
     const handleChange = (event) => {
+        // What the user has typed in so far.
         let searchParam = event.target.value;
         const usernames = cachedUsers.map(user => user.username);
         let results = [];
+        // Don't check if the user has only typed in a couple of characters
         if (searchParam.length > 2) {
             usernames.forEach(username => {
                 let weight = Levenshtein(searchParam, username)
@@ -89,6 +95,7 @@ const TopBar = () => {
                     results.push({username: username, weight: weight})
                 }
             })
+            // Order results by their relevance.
             results.sort((a, b) => a.weight - b.weight)
             // Match each username to their user record in the DB
             results.forEach((user, i) => {
@@ -109,6 +116,8 @@ const TopBar = () => {
     }
     useEffect(() => {
         updateCachedUsers();
+        console.log("horse vs. course = ");
+        console.log(Levenshtein("horse", "course"));
     }, [])
 
     // noinspection HtmlUnknownAnchorTarget

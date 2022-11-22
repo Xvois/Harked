@@ -53,8 +53,6 @@ const Profile = () => {
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
     const [playlists, setPlaylists] = useState([])
-    const [playlistsIndex, setPlaylistsIndex] = useState(0)
-    const [playlistSlide, setPlaylistSlide] = useState("none")
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     // Take it to be "X music"
@@ -347,11 +345,12 @@ const Profile = () => {
         await retrieveDatapoint(userID, term).then(async function (result) {
             setDatapoint(result)
             await updateArtistQualities(result);
-            await getPlaylists(userID).then(result => setPlaylists(result))
+            await getPlaylists(userID).then(results => {setPlaylists(results); console.log(results)})
             if (!chipletData) {
                 setChipletData([result.topArtists[0], result.topGenres[0]])
             }
         })
+
         // Refresh the focus
         setShowArt("empty")
         setFocusMessage("See what it says.")
@@ -415,6 +414,7 @@ const Profile = () => {
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <div className='username'>{currentUser.username}</div>
+                            {userID !== "me" ?  <a className={"compare-button"} href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
                             <div style={{
                                 display: `flex`,
                                 paddingTop: `5px`,
@@ -457,29 +457,32 @@ const Profile = () => {
                                 <p className='listening-media'>{currentUser.media.name}</p>
                             </>
                             :
-                            <>{userID === "me" ?  <button className={"compare-button"}>Compare</button> : <button>Hey!</button>}</>
+                            <></>
                         }
                     </div>
                     <div>
-                        <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`}}>
+                        <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`, alignItems: 'center', height: '75px', marginTop: '50px'}}>
                             <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
                             <h2 className='datapoint-title'>Top {simpleSelection}</h2>
                             <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}}
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
+                        <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='term-container'>
-                            <div/>
                             {terms.map(function(element){
                                 return         <button onClick={() => setTerm(element)}
-                                               style={term === element ? {backgroundColor: `#22CC5E`, transform: 'scale(95%)'} : {
+                                               style={term === element ? {backgroundColor: `#22CC5E`, transform: 'scale(95%)', color: 'white', "--fill-color": '#22C55E'} : {
                                                    backgroundColor: `black`,
                                                    cursor: `pointer`,
-                                               }}></button>
+                                                   width: '100px',
+                                                   marginLeft: '-35px',
+                                                   marginRight: '-35px',
+                                                   color: 'white',
+                                                   "--fill-color": 'white'
+                                               }}>{element === "long_term" ? "all time" : (element === "medium_term" ? "6 months" : "4 Weeks")}</button>
                             })}
-                            <div/>
                         </div>
-                        <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='simple-container'>
                             <ol>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
@@ -522,68 +525,26 @@ const Profile = () => {
                            data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
                     <h2 style={{
                         textTransform: `uppercase`,
+                        fontFamily: 'Inter Tight, sans-serif',
                         margin: `auto`,
-                        fontSize: `50px`,
-                        color: `#22C55E`,
+                        fontSize: `60px`,
                         marginTop: `50px`
                     }}>{currentUser.username}'s playlists</h2>
-                    {playlists.length !== 0 ?
-                        <div className='playlist-wrapper'>
-                            <img src={arrow}
-                                 style={{transform: `rotate(180deg) scale(25%)`, cursor: `pointer`, opacity: `1`}}
-                                 onClick={async () => {
-                                     if (playlistsIndex - 1 < 0) {
-                                         setPlaylistsIndex(playlists.length - 1);
-                                     } else {
-                                         setPlaylistsIndex(playlistsIndex - 1);
-                                     }
-                                     setPlaylistSlide("right");
-                                     await delay(330);
-                                     setPlaylistSlide("none")
-                                 }}
-                                 alt={"arrow"}></img>
-                            <div className='playlist-item-deselected'
-                                 style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? {animation: `slide-in 0.33s ease-in-out`} : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? {animation: `slide-left-out 0.33s ease-in-out`} : {})}>
-                                <img
-                                    src={playlistsIndex - 1 < 0 ? playlists[playlists.length - 1].images[0].url : playlists[playlistsIndex - 1].images[0].url}
-                                    className='art' alt={"art"}></img>
-                            </div>
+                    <div className={"playlist-wrapper"}>
+                        {playlists.length !== 0 ?
+                            playlists.map(function(playlist){
+                                return <a href={playlist.external_urls.spotify} className={"playlist-art"}><img alt="playlist art" src={playlist.images[0].url} style={{width: '100%', height: '100%'}}></img>
+                                    <div className="playlist-text-container">
+                                        <h2 style={playlist.name.length > 20 ? {"--font-scale": `30px`} : {}}>{playlist.name}</h2>
+                                        <p>{playlist.description}</p>
+                                    </div>
 
-                            <a className='playlist-item' href={playlists[playlistsIndex].external_urls.spotify}
-                               style={document.documentElement.clientWidth > 1500 && playlistSlide === "right" ? {animation: `slide-right-in 0.33s ease-in-out`} : (document.documentElement.clientWidth > 1500 && playlistSlide === "left" ? {animation: `slide-left-in 0.33s ease-in-out`} : {})}>
-                                <img src={playlists[playlistsIndex].images[0].url} className='art' alt={"art"}></img>
-                                <div className='art-text-container' style={{position: `absolute`, margin: `0px`}}>
-                                    <h1 className="art-name-shown">{playlists[playlistsIndex].name}</h1>
-                                    <p className="art-desc-shown"
-                                       style={{fontSize: '20px'}}>{playlists[playlistsIndex].description}</p>
-                                </div>
-                            </a>
-                            <div className='playlist-item-deselected'
-                                 style={playlistSlide === "right" ?
-                                     {animation: `slide-right-out 0.33s ease-out`}
-                                     :
-                                     (playlistSlide === "left" ? {animation: `slide-in 0.33s ease-in-out`} : {})}>
-                                <img
-                                    src={playlistsIndex + 1 >= playlists.length ? playlists[0].images[0].url : playlists[playlistsIndex + 1].images[0].url}
-                                    className='art' alt={"art"}></img>
-                            </div>
-
-                            <img src={arrow} style={{transform: `scale(25%)`, cursor: `pointer`, opacity: `1`}}
-                                 onClick={async () => {
-                                     if (playlistsIndex + 1 >= playlists.length) {
-                                         setPlaylistsIndex(0)
-                                     } else {
-                                         setPlaylistsIndex(playlistsIndex + 1)
-                                     }
-                                     setPlaylistSlide("left");
-                                     await delay(330);
-                                     setPlaylistSlide("none")
-                                 }}
-                                 alt={"arrow"}></img>
-                        </div>
-                        :
-                        <></>
-                    }
+                                </a>
+                            })
+                            :
+                            <></>
+                        }
+                    </div>
 
                 </div>
             }

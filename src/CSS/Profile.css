@@ -39,8 +39,7 @@
     color: white;
     width: max-content;
     padding: 5px 30px 5px 30px;
-    margin-left: 15px;
-    margin-top: -12px;
+    margin-bottom: 10px;
     transition: all 0.2s ease-out;
 }
 
@@ -312,13 +311,13 @@
 }
 
 .datapoint-title {
+    height: max-content;
+    margin: 0;
     font-family: 'Ubuntu', sans-serif;
     text-transform: uppercase;
     text-align: center;
     font-size: 50px;
     font-weight: 800;
-    margin-top: auto;
-    margin-bottom: auto;
 }
 
 @keyframes hover {
@@ -346,34 +345,40 @@
 .term-container {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 100px;
     justify-content: center;
     width: max-content;
-    margin: -50px auto 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
 }
 
-.term-container > div {
-    border: 2px solid white;
-    margin: auto 20px;
-    border-radius: 100%;
-    width: 5px;
-    height: 5px;
-}
 
 .term-container > button {
     height: 30px;
-    width: 30px;
+    width: 100px;
     border: 2px solid white;
-    border-radius: 10%;
+    border-radius: 20px;
     background-color: black;
-    transition: all 0.25s ease-in-out;
+    margin-left: -35px;
+    margin-right: -35px;
+    transition: all 0.2s ease-out;
+    color: rgba(255, 255, 255, 0);
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.term-container > button:hover {
+    --fill-color: white;
+    box-shadow: 0 0 45px var(--fill-color);
+    color: rgba(255, 255, 255, 1);
 }
 
 .term {
     margin: auto;
     text-align: center;
     color: #22C55E;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.363);
     text-transform: uppercase;
 }
 
@@ -497,26 +502,66 @@
 .playlist-wrapper {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    gap: 5vw;
+    padding: 50px;
+    height: max-content;
+    margin: 0 auto 0 auto;
+}
+.playlist-art{
+    display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 500px;
-}
-
-.playlist-item {
-    display: flex;
+    aspect-ratio: 1;
+    max-height: 350px;
+    max-width: 350px;
+    flex-grow: 1;
+    object-fit: cover;
+    text-align: center;
+    box-shadow: 0 0 100px rgba(255, 255, 255, 0.16);
     border-radius: 10%;
-    box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+
+    text-decoration: none;
+    color: white;
+}
+.playlist-text-container{
+    position: absolute;
+    width: 300px;
+    height: min-content;
+    font-family: 'Inter Tight', sans-serif;
 }
 
-.playlist-item-deselected {
-    opacity: 0.3;
-    transform: scale(75%);
+.playlist-text-container > h2{
+    margin: 0;
+    --font-scale: 50px;
+    font-size: var(--font-scale);
 }
 
-.playlist-item:hover {
-    transform: scale(105%);
+.playlist-text-container > p{
+    margin: 0;
+    --font-scale: 20px;
+    font-size: var(--font-scale);
+    font-weight: 100;
 }
+
+.playlist-art > img{
+    filter: blur(10px) brightness(90%);
+    transform: scale(97.5%);
+    border-radius: 10%;
+    object-fit: cover;
+    transition: all 0.5s ease-out;
+}
+
+.playlist-art > img:hover{
+    filter: none;
+    transform: scale(100%);
+    box-shadow: 0 0 45px rgba(255, 255, 255, 0.21);
+
+}
+
 
 .focus-container {
     display: flex;
@@ -578,12 +623,7 @@
         opacity: 1;
     }
 }
-
-@media screen and (max-width: 1500px) {
-    .playlist-item-deselected {
-        display: none;
-    }
-
+@media screen and (max-width: 2000px) {
     .focus-container {
         flex-direction: column;
         width: 70%;

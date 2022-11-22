@@ -17,6 +17,7 @@
     color: rgb(255, 255, 255);
     text-decoration: none;
     text-transform: uppercase;
+    transition: all 0.2s ease-out;
 }
 
 .element p{
