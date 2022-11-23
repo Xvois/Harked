@@ -1,0 +1,13 @@
+.compare-wrapper {
+    display: flex;
+    flex-direction: row;
+    animation: fadeIn 0.5s ease-out;
+
+}
+
+.left{
+    width: 50%;
+}
+.right{
+    width: 50%;
+}

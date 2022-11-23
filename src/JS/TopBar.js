@@ -116,8 +116,6 @@ const TopBar = () => {
     }
     useEffect(() => {
         updateCachedUsers();
-        console.log("horse vs. course = ");
-        console.log(Levenshtein("horse", "course"));
     }, [])
 
     // noinspection HtmlUnknownAnchorTarget

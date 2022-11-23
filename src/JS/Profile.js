@@ -12,7 +12,7 @@ import PersonIcon from '@mui/icons-material/Person';
 
 const Profile = () => {
 
-    const theme = createTheme({
+    const chipletTheme = createTheme({
         palette: {
             primary: {
                 main: '#22C55E',
@@ -422,7 +422,7 @@ const Profile = () => {
                                 width: `250px`,
                                 flexWrap: `wrap`
                             }}>
-                                <ThemeProvider theme={theme}>
+                                <ThemeProvider theme={chipletTheme}>
                                     <Chip label={`${chipletData[0].name} fan`} style={{borderWidth: `2px`}} variant='outlined'
                                           icon={<PersonIcon fontSize='small' />}
                                           color='primary'/>
