@@ -1,4 +1,4 @@
-.compare-wrapper {
+.top-compare-wrapper {
     display: flex;
     flex-direction: row;
     animation: fadeIn 0.5s ease-out;

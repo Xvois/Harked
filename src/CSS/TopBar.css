@@ -55,6 +55,7 @@
     border-top: 0;
     top: 68px;
     transform: scale(85%);
+    z-index: 1;
 }
 
 #result a{

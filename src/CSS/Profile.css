@@ -532,6 +532,7 @@
     width: 300px;
     height: min-content;
     font-family: 'Inter Tight', sans-serif;
+    word-break: break-all;
 }
 
 .playlist-text-container > h2{

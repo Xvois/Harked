@@ -10,6 +10,10 @@ function Homepage() {
     document.title = "Photon"
   }, [token])
 
+    const handleLogOut = () => {
+      window.localStorage.clear();
+      setToken("");
+    }
 
   let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
   let welcomeMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -31,6 +35,7 @@ function Homepage() {
                 <a className="auth-button" href='/profile#me'>Explore your profile</a>
                 <a className="auth-button" href=''>Compare to others</a>
                 <a className="auth-button" onClick={fillDatabase}>PH: Fill database</a>
+                <a className="auth-button" onClick={handleLogOut}>Log out.</a>
               </div>
           }
           {token === "denied-scopes" ?

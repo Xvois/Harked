@@ -419,7 +419,7 @@ const Profile = () => {
                                 display: `flex`,
                                 paddingTop: `5px`,
                                 gap: `20px`,
-                                width: `250px`,
+                                width: `300px`,
                                 flexWrap: `wrap`
                             }}>
                                 <ThemeProvider theme={chipletTheme}>

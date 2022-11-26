@@ -14,6 +14,46 @@ const Comparison = () => {
     const userIDs = [...window.location.hash.matchAll(re)].map(function(val){return val[0]});
     const [users, setUsers] = useState([]);
 
+    const calculateSimilarity = () => {
+        let user1Datapoint = users[0].datapoint;
+        let user2Datapoint = users[1].datapoint;
+        let songsSimilarity = 0;
+        let artistsSimilarity = 0;
+        let genresSimilarity = 0;
+        let similarity = 0;
+        // songsKeys in pseudocode.
+        const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
+        user1Datapoint.topSongs.forEach( (song, i) => {
+            let songDelta = 0;
+            analyticsMetrics.forEach(analytic => {
+                songDelta += Math.abs(song.analytics[analytic] - user2Datapoint.topSongs[i].analytics[analytic]);
+            })
+            songsSimilarity += songDelta / analyticsMetrics.length;
+        })
+        songsSimilarity /= user1Datapoint.topSongs.length;
+        user1Datapoint.topArtists.forEach(artist1 => {
+            if(user2Datapoint.topArtists.some(artist2 => artist2.name === artist1.name)){
+                artistsSimilarity++;
+            }
+        })
+        user1Datapoint.topGenres.forEach(genre => {
+            if(user2Datapoint.topGenres.includes(genre)){
+                genresSimilarity++;
+            }
+        })
+        artistsSimilarity /= user1Datapoint.topArtists.length;
+        // Takes discrete average of the two lengths.
+        genresSimilarity /= Math.floor((user1Datapoint.topGenres.length + user2Datapoint.topGenres.length) / 2);
+        similarity = ( genresSimilarity + 10 * artistsSimilarity + 5 * songsSimilarity) / 3;
+        if(similarity > 100){similarity = 100} // Ensure not over 100%
+        console.log(`SS: ${songsSimilarity}`);
+        console.log(`AS: ${artistsSimilarity}`);
+        console.log(`GS: ${genresSimilarity}`);
+        console.log(`S: ${similarity}`);
+        similarity *= 100;
+        return Math.round(similarity);
+    }
+
     const UserContainer = (props) => {
         const user = props.user;
         const chipletTheme = createTheme({
@@ -34,7 +74,7 @@ const Comparison = () => {
                         display: `flex`,
                         paddingTop: `5px`,
                         gap: `20px`,
-                        width: `250px`,
+                        width: `300px`,
                         flexWrap: `wrap`
                     }}>
                         <ThemeProvider theme={chipletTheme}>
@@ -68,38 +108,37 @@ const Comparison = () => {
         resolveUsers().then(r => console.log(r));
     }, [])
     return (
-        <div className="compare-wrapper">
-            <div className="left">
-                {users.length ?
-                    <>
-                        <UserContainer user={users[0]}/>
-                        <ul>
-                            <li>Top artist: {users[0].datapoint.topArtists[0].name}</li>
-                            <li>Top song: {users[0].datapoint.topSongs[0].title}</li>
-                            <li>Top genre: {users[0].datapoint.topGenres[0]}</li>
-                            <li>Hello.</li>
-                            <li>Hello.</li>
-                        </ul>
-                    </>
-                    :
-                    <></>}
-            </div>
-            <div className="right">
-                {users.length ?
-                    <>
-                        <UserContainer user={users[1]}/>
-                        <ul>
-                            <li>Top artist: {users[1].datapoint.topArtists[0].name}</li>
-                            <li>Top song: {users[1].datapoint.topSongs[0].title}</li>
-                            <li>Hello.</li>
-                            <li>Hello.</li>
-                            <li>Hello.</li>
-                        </ul>
-                    </>
-                    :
-                    <></>}
-            </div>
-        </div>
+        <>{users.length ?
+                <>
+                    <div className="top-compare-wrapper">
+                        <div className="left">
+                            <UserContainer user={users[0]}/>
+                            <ul>
+                                <li>Top artist: {users[0].datapoint.topArtists[0].name}</li>
+                                <li>Top song: {users[0].datapoint.topSongs[0].title}</li>
+                                <li>Top genre: {users[0].datapoint.topGenres[0]}</li>
+                                <li>Hello.</li>
+                                <li>Hello.</li>
+                            </ul>
+                        </div>
+                        <div className="right">
+                            <UserContainer user={users[1]}/>
+                            <ul>
+                                <li>Top artist: {users[1].datapoint.topArtists[0].name}</li>
+                                <li>Top song: {users[1].datapoint.topSongs[0].title}</li>
+                                <li>Hello.</li>
+                                <li>Hello.</li>
+                                <li>Hello.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>Your score is: {calculateSimilarity()}%</div>
+                </>
+                :
+                <></>
+        }</>
+
+
     )
 }
 
