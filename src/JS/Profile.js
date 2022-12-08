@@ -325,6 +325,36 @@ const Profile = () => {
 
         )
     }
+
+    const Focus = () => {
+        return (
+            <div className='focus-container'>
+                {simpleSelection !== "Genres" ?
+                    <div className='art-container'>
+                        {showArt === "empty" ?
+                            <div className='play-wrapper-empty'>Select an item to view in focus.</div>
+                            :
+                            <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
+                               href={focus.link} rel="noopener noreferrer" target="_blank">
+                                <img className='art' src={focus.image} alt='Cover art'></img>
+                                <div className='art-text-container'>
+                                    <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
+                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
+                                       style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                    :
+                    <div style={{width: `20%`}}></div>
+                }
+
+                <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
+            </div>
+        )
+    }
+
     // Function that loads the page when necessary
     const loadPage = async () => {
         // If the page hasn't loaded then grab the user data
@@ -334,7 +364,6 @@ const Profile = () => {
         } else {
             setUserID(window.location.hash.split("#")[1])
         }
-        console.log(userID)
         if (!loaded) {
             await retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
@@ -495,30 +524,7 @@ const Profile = () => {
                                     }
                                 })}
                             </ol>
-                            <div className='focus-container'>
-                                {simpleSelection !== "Genres" ?
-                                    <div className='art-container'>
-                                        {showArt === "empty" ?
-                                            <div className='play-wrapper-empty'>Select an item to view in focus.</div>
-                                            :
-                                            <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
-                                               href={focus.link} rel="noopener noreferrer" target="_blank">
-                                                <img className='art' src={focus.image} alt='Cover art'></img>
-                                                <div className='art-text-container'>
-                                                    <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
-                                                       style={{fontSize: '40px'}}>{focus.secondary}</p>
-                                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                                                </div>
-                                            </a>
-                                        }
-                                    </div>
-                                    :
-                                    <div style={{width: `20%`}}></div>
-                                }
-
-                                <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
-                            </div>
+                            <Focus/>
                         </div>
                     </div>
                     <Graph title="Your top 50 songs" key="song_id" selections={analyticsMetrics}

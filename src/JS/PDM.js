@@ -104,16 +104,22 @@ export const postLoggedUser = async function () {
  */
 export const retrieveDatapoint = async function (userID, term) {
     let currDatapoint;
+    let timeSensitive = false;
     let globalUserID = userID;
     if (globalUserID === 'me') {
+        timeSensitive = true;
         globalUserID = window.localStorage.getItem("userID")
     }
-    await getDatapoint(globalUserID, term).then(function (result) {
+    console.log(`Retrieving datapoint for: ${globalUserID}, ${term}, ${timeSensitive}`)
+    await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
         currDatapoint = result;
     }).catch(err => console.warn(err))
     if (!currDatapoint) {
-        await hydrateDatapoints();
-        currDatapoint = await getDatapoint(globalUserID, term);
+        await hydrateDatapoints().then(async () =>
+            await getDatapoint(globalUserID, term, timeSensitive).then(result =>
+                currDatapoint = result
+            )
+        );
     }
     return currDatapoint;
 }

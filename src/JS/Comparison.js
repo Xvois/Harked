@@ -13,14 +13,13 @@ const Comparison = () => {
     let re = /[^#&]+/g;
     const userIDs = [...window.location.hash.matchAll(re)].map(function(val){return val[0]});
     const [users, setUsers] = useState([]);
-
-    const calculateSimilarity = () => {
-        let user1Datapoint = users[0].datapoint;
-        let user2Datapoint = users[1].datapoint;
+    const calculateSimilarity = (u) => {
+        let user1Datapoint = u[0].datapoint;
+        let user2Datapoint = u[1].datapoint;
         let songsSimilarity = 0;
         let artistsSimilarity = 0;
         let genresSimilarity = 0;
-        let similarity = 0;
+        let similarity;
         // songsKeys in pseudocode.
         const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
         user1Datapoint.topSongs.forEach( (song, i) => {
@@ -51,7 +50,34 @@ const Comparison = () => {
         console.log(`GS: ${genresSimilarity}`);
         console.log(`S: ${similarity}`);
         similarity *= 100;
-        return Math.round(similarity);
+        setSimilarity(Math.round(similarity));
+    }
+
+    const Card = (props) => {
+        const item = props.item;
+        const source = props.item.image;
+        const number = props.num;
+        const [state, setState] = useState({isExpanded: false})
+
+        const handleExpansion = () => {
+            setState({ isExpanded: !state.isExpanded });  };
+
+        return(
+            <div className={"card"} tabIndex={0} onBlur={() => setState({isExpanded: false})} onClick={handleExpansion} style={state.isExpanded ? {width: '400px'} : {}}>
+                <div className="card-text-container" style={state.isExpanded ? {width: '400px', height: '400px', opacity: "1"} : {}}>
+                    {!state.isExpanded ?
+                        <h1 className={"card-num"}>{number}.</h1>
+                        :
+                        <>
+                            <p>{item[`${item.type === 'artist' ? 'name' : 'title'}`]}</p>
+                            <p>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
+                        </>
+
+                    }
+                </div>
+                <img alt="Artist" src={source} style={state.isExpanded ? {transform: 'scale(100%)'} : {}}></img>
+            </div>
+        )
     }
 
     const UserContainer = (props) => {
@@ -99,13 +125,13 @@ const Comparison = () => {
             localState.push(user);
         }
         console.log(localState);
-        setUsers(localState);
-        return "Users resolved."
+        return localState;
     }
 
-
+    const [similarity, setSimilarity] = useState(0);
     useEffect(() => {
-        resolveUsers().then(r => console.log(r));
+        resolveUsers().then(function(u){ setUsers(u); calculateSimilarity(u)});
+
     }, [])
     return (
         <>{users.length ?
@@ -113,26 +139,46 @@ const Comparison = () => {
                     <div className="top-compare-wrapper">
                         <div className="left">
                             <UserContainer user={users[0]}/>
-                            <ul>
-                                <li>Top artist: {users[0].datapoint.topArtists[0].name}</li>
-                                <li>Top song: {users[0].datapoint.topSongs[0].title}</li>
-                                <li>Top genre: {users[0].datapoint.topGenres[0]}</li>
-                                <li>Hello.</li>
-                                <li>Hello.</li>
-                            </ul>
+                            <div className="card-container">
+                                <div className="card-header-l">
+                                    <h1>Top artists.</h1>
+                                </div>
+                                <Card item = {users[0].datapoint.topArtists[0]} num = "1"/>
+                                <Card item = {users[0].datapoint.topArtists[1]} num = "2"/>
+                                <Card item = {users[0].datapoint.topArtists[2]} num = "3"/>
+                            </div>
+                            <div className="card-container" style={{justifyContent: 'left'}}>
+                                <Card item = {users[0].datapoint.topSongs[0]} num = "1"/>
+                                <Card item = {users[0].datapoint.topSongs[1]} num = "2"/>
+                                <Card item = {users[0].datapoint.topSongs[2]} num = "3"/>
+                                <div style={{flexGrow: '1', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                                    <h1 style={{position: 'absolute', width: '400px', fontSize: '7em', textTransform: 'uppercase', fontFamily: 'Inter Tight'}}>Of all time.</h1>
+                                </div>
+                            </div>
                         </div>
                         <div className="right">
                             <UserContainer user={users[1]}/>
-                            <ul>
-                                <li>Top artist: {users[1].datapoint.topArtists[0].name}</li>
-                                <li>Top song: {users[1].datapoint.topSongs[0].title}</li>
-                                <li>Hello.</li>
-                                <li>Hello.</li>
-                                <li>Hello.</li>
-                            </ul>
+                            <div className="card-container" style={{justifyContent: 'left'}}>
+                                <Card item = {users[1].datapoint.topArtists[0]} num = "1"/>
+                                <Card item = {users[1].datapoint.topArtists[1]} num = "2"/>
+                                <Card item = {users[1].datapoint.topArtists[2]} num = "3"/>
+                                <div style={{color: '#22C55E', flexGrow: '1', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                                    <h1 style={{position: 'absolute', width: '400px', fontSize: '7em', textTransform: 'uppercase', fontFamily: 'Inter Tight'}}>Of all time.</h1>
+                                </div>
+                            </div>
+                            <div className="card-container" style={{justifyContent: 'right'}}>
+                                <div className="card-header-l" style={{color: '#22C55E'}}>
+                                    <h1>Top songs.</h1>
+                                </div>
+                                <Card item = {users[1].datapoint.topSongs[0]} num = "1"/>
+                                <Card item = {users[1].datapoint.topSongs[1]} num = "2"/>
+                                <Card item = {users[1].datapoint.topSongs[2]} num = "3"/>
+                            </div>
                         </div>
                     </div>
-                    <div>Your score is: {calculateSimilarity()}%</div>
+                    <div className="similarity-score">
+                        <h2 style={{marginLeft: "auto", marginRight: "auto", fontSize: '5vw', fontFamily: 'Inter Tight', textTransform: 'uppercase'}}>Your similarity is {similarity}%.</h2>
+                    </div>
                 </>
                 :
                 <></>

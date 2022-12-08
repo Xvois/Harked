@@ -104,7 +104,8 @@ exports.createUser = async (req, res) => {
 exports.getDatapoint = async (req, res) => {
     const user_id = req.query.userID;
     const term = req.query.term;
-    console.log(`Attempting to get datapoint for: ${user_id}, ${term}`)
+    const time_sensitive = req.query.timed;
+    console.log(`Attempting to get datapoint for: ${user_id}, ${term}, ${time_sensitive === 'true' ? "time sensitive" : "not time sensitive"}`)
     let datapoint = {
         userID: user_id,
         collectionDate: null,
@@ -117,7 +118,7 @@ exports.getDatapoint = async (req, res) => {
         .select('collection_date', 'top_songs_id', 'top_artists_id', 'top_genres_id')
         .where({user_id: user_id, term: term})
         // Get the most recent datapoint
-        .orderBy('collection_date')
+        .orderBy('collection_date', "desc")
         .then(async function (results) {
             // Return null if there are no matching datapoints
             if (results.length === 0) {
@@ -129,7 +130,7 @@ exports.getDatapoint = async (req, res) => {
                 datapoint.collectionDate = references.collection_date;
                 const WEEK_IN_MILISECONDS = 604800 * 1000;
                 //const WEEK_IN_SECONDS = 0;
-                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS) {
+                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS || time_sensitive === 'false') {
                     await knex('songs_ref')
                         // Find the top songs reference
                         .where('id', references.top_songs_id)
@@ -336,14 +337,15 @@ exports.postDatapoint = async (req, res) => {
         }
     }).catch(err => console.log(err))
 
-    const WEEK_IN_SECONDS = 604800;
+    const WEEK_IN_MILLISECONDS = 604800 * 1000;
     await knex('datapoints')
         .where({user_id: req.body.userID, term: req.body.term})
         .select('collection_date')
+        .orderBy('collection_date', "desc")
         .then(oldDate => {
             // Check that any existing datapoint is older than a week
             // before adding a new one
-            if (req.body.collectionDate - oldDate > WEEK_IN_SECONDS) {
+            if (req.body.collectionDate - oldDate[0]["collection_date"] > WEEK_IN_MILLISECONDS) {
                 // Make the final datapoint with all the data
                 knex('datapoints').insert({
                     // User ID will not be unique

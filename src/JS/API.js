@@ -104,7 +104,9 @@ export const postUser = async(user) => {
  * @returns {Promise<void>}
  */
 export const postDatapoint = async (datapoint) => {
-    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).catch(
+    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then((res) => {
+        console.log(res.data)
+    }).catch(
         function (err) {
             console.warn("Error posting datapoint: ");
             console.warn(err);
@@ -117,11 +119,13 @@ export const postDatapoint = async (datapoint) => {
  * in the database.
  * @param userID A global user ID.
  * @param term [short_term, medium_term, long_term]
- * @returns {Promise<*>} A datapoint object.
+ * @param timeSens Whether or not the datapoint collection should be time sensitive.
+ * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async(userID, term) => {
+export const getDatapoint = async(userID, term, timeSens) => {
     let returnRes;
-    await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}`).then(result => {
+    await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
+        console.log(result);
         if(result.data != null){ // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
         }else{

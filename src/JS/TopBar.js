@@ -91,7 +91,7 @@ const TopBar = () => {
         if (searchParam.length > 2) {
             usernames.forEach(username => {
                 let weight = Levenshtein(searchParam, username)
-                if (weight < 7) {
+                if (weight < 10) {
                     results.push({username: username, weight: weight})
                 }
             })
