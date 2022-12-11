@@ -340,16 +340,13 @@ exports.postDatapoint = async (req, res) => {
     const WEEK_IN_MILLISECONDS = 604800 * 1000;
     await knex('datapoints')
         .where({user_id: req.body.userID, term: req.body.term})
-        .select('collection_date')
         .orderBy('collection_date', "desc")
         .then(oldDate => {
             // Check that any existing datapoint is older than a week
             // before adding a new one
-            if (req.body.collectionDate - oldDate[0]["collection_date"] > WEEK_IN_MILLISECONDS) {
+            if (oldDate.length === 0 || req.body.collectionDate - oldDate[0]["collection_date"] > WEEK_IN_MILLISECONDS) {
                 // Make the final datapoint with all the data
                 knex('datapoints').insert({
-                    // User ID will not be unique
-                    // there is an autoincrementing id
                     'user_id': req.body.userID,
                     'term': req.body.term,
                     'collection_date': req.body.collectionDate,
