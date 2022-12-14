@@ -1,4 +1,4 @@
-import {fetchData, getDatapoint, getUser, postDatapoint, postUser} from "./API";
+import {fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser} from "./API";
 
 /**
  * Creates a combined song name with the associated artists in the form
@@ -56,6 +56,13 @@ export const retrieveUser = async function (userID) {
     return user;
 }
 
+export const retrieveAllUserIDs = async function () {
+    let userIDs;
+    // Deconstruct the array of objects to just an array
+    await getAllUserIDs().then(r => userIDs = r.map(function(id){return id.user_id}));
+    return userIDs;
+}
+
 export const getPlaylists = async function (userID) {
     let globalUserID = userID;
     let result;
@@ -106,10 +113,11 @@ export const retrieveDatapoint = async function (userID, term) {
     let currDatapoint;
     let timeSensitive = false;
     let globalUserID = userID;
-    if (globalUserID === 'me') {
-        timeSensitive = true;
-        globalUserID = window.localStorage.getItem("userID")
-    }
+    // Are we accessing the logged-in user?
+    // [Unknowingly]
+    if(globalUserID === window.localStorage.getItem("userID")){timeSensitive=true}
+    // [Knowingly]
+    else if(globalUserID === "me"){timeSensitive = true; globalUserID = window.localStorage.getItem("userID");}
     console.log(`Retrieving datapoint for: ${globalUserID}, ${term}, ${timeSensitive}`)
     await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
         currDatapoint = result;
@@ -147,7 +155,7 @@ export const fillDatabase = async function () {
     await fetchData(`artists?ids=2${artistIDs.slice(0, -1)}`).then(result => artists = result.artists);
     // BUG WITH SPOTIFY GET ARTISTS
     // THE FIRST VALUE IS ALWAYS NULL
-    // THIS FIXED IT
+    // THIS FIXED IT ^^
     await fetchData(`artists/${songs[0].artists[0].id}`).then(result => artists[0] = result);
     for (let i = 0; i < 400; i++) {
         console.time("Creating user")
@@ -238,7 +246,7 @@ const createFauxUser = function (songs, analytics, artists) {
  * @returns {Promise<void>}
  */
 export const hydrateDatapoints = async function () {
-    console.warn("Hydrating...");
+    console.info("Hydrating...");
     const terms = ['short_term', 'medium_term', 'long_term'];
     for (const term of terms) {
         console.warn("Hydrating: " + term)

@@ -14,6 +14,8 @@ router.post('/create', userRoots.createUser)
 
 router.get('/getUser', userRoots.getUser)
 
+router.get('/getIDs', userRoots.getAllUserIDs)
+
 router.post('/addDatapoint', userRoots.postDatapoint)
 
 router.get('/getDatapoint', userRoots.getDatapoint)

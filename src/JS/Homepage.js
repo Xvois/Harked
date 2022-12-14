@@ -1,10 +1,12 @@
 import {authURI} from './Authentication';
-import {fillDatabase} from './PDM';
+import {fillDatabase, retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
+import {useNavigate} from "react-router-dom";
 
 function Homepage() {
   const [token, setToken] = useState("")
+    const navigate = useNavigate();
   useEffect(() => {
     setToken(window.localStorage.getItem("token"))
     document.title = "Photon"
@@ -13,6 +15,17 @@ function Homepage() {
     const handleLogOut = () => {
       window.localStorage.clear();
       setToken("");
+    }
+
+    const handleCompare = async () => {
+        const currUserID = window.localStorage.getItem('userID')
+        let IDs = await retrieveAllUserIDs();
+        let userID;
+        do {
+            let index = Math.round(Math.random() * IDs.length - 1);
+            userID = IDs[index];
+            navigate(`/compare#${currUserID}&${userID}`)
+        } while (userID === currUserID)
     }
 
   let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
@@ -33,9 +46,9 @@ function Homepage() {
               :
               <div>
                 <a className="auth-button" href='/profile#me'>Explore your profile</a>
-                <a className="auth-button" href=''>Compare to others</a>
-                <a className="auth-button" onClick={fillDatabase}>PH: Fill database</a>
+                <a className="auth-button" onClick={handleCompare}>Compare to others</a>
                 <a className="auth-button" onClick={handleLogOut}>Log out.</a>
+                  <button onClick={fillDatabase}>PH: Fill database</button>
               </div>
           }
           {token === "denied-scopes" ?

@@ -84,6 +84,26 @@ export const getAllUsers = async() => {
 }
 
 /**
+ * Will return all the user IDs in the database.
+ * @returns {Promise<void>} An array.
+ */
+export const getAllUserIDs = async() => {
+    let userIDs;
+    await axios.get(`http://localhost:9000/PRDB/getIDs`).then(
+        function (result) {
+            console.log(result.data);
+            userIDs = result.data;
+        }
+    ).catch(
+        function (err) {
+            console.warn(err);
+        }
+    )
+    return userIDs;
+}
+
+
+/**
  * Will update / create a record in the PRDB for a user.
  * @param user A user object.
  * @returns {Promise<void>}

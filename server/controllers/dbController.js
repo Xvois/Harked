@@ -25,6 +25,10 @@ array_hash = function (a) {
 
 // --- END OF EXTRA FUNCS --- //
 
+exports.getAllUserIDs = async (req, res) => {
+    knex.select('user_id').from('users').then(r => res.json(r));
+}
+
 
 // Retrieve all users
 exports.getUsers = async (req, res) => {

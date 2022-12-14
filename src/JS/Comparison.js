@@ -13,15 +13,36 @@ const Comparison = () => {
     let re = /[^#&]+/g;
     const userIDs = [...window.location.hash.matchAll(re)].map(function(val){return val[0]});
     const [users, setUsers] = useState([]);
+    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
+
+    const calculateAverageAnalytics = (u) => {
+        const length = u.datapoint.topSongs.length;
+        let averageAnalytics = {
+            'acousticness': 0,
+            'danceability': 0,
+            'energy': 0,
+            'instrumentalness': 0,
+            'valence': 0
+        };
+        u.datapoint.topSongs.forEach(song => {
+            analyticsMetrics.forEach(key => {
+                averageAnalytics[key] += song.analytics[key] / length ;
+            })
+        })
+        return averageAnalytics;
+    }
+
     const calculateSimilarity = (u) => {
         let user1Datapoint = u[0].datapoint;
         let user2Datapoint = u[1].datapoint;
         let songsSimilarity = 0;
         let artistsSimilarity = 0;
         let genresSimilarity = 0;
+        let metricDelta = 0;
+        let u0Metrics = calculateAverageAnalytics(u[0]);
+        let u1Metrics = calculateAverageAnalytics(u[1]);
         let similarity;
         // songsKeys in pseudocode.
-        const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
         user1Datapoint.topSongs.forEach( (song, i) => {
             let songDelta = 0;
             analyticsMetrics.forEach(analytic => {
@@ -43,14 +64,11 @@ const Comparison = () => {
         artistsSimilarity /= user1Datapoint.topArtists.length;
         // Takes discrete average of the two lengths.
         genresSimilarity /= Math.floor((user1Datapoint.topGenres.length + user2Datapoint.topGenres.length) / 2);
-        similarity = ( genresSimilarity + 10 * artistsSimilarity + 5 * songsSimilarity) / 3;
+        for(const key in u0Metrics){metricDelta += Math.abs( u0Metrics[key] - u1Metrics[key] ) / Object.entries(u0Metrics).length;}
+        similarity = ( genresSimilarity + 5 * artistsSimilarity + 5 * songsSimilarity + 3 * (1 - Math.sqrt(metricDelta))) / 6;
+        similarity = Math.round(100*similarity)
         if(similarity > 100){similarity = 100} // Ensure not over 100%
-        console.log(`SS: ${songsSimilarity}`);
-        console.log(`AS: ${artistsSimilarity}`);
-        console.log(`GS: ${genresSimilarity}`);
-        console.log(`S: ${similarity}`);
-        similarity *= 100;
-        setSimilarity(Math.round(similarity));
+        setSimilarity(similarity);
     }
 
     const Card = (props) => {
@@ -122,6 +140,7 @@ const Comparison = () => {
             let user;
             await retrieveUser(userID).then(result => user = result);
             await retrieveDatapoint(userID, "long_term").then(result => user = {...user, datapoint: result});
+            user["averageAnalytics"] = calculateAverageAnalytics(user);
             localState.push(user);
         }
         console.log(localState);
@@ -178,6 +197,41 @@ const Comparison = () => {
                     </div>
                     <div className="similarity-score">
                         <h2 style={{marginLeft: "auto", marginRight: "auto", fontSize: '5vw', fontFamily: 'Inter Tight', textTransform: 'uppercase'}}>Your similarity is {similarity}%.</h2>
+                        <p style={{fontSize: '30px'}}>Let's have a look at that in numbers...</p>
+                    </div>
+                    <div style={{display: 'flex', flexDirection: 'row'}}>
+                        <div className="comparison-metrics">
+                            <div className="username">{users[0].username}</div>
+                            <p style={{fontSize: '10px'}}>Avg. song characteristics</p>
+                            {analyticsMetrics.map(key => {
+                                const u0Val= users[0].averageAnalytics[key];
+                                const u1Val = users[1].averageAnalytics[key];
+                                let diff = u0Val - u1Val;
+                                // Cannot have sqrt of negative
+                                if(diff > 0){diff = Math.sqrt(diff)}else(diff = -Math.sqrt(Math.abs(diff)))
+                                const red = 255 * (1-diff);
+                                const green = 255 * (1+diff);
+                                const blue = 50;
+                                return (<p className="comparison-analytic">{key}: <span style={{color: `rgb(${red},${green},${blue})`, fontFamily: 'Inter Tight'}}>{Math.round(users[0].averageAnalytics[key] * 100)}%</span></p>)
+                            })}
+                            <p style={{marginTop: '75px'}}>Top genre: <span style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></p>
+                        </div>
+                        <div className="comparison-metrics">
+                            <div className="username">{users[1].username}</div>
+                            <p style={{fontSize: '10px'}}>Avg. song characteristics</p>
+                            {analyticsMetrics.map(key => {
+                                const u0Val= users[0].averageAnalytics[key];
+                                const u1Val = users[1].averageAnalytics[key];
+                                let diff = u1Val - u0Val;
+                                // Cannot have sqrt of negative
+                                if(diff > 0){diff = Math.sqrt(diff)}else(diff = -Math.sqrt(Math.abs(diff)))
+                                const red = 255 * (1-diff);
+                                const green = 255 * (1+diff);
+                                const blue = 50;
+                                return (<p className="comparison-analytic">{key}: <span style={{color: `rgb(${red},${green},${blue})`, fontFamily: 'Inter Tight'}}>{Math.round(users[1].averageAnalytics[key] * 100)}%</span></p>)
+                            })}
+                            <p style={{marginTop: '75px'}}>Top genre: <span style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></p>
+                        </div>
                     </div>
                 </>
                 :
