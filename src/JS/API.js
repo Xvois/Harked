@@ -27,6 +27,15 @@ export const fetchData = async(path) => {
     return data;
 }
 
+export const putData = async(path) => {
+    await axios.put(`https://api.spotify.com/v1/${path}`, {
+        headers: {
+            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+        },
+    }).catch(function(err){
+        console.warn("[Error in API put] " + err); })
+}
+
 // noinspection JSUnusedGlobalSymbols
 /**
  * @deprecated
@@ -43,6 +52,7 @@ export const fetchLocalData = async(path) => {
     )
     console.log(data)
 }
+
 
 /**
  * Sends a GET HTTP request to the PRDB, fetching the user associated to the global user ID

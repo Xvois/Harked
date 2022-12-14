@@ -1,13 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import {getPlaylists, retrieveDatapoint, retrieveUser} from './PDM';
+import {followUser, getPlaylists, retrieveDatapoint, retrieveUser} from './PDM';
 import arrow from './Arrow.png'
 import {Chip} from '@mui/material';
 import {createTheme} from '@mui/material/styles';
 import {ThemeProvider} from '@emotion/react';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PersonIcon from '@mui/icons-material/Person';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 
 const Profile = () => {
@@ -250,7 +252,7 @@ const Profile = () => {
      * @constructor
      */
     const Graph = (props) => {
-        const key = props.key;
+        const key = props.keyEntry;
         const list = props.data;
         const parentObj = props.parent;
         const selections = props.selections;
@@ -310,7 +312,7 @@ const Profile = () => {
                                 } else {
                                     return <></>
                                 }
-                            })}
+                            })}}
                         </select>
                     </h1>
                     <div className='top'>
@@ -418,9 +420,9 @@ const Profile = () => {
     }
 
     useEffect(() => {
-        console.warn("useEffect called.")
         loadPage();
     }, [term, userID])
+
 
     return (
         <>
@@ -442,7 +444,16 @@ const Profile = () => {
                     <div className='user-container'>
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
-                            <div className='username'>{currentUser.username}</div>
+                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                <div className='username'>{currentUser.username}</div>
+                                {currentUser.userID === window.localStorage.getItem('userID') ?
+                                    <ThemeProvider theme={chipletTheme}>
+                                        <AddCircleOutlineIcon fontSize="large" color="primary" onClick={() => followUser(currentUser.userID)}/>
+                                    </ThemeProvider>
+                                    :
+                                    <></>
+                                }
+                            </div>
                             {userID !== "me" ?  <a className={"compare-button"} href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
                             <div style={{
                                 display: `flex`,
@@ -469,7 +480,6 @@ const Profile = () => {
                                 </svg>
                                 <p>Open profile in Spotify.</p>
                             </a>
-                            <p>Followers: PH</p>
                             <p>Playlists: {playlists.length}</p>
                         </div>
                     </div>
@@ -500,7 +510,7 @@ const Profile = () => {
                         <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='term-container'>
                             {terms.map(function(element){
-                                return         <button onClick={() => setTerm(element)}
+                                return         <button key={element} onClick={() => setTerm(element)}
                                                style={term === element ? {backgroundColor: `#22CC5E`, transform: 'scale(95%)', color: 'white', "--fill-color": '#22C55E'} : {
                                                    backgroundColor: `black`,
                                                    cursor: `pointer`,
@@ -517,7 +527,7 @@ const Profile = () => {
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
-                                        return <li className='list-item'
+                                        return <li key = {element.type ? element[`${element.type}_id`] : element} className='list-item'
                                                    onClick={() => updateFocus(element, message)}>{getLIName(element)}</li>
                                     } else {
                                         return <></>
@@ -527,7 +537,7 @@ const Profile = () => {
                             <Focus/>
                         </div>
                     </div>
-                    <Graph title="Your top 50 songs" key="song_id" selections={analyticsMetrics}
+                    <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
                            data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
                     <h2 style={{
                         textTransform: `uppercase`,

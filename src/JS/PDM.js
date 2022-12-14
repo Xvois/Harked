@@ -1,4 +1,4 @@
-import {fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser} from "./API";
+import {fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser, putData} from "./API";
 
 /**
  * Creates a combined song name with the associated artists in the form
@@ -54,6 +54,10 @@ export const retrieveUser = async function (userID) {
     }
     console.log(user)
     return user;
+}
+
+export const followUser = async function (userID) {
+    await putData(`following?ids=${userID}`);
 }
 
 export const retrieveAllUserIDs = async function () {
