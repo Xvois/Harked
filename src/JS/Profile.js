@@ -1,7 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import {followUser, getPlaylists, retrieveDatapoint, retrieveUser} from './PDM';
+import {
+    followUser,
+    followsUser,
+    getPlaylists,
+    retrieveDatapoint,
+    retrieveUser,
+    unfollowUser
+} from './PDM';
 import arrow from './Arrow.png'
 import {Chip} from '@mui/material';
 import {createTheme} from '@mui/material/styles';
@@ -68,6 +75,7 @@ const Profile = () => {
         valence: 'positive',
         tempo: `high tempo`
     }
+    const [following, setFollowing] = useState(null)
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;
@@ -360,12 +368,14 @@ const Profile = () => {
     // Function that loads the page when necessary
     const loadPage = async () => {
         // If the page hasn't loaded then grab the user data
-        if (userID === window.localStorage.getItem("userID")) {
+        if (userID === window.localStorage.getItem("userID") || userID === "me") {
             window.location.hash = "me";
             setUserID("me")
         } else {
             setUserID(window.location.hash.split("#")[1])
+            followsUser(userID).then(following => setFollowing(following));
         }
+        console.log(following)
         if (!loaded) {
             await retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
@@ -381,7 +391,6 @@ const Profile = () => {
                 setChipletData([result.topArtists[0], result.topGenres[0]])
             }
         })
-
         // Refresh the focus
         setShowArt("empty")
         setFocusMessage("See what it says.")
@@ -446,9 +455,13 @@ const Profile = () => {
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
                                 <div className='username'>{currentUser.username}</div>
-                                {currentUser.userID === window.localStorage.getItem('userID') ?
+                                {following !== null ?
                                     <ThemeProvider theme={chipletTheme}>
-                                        <AddCircleOutlineIcon fontSize="large" color="primary" onClick={() => followUser(currentUser.userID)}/>
+                                        {following ?
+                                        <CheckCircleOutlineIcon className={"follow-button"}  fontSize="large" color="primary" onClick={function() {unfollowUser(userID); setFollowing(false)}}/>
+                                        :
+                                        <AddCircleOutlineIcon className={"follow-button"} fontSize="large" color="primary" onClick={function(){followUser(userID); setFollowing(true)}}/>
+                                        }
                                     </ThemeProvider>
                                     :
                                     <></>

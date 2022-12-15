@@ -309,6 +309,10 @@
     color: rgb(148, 148, 148);
 }
 
+.follow-button:hover{
+    cursor: pointer;
+}
+
 .datapoint-title {
     height: max-content;
     margin: 0;
@@ -505,23 +509,20 @@
     align-items: center;
     justify-content: center;
     width: 90%;
-    gap: 5vw;
     padding: 50px;
     height: max-content;
-    margin: 0 auto 0 auto;
+    margin: 50px auto 20px auto;
 }
 .playlist-art{
     display: flex;
     justify-content: center;
     align-items: center;
     aspect-ratio: 1;
-    max-height: 350px;
-    max-width: 350px;
+    height: 350px;
+    width: 350px;
     flex-grow: 1;
     object-fit: cover;
     text-align: center;
-    box-shadow: 0 0 100px rgba(255, 255, 255, 0.16);
-    border-radius: 10%;
 
     text-decoration: none;
     color: white;
@@ -532,6 +533,7 @@
     height: min-content;
     font-family: 'Inter Tight', sans-serif;
     word-break: break-all;
+    transition: all 0.25s ease;
 }
 
 .playlist-text-container > h2{
@@ -548,18 +550,21 @@
 }
 
 .playlist-art > img{
-    filter: blur(10px) brightness(90%);
+    filter: blur(1px) brightness(75%);
     transform: scale(97.5%);
-    border-radius: 10%;
     object-fit: cover;
-    transition: all 0.5s ease-out;
+    transition: all 0.5s ease;
 }
 
-.playlist-art > img:hover{
+.playlist-art:hover img{
     filter: none;
     transform: scale(100%);
     box-shadow: 0 0 45px rgba(255, 255, 255, 0.21);
+}
 
+.playlist-art:hover .playlist-text-container{
+    transform: scale(105%);
+    text-shadow: 0 0 20px black;
 }
 
 

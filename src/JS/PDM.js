@@ -1,4 +1,4 @@
-import {fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser, putData} from "./API";
+import {deleteData, fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser, putData} from "./API";
 
 /**
  * Creates a combined song name with the associated artists in the form
@@ -56,8 +56,12 @@ export const retrieveUser = async function (userID) {
     return user;
 }
 
-export const followUser = async function (userID) {
-    await putData(`following?ids=${userID}`);
+export const followUser = function (userID) {
+    putData(`me/following?type=user&ids=${userID}`);
+}
+
+export const unfollowUser = function (userID) {
+    deleteData(`me/following?type=user&ids=${userID}`);
 }
 
 export const retrieveAllUserIDs = async function () {
@@ -82,6 +86,11 @@ export const getPlaylists = async function (userID) {
     return result;
 }
 
+export const followsPlaylist = async function (playlistID) {
+    const {data} = fetchData(`/playlists/${playlistID}/followers/contains`);
+    return data;
+}
+
 /**
  * Creates / updates the logged-in user's record in the PRDB using postUser.
  * @returns {Promise<void>}
@@ -103,6 +112,11 @@ export const postLoggedUser = async function () {
     })
     await profilePromise;
     await postUser(user);
+}
+
+export const followsUser = async function (userID) {
+    const data = await fetchData(`me/following/contains?type=user&ids=${userID}`);
+    return data[0];
 }
 
 /**

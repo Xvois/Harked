@@ -24,16 +24,29 @@ export const fetchData = async(path) => {
             alert(err);
         }
     })
+    console.log("Path: " + path + " Data: ");
+    console.log(data);
     return data;
 }
 
 export const putData = async(path) => {
-    await axios.put(`https://api.spotify.com/v1/${path}`, {
+    await axios.put(`https://api.spotify.com/v1/${path}`, {},{
         headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
     }).catch(function(err){
         console.warn("[Error in API put] " + err); })
+}
+
+export const deleteData = async(path) => {
+    await axios.delete(`https://api.spotify.com/v1/${path}`,{
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+        },
+    }).catch(function(err){
+        console.warn("[Error in API delete] " + err); })
 }
 
 // noinspection JSUnusedGlobalSymbols
