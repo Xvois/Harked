@@ -171,6 +171,7 @@
     opacity: 1;
     animation: swoopUpR 0.5s ease-out;
     z-index: 1;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.43);
 }
 
 .art-name-hidden {
@@ -186,7 +187,7 @@
     opacity: 0;
     animation: swoopUpH 0.25s ease-out;
     z-index: 1;
-
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.43);
 }
 
 .art-desc-shown {
@@ -201,7 +202,7 @@
     height: max-content;
     animation: swoopUpR 0.8s ease-out;
     z-index: 1;
-
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.43);
 }
 
 .art-desc-hidden {
@@ -216,6 +217,7 @@
     height: max-content;
     opacity: 0;
     animation: swoopUpH 0.25s ease-out;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.43);
 }
 
 .focus-message-shown {
@@ -311,6 +313,7 @@
 
 .follow-button:hover{
     cursor: pointer;
+    color: #22c55e;
 }
 
 .datapoint-title {
@@ -529,10 +532,9 @@
 }
 .playlist-text-container{
     position: absolute;
-    width: 300px;
+    width: 400px;
     height: min-content;
     font-family: 'Inter Tight', sans-serif;
-    word-break: break-all;
     transition: all 0.25s ease;
 }
 
@@ -550,7 +552,7 @@
 }
 
 .playlist-art > img{
-    filter: blur(1px) brightness(75%);
+    filter: blur(1px) brightness(50%);
     transform: scale(97.5%);
     object-fit: cover;
     transition: all 0.5s ease;

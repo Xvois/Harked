@@ -34,9 +34,11 @@
 }
 
 .card-text-container{
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 500;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
     position: absolute;
     text-align: center;
     font-size: 6em;
@@ -56,15 +58,14 @@
     text-transform: uppercase;
     font-size: 50px;
     font-weight: 800;
-    opacity: 0.5;
     word-break: break-word;
     width: 100%;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.26);
     animation: fade 0.5s ease-in-out;
-    text-shadow: 0 0 20px black;
 }
 @keyframes fade {
     from{opacity: 0}
-    to{opacity: 0.5}
+    to{opacity: 1}
 }
 
 .card-header-l{
@@ -84,9 +85,8 @@
     height: 400px;
     width: 100%;
     object-fit: cover;
-    filter: blur(10px);
+    filter: blur(10px) brightness(100%);
     transition: all 0.5s;
-
 }
 .card:hover{
     width: 250px;
@@ -94,7 +94,7 @@
 }
 
 .card:hover > img {
-    transform: scale(120%);
+    transform: scale(90%);
 }
 
 .card:hover .card-text-container .card-num{

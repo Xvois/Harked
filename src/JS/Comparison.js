@@ -88,14 +88,27 @@ const Comparison = () => {
                         :
                         <>
                             <p>{item[`${item.type === 'artist' ? 'name' : 'title'}`]}</p>
-                            <p>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
+                            <p style={{fontSize: '20px'}}>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
                         </>
 
                     }
                 </div>
-                <img alt="Artist" src={source} style={state.isExpanded ? {transform: 'scale(100%)'} : {}}></img>
+                <img alt="Artist" src={source} style={state.isExpanded ? {transform: 'scale(120%)', filter: 'blur(10px) brightness(75%)'} : {}}></img>
             </div>
         )
+    }
+
+    const quintessentialSong = (user, avgAnalytics) => {
+        let bestGuess = {};
+        let bestDelta = 100;
+        user.datapoint.topSongs.forEach(song => {
+            let localDelta = 0;
+            Object.keys(avgAnalytics).forEach(key => {
+                localDelta += Math.abs(song.analytics[key] - avgAnalytics[key]);
+            })
+            if(localDelta < bestDelta){bestDelta = localDelta; bestGuess = song;}
+        })
+        return bestGuess;
     }
 
     const UserContainer = (props) => {
@@ -141,6 +154,7 @@ const Comparison = () => {
             await retrieveUser(userID).then(result => user = result);
             await retrieveDatapoint(userID, "long_term").then(result => user = {...user, datapoint: result});
             user["averageAnalytics"] = calculateAverageAnalytics(user);
+            user["quintessentialSong"] = quintessentialSong(user, user.averageAnalytics);
             localState.push(user);
         }
         console.log(localState);
@@ -149,8 +163,7 @@ const Comparison = () => {
 
     const [similarity, setSimilarity] = useState(0);
     useEffect(() => {
-        resolveUsers().then(function(u){ setUsers(u); calculateSimilarity(u)});
-
+        resolveUsers().then(function(u){ setUsers(u); calculateSimilarity(u);});
     }, [])
     return (
         <>{users.length ?
@@ -197,7 +210,7 @@ const Comparison = () => {
                     </div>
                     <div className="similarity-score">
                         <h2 style={{marginLeft: "auto", marginRight: "auto", fontSize: '5vw', fontFamily: 'Inter Tight', textTransform: 'uppercase'}}>Your similarity is {similarity}%.</h2>
-                        <p style={{fontSize: '30px'}}>Let's have a look at that in numbers...</p>
+                        <p style={{fontSize: '30px'}}>Let's have a look at that a little more...</p>
                     </div>
                     <div style={{display: 'flex', flexDirection: 'row'}}>
                         <div className="comparison-metrics">
@@ -214,7 +227,19 @@ const Comparison = () => {
                                 const blue = 50;
                                 return (<p className="comparison-analytic">{key}: <span style={{color: `rgb(${red},${green},${blue})`, fontFamily: 'Inter Tight'}}>{Math.round(users[0].averageAnalytics[key] * 100)}%</span></p>)
                             })}
-                            <p style={{marginTop: '75px'}}>Top genre: <span style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></p>
+                            <div className='art-container' style={{transform: 'scale(75%)'}}>
+                                <a className={'play-wrapper'}
+                                   style={{boxShadow: 'none'}}
+                                   href={users[0].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
+                                    <img className='art' src={users[0].quintessentialSong.image} alt='Cover art'></img>
+                                    <div className='art-text-container'>
+                                        <h1 className={"art-name-shown"}>{users[0].quintessentialSong.title}</h1>
+                                        <p className={"art-desc-shown"}
+                                           style={{fontSize: '20px'}}>{users[0].username}'s quintessential song</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <p style={{marginTop: '25px'}}>Top genre: <span style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></p>
                         </div>
                         <div className="comparison-metrics">
                             <div className="username">{users[1].username}</div>
@@ -230,7 +255,19 @@ const Comparison = () => {
                                 const blue = 50;
                                 return (<p className="comparison-analytic">{key}: <span style={{color: `rgb(${red},${green},${blue})`, fontFamily: 'Inter Tight'}}>{Math.round(users[1].averageAnalytics[key] * 100)}%</span></p>)
                             })}
-                            <p style={{marginTop: '75px'}}>Top genre: <span style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></p>
+                            <div className='art-container' style={{transform: 'scale(75%)'}}>
+                                <a className={'play-wrapper'}
+                                   style={{boxShadow: 'none'}}
+                                   href={users[1].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
+                                    <img className='art' src={users[1].quintessentialSong.image} alt='Cover art'></img>
+                                    <div className='art-text-container'>
+                                        <h1 className={"art-name-shown"}>{users[1].quintessentialSong.title}</h1>
+                                        <p className={"art-desc-shown"}
+                                           style={{fontSize: '20px'}}>{users[1].username}'s quintessential song</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <p style={{marginTop: '25px'}}>Top genre: <span style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></p>
                         </div>
                     </div>
                 </>
