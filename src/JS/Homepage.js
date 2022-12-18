@@ -3,6 +3,10 @@ import {fillDatabase, retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
+import FocusShowcase from "./FocusShowcase.png"
+import GraphShowcase from "./GraphShowcase.png"
+import CompareShowcase from "./CompareShowcase.png"
+import Arrow from "./Arrow.png"
 
 function Homepage() {
   const [token, setToken] = useState("")
@@ -48,7 +52,6 @@ function Homepage() {
                 <a className="auth-button" href='/profile#me'>Explore your profile</a>
                 <a className="auth-button" onClick={handleCompare}>Compare to others</a>
                 <a className="auth-button" onClick={handleLogOut}>Log out.</a>
-                  <button onClick={fillDatabase}>PH: Fill database</button>
               </div>
           }
           {token === "denied-scopes" ?
@@ -56,21 +59,22 @@ function Homepage() {
               :
               <></>
           }
+          <div className={"down-arrow-container"}>
+              <img className={"down-arrow"} src={Arrow}></img>
+          </div>
         </div>
-        <div className='container' style={{textAlign: 'right'}}>
-          <h2>Look at some music.</h2>
-          <p>Maybe even listen to some?</p>
+        <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'right'}}>
+          <h2 className={"showcase-text"}>Look at your profile in more detail.</h2>
+            <img style={{height: '500px'}} src = {FocusShowcase} />
         </div>
-        <div className='container' style={{textAlign: 'left'}}>
-          <p>And here!</p>
-        </div>
-        <div className='container'>
-          <ol>
-            <li>Use the website.</li>
-            <li>Please.</li>
-            <li>Use the website.</li>
-          </ol>
-        </div>
+          <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'left'}}>
+              <img style={{height: '300px'}} src = {GraphShowcase} />
+              <h2 className={"showcase-text"}>See how your songs compare.</h2>
+          </div>
+          <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'left'}}>
+              <h2 className={"showcase-text"}>Get a detailed rundown of your tastes and compare them to others'.</h2>
+              <img style={{height: '300px'}} src = {CompareShowcase} />
+          </div>
       </div>
   );
 }

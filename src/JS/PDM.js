@@ -34,27 +34,33 @@ export const retrieveUser = async function (userID) {
         profilePicture: '',
         media: {name: '', image: ''},
     }
-    // Are we retrieving ourself?
+
+    // Check if we are retrieving the current user
     if (userID === 'me') {
-        // Resolve the relative userID
-        // into a global userID (will always be a valid Spotify ID)
+        // Get the global user ID from local storage
         let globalUserID = window.localStorage.getItem("userID");
         user.userID = globalUserID;
-        await getUser(globalUserID).then(result => user = result);
-        // Update the player
-        // TODO: FIX THIS! THIS TAKES SO LONG!!!
-        await fetchData("me/player").then(function (result) {
-            if (result) {
-                user.media = {name: parseSong(result.item), image: result.item.album.images[2].url}
-            }
-        });
+
+        // Make the API calls concurrently using Promise.all
+        await Promise.all([
+            // Get the user's profile information from the local database
+            getUser(globalUserID).then(result => user = result),
+            // Get the user's current media information from the Spotify API
+            fetchData("me/player").then(function (result) {
+                if (result) {
+                    // Update the user's media information with the current song and album image
+                    user.media = {name: parseSong(result.item), image: result.item.album.images[2].url}
+                }
+            }),
+        ]);
     } else {
-        // Get the user if they are not ourself.
+        // Get the user's profile information from the local database
         await getUser(userID).then(result => user = result);
     }
     console.log(user)
     return user;
 }
+
 
 export const followUser = function (userID) {
     putData(`me/following?type=user&ids=${userID}`);
@@ -67,7 +73,9 @@ export const unfollowUser = function (userID) {
 export const retrieveAllUserIDs = async function () {
     let userIDs;
     // Deconstruct the array of objects to just an array
-    await getAllUserIDs().then(r => userIDs = r.map(function(id){return id.user_id}));
+    await getAllUserIDs().then(r => userIDs = r.map(function (id) {
+        return id.user_id
+    }));
     return userIDs;
 }
 
@@ -119,6 +127,10 @@ export const followsUser = async function (userID) {
     return data[0];
 }
 
+export const isLoggedIn = function () {
+    return window.localStorage.getItem("userID") && window.localStorage.getItem("token");
+}
+
 /**
  * Returns a valid datapoint for a given user in a given term.
  * If the function does not get a valid datapoint from the database, it will hydrate the user's datapoints
@@ -133,9 +145,14 @@ export const retrieveDatapoint = async function (userID, term) {
     let globalUserID = userID;
     // Are we accessing the logged-in user?
     // [Unknowingly]
-    if(globalUserID === window.localStorage.getItem("userID")){timeSensitive=true}
+    if (globalUserID === window.localStorage.getItem("userID")) {
+        timeSensitive = true
+    }
     // [Knowingly]
-    else if(globalUserID === "me"){timeSensitive = true; globalUserID = window.localStorage.getItem("userID");}
+    else if (globalUserID === "me") {
+        timeSensitive = true;
+        globalUserID = window.localStorage.getItem("userID");
+    }
     console.log(`Retrieving datapoint for: ${globalUserID}, ${term}, ${timeSensitive}`)
     await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
         currDatapoint = result;
@@ -263,7 +280,7 @@ const createFauxUser = function (songs, analytics, artists) {
  * to the database using postDatapoint.
  * @returns {Promise<void>}
  */
-export const hydrateDatapoints = async function () {
+const hydrateDatapoints = async function () {
     console.info("Hydrating...");
     const terms = ['short_term', 'medium_term', 'long_term'];
     for (const term of terms) {

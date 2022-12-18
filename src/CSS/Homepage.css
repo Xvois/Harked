@@ -9,10 +9,29 @@
   padding-left: 20px;
 }
 
+.showcase-text{
+  text-transform: uppercase;
+  font-family: 'Inter Tight', sans-serif;
+  font-weight: 500;
+  font-size: 5ex;
+}
+
 .top-container{
   margin-top: 200px;
-  margin-left: 50px;
-  margin-bottom: 100px;
+  padding-left: 50px;
+}
+
+.down-arrow-container{
+  display: flex;
+  margin: 20vh auto auto -50px;
+}
+
+.down-arrow{
+  transform: scale(15%) rotate(90deg);
+  margin: auto;
+  border: 3px solid white;
+  padding: 50px;
+  border-radius: 100%;
 }
 
 .container{

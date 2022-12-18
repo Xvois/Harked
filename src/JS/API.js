@@ -1,26 +1,37 @@
 import axios from 'axios';
 import {authURI} from './Authentication';
 
+const LRU = require('lru-cache');
+
+// Create a new LRU cache with a maximum size of 1000 items
+// and a default expiration time of 1 hour
+const cache = new LRU({
+    max: 1000,
+    ttl: 1000 * 60 * 60,
+});
+
 /**
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.
  * @param path
  * @returns {Promise<any>} An object.
  */
-export const fetchData = async(path) => {
+export const fetchData = async (path) => {
     //console.log("External API call made to: " + path)
     const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
-    }).catch(function(err){
-        if(err.response === undefined){ console.warn("[Error in API call] " + err); }
-        if(err.response.status === 401){
+    }).catch(function (err) {
+        if (err.response === undefined) {
+            console.warn("[Error in API call] " + err);
+        }
+        if (err.response.status === 401) {
             window.localStorage.setItem("token", "");
             window.location.replace(authURI)
-        }else if(err.response.status === 429){
+        } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
-        }else{
+        } else {
             alert(err);
         }
     })
@@ -29,24 +40,26 @@ export const fetchData = async(path) => {
     return data;
 }
 
-export const putData = async(path) => {
-    await axios.put(`https://api.spotify.com/v1/${path}`, {},{
+export const putData = async (path) => {
+    await axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
-    }).catch(function(err){
-        console.warn("[Error in API put] " + err); })
+    }).catch(function (err) {
+        console.warn("[Error in API put] " + err);
+    })
 }
 
-export const deleteData = async(path) => {
-    await axios.delete(`https://api.spotify.com/v1/${path}`,{
+export const deleteData = async (path) => {
+    await axios.delete(`https://api.spotify.com/v1/${path}`, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
-    }).catch(function(err){
-        console.warn("[Error in API delete] " + err); })
+    }).catch(function (err) {
+        console.warn("[Error in API delete] " + err);
+    })
 }
 
 // noinspection JSUnusedGlobalSymbols
@@ -56,10 +69,10 @@ export const deleteData = async(path) => {
  * @param path The endpoint.
  * @returns {Promise<void>} An object containing the response.
  */
-export const fetchLocalData = async(path) => {
+export const fetchLocalData = async (path) => {
     console.info("Local API call made to " + path);
     const {data} = await axios.get(`http://localhost:9000/PRDB/${path}`).catch(
-        function(err){
+        function (err) {
             console.warn(err)
         }
     )
@@ -73,14 +86,23 @@ export const fetchLocalData = async(path) => {
  * @param userID The user's global user ID.
  * @returns {Promise<*>} A user object.
  */
-export const getUser = async(userID) => {
-    let user;
+export const getUser = async (userID) => {
+    // Check if the user data is already in the cache
+    let user = cache.get(userID);
+    if (user) {
+        // Return the cached user data
+        return user;
+    }
+
+    // If the user data is not in the cache, make the API call and cache the result
     await axios.get(`http://localhost:9000/PRDB/getUser?userID=${userID}`).then(
-        function(result){
+        function (result) {
             user = result.data;
+            // Add the user data to the cache
+            cache.set(userID, user);
         }
     ).catch(
-        function(err){
+        function (err) {
             console.warn("Error getting user: ");
             console.warn(err);
         }
@@ -92,7 +114,7 @@ export const getUser = async(userID) => {
  * Returns all the users in the PRDB.
  * @returns {Promise<*>} An array of user objects.
  */
-export const getAllUsers = async() => {
+export const getAllUsers = async () => {
     let users;
     await axios.get(`http://localhost:9000/PRDB/all`).then(
         function (result) {
@@ -110,7 +132,7 @@ export const getAllUsers = async() => {
  * Will return all the user IDs in the database.
  * @returns {Promise<void>} An array.
  */
-export const getAllUserIDs = async() => {
+export const getAllUserIDs = async () => {
     let userIDs;
     await axios.get(`http://localhost:9000/PRDB/getIDs`).then(
         function (result) {
@@ -131,10 +153,10 @@ export const getAllUserIDs = async() => {
  * @param user A user object.
  * @returns {Promise<void>}
  */
-export const postUser = async(user) => {
+export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
     await axios.post(`http://localhost:9000/PRDB/create`, user).catch(
-        function(err){
+        function (err) {
             console.warn(err);
         }
     )
@@ -165,13 +187,13 @@ export const postDatapoint = async (datapoint) => {
  * @param timeSens Whether or not the datapoint collection should be time sensitive.
  * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async(userID, term, timeSens) => {
+export const getDatapoint = async (userID, term, timeSens) => {
     let returnRes;
     await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         console.log(result);
-        if(result.data != null){ // Does the datapoint exist? (Has the collectionDate been overwritten?)
+        if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
-        }else{
+        } else {
             returnRes = false;
         }
     })

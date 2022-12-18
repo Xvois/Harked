@@ -1,14 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import {
-    followUser,
-    followsUser,
-    getPlaylists,
-    retrieveDatapoint,
-    retrieveUser,
-    unfollowUser
-} from './PDM';
+import {followsUser, followUser, getPlaylists, isLoggedIn, retrieveDatapoint, retrieveUser, unfollowUser} from './PDM';
 import arrow from './Arrow.png'
 import {Chip} from '@mui/material';
 import {createTheme} from '@mui/material/styles';
@@ -17,6 +10,7 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PersonIcon from '@mui/icons-material/Person';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import {authURI} from "./Authentication";
 
 
 const Profile = () => {
@@ -61,7 +55,7 @@ const Profile = () => {
     const [focusMessage, setFocusMessage] = useState("See what it says.");
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
-    const [playlists, setPlaylists] = useState([])
+    const [playlists, setPlaylists] = useState(null)
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     // Take it to be "X music"
@@ -373,7 +367,9 @@ const Profile = () => {
             setUserID("me")
         } else {
             setUserID(window.location.hash.split("#")[1])
-            followsUser(userID).then(following => setFollowing(following));
+            if (isLoggedIn()) {
+                followsUser(userID).then(following => setFollowing(following));
+            }
         }
         console.log(following)
         if (!loaded) {
@@ -386,7 +382,12 @@ const Profile = () => {
         await retrieveDatapoint(userID, term).then(async function (result) {
             setDatapoint(result)
             await updateArtistQualities(result);
-            await getPlaylists(userID).then(results => {setPlaylists(results); console.log(results)})
+            if (isLoggedIn()) {
+                await getPlaylists(userID).then(results => {
+                    setPlaylists(results);
+                    console.log(results)
+                })
+            }
             if (!chipletData) {
                 setChipletData([result.topArtists[0], result.topGenres[0]])
             }
@@ -429,6 +430,9 @@ const Profile = () => {
     }
 
     useEffect(() => {
+        if (!isLoggedIn() && userID === "me") {
+            window.location.replace(authURI)
+        }
         loadPage();
     }, [term, userID])
 
@@ -456,7 +460,8 @@ const Profile = () => {
                             <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
                                 <div className='username'>{currentUser.username}</div>
                             </div>
-                            {userID !== "me" ?  <a className={"compare-button"} href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
+                            {userID !== "me" && isLoggedIn() ? <a className={"compare-button"}
+                                                                  href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
                             <div style={{
                                 display: `flex`,
                                 paddingTop: `5px`,
@@ -465,10 +470,12 @@ const Profile = () => {
                                 flexWrap: `wrap`
                             }}>
                                 <ThemeProvider theme={chipletTheme}>
-                                    <Chip label={`${chipletData[0].name} fan`} style={{borderWidth: `2px`}} variant='outlined'
-                                          icon={<PersonIcon fontSize='small' />}
+                                    <Chip label={`${chipletData[0].name} fan`} style={{borderWidth: `2px`}}
+                                          variant='outlined'
+                                          icon={<PersonIcon fontSize='small'/>}
                                           color='primary'/>
-                                    <Chip label={`${chipletData[1]} fan`} style={{borderWidth: `2px`}} color='primary' variant='outlined'
+                                    <Chip label={`${chipletData[1]} fan`} style={{borderWidth: `2px`}} color='primary'
+                                          variant='outlined'
                                           icon={<MusicNoteIcon fontSize='small'/>}/>
                                 </ThemeProvider>
                             </div>
@@ -480,19 +487,46 @@ const Profile = () => {
                                     <path fill="#22C55E"
                                           d="m83.996 0.277c-46.249 0-83.743 37.493-83.743 83.742 0 46.251 37.494 83.741 83.743 83.741 46.254 0 83.744-37.49 83.744-83.741 0-46.246-37.49-83.738-83.745-83.738l0.001-0.004zm38.404 120.78c-1.5 2.46-4.72 3.24-7.18 1.73-19.662-12.01-44.414-14.73-73.564-8.07-2.809 0.64-5.609-1.12-6.249-3.93-0.643-2.81 1.11-5.61 3.926-6.25 31.9-7.291 59.263-4.15 81.337 9.34 2.46 1.51 3.24 4.72 1.73 7.18zm10.25-22.805c-1.89 3.075-5.91 4.045-8.98 2.155-22.51-13.839-56.823-17.846-83.448-9.764-3.453 1.043-7.1-0.903-8.148-4.35-1.04-3.453 0.907-7.093 4.354-8.143 30.413-9.228 68.222-4.758 94.072 11.127 3.07 1.89 4.04 5.91 2.15 8.976v-0.001zm0.88-23.744c-26.99-16.031-71.52-17.505-97.289-9.684-4.138 1.255-8.514-1.081-9.768-5.219-1.254-4.14 1.08-8.513 5.221-9.771 29.581-8.98 78.756-7.245 109.83 11.202 3.73 2.209 4.95 7.016 2.74 10.733-2.2 3.722-7.02 4.949-10.73 2.739z"/>
                                 </svg>
-                                <p style={{textTransform: 'uppercase', fontFamily: 'Inter Tight'}}>Open profile in Spotify</p>
+                                <p style={{textTransform: 'uppercase', fontFamily: 'Inter Tight'}}>Open profile in
+                                    Spotify</p>
                             </a>
                             {following !== null ?
                                 <ThemeProvider theme={chipletTheme}>
                                     {following ?
-                                        <div className={"follow-button"}  style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'right'}}  onClick={function() {unfollowUser(userID); setFollowing(false)}}>
-                                            <CheckCircleOutlineIcon className={"follow-button"}  fontSize="medium" color="primary"/>
-                                            <p style={{marginLeft: '5px', textTransform: 'uppercase', fontFamily: 'Inter Tight', color: '#22C55E'}}>Following</p>
+                                        <div className={"follow-button"} style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'right'
+                                        }} onClick={function () {
+                                            unfollowUser(userID);
+                                            setFollowing(false)
+                                        }}>
+                                            <CheckCircleOutlineIcon className={"follow-button"} fontSize="medium"
+                                                                    color="primary"/>
+                                            <p style={{
+                                                marginLeft: '5px',
+                                                textTransform: 'uppercase',
+                                                fontFamily: 'Inter Tight',
+                                                color: '#22C55E'
+                                            }}>Following</p>
                                         </div>
                                         :
-                                        <div className={"follow-button"}  style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'right'}} onClick={function(){followUser(userID); setFollowing(true)}}>
+                                        <div className={"follow-button"} style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'right'
+                                        }} onClick={function () {
+                                            followUser(userID);
+                                            setFollowing(true)
+                                        }}>
                                             <AddCircleOutlineIcon fontSize="medium"/>
-                                            <p style={{marginLeft: '5px', textTransform: 'uppercase', fontFamily: 'Inter Tight'}}>Follow</p>
+                                            <p style={{
+                                                marginLeft: '5px',
+                                                textTransform: 'uppercase',
+                                                fontFamily: 'Inter Tight'
+                                            }}>Follow</p>
                                         </div>
                                     }
                                 </ThemeProvider>
@@ -518,7 +552,14 @@ const Profile = () => {
                         }
                     </div>
                     <div>
-                        <div style={{display: `flex`, flexDirection: `row`, justifyContent: `space-evenly`, alignItems: 'center', height: '75px', marginTop: '50px'}}>
+                        <div style={{
+                            display: `flex`,
+                            flexDirection: `row`,
+                            justifyContent: `space-evenly`,
+                            alignItems: 'center',
+                            height: '75px',
+                            marginTop: '50px'
+                        }}>
                             <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
                             <h2 className='datapoint-title'>Top {simpleSelection}</h2>
@@ -527,9 +568,14 @@ const Profile = () => {
                         </div>
                         <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='term-container'>
-                            {terms.map(function(element){
-                                return         <button key={element} onClick={() => setTerm(element)}
-                                               style={term === element ? {backgroundColor: `#22CC5E`, transform: 'scale(95%)', color: 'white', "--fill-color": '#22C55E'} : {
+                            {terms.map(function (element) {
+                                return <button key={element} onClick={() => setTerm(element)}
+                                               style={term === element ? {
+                                                   backgroundColor: `#22CC5E`,
+                                                   transform: 'scale(95%)',
+                                                   color: 'white',
+                                                   "--fill-color": '#22C55E'
+                                               } : {
                                                    backgroundColor: `black`,
                                                    cursor: `pointer`,
                                                    width: '100px',
@@ -545,7 +591,8 @@ const Profile = () => {
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
-                                        return <li key = {element.type ? element[`${element.type}_id`] : element} className='list-item'
+                                        return <li key={element.type ? element[`${element.type}_id`] : element}
+                                                   className='list-item'
                                                    onClick={() => updateFocus(element, message)}>{getLIName(element)}</li>
                                     } else {
                                         return <></>
@@ -565,18 +612,30 @@ const Profile = () => {
                         marginTop: `50px`
                     }}>{currentUser.username}'s playlists</h2>
                     <div className={"playlist-wrapper"}>
-                        {playlists.length !== 0 ?
-                            playlists.map(function(playlist){
-                                return <a href={playlist.external_urls.spotify} className={"playlist-art"}><img alt="playlist art" src={playlist.images[0].url} style={{width: '100%', height: '100%'}}></img>
-                                    <div className="playlist-text-container">
-                                        <h2 style={playlist.name.length > 18 ? {"--font-scale": `30px`} : {}}>{playlist.name}</h2>
-                                        <p>{playlist.description}</p>
-                                    </div>
+                        {playlists ?
+                            <>
+                                {playlists.length === 0 ?
+                                    <p>There's nothing here...</p>
+                                    :
+                                    playlists.map(function (playlist) {
+                                        return <a href={playlist.external_urls.spotify} className={"playlist-art"}><img
+                                            alt="playlist art" src={playlist.images[0].url}
+                                            style={{width: '100%', height: '100%'}}></img>
+                                            <div className="playlist-text-container">
+                                                <h2 style={playlist.name.length > 18 ? {"--font-scale": `30px`} : {}}>{playlist.name}</h2>
+                                                <p>{playlist.description}</p>
+                                            </div>
 
-                                </a>
-                            })
+                                        </a>
+                                    })
+                                }
+                            </>
                             :
-                            <></>
+                            <>
+                                <h2 style={{fontFamily: 'Inter Tight'}}>Want to see? </h2>
+                                <a className="auth-button" href={authURI}>Log-in</a>
+                            </>
+
                         }
                     </div>
 
