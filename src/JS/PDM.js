@@ -20,6 +20,19 @@ export const parseSong = function (song) { //takes in the song item
     })
     return tempSong;
 }
+
+export const retrieveMedia = async function () {
+    const globalUserID = window.localStorage.getItem("token");
+    let returnMedia;
+    await fetchData("me/player").then(function (result) {
+        if (result) {
+            // Update the user's media information with the current song and album image
+            returnMedia = {name: parseSong(result.item), image: result.item.album.images[2].url}
+        }
+    })
+    return returnMedia;
+}
+
 /**
  * Gets a user from the PRDB as well as updating the media attribute for the
  * current user, if that is the parameter.
@@ -34,30 +47,17 @@ export const retrieveUser = async function (userID) {
         profilePicture: '',
         media: {name: '', image: ''},
     }
-
     // Check if we are retrieving the current user
     if (userID === 'me') {
         // Get the global user ID from local storage
         let globalUserID = window.localStorage.getItem("userID");
         user.userID = globalUserID;
-
-        // Make the API calls concurrently using Promise.all
-        await Promise.all([
-            // Get the user's profile information from the local database
-            getUser(globalUserID).then(result => user = result),
-            // Get the user's current media information from the Spotify API
-            fetchData("me/player").then(function (result) {
-                if (result) {
-                    // Update the user's media information with the current song and album image
-                    user.media = {name: parseSong(result.item), image: result.item.album.images[2].url}
-                }
-            }),
-        ]);
+        // Get the user's profile information from the local database
+        await getUser(globalUserID).then(result => user = result);
     } else {
         // Get the user's profile information from the local database
         await getUser(userID).then(result => user = result);
     }
-    console.log(user)
     return user;
 }
 
@@ -92,11 +92,6 @@ export const getPlaylists = async function (userID) {
         }
     })
     return result;
-}
-
-export const followsPlaylist = async function (playlistID) {
-    const {data} = fetchData(`/playlists/${playlistID}/followers/contains`);
-    return data;
 }
 
 /**

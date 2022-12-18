@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import React, {useEffect, useState} from "react";
 import './../CSS/Comparison.css';
 import './../CSS/Profile.css'

@@ -7,6 +7,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import {styled} from '@mui/material/styles';
 import {getAllUsers} from './API';
+import QuizIcon from '@mui/icons-material/Quiz';
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -109,8 +110,8 @@ const TopBar = () => {
         }
     }
 
-    const updateCachedUsers = async () => {
-        await getAllUsers().then(function (result) {
+    const updateCachedUsers = () => {
+        getAllUsers().then(function (result) {
             setCachedUsers(result);
         })
     }
@@ -123,6 +124,7 @@ const TopBar = () => {
         <header className="header">
             <div className="element-container">
                 <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
+                <a className='element' href='null'><QuizIcon fontSize='large' /><p>Feedback</p></a>
                 <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                 <div className='element'>
                     <ClickAwayListener onClickAway={handleClickAway}>
@@ -144,6 +146,7 @@ const TopBar = () => {
                         :
                         <></>
                     }
+
                 </div>
             </div>
         </header>

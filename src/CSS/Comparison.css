@@ -10,16 +10,6 @@
     justify-content: right;
     display: flex;
 }
-.artists-title{
-    justify-content: center;
-    width: 350px;
-    font-family: 'Inter Tight', sans-serif;
-    color: #ffffff;
-    font-size: 7vw;
-    height: max-content;
-    text-transform: uppercase;
-    margin-bottom: auto;
-}
 
 .card {
     width: 100px;

@@ -1,7 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
-import {followsUser, followUser, getPlaylists, isLoggedIn, retrieveDatapoint, retrieveUser, unfollowUser} from './PDM';
+import {
+    followsUser,
+    followUser,
+    getPlaylists,
+    isLoggedIn,
+    retrieveDatapoint,
+    retrieveMedia,
+    retrieveUser,
+    unfollowUser
+} from './PDM';
 import arrow from './Arrow.png'
 import {Chip} from '@mui/material';
 import {createTheme} from '@mui/material/styles';
@@ -122,7 +131,7 @@ const Profile = () => {
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index - 1]);
     }
-    // Update the artist attributes that are used to make the foucs
+    // Update the artist attributes that are used to make the focus
     // message.
     const updateArtistQualities = async function (data) {
         const songs = data.topSongs;
@@ -146,8 +155,9 @@ const Profile = () => {
                 [max.artist]: {theme: metric}
             }
         })
+        //BUG: WAS AN AWAIT / ASYNC FUNCTION
         // For every artist [in order of listen time]
-        await artists.forEach(async artist => {
+         artists.forEach(artist => {
             // Add the genre quality to them
             // equal to their genre
             if (genres.includes(artist.genre)) {
@@ -360,7 +370,7 @@ const Profile = () => {
     }
 
     // Function that loads the page when necessary
-    const loadPage = async () => {
+    const loadPage = () => {
         // If the page hasn't loaded then grab the user data
         if (userID === window.localStorage.getItem("userID") || userID === "me") {
             window.location.hash = "me";
@@ -373,30 +383,37 @@ const Profile = () => {
         }
         console.log(following)
         if (!loaded) {
-            await retrieveUser(userID).then(function (result) {
+            retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
+                retrieveMedia().then(function (media){
+                    setCurrentUser({
+                        ...result,
+                        media: media
+                    })
+                })
                 document.title = `Photon | ${result.username}`;
             })
         }
         // Update the datapoint
-        await retrieveDatapoint(userID, term).then(async function (result) {
+        retrieveDatapoint(userID, term).then(function (result) {
             setDatapoint(result)
-            await updateArtistQualities(result);
-            if (isLoggedIn()) {
-                await getPlaylists(userID).then(results => {
-                    setPlaylists(results);
-                    console.log(results)
-                })
-            }
-            if (!chipletData) {
-                setChipletData([result.topArtists[0], result.topGenres[0]])
-            }
+            updateArtistQualities(result).then(() => {
+                if (isLoggedIn()) {
+                    getPlaylists(userID).then(results => {
+                        setPlaylists(results);
+                        console.log(results)
+                    })
+                }
+                if (!chipletData) {
+                    setChipletData([result.topArtists[0], result.topGenres[0]])
+                }
+            });
+            setLoaded(true);
         })
         // Refresh the focus
         setShowArt("empty")
         setFocusMessage("See what it says.")
         // Indicate that the loading is over
-        setLoaded(true);
     }
     // Delay function mainly used for animations
     const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -544,6 +561,7 @@ const Profile = () => {
                                     <div></div>
                                     <div></div>
                                     <div></div>
+
                                 </div>
                                 <p className='listening-media'>{currentUser.media.name}</p>
                             </>

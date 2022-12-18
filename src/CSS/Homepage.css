@@ -1,3 +1,4 @@
+/*noinspection CssUnknownTarget*/
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
 
 
@@ -11,7 +12,7 @@
 
 .showcase-text{
   text-transform: uppercase;
-  font-family: 'Inter Tight', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-weight: 500;
   font-size: 5ex;
 }
@@ -29,7 +30,7 @@
 .down-arrow{
   transform: scale(15%) rotate(90deg);
   margin: auto;
-  border: 3px solid white;
+  border: 10px solid white;
   padding: 50px;
   border-radius: 100%;
 }

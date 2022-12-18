@@ -31,6 +31,9 @@ export const fetchData = async (path) => {
             window.location.replace(authURI)
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
+        } else if (err.response.status === 503) {
+            console.warn("[Error in API call] Server is temporarily unavailable, retrying in 3 seconds...");
+            return new Promise((resolve) => setTimeout(resolve, 3000));
         } else {
             alert(err);
         }
@@ -40,8 +43,8 @@ export const fetchData = async (path) => {
     return data;
 }
 
-export const putData = async (path) => {
-    await axios.put(`https://api.spotify.com/v1/${path}`, {}, {
+export const putData = (path) => {
+     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
@@ -51,8 +54,8 @@ export const putData = async (path) => {
     })
 }
 
-export const deleteData = async (path) => {
-    await axios.delete(`https://api.spotify.com/v1/${path}`, {
+export const deleteData = (path) => {
+    axios.delete(`https://api.spotify.com/v1/${path}`, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`

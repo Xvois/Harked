@@ -13,13 +13,15 @@ export const authURI = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${R
 function Authentication() {
 
     const navigate = useNavigate();
-    const redirect = useCallback(async (path) => {
-            console.warn("Redirecting...")
-            await fetchData('me').then(result => window.localStorage.setItem("userID", result.id));
-            await postLoggedUser();
-            navigate(path)
-        },
-        [navigate],);
+    const redirect = useCallback((path) => {
+        console.warn("Redirecting...")
+        fetchData('me').then(result => {
+            window.localStorage.setItem("userID", result.id);
+            postLoggedUser().then(() => {
+                navigate(path);
+            });
+        });
+    }, [navigate]);
 
     useEffect(() => {
         const hash = window.location.hash // Get the anchor of the URL
