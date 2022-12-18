@@ -74,7 +74,7 @@ export const deleteData = (path) => {
  */
 export const fetchLocalData = async (path) => {
     console.info("Local API call made to " + path);
-    const {data} = await axios.get(`http://localhost:9000/PRDB/${path}`).catch(
+    const {data} = await axios.get(`http://86.21.26.107:9000/PRDB/${path}`).catch(
         function (err) {
             console.warn(err)
         }
@@ -98,7 +98,7 @@ export const getUser = async (userID) => {
     }
 
     // If the user data is not in the cache, make the API call and cache the result
-    await axios.get(`http://localhost:9000/PRDB/getUser?userID=${userID}`).then(
+    await axios.get(`http://86.21.26.107:9000/PRDB/getUser?userID=${userID}`).then(
         function (result) {
             user = result.data;
             // Add the user data to the cache
@@ -119,7 +119,7 @@ export const getUser = async (userID) => {
  */
 export const getAllUsers = async () => {
     let users;
-    await axios.get(`http://localhost:9000/PRDB/all`).then(
+    await axios.get(`http://86.21.26.107:9000/PRDB/all`).then(
         function (result) {
             users = result.data;
         }
@@ -137,7 +137,7 @@ export const getAllUsers = async () => {
  */
 export const getAllUserIDs = async () => {
     let userIDs;
-    await axios.get(`http://localhost:9000/PRDB/getIDs`).then(
+    await axios.get(`http://86.21.26.107:9000/PRDB/getIDs`).then(
         function (result) {
             console.log(result.data);
             userIDs = result.data;
@@ -158,7 +158,7 @@ export const getAllUserIDs = async () => {
  */
 export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
-    await axios.post(`http://localhost:9000/PRDB/create`, user).catch(
+    await axios.post(`http://86.21.26.107:9000/PRDB/create`, user).catch(
         function (err) {
             console.warn(err);
         }
@@ -172,7 +172,7 @@ export const postUser = async (user) => {
  * @returns {Promise<void>}
  */
 export const postDatapoint = async (datapoint) => {
-    await axios.post(`http://localhost:9000/PRDB/addDatapoint`, datapoint).then((res) => {
+    await axios.post(`http://86.21.26.107:9000/PRDB/addDatapoint`, datapoint).then((res) => {
         console.log(res.data)
     }).catch(
         function (err) {
@@ -192,7 +192,7 @@ export const postDatapoint = async (datapoint) => {
  */
 export const getDatapoint = async (userID, term, timeSens) => {
     let returnRes;
-    await axios.get(`http://localhost:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
+    await axios.get(`http://86.21.26.107:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         console.log(result);
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
