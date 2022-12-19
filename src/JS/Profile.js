@@ -385,12 +385,14 @@ const Profile = () => {
         if (!loaded) {
             retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
-                retrieveMedia().then(function (media){
-                    setCurrentUser({
-                        ...result,
-                        media: media
+                if(currentUser.userID === window.localStorage.getItem("userID")){
+                    retrieveMedia().then(function (media){
+                        setCurrentUser({
+                            ...result,
+                            media: media
+                        })
                     })
-                })
+                }
                 document.title = `Photon | ${result.username}`;
             })
         }
