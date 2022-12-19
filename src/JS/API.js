@@ -119,7 +119,7 @@ export const getUser = async (userID) => {
  */
 export const getAllUsers = async () => {
     let users;
-    await axios.get(`http://86.21.26.107:9000/PRDB/all`).then(
+    await axios.get(`http://86.21.26.107:9000/PRDB/all`, ).then(
         function (result) {
             users = result.data;
         }
@@ -131,13 +131,20 @@ export const getAllUsers = async () => {
     return users;
 }
 
+export const optionsCall = async () => {
+    await axios.options('https://86.21.26.107:9000/PRDB/all').then(function(response){
+        console.log(response)
+    })
+}
+
+/**
 /**
  * Will return all the user IDs in the database.
  * @returns {Promise<void>} An array.
  */
 export const getAllUserIDs = async () => {
     let userIDs;
-    await axios.get(`http://86.21.26.107:9000/PRDB/getIDs`).then(
+    await axios.get(`https://86.21.26.107:9000/PRDB/getIDs`).then(
         function (result) {
             console.log(result.data);
             userIDs = result.data;
@@ -158,7 +165,7 @@ export const getAllUserIDs = async () => {
  */
 export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
-    await axios.post(`http://86.21.26.107:9000/PRDB/create`, user).catch(
+    await axios.post(`https://86.21.26.107:9000/PRDB/create`, user).catch(
         function (err) {
             console.warn(err);
         }
@@ -172,7 +179,7 @@ export const postUser = async (user) => {
  * @returns {Promise<void>}
  */
 export const postDatapoint = async (datapoint) => {
-    await axios.post(`http://86.21.26.107:9000/PRDB/addDatapoint`, datapoint).then((res) => {
+    await axios.post(`https://86.21.26.107:9000/PRDB/addDatapoint`, datapoint).then((res) => {
         console.log(res.data)
     }).catch(
         function (err) {
@@ -192,7 +199,7 @@ export const postDatapoint = async (datapoint) => {
  */
 export const getDatapoint = async (userID, term, timeSens) => {
     let returnRes;
-    await axios.get(`http://86.21.26.107:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
+    await axios.get(`https://86.21.26.107:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         console.log(result);
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;

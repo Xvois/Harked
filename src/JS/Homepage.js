@@ -9,11 +9,13 @@ import FocusShowcase from "./FocusShowcase.png"
 import UserShowcase from "./UserShowcase.png"
 import CompareShowcase from "./CompareShowcase.png"
 import Arrow from "./Arrow.png"
+import {optionsCall} from "./API";
 
 function Homepage() {
   const [token, setToken] = useState("")
     const navigate = useNavigate();
   useEffect(() => {
+      optionsCall()
     setToken(window.localStorage.getItem("token"))
     document.title = "Photon"
   }, [token])

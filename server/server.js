@@ -4,7 +4,8 @@ const bodyParser = require('body-parser')
 const compression = require('compression')
 const cors = require('cors')
 const helmet = require('helmet')
-
+const https = require('https')
+const fs = require("fs")
 // Import routes
 const usersRouter = require('./routes/dbRoutes')
 
@@ -16,7 +17,7 @@ const app = express()
 
 const corsOptions = {
   origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Content-Type,Authorization',
   credentials: true
 }
@@ -41,7 +42,14 @@ app.use(function (req, res) {
   res.status(404).send('Sorry we could not find that.')
 })
 
-// Start express app
-app.listen(PORT, function() {
-  console.log(`Server is running on: ${PORT}`)
+https
+	.createServer(
+	{
+	key: fs.readFileSync("key.pem"),
+	cert: fs.readFileSync("cert.pem"),
+	},
+	app
+	)
+	.listen(PORT, function() {
+		console.log('HTTPS server running on: ' + PORT)
 })
