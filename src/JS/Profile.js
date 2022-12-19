@@ -81,9 +81,7 @@ const Profile = () => {
     const [following, setFollowing] = useState(null)
     // Update page when new user is chosen
     window.addEventListener("hashchange", function (){
-        setLoaded(false);
-        setDatapoint({});
-        loadPage();
+        window.location.reload(false);
     })
 
     // Get the display name of the list item
