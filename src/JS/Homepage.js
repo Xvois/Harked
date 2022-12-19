@@ -9,14 +9,15 @@ import FocusShowcase from "./FocusShowcase.png"
 import UserShowcase from "./UserShowcase.png"
 import CompareShowcase from "./CompareShowcase.png"
 import Arrow from "./Arrow.png"
-import {optionsCall} from "./API";
+import {isServerAlive} from "./API";
 
 function Homepage() {
   const [token, setToken] = useState("")
+    const [serverStatus, setServerStatus] = useState(true);
     const navigate = useNavigate();
   useEffect(() => {
-      optionsCall()
     setToken(window.localStorage.getItem("token"))
+      isServerAlive().then(isAlive => setServerStatus(isAlive));
     document.title = "Photon"
   }, [token])
 
@@ -63,6 +64,20 @@ function Homepage() {
               :
               <></>
           }
+          <div className={"server-status"}>
+              {serverStatus ?
+                  <>
+                      <div style={{'--colour': '#22C55E'}} className={"server-status-indicator"}></div>
+                      <p className={"server-status-text"}>Server is responding.</p>
+                  </>
+                  :
+                  <>
+                      <div style={{'--colour': 'red'}} className={"server-status-indicator"}></div>
+                      <p className={"server-status-text"}>Server is not responding.</p>
+                  </>
+              }
+          </div>
+            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.0</p>
           <div className={"down-arrow-container"}>
               <img alt={'down arrow'} className={"down-arrow"} src={Arrow}></img>
           </div>

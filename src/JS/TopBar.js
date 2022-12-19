@@ -124,7 +124,7 @@ const TopBar = () => {
         <header className="header">
             <div className="element-container">
                 <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                <a className='element' href='null'><QuizIcon fontSize='large' /><p>Feedback</p></a>
+                <a className='element' href='feedback'><QuizIcon fontSize='large' /><p>Feedback</p></a>
                 <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                 <div className='element'>
                     <ClickAwayListener onClickAway={handleClickAway}>

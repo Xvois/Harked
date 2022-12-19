@@ -131,10 +131,12 @@ export const getAllUsers = async () => {
     return users;
 }
 
-export const optionsCall = async () => {
-    await axios.options('https://86.21.26.107:9000/PRDB/all').then(function(response){
-        console.log(response)
-    })
+export const isServerAlive = async () => {
+    let alive = false;
+    await axios.options('https://86.21.26.107:9000/PRDB/all').then(function(){
+        alive = true;
+    }).catch(err => console.log(err))
+    return alive;
 }
 
 /**
