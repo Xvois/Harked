@@ -14,7 +14,7 @@ const Feedback = () => {
                     <div style={{textAlign: 'center', padding: '0 20px 20px 20px', fontFamily: 'Inter Tight'}}>
                         <p>General feedback includes any suggestions, ideas or general preferences in regards to the site. Any ideas that you believe would improve
                             the general experience of the site is greatly appreciated. I ask that you be as specific as possible when talking about your feedback. The more specific, the better! </p>
-                        <a style={{color: 'white'}} href=''>Please submit your feedback here.</a>
+                        <a style={{color: 'white'}} href='https://forms.office.com/Pages/ResponsePage.aspx?id=vaSGHkF4vkyPb-p6BQ_FApzhPPePyoxArvz6EgYy7KpUM0dFQUU1OVMyTzNYOTNZV01EWFNHVVhUVS4u'>Please submit your feedback here.</a>
                     </div>
                 </div>
                 <div style={{width: '50%'}}>
@@ -25,7 +25,7 @@ const Feedback = () => {
                     <div style={{textAlign: 'center', padding: '0 20px 20px 20px', fontFamily: 'Inter Tight'}}>
                         <p>If you encounter an issue with the site of any form then a bug report can be crucial to fixing it and ensuring the site works well for everyone. These reports can be a little
                         more involved than the general feedback forms, but this makes sure that I can tackle them as quickly as possible.</p>
-                        <a style={{color: 'white'}} href=''>Please submit your bug reports here.</a>
+                        <a style={{color: 'white'}} href='https://forms.office.com/Pages/ResponsePage.aspx?id=vaSGHkF4vkyPb-p6BQ_FApzhPPePyoxArvz6EgYy7KpUQ1NSWk9WOTlBRjBLS0hCNDVGVENXU1JWSy4u'>Please submit your bug reports here.</a>
                     </div>
                 </div>
             </div>

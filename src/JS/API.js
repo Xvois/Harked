@@ -24,7 +24,7 @@ export const fetchData = async (path) => {
         },
     }).catch(function (err) {
         if (err.response === undefined) {
-            console.warn("[Error in API call] " + err);
+            console.warn("[Error in Spotify API call] " + err);
         }
         if (err.response.status === 401) {
             window.localStorage.setItem("token", "");
@@ -50,7 +50,7 @@ export const putData = (path) => {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
     }).catch(function (err) {
-        console.warn("[Error in API put] " + err);
+        console.warn("[Error in Spotify API put] " + err);
     })
 }
 
@@ -61,7 +61,7 @@ export const deleteData = (path) => {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
     }).catch(function (err) {
-        console.warn("[Error in API delete] " + err);
+        console.warn("[Error in Spotify API delete] " + err);
     })
 }
 
@@ -125,6 +125,7 @@ export const getAllUsers = async () => {
         }
     ).catch(
         function (err) {
+            console.warn("Error getting all users: ")
             console.warn(err);
         }
     )
@@ -135,7 +136,10 @@ export const isServerAlive = async () => {
     let alive = false;
     await axios.options('https://86.21.26.107:9000/PRDB/all').then(function(){
         alive = true;
-    }).catch(err => console.log(err))
+    }).catch(function(err){
+        console.warn("Error checking server status: ");
+        console.warn(err);
+    })
     return alive;
 }
 
@@ -153,6 +157,7 @@ export const getAllUserIDs = async () => {
         }
     ).catch(
         function (err) {
+            console.warn("Error getting all userIDs: ")
             console.warn(err);
         }
     )
@@ -169,6 +174,7 @@ export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
     await axios.post(`https://86.21.26.107:9000/PRDB/create`, user).catch(
         function (err) {
+            console.warn("Error posting user: ")
             console.warn(err);
         }
     )
@@ -202,12 +208,14 @@ export const postDatapoint = async (datapoint) => {
 export const getDatapoint = async (userID, term, timeSens) => {
     let returnRes;
     await axios.get(`https://86.21.26.107:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
-        console.log(result);
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
         } else {
             returnRes = false;
         }
+    }).catch(function(err){
+        console.warn("Error getting datapoint: ")
+        console.warn(err)
     })
     return returnRes;
 }

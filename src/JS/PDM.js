@@ -22,7 +22,6 @@ export const parseSong = function (song) { //takes in the song item
 }
 
 export const retrieveMedia = async function () {
-    const globalUserID = window.localStorage.getItem("token");
     let returnMedia;
     await fetchData("me/player").then(function (result) {
         if (result) {
@@ -40,7 +39,6 @@ export const retrieveMedia = async function () {
  * @returns {Promise<{profilePicture: string, media: {image: string, name: string}, userID: string, username: string}>} A user object.
  */
 export const retrieveUser = async function (userID) {
-    console.log("Getting user!")
     let user = {
         userID: '',
         username: '',
@@ -101,7 +99,6 @@ export const getPlaylists = async function (userID) {
 export const postLoggedUser = async function () {
     // Get our global userID
     let globalUserID = window.localStorage.getItem("userID");
-    console.log(globalUserID)
     let user = {
         userID: globalUserID,
         username: '',
@@ -148,10 +145,12 @@ export const retrieveDatapoint = async function (userID, term) {
         timeSensitive = true;
         globalUserID = window.localStorage.getItem("userID");
     }
-    console.log(`Retrieving datapoint for: ${globalUserID}, ${term}, ${timeSensitive}`)
     await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
         currDatapoint = result;
-    }).catch(err => console.warn(err))
+    }).catch(function(err){
+        console.warn("Error retrieving datapoint: ");
+        console.warn(err);
+    })
     if (!currDatapoint) {
         await hydrateDatapoints().then(async () =>
             await getDatapoint(globalUserID, term, timeSensitive).then(result =>

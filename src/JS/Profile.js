@@ -386,7 +386,6 @@ const Profile = () => {
                 followsUser(userID).then(following => setFollowing(following));
             }
         }
-        console.log(following)
         if (!loaded) {
             retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
@@ -408,7 +407,6 @@ const Profile = () => {
                 if (isLoggedIn()) {
                     getPlaylists(userID).then(results => {
                         setPlaylists(results);
-                        console.log(results)
                     })
                 }
                 if (!chipletData) {
