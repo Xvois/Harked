@@ -82,6 +82,7 @@ const Profile = () => {
     // Update page when new user is chosen
     window.addEventListener("hashchange", function (){
         setLoaded(false);
+        setDatapoint({});
         loadPage();
     })
 

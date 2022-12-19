@@ -77,7 +77,7 @@ function Homepage() {
                   </>
               }
           </div>
-            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.1</p>
+            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.2</p>
           <div className={"down-arrow-container"}>
               <img alt={'down arrow'} className={"down-arrow"} src={Arrow}></img>
           </div>
