@@ -79,6 +79,12 @@ const Profile = () => {
         tempo: `high tempo`
     }
     const [following, setFollowing] = useState(null)
+    // Update page when new user is chosen
+    window.addEventListener("hashchange", function (){
+        setLoaded(false);
+        loadPage();
+    })
+
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;

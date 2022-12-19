@@ -110,6 +110,7 @@ const TopBar = () => {
         }
     }
 
+
     const updateCachedUsers = () => {
         getAllUsers().then(function (result) {
             setCachedUsers(result);
