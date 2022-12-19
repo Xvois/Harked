@@ -385,7 +385,7 @@ const Profile = () => {
         if (!loaded) {
             retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
-                if(currentUser.userID === window.localStorage.getItem("userID")){
+                if (userID === window.localStorage.getItem("userID") || userID === "me"){
                     retrieveMedia().then(function (media){
                         setCurrentUser({
                             ...result,
