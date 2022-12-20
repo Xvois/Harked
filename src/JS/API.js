@@ -74,7 +74,7 @@ export const deleteData = (path) => {
  */
 export const fetchLocalData = async (path) => {
     console.info("Local API call made to " + path);
-    const {data} = await axios.get(`https://86.21.26.107:9000/PRDB/${path}`).catch(
+    const {data} = await axios.get(`https://photon-database.tk/PRDB/${path}`).catch(
         function (err) {
             console.warn(err)
         }
@@ -98,7 +98,7 @@ export const getUser = async (userID) => {
     }
 
     // If the user data is not in the cache, make the API call and cache the result
-    await axios.get(`https://86.21.26.107:9000/PRDB/getUser?userID=${userID}`).then(
+    await axios.get(`https://photon-database.tk/PRDB/getUser?userID=${userID}`).then(
         function (result) {
             user = result.data;
             // Add the user data to the cache
