@@ -119,7 +119,7 @@ export const getUser = async (userID) => {
  */
 export const getAllUsers = async () => {
     let users;
-    await axios.get(`https://86.21.26.107:9000/PRDB/all`, ).then(
+    await axios.get(`https://photon-database.tk/PRDB/all`, ).then(
         function (result) {
             users = result.data;
         }
@@ -134,7 +134,7 @@ export const getAllUsers = async () => {
 
 export const isServerAlive = async () => {
     let alive = false;
-    await axios.options('https://86.21.26.107:9000/PRDB/all').then(function(){
+    await axios.options('https://photon-database.tk/PRDB/all').then(function(){
         alive = true;
     }).catch(function(err){
         console.warn("Error checking server status: ");
@@ -150,7 +150,7 @@ export const isServerAlive = async () => {
  */
 export const getAllUserIDs = async () => {
     let userIDs;
-    await axios.get(`https://86.21.26.107:9000/PRDB/getIDs`).then(
+    await axios.get(`https://photon-database.tk/PRDB/getIDs`).then(
         function (result) {
             console.log(result.data);
             userIDs = result.data;
@@ -172,7 +172,7 @@ export const getAllUserIDs = async () => {
  */
 export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
-    await axios.post(`https://86.21.26.107:9000/PRDB/create`, user).catch(
+    await axios.post(`https://photon-database.tk/PRDB/create`, user).catch(
         function (err) {
             console.warn("Error posting user: ")
             console.warn(err);
@@ -187,7 +187,7 @@ export const postUser = async (user) => {
  * @returns {Promise<void>}
  */
 export const postDatapoint = async (datapoint) => {
-    await axios.post(`https://86.21.26.107:9000/PRDB/addDatapoint`, datapoint).then((res) => {
+    await axios.post(`https://photon-database.tk/PRDB/addDatapoint`, datapoint).then((res) => {
         console.log(res.data)
     }).catch(
         function (err) {
@@ -207,7 +207,7 @@ export const postDatapoint = async (datapoint) => {
  */
 export const getDatapoint = async (userID, term, timeSens) => {
     let returnRes;
-    await axios.get(`https://86.21.26.107:9000/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
+    await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
         } else {
