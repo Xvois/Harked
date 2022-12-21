@@ -334,8 +334,7 @@ const hydrateDatapoints = async function () {
                 return null;
             }
         }).filter(Boolean); // filter out null values
-        console.log(topArtists)
-        datapoint.topGenres = calculateTopGenres(topArtists);
+        datapoint.topGenres = calculateTopGenres(topArtists.items);
         await postDatapoint(datapoint).then(() => console.log(term + " success!"));
     });
 
