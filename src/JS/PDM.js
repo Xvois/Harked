@@ -281,10 +281,8 @@ const createFauxUser = function (songs, analytics, artists) {
 const hydrateDatapoints = async function () {
     console.info("Hydrating...");
     const terms = ['short_term', 'medium_term', 'long_term'];
-
-    // Queue up promises for each term
-    const termPromises = terms.map(async term => {
-        console.warn("Hydrating: " + term);
+    for (const term of terms) {
+        console.warn("Hydrating: " + term)
         let datapoint = {
             userID: window.localStorage.getItem("userID"),
             collectionDate: Date.now(),
@@ -292,56 +290,57 @@ const hydrateDatapoints = async function () {
             topSongs: [],
             topArtists: [],
             topGenres: [],
-        };
-
-        // Fetch top tracks and top artists for this term
-        const [topTracks, topArtists] = await Promise.all([
-            fetchData(`me/top/tracks?time_range=${term}&limit=50`),
-            fetchData(`me/top/artists?time_range=${term}`),
-        ]);
-
-        // Concatenate the track IDs into a string, so they can be used in the analytics call
-        const analyticsIDs = topTracks.items.map(track => track.id).join(',');
-
-        // Fetch audio features for the top tracks
-        const analytics = await fetchData(`audio-features?ids=${analyticsIDs}`).then(result => result.audio_features);
-
-        // Add all the songs to the datapoint
-        datapoint.topSongs = topTracks.items.map((track, i) => ({
-            song_id: track.id,
-            song: true,
-            name: parseSong(track),
-            title: track.name,
-            artist: track.artists[0].name,
-            image: track.album.images[1].url,
-            link: track.external_urls.spotify,
-            analytics: analytics[i],
-        }));
-
-        // Add all the artists to the datapoint
-        datapoint.topArtists = topArtists.items.map(artist => {
+        }
+        let topTracks;
+        let topArtists;
+        let analyticsIDs = "";
+        let analytics;
+        // Queue up promises
+        let promises = [await fetchData(`me/top/tracks?time_range=${term}&limit=50`), await fetchData(`me/top/artists?time_range=${term}`)];
+        // Await the promises for the arrays of data
+        await Promise.all(promises).then(function (result) {
+            topTracks = result[0].items;
+            topArtists = result[1].items;
+        })
+        // Concatenate the strings, so they can be
+        // used in the analytics call
+        topTracks.forEach(track => analyticsIDs += track.id + ',')
+        await fetchData(`audio-features?ids=${analyticsIDs}`).then(function (result) {
+            analytics = result.audio_features
+        })
+        // Add all the songs
+        for (let i = 0; i < topTracks.length; i++) {
+            datapoint.topSongs.push({
+                song_id: topTracks[i].id,
+                song: true,
+                name: parseSong(topTracks[i]),
+                title: topTracks[i].name,
+                artist: topTracks[i].artists[0].name,
+                image: topTracks[i].album.images[1].url,
+                link: topTracks[i].external_urls.spotify,
+                analytics: analytics[i]
+            })
+        }
+        // Add all the artists
+        for (let i = 0; i < topArtists.length; i++) {
             try {
-                return {
-                    artist_id: artist.id,
+                datapoint.topArtists.push({
+                    artist_id: topArtists[i].id,
                     artist: true,
-                    name: artist.name,
-                    image: artist.images[1].url,
-                    link: `https://open.spotify.com/artist/${artist.id}`,
-                    genre: artist.genres[0],
-                };
-            } catch (error) { // catch error when artist does not have PFP
-                console.warn(error);
-                return null;
+                    name: topArtists[i].name,
+                    image: topArtists[i].images[1].url,
+                    link: `https://open.spotify.com/artist/${topArtists[i].id}`,
+                    genre: topArtists[i].genres[0]
+                })
+            } catch (error) { //catch error when artist does not have PFP
+                console.warn(error)
             }
-        }).filter(Boolean); // filter out null values
-        datapoint.topGenres = calculateTopGenres(topArtists.items);
+        }
+        datapoint.topGenres = calculateTopGenres(topArtists);
         await postDatapoint(datapoint).then(() => console.log(term + " success!"));
-    });
-
-    // Wait for all the promises to resolve
-    await Promise.all(termPromises);
-    console.warn("Hydration over.");
-};
+    }
+    console.warn("Hydration over.")
+}
 
 const calculateTopGenres = function (artists) {
     let topGenres = [];
