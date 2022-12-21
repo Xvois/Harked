@@ -4,7 +4,7 @@ import {postLoggedUser} from './PDM';
 import {fetchData} from './API';
 
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
-const REDIRECT_URI = "https://bhasvic-photon.vercel.app//authentication";
+const REDIRECT_URI = "https://bhasvic-photon.vercel.app/authentication";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 const RESPONSE_TYPE = "token";
 const SCOPES = "user-read-currently-playing, user-read-playback-state, user-top-read, user-follow-modify, user-follow-read"
