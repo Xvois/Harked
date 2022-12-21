@@ -59,7 +59,6 @@
     height: max-content;
     margin-top: auto;
     margin-bottom: auto;
-    padding-left: 10vw;
 }
 
 .play-wrapper {
@@ -596,7 +595,7 @@
 .focus-container {
     display: flex;
     flex-direction: row;
-    margin: 50px;
+    margin: auto;
 }
 
 @keyframes slide-right-out {
@@ -671,9 +670,6 @@
         padding: 10px;
     }
 
-    .art-container {
-        padding-left: 0;
-    }
 }
 
 /* LOADING ANIM */
