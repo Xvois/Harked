@@ -254,7 +254,6 @@ const Profile = () => {
         }
         return message;
     }
-    // TODO: FIND A WAY TO INCLUDE THIS INTO THE GRAPH COMPONENT
     const [graphAxis, setGraphAxis] = useState({
         x: "danceability",
         y: "energy"

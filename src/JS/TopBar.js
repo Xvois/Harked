@@ -8,6 +8,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import {styled} from '@mui/material/styles';
 import {getAllUsers} from './API';
 import QuizIcon from '@mui/icons-material/Quiz';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -53,6 +55,18 @@ const SearchBar = styled(TextField)({
 const TopBar = () => {
     const [searchResults, setSearchResults] = useState(null)
     const [cachedUsers, setCachedUsers] = useState(null)
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [menuExpanded, setMenuExpanded] = useState(false);
+
+    const updateSize = () => {
+        setWindowWidth(window.innerWidth);
+        if(window.innerWidth > 1000){
+            setMenuExpanded(false);
+        }
+    }
+
+
+    window.addEventListener("resize", updateSize);
 
     const Levenshtein = (a, b) => {
         // First two conditions
@@ -123,32 +137,44 @@ const TopBar = () => {
     // noinspection HtmlUnknownAnchorTarget
     return (
         <header className="header">
-            <div className="element-container">
+            {windowWidth > 1000 ?
+                <div className="element-container">
+                    <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
+                    <a className='element' href='feedback'><QuizIcon fontSize='large' /><p>Feedback</p></a>
+                    <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
+                    <div className='element'>
+                        <ClickAwayListener onClickAway={handleClickAway}>
+                            <FormControl variant="standard">
+                                <SearchBar className='search-bar' inputProps={{className: `search-label`}}
+                                           onChange={handleChange} label="Search"></SearchBar>
+                            </FormControl>
+                        </ClickAwayListener>
+                        {searchResults !== null ?
+                            <div id="result">
+                                {searchResults.map(function (user) {
+                                    return <a href={`profile#${user.user_id}`}><img
+                                        alt={"profile picture"}
+                                        src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
+                                    </a>
+                                })
+                                }</div>
+                            :
+                            <></>
+                        }
+
+                    </div>
+                </div>
+                :
+                <div className={"element"} id={"menu"} onClick={() => setMenuExpanded(true)}>
+                    <MenuIcon fontSize="large"/>
+                    <p>Menu</p>
+                </div>
+            }
+            <div id="expanded-menu" style={menuExpanded ? {maxWidth: '100%'} : {opacity: '0', maxWidth: '0%', right: '-200px', pointerEvents: 'none'} }>
+                <a className='element' onClick={() => setMenuExpanded(false)}><CloseIcon fontSize="large"/><p>Close</p></a>
                 <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                 <a className='element' href='feedback'><QuizIcon fontSize='large' /><p>Feedback</p></a>
                 <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
-                <div className='element'>
-                    <ClickAwayListener onClickAway={handleClickAway}>
-                        <FormControl variant="standard">
-                            <SearchBar className='search-bar' inputProps={{className: `search-label`}}
-                                       onChange={handleChange} label="Search"></SearchBar>
-                        </FormControl>
-                    </ClickAwayListener>
-                    {searchResults !== null ?
-                        <div id="result">
-                            {searchResults.map(function (user) {
-                                // TODO: MAKE IT SO IT AUTO LOADS THE NEW USER'S PAGE
-                                return <a href={`profile#${user.user_id}`}><img
-                                    alt={"profile picture"}
-                                    src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
-                                </a>
-                            })
-                            }</div>
-                        :
-                        <></>
-                    }
-
-                </div>
             </div>
         </header>
     )

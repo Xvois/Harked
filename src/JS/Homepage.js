@@ -38,7 +38,7 @@ function Homepage() {
     }
 
   let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
-  let welcomeMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+  let welcomeMessage = "Just click log-in to get started exploring your profile. None of your log-in information is shared with us.";
   return (
       <div className='homepage-container'>
         <div className='top-container'>
