@@ -5,10 +5,6 @@ import {retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import FocusShowcase from "./FocusShowcase.png"
-import UserShowcase from "./UserShowcase.png"
-import CompareShowcase from "./CompareShowcase.png"
-import Arrow from "./Arrow.png"
 import {isServerAlive} from "./API";
 
 function Homepage() {
@@ -78,22 +74,7 @@ function Homepage() {
               }
           </div>
             <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.9</p>
-          <div className={"down-arrow-container"}>
-              <img alt={'down arrow'} className={"down-arrow"} src={Arrow}></img>
-          </div>
         </div>
-        <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'right'}}>
-          <h2 className={"showcase-text"}>Look at your profile in more detail.</h2>
-            <img alt={"image showing someone's top artist with a description"} style={{height: '500px'}} src = {FocusShowcase} />
-        </div>
-          <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around',alignItems: 'center' , textAlign: 'left'}}>
-              <img alt={"a graph showing some songs as dots on a scatter plot"} style={{height: '200px'}} src = {UserShowcase} />
-              <h2 className={"showcase-text"}>Glance at people's likes and compare.</h2>
-          </div>
-          <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'left'}}>
-              <h2 className={"showcase-text"}>Or get a detailed rundown of your tastes and compare them to others'.</h2>
-              <img alt={"coloured numbers showing someone's average song characteristics"} style={{height: '300px'}} src = {CompareShowcase} />
-          </div>
       </div>
   );
 }
