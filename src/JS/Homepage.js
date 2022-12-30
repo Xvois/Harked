@@ -52,7 +52,7 @@ function Homepage() {
               <div>
                 <a className="auth-button" href='/profile#me'>Explore your profile</a>
                 <a className="auth-button" onClick={handleCompare}>Compare to others</a>
-                <a className="auth-button" onClick={handleLogOut}>Log out.</a>
+                <a className="auth-button" onClick={handleLogOut}>Log out</a>
               </div>
           }
           {token === "denied-scopes" ?
