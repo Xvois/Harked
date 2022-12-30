@@ -5,10 +5,6 @@ import {retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import FocusShowcase from "./FocusShowcase.png"
-import UserShowcase from "./UserShowcase.png"
-import CompareShowcase from "./CompareShowcase.png"
-import Arrow from "./Arrow.png"
 import {isServerAlive} from "./API";
 
 function Homepage() {
@@ -38,7 +34,7 @@ function Homepage() {
     }
 
   let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
-  let welcomeMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+  let welcomeMessage = "Just click log-in to get started exploring your profile. None of your log-in information is shared with us.";
   return (
       <div className='homepage-container'>
         <div className='top-container'>
@@ -56,7 +52,7 @@ function Homepage() {
               <div>
                 <a className="auth-button" href='/profile#me'>Explore your profile</a>
                 <a className="auth-button" onClick={handleCompare}>Compare to others</a>
-                <a className="auth-button" onClick={handleLogOut}>Log out.</a>
+                <a className="auth-button" onClick={handleLogOut}>Log out</a>
               </div>
           }
           {token === "denied-scopes" ?
@@ -77,23 +73,8 @@ function Homepage() {
                   </>
               }
           </div>
-            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.8</p>
-          <div className={"down-arrow-container"}>
-              <img alt={'down arrow'} className={"down-arrow"} src={Arrow}></img>
-          </div>
+            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.9</p>
         </div>
-        <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'right'}}>
-          <h2 className={"showcase-text"}>Look at your profile in more detail.</h2>
-            <img alt={"image showing someone's top artist with a description"} style={{height: '500px'}} src = {FocusShowcase} />
-        </div>
-          <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around',alignItems: 'center' , textAlign: 'left'}}>
-              <img alt={"a graph showing some songs as dots on a scatter plot"} style={{height: '200px'}} src = {UserShowcase} />
-              <h2 className={"showcase-text"}>Glance at people's likes and compare.</h2>
-          </div>
-          <div className='container' style={{display: 'flex', flexDirection: 'row', justifyContent: 'center',alignItems: 'center' , textAlign: 'left'}}>
-              <h2 className={"showcase-text"}>Or get a detailed rundown of your tastes and compare them to others'.</h2>
-              <img alt={"coloured numbers showing someone's average song characteristics"} style={{height: '300px'}} src = {CompareShowcase} />
-          </div>
       </div>
   );
 }

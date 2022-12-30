@@ -254,7 +254,6 @@ const Profile = () => {
         }
         return message;
     }
-    // TODO: FIND A WAY TO INCLUDE THIS INTO THE GRAPH COMPONENT
     const [graphAxis, setGraphAxis] = useState({
         x: "danceability",
         y: "energy"
@@ -632,7 +631,8 @@ const Profile = () => {
                         fontFamily: 'Inter Tight, sans-serif',
                         margin: `auto`,
                         fontSize: `60px`,
-                        marginTop: `50px`
+                        marginTop: `50px`,
+                        textAlign: 'center'
                     }}>{currentUser.username}'s playlists</h2>
                     <div className={"playlist-wrapper"}>
                         {playlists ?
