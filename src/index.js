@@ -13,19 +13,19 @@ import Profile from './JS/Profile';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <TopBar></TopBar>
-    <BrowserRouter>
-      <Routes> (//Routes to pages)
-        <Route index element={<Homepage />} />
-        <Route path="authentication" element={<Authentication />}/>
-        <Route path="profile" element={<Profile />}/>
-          <Route path="compare" element={<Comparison />}/>
-          <Route path="feedback" element={<Feedback />}/>
-          <Route path="search" element={<Search />}/>
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>
+    <>
+        <TopBar></TopBar>
+        <BrowserRouter>
+            <Routes> (//Routes to pages)
+                <Route index element={<Homepage />} />
+                <Route path="authentication" element={<Authentication />}/>
+                <Route path="profile" element={<Profile />}/>
+                <Route path="compare" element={<Comparison />}/>
+                <Route path="feedback" element={<Feedback />}/>
+                <Route path="search" element={<Search />}/>
+            </Routes>
+        </BrowserRouter>
+    </>
 );
 
 // If you want to start measuring performance in your app, pass a function

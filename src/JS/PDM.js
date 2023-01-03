@@ -337,7 +337,7 @@ const hydrateDatapoints = async function () {
             }
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
-        await postDatapoint(datapoint).then(() => console.log(term + " success!"));
+        await postDatapoint(datapoint).then(function(){ console.log(term + " success!"); console.log(datapoint)});
     }
     console.warn("Hydration over.")
 }
