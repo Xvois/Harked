@@ -96,19 +96,12 @@ export const fetchLocalData = async (path) => {
  * @returns {Promise<*>} A user object.
  */
 export const getUser = async (userID) => {
-    // Check if the user data is already in the cache
-    let user = cache.get(userID);
-    if (user) {
-        // Return the cached user data
-        return user;
-    }
+    let user;
 
     // If the user data is not in the cache, make the API call and cache the result
     await axios.get(`https://photon-database.tk/PRDB/getUser?userID=${userID}`).then(
         function (result) {
             user = result.data;
-            // Add the user data to the cache
-            cache.set(userID, user);
         }
     ).catch(
         function (err) {
@@ -212,10 +205,16 @@ export const postDatapoint = async (datapoint) => {
  * @returns {Promise<*>} A datapoint object or false.
  */
 export const getDatapoint = async (userID, term, timeSens) => {
-    let returnRes;
+    let returnRes = cache.get(userID);
+    if (returnRes) {
+        // Return the cached user data
+        console.log("Returning cached datapoint.")
+        return returnRes;
+    }
     await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
+            cache.set(userID, returnRes);
         } else {
             returnRes = false;
         }
