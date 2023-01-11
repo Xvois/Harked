@@ -18,7 +18,7 @@ const cache = new LRU({
  */
 export const fetchData = async (path) => {
     let data = cache.get(path);
-    if(data){return data;}
+    if(data){console.log("Returning cache: "); console.log(data); return data;}
     //console.log("External API call made to: " + path)
      await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
@@ -26,6 +26,7 @@ export const fetchData = async (path) => {
         },
     }).then(function (response){
          data = response;
+         cache.set(path, data)
      })
          .catch(function (err) {
         if (err.response === undefined) {
