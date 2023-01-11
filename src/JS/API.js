@@ -205,7 +205,9 @@ export const postDatapoint = async (datapoint) => {
  * @returns {Promise<*>} A datapoint object or false.
  */
 export const getDatapoint = async (userID, term, timeSens) => {
-    let returnRes = cache.get(userID);
+    let returnRes = cache.get(userID + term);
+    console.log("Cache = ");
+    console.log(returnRes);
     if (returnRes) {
         // Return the cached user data
         console.log("Returning cached datapoint.")
@@ -214,7 +216,7 @@ export const getDatapoint = async (userID, term, timeSens) => {
     await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
-            cache.set(userID, returnRes);
+            cache.set(userID + term, returnRes);
         } else {
             returnRes = false;
         }
