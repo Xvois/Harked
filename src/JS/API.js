@@ -17,18 +17,12 @@ const cache = new LRU({
  * @returns {Promise<any>} An object.
  */
 export const fetchData = async (path) => {
-    let data = cache.get(path);
-    if(data){console.log("Returning cache: "); console.log(data); return data;}
     //console.log("External API call made to: " + path)
-     await axios.get(`https://api.spotify.com/v1/${path}`, {
+    const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
-    }).then(function (response){
-         data = response.data;
-         cache.set(path, data)
-     })
-         .catch(function (err) {
+    }).catch(function (err) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         }
@@ -50,7 +44,7 @@ export const fetchData = async (path) => {
 }
 
 export const putData = (path) => {
-    axios.put(`https://api.spotify.com/v1/${path}`, {}, {
+     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
@@ -96,12 +90,19 @@ export const fetchLocalData = async (path) => {
  * @returns {Promise<*>} A user object.
  */
 export const getUser = async (userID) => {
-    let user;
+    // Check if the user data is already in the cache
+    let user = cache.get(userID);
+    if (user) {
+        // Return the cached user data
+        return user;
+    }
 
     // If the user data is not in the cache, make the API call and cache the result
     await axios.get(`https://photon-database.tk/PRDB/getUser?userID=${userID}`).then(
         function (result) {
             user = result.data;
+            // Add the user data to the cache
+            cache.set(userID, user);
         }
     ).catch(
         function (err) {
@@ -118,7 +119,7 @@ export const getUser = async (userID) => {
  */
 export const getAllUsers = async () => {
     let users;
-    await axios.get(`https://photon-database.tk/PRDB/all`,).then(
+    await axios.get(`https://photon-database.tk/PRDB/all`, ).then(
         function (result) {
             users = result.data;
         }
@@ -133,9 +134,9 @@ export const getAllUsers = async () => {
 
 export const isServerAlive = async () => {
     let alive = false;
-    await axios.options('https://photon-database.tk/PRDB/all').then(function () {
+    await axios.options('https://photon-database.tk/PRDB/all').then(function(){
         alive = true;
-    }).catch(function (err) {
+    }).catch(function(err){
         console.warn("Error checking server status: ");
         console.warn(err);
     })
@@ -143,7 +144,7 @@ export const isServerAlive = async () => {
 }
 
 /**
- /**
+/**
  * Will return all the user IDs in the database.
  * @returns {Promise<void>} An array.
  */
@@ -205,22 +206,14 @@ export const postDatapoint = async (datapoint) => {
  * @returns {Promise<*>} A datapoint object or false.
  */
 export const getDatapoint = async (userID, term, timeSens) => {
-    let returnRes = cache.get(userID + term);
-    console.log("Cache = ");
-    console.log(returnRes);
-    if (returnRes) {
-        // Return the cached user data
-        console.log("Returning cached datapoint.")
-        return returnRes;
-    }
+    let returnRes;
     await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
-            cache.set(userID + term, returnRes);
         } else {
             returnRes = false;
         }
-    }).catch(function (err) {
+    }).catch(function(err){
         console.warn("Error getting datapoint: ")
         console.warn(err)
     })

@@ -108,9 +108,9 @@ export const postLoggedUser = async function () {
     // Get the profile details
     let profilePromise = fetchData("me").then(function (result) {
         user.username = result.display_name;
-        try{
+        if (result.images[0]) {
             user.profilePicture = result.images[0].url;
-        } catch (err){
+        } else if (result.images[0] === undefined) {
             user.profilePicture = 'https://www.alphr.com/wp-content/uploads/2020/10/twitter.png';
         }
     })
@@ -151,7 +151,7 @@ export const retrieveDatapoint = async function (userID, term) {
     }
     await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
         currDatapoint = result;
-    }).catch(function (err) {
+    }).catch(function(err){
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
