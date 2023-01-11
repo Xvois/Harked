@@ -10,7 +10,6 @@ import {getAllUsers} from './API';
 import QuizIcon from '@mui/icons-material/Quiz';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -132,12 +131,7 @@ const TopBar = () => {
         })
     }
     useEffect(() => {
-        if(window.location.pathname !== '/search'){
-            updateCachedUsers();
-
-        }else{
-            console.log("On the search page!")
-        }
+        updateCachedUsers();
     }, [])
 
     // noinspection HtmlUnknownAnchorTarget
@@ -176,12 +170,11 @@ const TopBar = () => {
                     <p>Menu</p>
                 </div>
             }
-            <div id="expanded-menu" style={menuExpanded ? {} : {opacity: '0', pointerEvents: 'none'} }>
+            <div id="expanded-menu" style={menuExpanded ? {maxWidth: '100%'} : {opacity: '0', maxWidth: '0%', right: '-200px', pointerEvents: 'none'} }>
+                <a className='element' onClick={() => setMenuExpanded(false)}><CloseIcon fontSize="large"/><p>Close</p></a>
                 <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                 <a className='element' href='feedback'><QuizIcon fontSize='large' /><p>Feedback</p></a>
                 <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
-                <a className='element' href='search'><SearchIcon fontSize='large'/><p>Search</p></a>
-                <div className='element' id={"close-button"} onClick={() => setMenuExpanded(false)}><CloseIcon fontSize="large"/><p>Close</p></div>
             </div>
         </header>
     )
