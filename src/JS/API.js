@@ -25,7 +25,7 @@ export const fetchData = async (path) => {
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
         },
     }).then(function (response){
-         data = response;
+         data = response.data;
          cache.set(path, data)
      })
          .catch(function (err) {
