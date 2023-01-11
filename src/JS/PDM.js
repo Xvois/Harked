@@ -108,9 +108,9 @@ export const postLoggedUser = async function () {
     // Get the profile details
     let profilePromise = fetchData("me").then(function (result) {
         user.username = result.display_name;
-        if (result.images[0]) {
+        try (result.images[0]) {
             user.profilePicture = result.images[0].url;
-        } else if (result.images[0] === undefined) {
+        } catch (err){
             user.profilePicture = 'https://www.alphr.com/wp-content/uploads/2020/10/twitter.png';
         }
     })
