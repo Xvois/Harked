@@ -71,6 +71,7 @@ const TopBar = () => {
 
     const Levenshtein = (a, b) => {
         // First two conditions
+        console.log(b);
         if (!a.length) return b.length;
         if (!b.length) return a.length;
         const arr = [];
@@ -102,10 +103,12 @@ const TopBar = () => {
         // What the user has typed in so far.
         let searchParam = event.target.value;
         const usernames = cachedUsers.map(user => user.username);
+        console.log(usernames);
         let results = [];
         // Don't check if the user has only typed in a couple of characters
         if (searchParam.length > 2) {
             usernames.forEach(username => {
+                console.log(username);
                 let weight = Levenshtein(searchParam, username)
                 if (weight < 10) {
                     results.push({username: username, weight: weight})
