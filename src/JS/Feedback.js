@@ -12,7 +12,7 @@ const Feedback = () => {
             </div>
             <div style={{textAlign: 'center', padding: '0 20px 20px 20px', fontFamily: 'Inter Tight', width: '50%', margin: 'auto'}}>
                 <p>If you have had the chance to use the site for a while and experience both logging in and using your own profile as well as comparing it to others then you filling out this survey would be invaluable.</p>
-                <p>Your opinions would be greatly appreciated and help my coursework evaluation of my project..</p>
+                <p>Your opinions would be greatly appreciated and help my coursework evaluation of my project.</p>
                 <a style={{color: 'white'}} href={'https://forms.office.com/Pages/ResponsePage.aspx?id=vaSGHkF4vkyPb-p6BQ_FApzhPPePyoxArvz6EgYy7KpURElWQTFCWExHVkxLV1NRUkkyTTY1TUlLUC4u'}>Please fill out the survey here.</a>
             </div>
             <div style={{display: 'flex', flexDirection: 'row'}}>
