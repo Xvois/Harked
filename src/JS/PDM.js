@@ -190,7 +190,7 @@ export const fillDatabase = async function () {
     // THE FIRST VALUE IS ALWAYS NULL
     // THIS FIXED IT ^^
     await fetchData(`artists/${songs[0].artists[0].id}`).then(result => artists[0] = result);
-    for (let i = 0; i < 400; i++) {
+    for (let i = 0; i < 1000; i++) {
         console.time("Creating user")
         const data = createFauxUser(songs, analytics, artists);
         await postUser(data.user);
@@ -218,7 +218,7 @@ const createFauxUser = function (songs, analytics, artists) {
         media: null,
     }
     const terms = ['short_term', 'medium_term', 'long_term'];
-    for (const term of terms) {
+    terms.forEach(function(term){
         let datapoint = {
             userID: userID,
             collectionDate: Date.now(),
@@ -265,7 +265,7 @@ const createFauxUser = function (songs, analytics, artists) {
         } while (usedArtistSeeds.length < 20)
         datapoint.topGenres = calculateTopGenres(artists);
         datapoints.push(datapoint)
-    }
+    })
     return {
         user: user,
         datapoints: datapoints

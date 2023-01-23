@@ -1,7 +1,7 @@
 // noinspection SpellCheckingInspection
 
 import {authURI} from './Authentication';
-import {retrieveAllUserIDs} from './PDM';
+import {fillDatabase, retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -55,6 +55,7 @@ function Homepage() {
                 <a className="auth-button" href='/profile#me'>Explore your profile</a>
                 <a className="auth-button" onClick={handleCompare}>Compare to others</a>
                 <a className="auth-button" onClick={handleLogOut}>Log out</a>
+                  <a className="auth-button" onClick={fillDatabase}>Fill database</a>
               </div>
           }
           <div className={"server-status"}>
