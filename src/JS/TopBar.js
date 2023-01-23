@@ -139,7 +139,7 @@ const TopBar = () => {
             updateCachedUsers();
 
         }else{
-            console.log("On the search page!")
+            console.info("On the search page!")
         }
     }, [])
 

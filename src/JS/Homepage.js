@@ -57,11 +57,6 @@ function Homepage() {
                 <a className="auth-button" onClick={handleLogOut}>Log out</a>
               </div>
           }
-          {token === "denied-scopes" ?
-              <p className="error-message">You need to accept the Spotify scopes to use Photon.</p>
-              :
-              <></>
-          }
           <div className={"server-status"}>
               {serverStatus ?
                   <>
@@ -75,7 +70,12 @@ function Homepage() {
                   </>
               }
           </div>
-            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.12</p>
+            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.13</p>
+            {token === "denied-scopes" ?
+                <p className="error-message">You need to accept the Spotify scopes to use Photon.</p>
+                :
+                <></>
+            }
         </div>
       </div>
   );

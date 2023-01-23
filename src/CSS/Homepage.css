@@ -94,8 +94,10 @@
 }
 
 .error-message{
+  font-family: 'Inter Tight', sans-serif;
   margin-left: 20px;
   color: red;
+  text-decoration: underline;
 }
 
 .homepage-container{
