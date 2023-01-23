@@ -27,8 +27,10 @@ function Homepage() {
         let IDs = await retrieveAllUserIDs();
         let userID;
         do {
-            let index = Math.round(Math.random() * IDs.length - 1);
-            userID = IDs[index];
+            do{
+                let index = Math.round(Math.random() * (IDs.length - 1));
+                userID = IDs[index];
+            }while (userID === undefined)
             navigate(`/compare#${currUserID}&${userID}`)
         } while (userID === currUserID)
     }
@@ -73,7 +75,7 @@ function Homepage() {
                   </>
               }
           </div>
-            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.11</p>
+            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.12</p>
         </div>
       </div>
   );
