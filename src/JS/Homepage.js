@@ -70,7 +70,7 @@ function Homepage() {
                   </>
               }
           </div>
-            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.13</p>
+            <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V 1.0.14</p>
             {token === "denied-scopes" ?
                 <p className="error-message">You need to accept the Spotify scopes to use Photon.</p>
                 :

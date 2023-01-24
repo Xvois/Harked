@@ -642,7 +642,7 @@ const Profile = () => {
                                     :
                                     playlists.map(function (playlist) {
                                         return <a href={playlist.external_urls.spotify} className={"playlist-art"}><img
-                                            alt="playlist art" src={playlist.images[0].url}
+                                            alt="playlist art" src={playlist.images[0] ? playlist.images[0].url : ''}
                                             style={{width: '100%', height: '100%'}}></img>
                                             <div className="playlist-text-container">
                                                 <h2 style={playlist.name.length > 18 ? {"--font-scale": `30px`} : {}}>{playlist.name}</h2>
