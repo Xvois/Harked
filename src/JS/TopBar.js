@@ -61,7 +61,7 @@ const TopBar = () => {
 
     const updateSize = () => {
         setWindowWidth(window.innerWidth);
-        if(window.innerWidth > 1000){
+        if (window.innerWidth > 1000) {
             setMenuExpanded(false);
         }
     }
@@ -135,10 +135,10 @@ const TopBar = () => {
         })
     }
     useEffect(() => {
-        if(window.location.pathname !== '/search'){
+        if (window.location.pathname !== '/search') {
             updateCachedUsers();
 
-        }else{
+        } else {
             console.info("On the search page!")
         }
     }, [])
@@ -149,7 +149,7 @@ const TopBar = () => {
             {windowWidth > 1000 ?
                 <div className="element-container">
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                    <a className='element' href='feedback'><QuizIcon fontSize='large' /><p>Feedback</p></a>
+                    <a className='element' href='feedback'><QuizIcon fontSize='large'/><p>Feedback</p></a>
                     <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                     <div className='element'>
                         <ClickAwayListener onClickAway={handleClickAway}>
@@ -179,12 +179,13 @@ const TopBar = () => {
                     <p>Menu</p>
                 </div>
             }
-            <div id="expanded-menu" style={menuExpanded ? {} : {opacity: '0', pointerEvents: 'none'} }>
+            <div id="expanded-menu" style={menuExpanded ? {} : {opacity: '0', pointerEvents: 'none'}}>
                 <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                <a className='element' href='feedback'><QuizIcon fontSize='large' /><p>Feedback</p></a>
+                <a className='element' href='feedback'><QuizIcon fontSize='large'/><p>Feedback</p></a>
                 <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                 <a className='element' href='search'><SearchIcon fontSize='large'/><p>Search</p></a>
-                <div className='element' id={"close-button"} onClick={() => setMenuExpanded(false)}><CloseIcon fontSize="large"/><p>Close</p></div>
+                <div className='element' id={"close-button"} onClick={() => setMenuExpanded(false)}><CloseIcon
+                    fontSize="large"/><p>Close</p></div>
             </div>
         </header>
     )

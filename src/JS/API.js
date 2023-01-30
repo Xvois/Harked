@@ -44,7 +44,7 @@ export const fetchData = async (path) => {
 }
 
 export const putData = (path) => {
-     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
+    axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${window.localStorage.getItem("token")}`
@@ -119,7 +119,7 @@ export const getUser = async (userID) => {
  */
 export const getAllUsers = async () => {
     let users;
-    await axios.get(`https://photon-database.tk/PRDB/all`, ).then(
+    await axios.get(`https://photon-database.tk/PRDB/all`,).then(
         function (result) {
             users = result.data;
         }
@@ -134,9 +134,9 @@ export const getAllUsers = async () => {
 
 export const isServerAlive = async () => {
     let alive = false;
-    await axios.options('https://photon-database.tk/PRDB/all').then(function(){
+    await axios.options('https://photon-database.tk/PRDB/all').then(function () {
         alive = true;
-    }).catch(function(err){
+    }).catch(function (err) {
         console.warn("Error checking server status: ");
         console.warn(err);
     })
@@ -144,7 +144,7 @@ export const isServerAlive = async () => {
 }
 
 /**
-/**
+ /**
  * Will return all the user IDs in the database.
  * @returns {Promise<void>} An array.
  */
@@ -213,7 +213,7 @@ export const getDatapoint = async (userID, term, timeSens) => {
         } else {
             returnRes = false;
         }
-    }).catch(function(err){
+    }).catch(function (err) {
         console.warn("Error getting datapoint: ")
         console.warn(err)
     })

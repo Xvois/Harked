@@ -15,8 +15,9 @@ function Authentication() {
     const navigate = useNavigate();
     const redirect = useCallback((path) => {
         console.warn("Redirecting...")
-        if(window.localStorage.getItem("token") === "denied-scopes"){navigate(path);}
-        else{
+        if (window.localStorage.getItem("token") === "denied-scopes") {
+            navigate(path);
+        } else {
             fetchData('me').then(result => {
                 window.localStorage.setItem("userID", result.id);
                 postLoggedUser().then(() => {
@@ -42,7 +43,7 @@ function Authentication() {
             console.info("Logged to denied-scopes.")
             window.localStorage.setItem("token", "denied-scopes");
             redirect("/");
-        }else{
+        } else {
             redirect("/profile#me");
         }
     }, [redirect])

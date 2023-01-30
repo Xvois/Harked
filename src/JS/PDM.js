@@ -151,7 +151,7 @@ export const retrieveDatapoint = async function (userID, term) {
     }
     await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
         currDatapoint = result;
-    }).catch(function(err){
+    }).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
@@ -218,7 +218,7 @@ const createFauxUser = function (songs, analytics, artists) {
         media: null,
     }
     const terms = ['short_term', 'medium_term', 'long_term'];
-    terms.forEach(function(term){
+    terms.forEach(function (term) {
         let datapoint = {
             userID: userID,
             collectionDate: Date.now(),
@@ -337,7 +337,10 @@ const hydrateDatapoints = async function () {
             }
         }
         datapoint.topGenres = calculateTopGenres(topArtists);
-        await postDatapoint(datapoint).then(function(){ console.log(term + " success!"); console.log(datapoint)});
+        await postDatapoint(datapoint).then(function () {
+            console.log(term + " success!");
+            console.log(datapoint)
+        });
     }
     console.warn("Hydration over.")
 }

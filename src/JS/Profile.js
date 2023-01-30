@@ -80,7 +80,7 @@ const Profile = () => {
     }
     const [following, setFollowing] = useState(null)
     // Update page when new user is chosen
-    window.addEventListener("hashchange", function (){
+    window.addEventListener("hashchange", function () {
         window.location.reload(false);
     })
 
@@ -162,7 +162,7 @@ const Profile = () => {
         })
         //BUG: WAS AN AWAIT / ASYNC FUNCTION
         // For every artist [in order of listen time]
-         artists.forEach(artist => {
+        artists.forEach(artist => {
             // Add the genre quality to them
             // equal to their genre
             if (genres.includes(artist.genre)) {
@@ -388,8 +388,8 @@ const Profile = () => {
         if (!loaded) {
             retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
-                if (userID === window.localStorage.getItem("userID") || userID === "me"){
-                    retrieveMedia().then(function (media){
+                if (userID === window.localStorage.getItem("userID") || userID === "me") {
+                    retrieveMedia().then(function (media) {
                         setCurrentUser({
                             ...result,
                             media: media
