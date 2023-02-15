@@ -30,7 +30,7 @@ function Homepage() {
             do {
                 let index = Math.round(Math.random() * (IDs.length - 1));
                 userID = IDs[index];
-            } while (userID === undefined)
+            } while (userID === undefined || userID.length === 20)
             navigate(`/compare#${currUserID}&${userID}`)
         } while (userID === currUserID)
     }
