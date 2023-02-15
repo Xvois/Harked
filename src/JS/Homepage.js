@@ -71,7 +71,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V
-                    1.0.14</p>
+                    1.0.15</p>
                 {token === "denied-scopes" ?
                     <p className="error-message">You need to accept the Spotify scopes to log in..</p>
                     :
