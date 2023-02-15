@@ -41,7 +41,7 @@ function Homepage() {
         <div className='homepage-container'>
             <div className='top-container'>
                 {token && token !== "denied-scopes" ?
-                    <h1 className="main-text">Welcome to Photon.</h1>
+                    <h1 className="main-text">Welcome.</h1>
                     :
                     <h1 className="main-text">Get true insights on your Spotify profile.</h1>
                 }
@@ -73,7 +73,7 @@ function Homepage() {
                 <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V
                     1.0.14</p>
                 {token === "denied-scopes" ?
-                    <p className="error-message">You need to accept the Spotify scopes to use Photon.</p>
+                    <p className="error-message">You need to accept the Spotify scopes to log in..</p>
                     :
                     <></>
                 }
