@@ -108,10 +108,14 @@ const TopBar = () => {
         // Don't check if the user has only typed in a couple of characters
         if (searchParam.length > 2) {
             usernames.forEach(username => {
-                console.log(username);
-                let weight = Levenshtein(searchParam, username)
-                if (weight < 10) {
-                    results.push({username: username, weight: weight})
+                //TODO: REMOVE ALL FAUX USERS IN THE DATABASE
+                // To weed out faux users coming up in the search
+                if(username.length !== 20 && !username.includes(" ")){
+                    let weight = Levenshtein(searchParam, username);
+                    if(username.length > searchParam.length){weight -= username.length - searchParam.length};
+                    if (weight < 10) {
+                        results.push({username: username, weight: weight})
+                    }
                 }
             })
             // Order results by their relevance.
@@ -122,6 +126,7 @@ const TopBar = () => {
                     return object.username === user.username
                 })]
             })
+            results.length = 5;
             setSearchResults(results);
         } else {
             setSearchResults(null)
