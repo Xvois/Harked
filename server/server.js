@@ -10,7 +10,7 @@ const fs = require("fs")
 const usersRouter = require('./routes/dbRoutes')
 
 // Set default port for express app
-const PORT = process.env.PORT || 9000
+const PORT = 2053
 
 // Create express app
 const app = express()
@@ -53,3 +53,7 @@ https
 	.listen(PORT, function() {
 		console.log('HTTPS server running on: ' + PORT)
 })
+
+//app.listen(PORT, function() {
+//	console.log('HTTP server running on: ' + PORT)
+//})

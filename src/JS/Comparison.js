@@ -148,7 +148,7 @@ const Comparison = () => {
                         display: `flex`,
                         paddingTop: `5px`,
                         gap: `20px`,
-                        width: `300px`,
+                        width: `max-content`,
                         flexWrap: `wrap`
                     }}>
                         <ThemeProvider theme={chipletTheme}>

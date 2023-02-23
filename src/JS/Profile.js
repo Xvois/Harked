@@ -7,7 +7,7 @@ import {
     getPlaylists,
     isLoggedIn,
     retrieveDatapoint,
-    retrieveMedia,
+    retrieveMedia, retrievePreviousDatapoint,
     retrieveUser,
     unfollowUser
 } from './PDM';
@@ -19,6 +19,8 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PersonIcon from '@mui/icons-material/Person';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
+import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import {authURI} from "./Authentication";
 
 
@@ -41,6 +43,14 @@ const Profile = () => {
         media: {name: '', image: ''},
     });
     let [datapoint, setDatapoint] = useState({
+        userID: '',
+        collectionDate: '',
+        term: '',
+        topSongs: [],
+        topArtists: [],
+        topGenres: [],
+    });
+    let [prevDatapoint, setPrevDatapoint] = useState({
         userID: '',
         collectionDate: '',
         term: '',
@@ -135,6 +145,12 @@ const Profile = () => {
         setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index - 1]);
+    }
+    const getIndexChange = function (item, index, parentArray){
+        if(!prevDatapoint || prevDatapoint.term !== datapoint.term){return null}
+        const lastIndex = prevDatapoint[parentArray].findIndex((element) => element.name === item.name);
+        if(lastIndex < 0){return null}
+        return lastIndex - index;
     }
     // Update the artist attributes that are used to make the focus
     // message.
@@ -412,6 +428,9 @@ const Profile = () => {
                     setChipletData([result.topArtists[0], result.topGenres[0]])
                 }
             });
+            retrievePreviousDatapoint(userID, term).then(function (prevD) {
+                setPrevDatapoint(prevD);
+            })
             setLoaded(true);
         })
         // Refresh the focus
@@ -478,16 +497,14 @@ const Profile = () => {
                     <div className='user-container'>
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
-                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-                                <div className='username'>{currentUser.username}</div>
-                            </div>
+                            <div className='username'>{currentUser.username}</div>
                             {userID !== "me" && isLoggedIn() ? <a className={"compare-button"}
                                                                   href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
                             <div style={{
                                 display: `flex`,
                                 paddingTop: `5px`,
                                 gap: `20px`,
-                                width: `600px`,
+                                width: `max-content`,
                                 flexWrap: `wrap`
                             }}>
                                 <ThemeProvider theme={chipletTheme}>
@@ -508,8 +525,6 @@ const Profile = () => {
                                     <path fill="#22C55E"
                                           d="m83.996 0.277c-46.249 0-83.743 37.493-83.743 83.742 0 46.251 37.494 83.741 83.743 83.741 46.254 0 83.744-37.49 83.744-83.741 0-46.246-37.49-83.738-83.745-83.738l0.001-0.004zm38.404 120.78c-1.5 2.46-4.72 3.24-7.18 1.73-19.662-12.01-44.414-14.73-73.564-8.07-2.809 0.64-5.609-1.12-6.249-3.93-0.643-2.81 1.11-5.61 3.926-6.25 31.9-7.291 59.263-4.15 81.337 9.34 2.46 1.51 3.24 4.72 1.73 7.18zm10.25-22.805c-1.89 3.075-5.91 4.045-8.98 2.155-22.51-13.839-56.823-17.846-83.448-9.764-3.453 1.043-7.1-0.903-8.148-4.35-1.04-3.453 0.907-7.093 4.354-8.143 30.413-9.228 68.222-4.758 94.072 11.127 3.07 1.89 4.04 5.91 2.15 8.976v-0.001zm0.88-23.744c-26.99-16.031-71.52-17.505-97.289-9.684-4.138 1.255-8.514-1.081-9.768-5.219-1.254-4.14 1.08-8.513 5.221-9.771 29.581-8.98 78.756-7.245 109.83 11.202 3.73 2.209 4.95 7.016 2.74 10.733-2.2 3.722-7.02 4.949-10.73 2.739z"/>
                                 </svg>
-                                <p style={{textTransform: 'uppercase', fontFamily: 'Inter Tight'}}>Open profile in
-                                    Spotify</p>
                             </a>
                             {following !== null ?
                                 <ThemeProvider theme={chipletTheme}>
@@ -518,19 +533,13 @@ const Profile = () => {
                                             display: 'flex',
                                             flexDirection: 'row',
                                             alignItems: 'center',
-                                            justifyContent: 'right'
+                                            justifyContent: 'right',
                                         }} onClick={function () {
                                             unfollowUser(userID);
                                             setFollowing(false)
                                         }}>
                                             <CheckCircleOutlineIcon className={"follow-button"} fontSize="medium"
                                                                     color="primary"/>
-                                            <p style={{
-                                                marginLeft: '5px',
-                                                textTransform: 'uppercase',
-                                                fontFamily: 'Inter Tight',
-                                                color: '#22C55E'
-                                            }}>Following</p>
                                         </div>
                                         :
                                         <div className={"follow-button"} style={{
@@ -543,11 +552,6 @@ const Profile = () => {
                                             setFollowing(true)
                                         }}>
                                             <AddCircleOutlineIcon fontSize="medium"/>
-                                            <p style={{
-                                                marginLeft: '5px',
-                                                textTransform: 'uppercase',
-                                                fontFamily: 'Inter Tight'
-                                            }}>Follow</p>
                                         </div>
                                     }
                                 </ThemeProvider>
@@ -556,31 +560,14 @@ const Profile = () => {
                             }
                         </div>
                     </div>
-                    <div className='media-container'>
-                        {currentUser.media ?
-                            <>
-                                <img className='media-preview' src={currentUser.media.image}
-                                     alt={"media preview"}></img>
-                                <div className='music-animatic'>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-
-                                </div>
-                                <p className='listening-media'>{currentUser.media.name}</p>
-                            </>
-                            :
-                            <></>
-                        }
-                    </div>
                     <div>
                         <div style={{
                             display: `flex`,
                             flexDirection: `row`,
-                            justifyContent: `space-evenly`,
+                            marginLeft: 'auto',
+                            justifyContent: 'center',
                             alignItems: 'center',
                             height: '75px',
-                            marginTop: '50px'
                         }}>
                             <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
@@ -613,9 +600,16 @@ const Profile = () => {
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
+                                        const indexChange = getIndexChange(element, i, `top${simpleSelection}`);
+                                        let changeMessage;
+                                        if(indexChange < 0){
+                                            changeMessage = <><ArrowCircleDownIcon style={{ color: 'red' }} fontSize={"small"}></ArrowCircleDownIcon></>
+                                        }else if(indexChange > 0){
+                                            changeMessage = <><ArrowCircleUpIcon style={{ color: '#22C55E' }} fontSize={"small"}></ArrowCircleUpIcon></>
+                                        }
                                         return <li key={element.type ? element[`${element.type}_id`] : element}
                                                    className='list-item'
-                                                   onClick={() => updateFocus(element, message)}>{getLIName(element)}</li>
+                                                   onClick={() => updateFocus(element, message)}>{getLIName(element)} {changeMessage}</li>
                                     } else {
                                         return <></>
                                     }

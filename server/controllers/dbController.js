@@ -113,8 +113,9 @@ exports.getDatapoint = async (req, res) => {
     const user_id = req.query.userID;
     const term = req.query.term;
     const time_sensitive = req.query.timed;
+    const delay = req.query.delay;
     // Log the attempt to get a datapoint
-    console.log(`Attempting to get datapoint for: ${user_id}, ${term}, ${time_sensitive === 'true' ? "time sensitive" : "not time sensitive"}`)
+    console.log(`Attempting to get datapoint for: ${user_id}, ${term}, ${time_sensitive === 'true' ? "time sensitive" : `not time sensitive, ${delay} datapoints skipped`}`)
     let datapoint = {
         userID: user_id,
         collectionDate: null,
@@ -133,10 +134,14 @@ exports.getDatapoint = async (req, res) => {
             // Return null if there are no matching datapoints
             if (results.length === 0) {
                 console.log("Datapoint requested but nullified: none found.");
-            } else {
+            }
+            else if(results.length - delay <= 0) {
+                console.log(`Datapoint requested but nullified: skip of ${delay} requested is out of range.`);
+            }
+            else {
                 // The datapoint contains the references
                 // to the other tables
-                const references = results[0];
+                const references = results[delay];
                 datapoint.collectionDate = references.collection_date;
                 const WEEK_IN_MILISECONDS = 604800 * 1000;
                 if (Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS || time_sensitive === 'false') {

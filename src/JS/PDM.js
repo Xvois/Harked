@@ -26,7 +26,7 @@ export const retrieveMedia = async function () {
     await fetchData("me/player").then(function (result) {
         if (result) {
             // Update the user's media information with the current song and album image
-            returnMedia = {name: parseSong(result.item), image: result.item.album.images[2].url}
+            returnMedia = {name: parseSong(result.item), image: result.item.album.images[0].url}
         }
     })
     return returnMedia;
@@ -135,7 +135,7 @@ export const isLoggedIn = function () {
  * @param term [short_term, medium_term, long_term]
  * @returns {Promise<*>} A datapoint object.
  */
-export const retrieveDatapoint = async function (userID, term) {
+export const retrieveDatapoint = async function (userID, term, delay = 0) {
     let currDatapoint;
     let timeSensitive = false;
     let globalUserID = userID;
@@ -149,7 +149,7 @@ export const retrieveDatapoint = async function (userID, term) {
         timeSensitive = true;
         globalUserID = window.localStorage.getItem("userID");
     }
-    await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
+    await getDatapoint(globalUserID, term, timeSensitive, delay).then(function (result) {
         currDatapoint = result;
     }).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
@@ -163,6 +163,16 @@ export const retrieveDatapoint = async function (userID, term) {
         );
     }
     return currDatapoint;
+}
+
+export const retrievePreviousDatapoint = async function (userID, term){
+    let result;
+    let globalUserID = userID;
+    if (globalUserID === "me") {
+        globalUserID = window.localStorage.getItem("userID");
+    }
+    await getDatapoint(globalUserID, term ,false, 1).then(r => result = r);
+    return result;
 }
 
 export const fillDatabase = async function () {

@@ -203,11 +203,13 @@ export const postDatapoint = async (datapoint) => {
  * @param userID A global user ID.
  * @param term [short_term, medium_term, long_term]
  * @param timeSens Whether or not the datapoint collection should be time sensitive.
+ * @param delay If not time sensitive, enter the number of datapoints to skip. Default is
+ * 0, and this behaviour will get the last known datapoint regardless of date.
  * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async (userID, term, timeSens) => {
+export const getDatapoint = async (userID, term, timeSens, delay = 0) => {
     let returnRes;
-    await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
+    await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}&delay=${delay}`).then(result => {
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
         } else {
