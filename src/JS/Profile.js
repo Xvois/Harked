@@ -147,9 +147,13 @@ const Profile = () => {
         index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index - 1]);
     }
     const getIndexChange = function (item, index, parentArray){
+        console.log(prevDatapoint[parentArray]);
+        console.log(item)
         if(!prevDatapoint || prevDatapoint.term !== datapoint.term){return null}
-        const lastIndex = prevDatapoint[parentArray].findIndex((element) => element.name === item.name);
+        const lastIndex = item.name ? prevDatapoint[parentArray].findIndex((element) => element.name === item.name) : prevDatapoint[parentArray].indexOf(item);
         if(lastIndex < 0){return null}
+        console.log(`----${item}----`);
+        console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
         return lastIndex - index;
     }
     // Update the artist attributes that are used to make the focus
@@ -603,9 +607,9 @@ const Profile = () => {
                                         const indexChange = getIndexChange(element, i, `top${simpleSelection}`);
                                         let changeMessage;
                                         if(indexChange < 0){
-                                            changeMessage = <><ArrowCircleDownIcon style={{ color: 'red' }} fontSize={"small"}></ArrowCircleDownIcon></>
+                                            changeMessage = <><span style={{color: 'red', fontSize: '10px'}}>{indexChange}</span><ArrowCircleDownIcon style={{ color: 'red' }} fontSize={"small"}></ArrowCircleDownIcon></>
                                         }else if(indexChange > 0){
-                                            changeMessage = <><ArrowCircleUpIcon style={{ color: '#22C55E' }} fontSize={"small"}></ArrowCircleUpIcon></>
+                                            changeMessage = <><span style={{color: '#22C55E', fontSize: '10px'}}>{indexChange}</span><ArrowCircleUpIcon style={{ color: '#22C55E' }} fontSize={"small"}></ArrowCircleUpIcon></>
                                         }
                                         return <li key={element.type ? element[`${element.type}_id`] : element}
                                                    className='list-item'
