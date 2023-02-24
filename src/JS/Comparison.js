@@ -73,7 +73,7 @@ const Comparison = () => {
         for (const key in u0Metrics) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
         }
-        similarity = (genresSimilarity + 2 * artistsSimilarity + songsSimilarity + (1 - Math.sqrt(metricDelta))/2);
+        similarity = (genresSimilarity + 2 * artistsSimilarity + songsSimilarity + (1 - Math.sqrt(metricDelta*2))/3);
         similarity = Math.round(100 * similarity)
         console.log("---STAT BREAKDOWN---");
         console.log("Genres: " + genresSimilarity);
