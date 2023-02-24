@@ -110,9 +110,11 @@ const TopBar = () => {
             usernames.forEach(username => {
                 //TODO: REMOVE ALL FAUX USERS IN THE DATABASE
                 // To weed out faux users coming up in the search
-                if(username.length !== 20 && !username.includes(" ")){
+                if (username.length !== 20 && !username.includes(" ")) {
                     let weight = Levenshtein(searchParam, username);
-                    if(username.length > searchParam.length){weight -= username.length - searchParam.length};
+                    if (username.length > searchParam.length) {
+                        weight -= username.length - searchParam.length
+                    }
                     if (weight < 10) {
                         results.push({username: username, weight: weight})
                     }

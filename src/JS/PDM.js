@@ -133,6 +133,7 @@ export const isLoggedIn = function () {
  * and return a valid one from that selection.
  * @param userID A global user id.
  * @param term [short_term, medium_term, long_term]
+ * @param delay
  * @returns {Promise<*>} A datapoint object.
  */
 export const retrieveDatapoint = async function (userID, term, delay = 0) {
@@ -165,13 +166,13 @@ export const retrieveDatapoint = async function (userID, term, delay = 0) {
     return currDatapoint;
 }
 
-export const retrievePreviousDatapoint = async function (userID, term){
+export const retrievePreviousDatapoint = async function (userID, term) {
     let result;
     let globalUserID = userID;
     if (globalUserID === "me") {
         globalUserID = window.localStorage.getItem("userID");
     }
-    await getDatapoint(globalUserID, term ,false, 1).then(r => result = r);
+    await getDatapoint(globalUserID, term, false, 1).then(r => result = r);
     return result;
 }
 

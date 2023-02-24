@@ -11,16 +11,12 @@
   padding-right: 20px;
 }
 
-.showcase-text{
-  text-transform: uppercase;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  font-size: 5ex;
-}
 
 .server-status-indicator{
   padding: 5px;
+  /*noinspection CssUnresolvedCustomProperty*/
   border: 1px solid var(--colour);
+  /*noinspection CssUnresolvedCustomProperty*/
   background: var(--colour);
   border-radius: 100%;
   height: max-content;
@@ -33,9 +29,11 @@
 }
 
 @keyframes status-indicator {
-  0%{box-shadow: 0 0 10px var(--colour)}
+  0%{ /*noinspection CssUnresolvedCustomProperty*/
+    box-shadow: 0 0 10px var(--colour)}
   50%{box-shadow: 0 0 20px rgba(255, 255, 255, 0)}
-  100%{box-shadow: 0 0 10px var(--colour)}
+  100%{ /*noinspection CssUnresolvedCustomProperty*/
+    box-shadow: 0 0 10px var(--colour)}
 }
 
 .server-status{

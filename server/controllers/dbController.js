@@ -1,4 +1,6 @@
 // Import database
+// noinspection ES6MissingAwait
+
 const knex = require('./../db')
 
 // --- EXTRA FUNCS --- //
@@ -143,8 +145,8 @@ exports.getDatapoint = async (req, res) => {
                 // to the other tables
                 const references = results[delay];
                 datapoint.collectionDate = references.collection_date;
-                const WEEK_IN_MILISECONDS = 604800 * 1000;
-                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS || time_sensitive === 'false') {
+                const WEEK_IN_MILLISECONDS = 604800 * 1000;
+                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILLISECONDS || time_sensitive === 'false') {
                     await knex('songs_ref')
                         // Find the top songs reference
                         .where('id', references.top_songs_id)

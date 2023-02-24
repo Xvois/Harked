@@ -1,4 +1,4 @@
-// noinspection SpellCheckingInspection
+// noinspection SpellCheckingInspection,JSValidateTypes
 
 import {authURI} from './Authentication';
 import {retrieveAllUserIDs} from './PDM';
