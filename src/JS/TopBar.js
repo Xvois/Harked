@@ -103,36 +103,30 @@ const TopBar = () => {
         // What the user has typed in so far.
         let searchParam = event.target.value;
         const usernames = cachedUsers.map(user => user.username);
-        console.log(usernames);
         let results = [];
-        // Don't check if the user has only typed in a couple of characters
-        if (searchParam.length > 2) {
-            usernames.forEach(username => {
-                //TODO: REMOVE ALL FAUX USERS IN THE DATABASE
-                // To weed out faux users coming up in the search
-                if (username.length !== 20 && !username.includes(" ")) {
-                    let weight = Levenshtein(searchParam, username);
-                    if (username.length > searchParam.length) {
-                        weight -= username.length - searchParam.length
-                    }
-                    if (weight < 10) {
-                        results.push({username: username, weight: weight})
-                    }
+        usernames.forEach( (username, i) => {
+            //TODO: REMOVE ALL FAUX USERS IN THE DATABASE
+            // To weed out faux users coming up in the search
+            if (!(/[A-Z]/.test(cachedUsers[i].userID))) {
+                let weight = Levenshtein(searchParam, username);
+                if (username.length > searchParam.length) {
+                    weight -= username.length - searchParam.length
                 }
-            })
-            // Order results by their relevance.
-            results.sort((a, b) => a.weight - b.weight)
-            // Match each username to their user record in the DB
-            results.forEach((user, i) => {
-                results[i] = cachedUsers[cachedUsers.findIndex(object => {
-                    return object.username === user.username
-                })]
-            })
-            results.length = 5;
-            setSearchResults(results);
-        } else {
-            setSearchResults(null)
-        }
+                if (weight < 10) {
+                    results.push({username: username, weight: weight})
+                }
+            }
+        })
+        // Order results by their relevance.
+        results.sort((a, b) => a.weight - b.weight)
+        // Match each username to their user record in the DB
+        results.forEach((user, i) => {
+            results[i] = cachedUsers[cachedUsers.findIndex(object => {
+                return object.username === user.username
+            })]
+        })
+        results.length = 5;
+        setSearchResults(results);
     }
 
 

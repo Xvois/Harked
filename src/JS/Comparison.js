@@ -71,7 +71,7 @@ const Comparison = () => {
         for (const key in u0Metrics) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
         }
-        similarity = (genresSimilarity + 5 * artistsSimilarity + 5 * songsSimilarity + 3 * (1 - Math.sqrt(metricDelta))) / 6;
+        similarity = (genresSimilarity + 8 * artistsSimilarity + 5 * songsSimilarity + (1 - Math.sqrt(metricDelta)));
         similarity = Math.round(100 * similarity)
         if (similarity > 100) {
             similarity = 100
