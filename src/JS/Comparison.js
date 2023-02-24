@@ -47,6 +47,8 @@ const Comparison = () => {
         let u1Metrics = calculateAverageAnalytics(u[1]);
         let similarity;
         // songsKeys in pseudocode.
+        // TODO:
+        // RE-WRITE THE SONG COMPARISONS
         user1Datapoint.topSongs.forEach((song, i) => {
             let songDelta = 0;
             analyticsMetrics.forEach(analytic => {
@@ -71,7 +73,7 @@ const Comparison = () => {
         for (const key in u0Metrics) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
         }
-        similarity = (genresSimilarity + 8 * artistsSimilarity + 5 * songsSimilarity + (1 - Math.sqrt(metricDelta)) / 4);
+        similarity = (genresSimilarity + 2 * artistsSimilarity + songsSimilarity + (1 - Math.sqrt(metricDelta))/2);
         similarity = Math.round(100 * similarity)
         console.log("---STAT BREAKDOWN---");
         console.log("Genres: " + genresSimilarity);
