@@ -20,7 +20,10 @@ export const parseSong = function (song) { //takes in the song item
     })
     return tempSong;
 }
-
+/**
+ * Returns a media object containing the content (if any) the logged-in user is listening to.
+ * @returns {Promise<{name: string, image: string}>}
+ */
 export const retrieveMedia = async function () {
     let returnMedia;
     await fetchData("me/player").then(function (result) {
@@ -59,15 +62,24 @@ export const retrieveUser = async function (userID) {
     return user;
 }
 
-
+/**
+ * Makes a request to follow the target from the logged-in user's account on Spotify.
+ * @param userID
+ */
 export const followUser = function (userID) {
     putData(`me/following?type=user&ids=${userID}`);
 }
-
+/**
+ * Makes a request to unfollow the target from the logged-in user's account on Spotify.
+ * @param userID
+ */
 export const unfollowUser = function (userID) {
     deleteData(`me/following?type=user&ids=${userID}`);
 }
-
+/**
+ * Returns an array of all user objects in the PRDB.
+ * @returns {Promise<*>}
+ */
 export const retrieveAllUserIDs = async function () {
     let userIDs;
     // Deconstruct the array of objects to just an array
@@ -76,7 +88,11 @@ export const retrieveAllUserIDs = async function () {
     }));
     return userIDs;
 }
-
+/**
+ * Returns an array of all public playlists associated with a user's account.
+ * @param userID
+ * @returns {Promise<*>}
+ */
 export const getPlaylists = async function (userID) {
     let globalUserID = userID;
     let result;
@@ -117,21 +133,28 @@ export const postLoggedUser = async function () {
     await profilePromise;
     await postUser(user);
 }
-
+/**
+ * A boolean function that returns true if the currently logged-in user follows the target and false if not.
+ * @param userID
+ * @returns {Promise<*>}
+ */
 export const followsUser = async function (userID) {
     const data = await fetchData(`me/following/contains?type=user&ids=${userID}`);
     return data[0];
 }
-
+/**
+ * A boolean function for checking whether the session user is logged in or not.
+ * @returns {boolean}
+ */
 export const isLoggedIn = function () {
-    return window.localStorage.getItem("userID") && window.localStorage.getItem("token");
+    return !!(window.localStorage.getItem("userID") && window.localStorage.getItem("token"));
 }
 
 /**
  * Returns a valid datapoint for a given user in a given term.
  * If the function does not get a valid datapoint from the database, it will hydrate the user's datapoints
  * and return a valid one from that selection.
- * @param userID A global user id.
+ * @param userID
  * @param term [short_term, medium_term, long_term]
  * @param delay
  * @returns {Promise<*>} A datapoint object.
@@ -165,7 +188,12 @@ export const retrieveDatapoint = async function (userID, term, delay = 0) {
     }
     return currDatapoint;
 }
-
+/**
+ * Retrieves the last previous datapoint instead of the most recent one. False is returned if none exists.
+ * @param userID
+ * @param term [short_term, medium_term, long_term]
+ * @returns {Promise<*> || false} A datapoint object.
+ */
 export const retrievePreviousDatapoint = async function (userID, term) {
     let result;
     let globalUserID = userID;
@@ -175,7 +203,11 @@ export const retrievePreviousDatapoint = async function (userID, term) {
     await getDatapoint(globalUserID, term, false, 1).then(r => result = r);
     return result;
 }
-
+/**
+ * A testing function that will begin filling the database with faux users.
+ * Unless stopped, the function will populate it with 1000 users.
+ * @returns {Promise<void>}
+ */
 export const fillDatabase = async function () {
     let songs;
     let analytics;
@@ -287,7 +319,6 @@ const createFauxUser = function (songs, analytics, artists) {
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.
- * @returns {Promise<void>}
  */
 const hydrateDatapoints = async function () {
     console.info("Hydrating...");

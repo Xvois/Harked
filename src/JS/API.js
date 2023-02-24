@@ -68,9 +68,8 @@ export const deleteData = (path) => {
 // noinspection JSUnusedGlobalSymbols
 /**
  * @deprecated
- * Makes a get request to the PRDB at the given endpoint and return the response as an object.
+ * Makes a get request to the PRDB at the given endpoint and output the response.
  * @param path The endpoint.
- * @returns {Promise<void>} An object containing the response.
  */
 export const fetchLocalData = async (path) => {
     console.info("Local API call made to " + path);
@@ -131,7 +130,10 @@ export const getAllUsers = async () => {
     )
     return users;
 }
-
+/**
+ * Makes an options call to the PRDB and will return true if no error is caught, false if one is.
+ * @returns {Promise<boolean>}
+ */
 export const isServerAlive = async () => {
     let alive = false;
     await axios.options('https://photon-database.tk/PRDB/all').then(function () {
@@ -144,7 +146,6 @@ export const isServerAlive = async () => {
 }
 
 /**
- /**
  * Will return all the user IDs in the database.
  * @returns {Promise<void>} An array.
  */
