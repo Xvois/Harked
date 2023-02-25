@@ -438,6 +438,15 @@
     height: max-content;
 }
 
+#history-message{
+    margin: 0 auto 0 auto;
+    display: flex;
+    flex-direction: row;
+    width: max-content;
+    height: max-content;
+    font-family: 'Inter Tight', sans-serif;
+}
+
 .playlist-wrapper {
     display: flex;
     gap: 20px;

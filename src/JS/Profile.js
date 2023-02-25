@@ -24,6 +24,9 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
+import HistoryIcon from '@mui/icons-material/History';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import {authURI} from "./Authentication";
 
 
@@ -606,17 +609,25 @@ const Profile = () => {
                                                }}>{element === "long_term" ? "all time" : (element === "medium_term" ? "6 months" : "4 Weeks")}</button>
                             })}
                         </div>
+                        {!!prevDatapoint ?
+                            <div id={'history-message'}>
+                                <HistoryIcon style={{marginTop: 'auto', marginBottom: 'auto', marginRight: '5px'}}></HistoryIcon>
+                                <p>Showing changes from {Math.floor((datapoint.collectionDate - prevDatapoint.collectionDate) / (8.64 * Math.pow(10,7)))} days ago</p>
+                            </div>
+                            :
+                            <></>
+                        }
                         <div className='simple-container'>
-                            <ol>
+                            <ol style={{marginTop: '0', width: '400px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
-                                        const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
+                                        const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
                                         const indexChange = getIndexChange(element, i, `top${simpleSelection}`);
                                         let changeMessage;
                                         if (indexChange < 0) {
                                             changeMessage = <><span style={{
                                                 color: 'red',
-                                                fontSize: '10px'
+                                                fontSize: '10px',
                                             }}>{indexChange}</span><ArrowCircleDownIcon style={{color: 'red'}}
                                                                                         fontSize={"small"}></ArrowCircleDownIcon></>
                                         } else if (indexChange > 0) {
@@ -625,6 +636,8 @@ const Profile = () => {
                                                 fontSize: '10px'
                                             }}>{indexChange}</span><ArrowCircleUpIcon style={{color: '#22C55E'}}
                                                                                       fontSize={"small"}></ArrowCircleUpIcon></>
+                                        } else if (indexChange === 0) {
+                                            changeMessage = <ClearAllIcon style={{color: 'orange'}} fontSize={"small"}></ClearAllIcon>
                                         }
                                         return <li key={element.type ? element[`${element.type}_id`] : element}
                                                    className='list-item'
