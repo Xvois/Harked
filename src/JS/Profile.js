@@ -117,44 +117,28 @@ const Profile = () => {
                 console.warn("getLIName error: No name returned.");
                 break;
         }
-        if (result.length > 20) {
-            result = result.substring(0, 20) + "..."
+        if (result.length > 30) {
+            result = result.substring(0, 30) + "..."
         }
         return result;
     }
     // Change the simple datapoint +1
     const incrementSimple = function () {
-        setShowArt("empty")
-        setFocus({
-            item: null,
-            title: '', //main text
-            secondary: '', //sub-title
-            tertiary: '', //desc
-            image: '',
-            link: '',
-        })
-        setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
-        index === 2 ? setSimpleSelection(simpleDatapoints[0]) : setSimpleSelection(simpleDatapoints[index + 1]);
+        let newIndex;
+        index === 2 ? newIndex = simpleDatapoints[0] : newIndex = simpleDatapoints[index + 1];
+        setSimpleSelection(newIndex);
+        updateFocus(datapoint[`top${newIndex}`][0]);
     }
     // Change the simple datapoint -1
     const decrementSimple = function () {
-        setShowArt("empty")
-        setFocus({
-            item: null,
-            title: '', //main text
-            secondary: '', //sub-title
-            tertiary: '', //desc
-            image: '',
-            link: '',
-        })
-        setFocusMessage("See what it says.")
         const index = simpleDatapoints.indexOf(simpleSelection);
-        index === 0 ? setSimpleSelection(simpleDatapoints[2]) : setSimpleSelection(simpleDatapoints[index - 1]);
+        let newIndex;
+        index === 0 ? newIndex = simpleDatapoints[2] : newIndex = simpleDatapoints[index - 1];
+        setSimpleSelection(newIndex);
+        updateFocus(datapoint[`top${newIndex}`][0]);
     }
     const getIndexChange = function (item, index, parentArray) {
-        console.log(prevDatapoint[parentArray]);
-        console.log(item)
         if (!prevDatapoint || prevDatapoint.term !== datapoint.term) {
             return null
         }
@@ -162,8 +146,8 @@ const Profile = () => {
         if (lastIndex < 0) {
             return null
         }
-        console.log(`----${item}----`);
-        console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
+       //console.log(`----${item.name || item}----`);
+        //console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
         return lastIndex - index;
     }
     // Update the artist attributes that are used to make the focus
@@ -190,7 +174,6 @@ const Profile = () => {
                 [max.artist]: {theme: metric}
             }
         })
-        //BUG: WAS AN AWAIT / ASYNC FUNCTION
         // For every artist [in order of listen time]
         artists.forEach(artist => {
             // Add the genre quality to them
@@ -202,7 +185,7 @@ const Profile = () => {
                 }
             }
         })
-        setArtistQualities(result);
+        await setArtistQualities(result);
     }
     // Update the focus message to be
     // relevant to the current focus
@@ -379,12 +362,10 @@ const Profile = () => {
             <div className='focus-container'>
                 {simpleSelection !== "Genres" ?
                     <div className='art-container'>
-                        {showArt === "empty" ?
-                            <div className='play-wrapper-empty'>Select an item to view in focus.</div>
-                            :
                             <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
                                href={focus.link} rel="noopener noreferrer" target="_blank">
-                                <img className='art' src={focus.image} alt='Cover art'></img>
+                                <img className='art' src={focus.image}></img>
+                                <img className='art' id={'art-backdrop'} src={focus.image}></img>
                                 <div className='art-text-container'>
                                     <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
                                     <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
@@ -392,13 +373,10 @@ const Profile = () => {
                                     <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                 </div>
                             </a>
-                        }
                     </div>
                     :
                     <div style={{width: `20%`}}></div>
                 }
-
-                <p className={showArt === true ? "focus-message-shown" : "focus-message-hidden"}>{focusMessage}</p>
             </div>
         )
     }
@@ -433,23 +411,22 @@ const Profile = () => {
         retrieveDatapoint(userID, term).then(function (result) {
             setDatapoint(result)
             updateArtistQualities(result).then(() => {
-                if (isLoggedIn()) {
-                    getPlaylists(userID).then(results => {
-                        setPlaylists(results);
-                    })
-                }
                 if (!chipletData) {
                     setChipletData([result.topArtists[0], result.topGenres[0]])
                 }
             });
+            if (isLoggedIn()) {
+                getPlaylists(userID).then(results => {
+                    setPlaylists(results);
+                })
+            }
             retrievePreviousDatapoint(userID, term).then(function (prevD) {
                 setPrevDatapoint(prevD);
             })
+            updateFocus(result["topArtists"][0]);
             setLoaded(true);
         })
         // Refresh the focus
-        setShowArt("empty")
-        setFocusMessage("See what it says.")
         // Indicate that the loading is over
     }
     // Delay function mainly used for animations
@@ -478,7 +455,6 @@ const Profile = () => {
                 localState.tertiary = '';
             }
             setFocus(localState);
-            await updateFocusMessage(datapoint);
             setShowArt(true)
         }
     }
@@ -508,7 +484,7 @@ const Profile = () => {
                 </div>
                 :
                 <div className='wrapper'>
-                    <div className='user-container'>
+                    <div className='user-container' style={{'--pfp': `url(${currentUser.profilePicture})`}}>
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <div className='username'>{currentUser.username}</div>
@@ -585,7 +561,7 @@ const Profile = () => {
                         }}>
                             <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
-                            <h2 className='datapoint-title'>Top {simpleSelection}</h2>
+                            <h2 className='datapoint-title' style={{height: 'max-content'}}>Top {simpleSelection}</h2>
                             <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}}
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
@@ -618,7 +594,7 @@ const Profile = () => {
                             <></>
                         }
                         <div className='simple-container'>
-                            <ol style={{marginTop: '0', width: '400px'}}>
+                            <ol style={{marginTop: '0', width: 'max-content'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
@@ -628,16 +604,16 @@ const Profile = () => {
                                             changeMessage = <><span style={{
                                                 color: 'red',
                                                 fontSize: '10px',
-                                            }}>{indexChange}</span><ArrowCircleDownIcon style={{color: 'red'}}
+                                            }}>{indexChange}</span><ArrowCircleDownIcon style={{color: 'red', animation: 'down-change-animation 0.5s ease-out'}}
                                                                                         fontSize={"small"}></ArrowCircleDownIcon></>
                                         } else if (indexChange > 0) {
                                             changeMessage = <><span style={{
                                                 color: '#22C55E',
                                                 fontSize: '10px'
-                                            }}>{indexChange}</span><ArrowCircleUpIcon style={{color: '#22C55E'}}
+                                            }}>{indexChange}</span><ArrowCircleUpIcon style={{color: '#22C55E', animation: 'up-change-animation 0.5s ease-out'}}
                                                                                       fontSize={"small"}></ArrowCircleUpIcon></>
                                         } else if (indexChange === 0) {
-                                            changeMessage = <ClearAllIcon style={{color: 'orange'}} fontSize={"small"}></ClearAllIcon>
+                                            changeMessage = <ClearAllIcon style={{color: 'orange', animation: 'equals-animation 0.5s ease-out'}} fontSize={"small"}></ClearAllIcon>
                                         }
                                         return <li key={element.type ? element[`${element.type}_id`] : element}
                                                    className='list-item'
@@ -647,11 +623,16 @@ const Profile = () => {
                                     }
                                 })}
                             </ol>
-                            <Focus/>
+                            <div>Have stats here.</div>
                         </div>
+                        <Focus/>
                     </div>
+                    {simpleSelection === 'Songs' ?
                     <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
                            data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
+                        :
+                        <></>
+                    }
                     <h2 style={{
                         textTransform: `uppercase`,
                         fontFamily: 'Inter Tight, sans-serif',
