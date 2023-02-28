@@ -79,7 +79,7 @@
     color: black;
     height: max-content;
     width: 297px;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(20px);
     border: 2px solid #22C55E;
     border-top: 0;
     top: 50px;

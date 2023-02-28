@@ -405,6 +405,12 @@ const Profile = () => {
                     :
                     <div style={{width: `20%`}}></div>
                 }
+                <div className={'focus-message'}>
+                    <h2>{focusMessage}</h2>
+                    <p>This one explains the details of the genres of music.</p>
+                    <p>This one explores their songs and their popularity for an artist.</p>
+                    <p>This one employs some social features to branch between users.</p>
+                </div>
             </div>
         )
     }
@@ -483,6 +489,7 @@ const Profile = () => {
                 localState.tertiary = '';
             }
             setFocus(localState);
+            await updateFocusMessage();
             setShowArt(true)
         }
     }
@@ -616,13 +623,13 @@ const Profile = () => {
                         {!!prevDatapoint ?
                             <div id={'history-message'}>
                                 <HistoryIcon style={{marginTop: 'auto', marginBottom: 'auto', marginRight: '5px'}}></HistoryIcon>
-                                <p>Showing changes from {Math.floor((datapoint.collectionDate - prevDatapoint.collectionDate) / (8.64 * Math.pow(10,7)))} days ago</p>
+                                <p>Showing changes from {Math.floor((datapoint.collectionDate - prevDatapoint.collectionDate) / (8.64 * Math.pow(10,7)))} days ago (Last updated {Math.floor((Date.now() - datapoint.collectionDate) / (8.64 * Math.pow(10,7)))} days ago)</p>
                             </div>
                             :
                             <></>
                         }
                         <div className='simple-container'>
-                            <ol style={{marginTop: '0', width: '1000px'}}>
+                            <ol style={{marginTop: '0', width: '500px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
@@ -663,6 +670,7 @@ const Profile = () => {
                                                 }
                                             }}>
                                                 <h3>{translateAnalytics[key].name}</h3>
+                                                <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-12px'}}></div>
                                                 <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`}}></div>
                                                 <p>{translateAnalytics[key].description}</p>
                                             </div>

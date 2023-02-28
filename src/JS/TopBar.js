@@ -2,7 +2,7 @@
 
 import React, {useEffect, useState} from 'react';
 import './../CSS/TopBar.css';
-import {ClickAwayListener, FormControl, TextField} from '@mui/material';
+import {ClickAwayListener, FormControl, TextField, Switch} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import {styled} from '@mui/material/styles';
@@ -144,6 +144,7 @@ const TopBar = () => {
         }
     }, [])
 
+
     // noinspection HtmlUnknownAnchorTarget
     return (
         <header className="header">
@@ -156,7 +157,7 @@ const TopBar = () => {
                         <ClickAwayListener onClickAway={handleClickAway}>
                             <FormControl variant="standard">
                                 <SearchBar className='search-bar' inputProps={{className: `search-label`}}
-                                           onChange={handleChange} label="Search"></SearchBar>
+                                           onChange={handleChange} onClick={handleChange} label="Search"></SearchBar>
                             </FormControl>
                         </ClickAwayListener>
                         {searchResults !== null ?
