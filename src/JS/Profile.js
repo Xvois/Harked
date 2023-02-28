@@ -85,16 +85,17 @@ const Profile = () => {
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     // Take it to be "X music"
     const translateAnalytics = {
-        acousticness: 'acoustic',
-        danceability: 'danceable',
-        energy: 'energetic',
-        instrumentalness: 'instrumental',
-        liveness: 'live',
-        loudness: 'loud',
-        valence: 'positive',
-        tempo: `high tempo`
+        acousticness: {name: 'acoustic', description: 'Music with no electric instruments.'},
+        danceability: {name: 'danceable', description: 'Music that makes you want to move it.'},
+        energy: {name: 'energetic', description: 'Music that feels fast and loud.'},
+        instrumentalness: {name: 'instrumental', description: 'Music that contains no vocals.'},
+        liveness: {name: 'live', description: 'Music that is performed live.'},
+        loudness: {name: 'loud', description: 'Music that is noisy.'},
+        valence: {name: 'positive', description: 'Music that feels upbeat.'},
+        tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
     }
-    const [following, setFollowing] = useState(null)
+    const [following, setFollowing] = useState(null);
+    const [selectionAnalysis, setSelectionAnalysis] = useState();
     // Update page when new user is chosen
     window.addEventListener("hashchange", function () {
         window.location.reload(false);
@@ -203,7 +204,7 @@ const Profile = () => {
                     message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
                 } else {
                     Object.keys(artistQualities[item.name]).length > 1 ?
-                        message += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]]} music.`
+                        message += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]].name} music.`
                         :
                         message += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
                 }
@@ -222,7 +223,7 @@ const Profile = () => {
                         maxAnalytic = analytic;
                     }
                 })
-                message += `${item.title} is a very ${translateAnalytics[maxAnalytic]} song by ${item.artist}.`
+                message += `${item.title} is a very ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
                 break;
             case undefined:
                 let relevantArtists = [];
@@ -251,6 +252,33 @@ const Profile = () => {
         }
         setFocusMessage(message);
     }
+    /**
+     * Stores the average song characteristics of all songs in the array.
+     * @param songs
+     */
+    const analyseSongs = function(songs) {
+        // Result
+        let res = {
+            acousticness: 0,
+            danceability: 0,
+            energy: 0,
+            instrumentalness: 0,
+            liveness: 0,
+            valence: 0,
+            tempo: 0
+        };
+        songs.forEach(function(song){
+            analyticsMetrics.forEach((analyticKey) => {
+                if(analyticKey === 'tempo'){
+                    res[analyticKey] += (song.analytics[analyticKey] - 50) / (songs.length * 150);
+                } else{
+                    res[analyticKey] += (song.analytics[analyticKey]) / songs.length;
+                }
+            })
+        })
+        setSelectionAnalysis(res);
+    }
+
     // Construct the description for an item in a graph.
     const getGraphQualities = (val1, type1, val2, type2) => {
         let message = "";
@@ -415,6 +443,7 @@ const Profile = () => {
                     setChipletData([result.topArtists[0], result.topGenres[0]])
                 }
             });
+            analyseSongs(result.topSongs);
             if (isLoggedIn()) {
                 getPlaylists(userID).then(results => {
                     setPlaylists(results);
@@ -423,7 +452,6 @@ const Profile = () => {
             retrievePreviousDatapoint(userID, term).then(function (prevD) {
                 setPrevDatapoint(prevD);
             })
-            updateFocus(result["topArtists"][0]);
             setLoaded(true);
         })
         // Refresh the focus
@@ -594,7 +622,7 @@ const Profile = () => {
                             <></>
                         }
                         <div className='simple-container'>
-                            <ol style={{marginTop: '0', width: 'max-content'}}>
+                            <ol style={{marginTop: '0', width: '1000px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
@@ -623,7 +651,28 @@ const Profile = () => {
                                     }
                                 })}
                             </ol>
-                            <div>Have stats here.</div>
+                            {simpleSelection !== 'Genres' ?
+                            <div className={'simple-stats'}>
+                                {
+                                    Object.keys(translateAnalytics).map(function(key){
+                                        if(key !== 'loudness' && key !== 'liveness'){
+                                            return <div className={'stat-block'} onClick={function(){
+                                                if(simpleSelection === 'Songs'){
+                                                    window.scrollTo({ left: 0, top: 1350, behavior: "smooth" });
+                                                    setGraphAxis({...graphAxis ,x: key})
+                                                }
+                                            }}>
+                                                <h3>{translateAnalytics[key].name}</h3>
+                                                <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`}}></div>
+                                                <p>{translateAnalytics[key].description}</p>
+                                            </div>
+                                        }
+                                })
+                                }
+                            </div>
+                                :
+                                <></>
+                            }
                         </div>
                         <Focus/>
                     </div>

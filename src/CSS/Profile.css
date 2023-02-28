@@ -299,6 +299,56 @@
     font-weight: 800;
 }
 
+.simple-stats{
+    flex-grow: 1;
+    display: flex;
+    gap: 50px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+}
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 75px;
+    width: 200px;
+    padding: 10px;
+}
+
+.stat-block:hover {
+    transform: scale(110%);
+    cursor: pointer;
+}
+
+.stat-block > h3 {
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.stat-block > p {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 10px;
+    margin: 5px 0 0 0;
+    color: rgba(100,100,100);
+}
+
+.stat-bar {
+    position: relative;
+    height: 10px;
+    width: var(--val);
+    margin-right: auto;
+
+    background-color: #22C55E;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255, 0.2);
+    box-shadow: 0 0 2px #22C55E;
+    transition: all 0.5s ease-out;
+}
+
 @keyframes hover {
     from {
         font-size: 16px;
@@ -549,18 +599,6 @@
     }
 }
 @media screen and (max-width: 1300px) {
-    .focus-container {
-        flex-direction: column;
-        width: 70%;
-    }
-
-    .focus-message-shown {
-        text-align: center;
-    }
-
-    .focus-message-hidden {
-        text-align: center;
-    }
 
     .list-item {
         padding: 10px;
