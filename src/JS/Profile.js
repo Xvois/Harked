@@ -77,7 +77,7 @@ const Profile = () => {
         link: '',
     })
     const [artistQualities, setArtistQualities] = useState();
-    const [focusMessage, setFocusMessage] = useState("See what it says.");
+    const [focusMessage, setFocusMessage] = useState(<p>See what is says.</p>);
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
     const [playlists, setPlaylists] = useState(null)
@@ -195,18 +195,19 @@ const Profile = () => {
         let possessive;
         userID === 'me' ? possessive = 'your' : possessive = `${currentUser.username}'s`
         const item = focus.item;
-        let message = '';
+        let topMessage = '';
+        let secondMessage = '';
         switch (item.type) {
             case "artist":
                 if (artistQualities[`${item.name}`] === undefined) {
                     // If the artist doesn't have a genre analysis then we assume
                     // that they are not wildly popular.
-                    message += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
+                    topMessage += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
                 } else {
                     Object.keys(artistQualities[item.name]).length > 1 ?
-                        message += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]].name} music.`
+                        topMessage += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]].name} music.`
                         :
-                        message += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
+                        topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
                 }
                 break;
             case "song":
@@ -223,7 +224,11 @@ const Profile = () => {
                         maxAnalytic = analytic;
                     }
                 })
-                message += `${item.title} is a very ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
+                topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
+                if(datapoint.topArtists.some((element) => element.name === item.artist)){
+                    const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
+                    secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list.`
+                }
                 break;
             case undefined:
                 let relevantArtists = [];
@@ -239,18 +244,25 @@ const Profile = () => {
                 });
                 relevantArtists.length > 1 ?
                     //          Capitalise the possessive
-                    message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `, ${relevantArtists[1]}` : "s"}.`
+                    topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `, ${relevantArtists[1]}` : "s"}.`
                     :
                     (relevantArtists.length === 1 ?
-                            message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
+                            topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
                             :    //TODO: THIS OCCURS WAYYY TOO OFTEN
-                            message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                            topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
                     )
                 break;
             default:
                 console.warn("updateFocusMessage error: No focus type found.")
         }
-        setFocusMessage(message);
+        setFocusMessage(
+            <>
+                <h2>{topMessage}</h2>
+                <p>{secondMessage}</p>
+                <p>This one explores their songs and their popularity for an artist.</p>
+                <p>This one employs some social features to branch between users.</p>
+            </>
+        );
     }
     /**
      * Stores the average song characteristics of all songs in the array.
@@ -406,10 +418,7 @@ const Profile = () => {
                     <div style={{width: `20%`}}></div>
                 }
                 <div className={'focus-message'}>
-                    <h2>{focusMessage}</h2>
-                    <p>This one explains the details of the genres of music.</p>
-                    <p>This one explores their songs and their popularity for an artist.</p>
-                    <p>This one employs some social features to branch between users.</p>
+                    {focusMessage}
                 </div>
             </div>
         )
@@ -443,6 +452,7 @@ const Profile = () => {
         }
         // Update the datapoint
         retrieveDatapoint(userID, term).then(function (result) {
+            console.log(result)
             setDatapoint(result)
             updateArtistQualities(result).then(() => {
                 if (!chipletData) {
@@ -670,7 +680,7 @@ const Profile = () => {
                                                 }
                                             }}>
                                                 <h3>{translateAnalytics[key].name}</h3>
-                                                <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-12px'}}></div>
+                                                <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
                                                 <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`}}></div>
                                                 <p>{translateAnalytics[key].description}</p>
                                             </div>
