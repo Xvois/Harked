@@ -455,6 +455,57 @@ const Profile = () => {
         )
     }
 
+    const ArtistConstellation = () => {
+        const [showPeak, setShowPeak] = useState(false);
+        const [peakObject, setPeakObject] = useState(null);
+        const handleMouseEnter = (param) => (e) => {
+            console.log("Mouse enter.")
+            setShowPeak(true);
+            setPeakObject(param);
+        }
+        const handleMouseLeave = (e) => {
+            console.log("Mouse leave.")
+            setShowPeak(false);
+        }
+        let points = !likedSongsFromArtist ? null : likedSongsFromArtist.map((album, i) => {
+            return <div className={'album-instance'} style={{
+                animationDelay: `${i / 5}s`,
+                '--bottom-val': `${album.id.hashCode() / 20000000 + 150}px`,
+                '--left-val': `${album.name.hashCode() / 5000000 + 400}px`,
+                '--scale-factor': `${(Math.pow(album.saved_songs.length, 1 / 4) / 2)}`
+            }} onMouseLeave={handleMouseLeave}>
+                <div className={'circle'} onMouseEnter={handleMouseEnter(album)}></div>
+                <div style={(showPeak && peakObject === album) ? {position: 'absolute'} :  {display: 'none'}}>
+                    <img className={'album-image-backdrop'} src={album.images[2].url}></img>
+                    <img className={'album-image'} onMouseLeave={handleMouseLeave} src={album.images[0].url}></img>
+                    <div className={'album-text'}>
+                        <h2>{(album.name.length > 25 ? album.name.slice(0, 23) + '...' : album.name)}</h2>
+                        <FavoriteIcon fontSize={'small'} style={{transform: 'scale(50%)'}}/>
+                        <p>{album.saved_songs.length} song(s) saved from this album.</p>
+                    </div>
+                </div>
+            </div>
+        })
+
+
+        return (<div className={'album-showcase'}>
+                    <h3 style={{top: '0', fontFamily: 'Inter Tight', position: 'absolute'}}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focus.title}</h3>
+                    {points}
+                </div>)
+    }
+
+    String.prototype.hashCode = function() {
+        var hash = 0,
+            i, chr;
+        if (this.length === 0) return hash;
+        for (i = 0; i < this.length; i++) {
+            chr = this.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+    }
+
     // Function that loads the page when necessary
     const loadPage = () => {
         // If the page hasn't loaded then grab the user data
@@ -522,6 +573,7 @@ const Profile = () => {
                 localState.tertiary = tertiaryText;
                 setStatsSelection(item.analytics);
             } else if (item.type === "artist") {
+                setLikedSongsFromArtist(null);
                 localState.title = item.name;
                 localState.secondary = item.genre;
                 localState.tertiary = tertiaryText;
@@ -738,25 +790,7 @@ const Profile = () => {
                                 <></>
                             }
                             {simpleSelection === 'Artists' ?
-                                (isLoggedIn() ?
-                                        <div className={'album-showcase'}>
-                                            {likedSongsFromArtist.map((album) => {
-                                                return <div className={'album-instance'} style={{}}>
-                                                            <img className={'album-image'} src={album.images[1].url}></img>
-                                                            <div className={'album-text'}>
-                                                                <h2>{(album.name.length > 25 ? album.name.slice(0,23) + '...' : album.name)}</h2>
-                                                                <FavoriteIcon fontSize={'small'} style={{transform: 'scale(50%)'}}/>
-                                                                <p>{album.saved_songs.length} song(s) saved from this album.</p>
-                                                            </div>
-                                                        </div>
-                                            })}
-                                        </div>
-                                        :
-                                        <div style={{display: 'flex', flexDirection: 'column', height: 'max-content', width: 'max-content', margin: 'auto', border: '1px dotted white', padding: '40px', borderRadius: '10px'}}>
-                                            <h2 style={{fontFamily: 'Inter Tight'}}>Want to have better insights on artists?</h2>
-                                            <a className="auth-button" style={{marginLeft: 'auto', marginRight: 'auto'}} href={authURI}>Log-in</a>
-                                        </div>
-                                )
+                                <ArtistConstellation/>
                                 :
                                 <></>
                             }

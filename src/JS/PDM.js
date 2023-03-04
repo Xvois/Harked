@@ -329,9 +329,11 @@ export const getLikedSongsFromArtist = async function(artistID, playlists){
     const albumResponses = await Promise.all(albumPromises);
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
-        const tracks = albumResponses[i].items;
+        const albumResponse = albumResponses[i];
+        const tracks = albumResponse && albumResponse.items;
+        console.log("tracks:", tracks);
         album["saved_songs"] = tracks.filter((track) =>
-            tracksInPlaylists.some((item) => item.name === track.name)
+            tracksInPlaylists.some((item) => item && item.name === track.name)
         );
         if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithLikedSongs.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithLikedSongs.push(album);
