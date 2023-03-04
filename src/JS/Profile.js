@@ -12,7 +12,8 @@ import {
     retrieveMedia,
     retrievePreviousDatapoint,
     retrieveUser,
-    unfollowUser
+    unfollowUser,
+    findSimilarArtists, getArtistsAlbums, getLikedSongsFromArtist, getSongsFromArtistInPlaylists
 } from './PDM';
 import arrow from './Arrow.png'
 import {Chip} from '@mui/material';
@@ -26,6 +27,8 @@ import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import HistoryIcon from '@mui/icons-material/History';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ClearIcon from '@mui/icons-material/Clear';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import {authURI} from "./Authentication";
 
@@ -48,6 +51,7 @@ const Profile = () => {
         profilePicture: '',
         media: {name: '', image: ''},
     });
+    let [likedSongsFromArtist, setLikedSongsFromArtist] = useState([]);
     let [datapoint, setDatapoint] = useState({
         userID: '',
         collectionDate: '',
@@ -76,6 +80,7 @@ const Profile = () => {
         image: '',
         link: '',
     })
+    const [statsSelection, setStatsSelection] = useState();
     const [artistQualities, setArtistQualities] = useState();
     const [focusMessage, setFocusMessage] = useState(<p>See what is says.</p>);
     // The datapoint we are currently on
@@ -202,13 +207,18 @@ const Profile = () => {
                 if (artistQualities[`${item.name}`] === undefined) {
                     // If the artist doesn't have a genre analysis then we assume
                     // that they are not wildly popular.
+                    // TODO: FIX THIS, IT ACTIVATES FOR BEYONCE?!?
                     topMessage += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
                 } else {
                     Object.keys(artistQualities[item.name]).length > 1 ?
-                        topMessage += `${item.name} not only represents ${possessive} love for ${artistQualities[item.name]["genre"]} music, but also for ${translateAnalytics[artistQualities[item.name]["theme"]].name} music.`
+                        topMessage += `${item.name} represents ${possessive} love for ${artistQualities[item.name]["genre"]} and ${translateAnalytics[artistQualities[item.name]["theme"]].name} music.`
                         :
                         topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
                 }
+                // The index of the song in the user's top songs list made by this artist.
+                const songIndex = datapoint.topSongs.findIndex((element) => element.artist === item.name);
+                console.log(item.name)
+                if(songIndex !== - 1){secondMessage += `${datapoint.topSongs[songIndex].title} by ${item.name} is Nº ${songIndex+1} on ${possessive} top 50 songs list for this time frame.`}
                 break;
             case "song":
                 // TODO: MAKE THIS A MORE ACCURATE
@@ -227,10 +237,11 @@ const Profile = () => {
                 topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
                 if(datapoint.topArtists.some((element) => element.name === item.artist)){
                     const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
-                    secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list.`
+                    secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
             case undefined:
+                //TODO: COMPLETELY REWORK GENRE MESSAGE [INCLUDE REWORK OF ARTIST QUALITIES]
                 let relevantArtists = [];
                 for (let artist in artistQualities) {
                     if (artistQualities[artist].genre === item) {
@@ -248,8 +259,9 @@ const Profile = () => {
                     :
                     (relevantArtists.length === 1 ?
                             topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                            :    //TODO: THIS OCCURS WAYYY TOO OFTEN
-                            topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                            :
+                            //topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                            topMessage += 'No artists found.'
                     )
                 break;
             default:
@@ -259,8 +271,6 @@ const Profile = () => {
             <>
                 <h2>{topMessage}</h2>
                 <p>{secondMessage}</p>
-                <p>This one explores their songs and their popularity for an artist.</p>
-                <p>This one employs some social features to branch between users.</p>
             </>
         );
     }
@@ -328,6 +338,9 @@ const Profile = () => {
         const title = props.title;
         let maxX;
         let minX;
+        let [mousePos, setMousePos] = useState({x: 0, y: 0});
+        let [showPeak, setShowPeak] = useState(false);
+        let [peakContent, setPeakContent] = useState();
         if (graphAxis.x === "tempo") {
             minX = 50;
             maxX = 200
@@ -345,6 +358,18 @@ const Profile = () => {
             maxY = 1
         }
         const points = [];
+
+        const handleMouseEnter = (param) => (e) => {
+            setMousePos({x: e.clientX, y: e.clientY})
+            console.log(e.clientY)
+            setShowPeak(true);
+            setPeakContent(param);
+        }
+
+        const handleMouseExit = () => {
+            setShowPeak(false);
+        }
+
         list.forEach((element, i) => {
             // Coords as a percentage
             let pointX = ((element[graphAxis.x] - minX) * 100) / (maxX - minX);
@@ -353,13 +378,19 @@ const Profile = () => {
             //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
             points.push(<div key={element[key]} className='point'
                              style={{left: `${pointX}%`, bottom: `${pointY}%`}}
-                             onClick={() => updateFocus(parentObj[i], message)}></div>)
+                             onClick={() => updateFocus(parentObj[i], message)} onMouseEnter={handleMouseEnter(parentObj[i])} onMouseLeave={handleMouseExit}></div>)
         });
         // Return the whole structure, so it can simply
         // be dropped in
         return (
             <>
                 <div className='graph-container'>
+                    {showPeak ?
+                        <div className={'selection-peek'} style={{'--mouse-x': `${mousePos.x + 10}px`, '--mouse-y': `${mousePos.y - 110}px`, backgroundImage: `url(${ (peakContent ? peakContent.image : '')})`}}>
+                        </div>
+                        :
+                        <></>
+                    }
                     <h1 className='graph-title'>
                         {title}
                         <select className='graph-dropdown' defaultValue={graphAxis.x}
@@ -489,10 +520,12 @@ const Profile = () => {
                 localState.title = item.title;
                 localState.secondary = `by ${item.artist}`;
                 localState.tertiary = tertiaryText;
+                setStatsSelection(item.analytics);
             } else if (item.type === "artist") {
                 localState.title = item.name;
                 localState.secondary = item.genre;
                 localState.tertiary = tertiaryText;
+                getLikedSongsFromArtist(item.artist_id, playlists).then(res => setLikedSongsFromArtist(res));
             } else {
                 localState.title = '';
                 localState.secondary = item;
@@ -668,26 +701,62 @@ const Profile = () => {
                                     }
                                 })}
                             </ol>
-                            {simpleSelection !== 'Genres' ?
-                            <div className={'simple-stats'}>
-                                {
-                                    Object.keys(translateAnalytics).map(function(key){
-                                        if(key !== 'loudness' && key !== 'liveness'){
-                                            return <div className={'stat-block'} onClick={function(){
-                                                if(simpleSelection === 'Songs'){
-                                                    window.scrollTo({ left: 0, top: 1350, behavior: "smooth" });
-                                                    setGraphAxis({...graphAxis ,x: key})
+                            {simpleSelection === 'Songs' ?
+                                <div style={{display: 'flex', flexDirection: 'column'}}>
+                                    {statsSelection ?
+                                        <h2 className={'stats-title'} style={{color: '#22C55E', cursor: 'pointer', zIndex: '1'}} onClick={() => setStatsSelection(null)}>{focus.title}<ClearIcon fontSize={'small'}/></h2>
+                                        :
+                                        <h2 className={'stats-title'}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>average</span> song analytics.</h2>
+                                    }
+                                    <div className={'simple-stats'}>
+                                        {
+                                            Object.keys(translateAnalytics).map(function(key){
+                                                if(key !== 'loudness' && key !== 'liveness'){
+                                                    return <div className={'stat-block'} onClick={function(){
+                                                        if(simpleSelection === 'Songs'){
+                                                            window.scrollTo({ left: 0, top: 1350, behavior: "smooth" });
+                                                            if(graphAxis.y !== key){setGraphAxis({...graphAxis ,x: key})
+                                                            }
+                                                        }
+                                                    }}>
+                                                        <h3>{translateAnalytics[key].name}</h3>
+                                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
+                                                        <div className={'stat-bar'} style={{'--val': `${statsSelection ? (key === 'tempo' ? 100 * (statsSelection[key] - 50) / 150 : statsSelection[key] * 100) : selectionAnalysis[key] * 100}%`}}></div>
+                                                        {statsSelection ?
+                                                            <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`, opacity: '0.5', marginTop: '-10.5px', border: '0.5px dashed #22C55E'}}></div>
+                                                            :
+                                                            <></>
+                                                        }
+                                                        <p>{translateAnalytics[key].description}</p>
+                                                    </div>
                                                 }
-                                            }}>
-                                                <h3>{translateAnalytics[key].name}</h3>
-                                                <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
-                                                <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`}}></div>
-                                                <p>{translateAnalytics[key].description}</p>
-                                            </div>
+                                            })
                                         }
-                                })
-                                }
-                            </div>
+                                    </div>
+                                </div>
+                                :
+                                <></>
+                            }
+                            {simpleSelection === 'Artists' ?
+                                (isLoggedIn() ?
+                                        <div className={'album-showcase'}>
+                                            {likedSongsFromArtist.map((album) => {
+                                                return <div className={'album-instance'} style={{}}>
+                                                            <img className={'album-image'} src={album.images[1].url}></img>
+                                                            <div className={'album-text'}>
+                                                                <h2>{(album.name.length > 25 ? album.name.slice(0,23) + '...' : album.name)}</h2>
+                                                                <FavoriteIcon fontSize={'small'} style={{transform: 'scale(50%)'}}/>
+                                                                <p>{album.saved_songs.length} song(s) saved from this album.</p>
+                                                            </div>
+                                                        </div>
+                                            })}
+                                        </div>
+                                        :
+                                        <div style={{display: 'flex', flexDirection: 'column', height: 'max-content', width: 'max-content', margin: 'auto', border: '1px dotted white', padding: '40px', borderRadius: '10px'}}>
+                                            <h2 style={{fontFamily: 'Inter Tight'}}>Want to have better insights on artists?</h2>
+                                            <a className="auth-button" style={{marginLeft: 'auto', marginRight: 'auto'}} href={authURI}>Log-in</a>
+                                        </div>
+                                )
                                 :
                                 <></>
                             }

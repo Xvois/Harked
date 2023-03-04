@@ -93,6 +93,10 @@
     opacity: 0.5;
 }
 
+.play-wrapper:hover > #art-text-container {
+    opacity: 0;
+}
+
 #art-backdrop{
     filter: blur(50px) brightness(75%);
     position: absolute;
@@ -144,11 +148,8 @@
     padding-bottom: 20px;
     text-align: center;
     backdrop-filter: blur(10px);
+    opacity: 1;
     transition: all 0.4s ease-out;
-}
-
-.art-text-container:hover {
-   opacity: 0;
 }
 
 .art-name-shown {
@@ -295,8 +296,17 @@
     font-weight: 800;
 }
 
+.stats-title{
+    font-family: 'Lato', sans-serif;
+    text-align: center;
+    margin-bottom: -50px;
+    margin-top: 50px;
+    text-transform: uppercase;
+}
+
 .simple-stats{
     flex-grow: 1;
+    max-width: 1000px;
     display: flex;
     gap: 50px;
     flex-wrap: wrap;
@@ -373,20 +383,19 @@
     width: max-content;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;
 }
 
 
 .term-container > button {
     height: 30px;
     width: 100px;
-    border: 2px solid white;
+    border: 1px solid white;
     border-radius: 20px;
     background-color: black;
     margin-left: -35px;
     margin-right: -35px;
-    transition: all 0.2s ease-out;
-    color: rgba(255, 255, 255, 0);
+    transition: all 0.1s linear;
+    color: rgba(255, 255, 255, 10);
     text-transform: uppercase;
     text-align: center;
     white-space: nowrap;
@@ -394,12 +403,12 @@
 
 .term-container > button:hover {
     --fill-color: white;
-    box-shadow: 0 0 45px var(--fill-color);
-    color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 10px var(--fill-color);
 }
 
 .term {
-    margin: auto;
+    font-size: 18px;
+    margin-top: 0;
     text-align: center;
     color: #22C55E;
     text-transform: uppercase;
@@ -539,6 +548,63 @@
     gap: 50px
 }
 
+.album-showcase {
+    display: flex;
+    flex-grow: 1;
+    margin: auto;
+    gap: 50px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+    height: max-content;
+    max-height: 300px;
+
+    font-family: "Inter Tight";
+    text-align: center;
+    text-transform: uppercase;
+
+}
+
+.album-instance {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+
+    border: 1px dashed rgba(255,255,255,0.3);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.album-text{
+    width: 150px;
+    position: absolute;
+    transform: scale(90%);
+}
+
+.album-text > h2 {
+    margin: 0;
+    font-size: 15px;
+    text-shadow: 0 0 40px black;
+}
+
+.album-text > p {
+    margin: 0;
+    font-size: 10px;
+    text-shadow: 0 0 10px black;
+}
+
+
+.album-image{
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
+    filter: blur(5px);
+}
+
 @keyframes slide-right-out {
     0% {
         transform: translate(-400px) scale(100%);
@@ -571,7 +637,6 @@
         opacity: 0.3;
     }
 }
-
 @keyframes slide-left-out {
     0% {
         transform: translate(400px) scale(100%);
