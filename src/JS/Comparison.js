@@ -39,24 +39,12 @@ const Comparison = () => {
     const calculateSimilarity = (u) => {
         let user1Datapoint = u[0].datapoint;
         let user2Datapoint = u[1].datapoint;
-        let songsSimilarity = 0;
         let artistsSimilarity = 0;
         let genresSimilarity = 0;
         let metricDelta = 0;
         let u0Metrics = calculateAverageAnalytics(u[0]);
         let u1Metrics = calculateAverageAnalytics(u[1]);
         let similarity;
-        // songsKeys in pseudocode.
-        // TODO:
-        // RE-WRITE THE SONG COMPARISONS
-        user1Datapoint.topSongs.forEach((song, i) => {
-            let songDelta = 0;
-            analyticsMetrics.forEach(analytic => {
-                songDelta += Math.abs(song.analytics[analytic] - user2Datapoint.topSongs[i].analytics[analytic]);
-            })
-            songsSimilarity += songDelta / analyticsMetrics.length;
-        })
-        songsSimilarity /= user1Datapoint.topSongs.length;
         user1Datapoint.topArtists.forEach(artist1 => {
             if (user2Datapoint.topArtists.some(artist2 => artist2.name === artist1.name)) {
                 artistsSimilarity++;
@@ -73,13 +61,12 @@ const Comparison = () => {
         for (const key in u0Metrics) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
         }
-        similarity = (genresSimilarity + 2 * artistsSimilarity + songsSimilarity + (1 - Math.sqrt(metricDelta*2))/3);
+        similarity = (genresSimilarity + 3 * artistsSimilarity  + 2 * (1 - Math.sqrt(metricDelta*2))/3);
         similarity = Math.round(100 * similarity)
         console.log("---STAT BREAKDOWN---");
         console.log("Genres: " + genresSimilarity);
         console.log("Artists: " + artistsSimilarity);
-        console.log("Songs: " + songsSimilarity);
-        console.log("Metrics: " + metricDelta);
+        console.log("Metrics: " + (1 - Math.sqrt(metricDelta*2)));
         if (similarity > 100) {
             similarity = 100
         } // Ensure not over 100%
