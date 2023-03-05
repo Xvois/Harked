@@ -12,8 +12,7 @@ import {
     retrieveMedia,
     retrievePreviousDatapoint,
     retrieveUser,
-    unfollowUser,
-    findSimilarArtists, getArtistsAlbums, getLikedSongsFromArtist, getSongsFromArtistInPlaylists
+    unfollowUser, getLikedSongsFromArtist
 } from './PDM';
 import arrow from './Arrow.png'
 import {Chip} from '@mui/material';
@@ -29,7 +28,6 @@ import HistoryIcon from '@mui/icons-material/History';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ClearIcon from '@mui/icons-material/Clear';
-import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import {authURI} from "./Authentication";
 
 
@@ -71,7 +69,7 @@ const Profile = () => {
     let [term, setTerm] = useState("long_term");
     const terms = ["short_term", "medium_term", "long_term"];
     let [chipletData, setChipletData] = useState(false)
-    const [showArt, setShowArt] = useState("empty")
+    const [showArt, setShowArt] = useState(true)
     const [focus, setFocus] = useState({
         item: null,
         title: '', //main text
@@ -217,7 +215,6 @@ const Profile = () => {
                 }
                 // The index of the song in the user's top songs list made by this artist.
                 const songIndex = datapoint.topSongs.findIndex((element) => element.artist === item.name);
-                console.log(item.name)
                 if(songIndex !== - 1){secondMessage += `${datapoint.topSongs[songIndex].title} by ${item.name} is Nº ${songIndex+1} on ${possessive} top 50 songs list for this time frame.`}
                 break;
             case "song":
@@ -249,20 +246,27 @@ const Profile = () => {
                     }
                 }
                 datapoint.topArtists.forEach(artist => {
-                    if (artist.genre === item && !relevantArtists.includes(artist.name)) {
-                        relevantArtists.push(artist.name)
+                    if(!!artist){
+                        if (artist.genre === item && !relevantArtists.includes(artist.name)) {
+                            relevantArtists.push(artist.name)
+                        }
                     }
                 });
-                relevantArtists.length > 1 ?
-                    //          Capitalise the possessive
-                    topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `, ${relevantArtists[1]}` : "s"}.`
-                    :
-                    (relevantArtists.length === 1 ?
-                            topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                            :
-                            //topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
-                            topMessage += 'No artists found.'
-                    )
+                if (relevantArtists.length > 1) {
+                    topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
+                    for(let i = 1; i < relevantArtists.length; i++){
+                        secondMessage += relevantArtists[i];
+                        if(i !== relevantArtists.length - 1){
+                            secondMessage += ', '
+                        }
+                    }
+                } else {
+                    if (relevantArtists.length === 1) {
+                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
+                    } else {
+                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                    }
+                }
                 break;
             default:
                 console.warn("updateFocusMessage error: No focus type found.")
@@ -270,7 +274,7 @@ const Profile = () => {
         setFocusMessage(
             <>
                 <h2>{topMessage}</h2>
-                <p>{secondMessage}</p>
+                <p style={{color: '#22C55E', fontFamily: 'Inter Tight', fontWeight: '600', fontSize: '20px'}}>{secondMessage}</p>
             </>
         );
     }
@@ -361,7 +365,6 @@ const Profile = () => {
 
         const handleMouseEnter = (param) => (e) => {
             setMousePos({x: e.clientX, y: e.clientY})
-            console.log(e.clientY)
             setShowPeak(true);
             setPeakContent(param);
         }
@@ -435,8 +438,8 @@ const Profile = () => {
                     <div className='art-container'>
                             <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
                                href={focus.link} rel="noopener noreferrer" target="_blank">
-                                <img className='art' src={focus.image}></img>
-                                <img className='art' id={'art-backdrop'} src={focus.image}></img>
+                                <img alt={'item artwork'} className='art' src={focus.image}></img>
+                                <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
                                 <div className='art-text-container'>
                                     <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
                                     <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
@@ -459,25 +462,22 @@ const Profile = () => {
         const [showPeak, setShowPeak] = useState(false);
         const [peakObject, setPeakObject] = useState(null);
         const handleMouseEnter = (param) => (e) => {
-            console.log("Mouse enter.")
             setShowPeak(true);
             setPeakObject(param);
         }
         const handleMouseLeave = (e) => {
-            console.log("Mouse leave.")
             setShowPeak(false);
         }
         let points = !likedSongsFromArtist ? null : likedSongsFromArtist.map((album, i) => {
             return <div className={'album-instance'} style={{
                 animationDelay: `${i / 5}s`,
                 '--bottom-val': `${album.id.hashCode() / 20000000 + 150}px`,
-                '--left-val': `${album.name.hashCode() / 5000000 + 400}px`,
-                '--scale-factor': `${(Math.pow(album.saved_songs.length, 1 / 4) / 2)}`
-            }} onMouseLeave={handleMouseLeave}>
-                <div className={'circle'} onMouseEnter={handleMouseEnter(album)}></div>
+                '--left-val': `${album.name.hashCode() / 5000000 + 200}px`
+            }} onMouseEnter={handleMouseEnter(album)} onMouseLeave={handleMouseLeave}>
+                <div className={'circle'}  style={{'--scale-factor': `${(Math.pow(album.saved_songs.length, 1 / 4) / 2)}`, animationDelay: `${i}s`,}}></div>
                 <div style={(showPeak && peakObject === album) ? {position: 'absolute'} :  {display: 'none'}}>
-                    <img className={'album-image-backdrop'} src={album.images[2].url}></img>
-                    <img className={'album-image'} onMouseLeave={handleMouseLeave} src={album.images[0].url}></img>
+                    <img alt={''} className={'album-image-backdrop'} src={album.images[2].url}></img>
+                    <img alt={'item artwork'} className={'album-image'} onMouseLeave={handleMouseLeave} src={album.images[0].url}></img>
                     <div className={'album-text'}>
                         <h2>{(album.name.length > 25 ? album.name.slice(0, 23) + '...' : album.name)}</h2>
                         <FavoriteIcon fontSize={'small'} style={{transform: 'scale(50%)'}}/>
@@ -486,11 +486,20 @@ const Profile = () => {
                 </div>
             </div>
         })
-
-
         return (<div className={'album-showcase'}>
                     <h3 style={{top: '0', fontFamily: 'Inter Tight', position: 'absolute'}}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focus.title}</h3>
-                    {points}
+                    {points ?
+                        (points.length > 0 ?
+                                points
+                                :
+                                <div style={{display: 'flex', flexDirection: 'column', fontFamily: 'Inter Tight', fontWeight: '600'}}>
+                                    <p>There doesn't seem to be anything here.</p>
+                                    <p>Add some songs by <span style={{color: '#22C55E', fontWeight: 'bold'}}>{focus.title}</span> to public playlists to uncover your constellation.</p>
+                                </div>
+                        )
+                        :
+                        <></>
+                    }
                 </div>)
     }
 
@@ -561,7 +570,7 @@ const Profile = () => {
     // The function that updates the focus.
     async function updateFocus(item, tertiaryText) {
         focus.item = item;
-        if (!((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name)) && showArt === true)) {
+        if (!((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name)) && showArt === true) && !!item) {
             setShowArt(false);
             let localState = focus;
             await delay(300);
@@ -595,6 +604,11 @@ const Profile = () => {
         }
         loadPage();
     }, [term, userID])
+
+    // Get the top artist to show immediately.
+    useEffect(() => {
+        if(simpleSelection === 'Artists'){updateFocus(datapoint.topArtists[0])}
+    }, [artistQualities])
 
 
     return (
@@ -724,7 +738,7 @@ const Profile = () => {
                             <></>
                         }
                         <div className='simple-container'>
-                            <ol style={{marginTop: '0', width: '500px'}}>
+                            <ol style={{marginTop: '0', maxWidth: '500px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
@@ -754,7 +768,7 @@ const Profile = () => {
                                 })}
                             </ol>
                             {simpleSelection === 'Songs' ?
-                                <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <div style={{display: 'flex', flexDirection: 'column', margin: 'auto'}}>
                                     {statsSelection ?
                                         <h2 className={'stats-title'} style={{color: '#22C55E', cursor: 'pointer', zIndex: '1'}} onClick={() => setStatsSelection(null)}>{focus.title}<ClearIcon fontSize={'small'}/></h2>
                                         :
@@ -775,7 +789,7 @@ const Profile = () => {
                                                         <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
                                                         <div className={'stat-bar'} style={{'--val': `${statsSelection ? (key === 'tempo' ? 100 * (statsSelection[key] - 50) / 150 : statsSelection[key] * 100) : selectionAnalysis[key] * 100}%`}}></div>
                                                         {statsSelection ?
-                                                            <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`, opacity: '0.5', marginTop: '-10.5px', border: '0.5px dashed #22C55E'}}></div>
+                                                            <div className={'stat-bar'} style={{'--val': `${selectionAnalysis[key] * 100}%`, opacity: '0.25', marginTop: '-10px'}}></div>
                                                             :
                                                             <></>
                                                         }
@@ -794,8 +808,19 @@ const Profile = () => {
                                 :
                                 <></>
                             }
+                            {simpleSelection === 'Genres' ?
+                                <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
+                                    {focusMessage}
+                                </div>
+                                :
+                                <></>
+                            }
                         </div>
-                        <Focus/>
+                        {simpleSelection !== 'Genres' ?
+                            <Focus/>
+                            :
+                            <></>
+                        }
                     </div>
                     {simpleSelection === 'Songs' ?
                     <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
@@ -835,7 +860,6 @@ const Profile = () => {
                                 <h2 style={{fontFamily: 'Inter Tight'}}>Want to see? </h2>
                                 <a className="auth-button" href={authURI}>Log-in</a>
                             </>
-
                         }
                     </div>
 

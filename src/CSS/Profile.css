@@ -299,8 +299,6 @@
 .stats-title{
     font-family: 'Lato', sans-serif;
     text-align: center;
-    margin-bottom: -50px;
-    margin-top: 50px;
     text-transform: uppercase;
 }
 
@@ -342,6 +340,7 @@
     color: rgba(100,100,100);
 }
 
+/*noinspection ALL*/
 .stat-bar {
     position: relative;
     height: 10px;
@@ -557,17 +556,17 @@
     justify-content: center;
     padding: 50px;
     height: 300px;
-    max-height: 300px;
-    width: 1000px;
+    width: 500px;
 
 
-    font-family: "Inter Tight";
+    font-family: "Inter Tight", sans-serif;
     text-align: center;
     text-transform: uppercase;
 
 
 }
 
+/*noinspection ALL*/
 .album-instance {
     display: flex;
     position: absolute;
@@ -578,21 +577,24 @@
     bottom: var(--bottom-val);
     left: var(--left-val);
 
+    transform: scale(75%);
+
     border-radius: 10px;
 
-    transform: scale(var(--scale-factor));
-
-    animation: float 5s ease-in-out infinite;
+    animation: float 7.5s ease-in-out infinite;
 }
 
+/*noinspection ALL*/
 .circle {
     padding: 5px;
     border: 1px solid white;
     border-radius: 100%;
     background: white;
-    box-shadow: 0 0 20px 0px white;
+    box-shadow: 0 0 15px 5px white;
     z-index: -1;
+    transform: scale(var(--scale-factor));
 }
+
 
 .album-instance:hover{
     animation-play-state: paused;
