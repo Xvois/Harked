@@ -274,22 +274,28 @@ const Comparison = () => {
                     <div className="comparison-metrics">
                         <div className="username">{users[0].username}</div>
                         <p style={{fontSize: '10px'}}>Avg. song characteristics</p>
-                        {analyticsMetrics.map(key => {
-                            const u0Val = users[0].averageAnalytics[key];
-                            const u1Val = users[1].averageAnalytics[key];
-                            let diff = u0Val - u1Val;
-                            // Cannot have sqrt of negative
-                            if (diff > 0) {
-                                diff = Math.sqrt(diff)
-                            } else (diff = -Math.sqrt(Math.abs(diff)))
-                            const red = 255 * (1 - diff);
-                            const green = 255 * (1 + diff);
-                            const blue = 50;
-                            return (<p className="comparison-analytic">{key}: <span style={{
-                                color: `rgb(${red},${green},${blue})`,
-                                fontFamily: 'Inter Tight'
-                            }}>{Math.round(users[0].averageAnalytics[key] * 100)}%</span></p>)
-                        })}
+                        <div style={{margin: 'auto', width: 'max-content'}}>
+                            {analyticsMetrics.map(key => {
+                                const u0Val = users[0].averageAnalytics[key];
+                                const u1Val = users[1].averageAnalytics[key];
+                                let diff = u0Val - u1Val;
+                                // Cannot have sqrt of negative
+                                if (diff > 0) {
+                                    diff = Math.sqrt(diff)
+                                } else (diff = -Math.sqrt(Math.abs(diff)))
+                                const red = 255 * (1 - diff);
+                                const green = 255 * (1 + diff);
+                                const blue = 50;
+                                return (
+                                    <div className={'stat-block'} style={{cursor: 'auto'}}>
+                                        <h3 style={{fontSize: '14px'}}>{key}</h3>
+                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
+                                        <div className={'stat-bar'} style={{'--val': `${u0Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`}}></div>
+                                        <p>{Math.round(u0Val * 100)}%</p>
+                                    </div>
+                                )
+                            })}
+                        </div>
                         <div className='art-container' style={{transform: 'scale(75%)'}}>
                             <a className={'play-wrapper'}
                                style={{boxShadow: 'none'}}
@@ -308,22 +314,28 @@ const Comparison = () => {
                     <div className="comparison-metrics">
                         <div className="username">{users[1].username}</div>
                         <p style={{fontSize: '10px'}}>Avg. song characteristics</p>
-                        {analyticsMetrics.map(key => {
-                            const u0Val = users[0].averageAnalytics[key];
-                            const u1Val = users[1].averageAnalytics[key];
-                            let diff = u1Val - u0Val;
-                            // Cannot have sqrt of negative
-                            if (diff > 0) {
-                                diff = Math.sqrt(diff)
-                            } else (diff = -Math.sqrt(Math.abs(diff)))
-                            const red = 255 * (1 - diff);
-                            const green = 255 * (1 + diff);
-                            const blue = 50;
-                            return (<p className="comparison-analytic">{key}: <span style={{
-                                color: `rgb(${red},${green},${blue})`,
-                                fontFamily: 'Inter Tight'
-                            }}>{Math.round(users[1].averageAnalytics[key] * 100)}%</span></p>)
-                        })}
+                        <div style={{margin: 'auto', width: 'max-content'}}>
+                            {analyticsMetrics.map(key => {
+                                const u0Val = users[0].averageAnalytics[key];
+                                const u1Val = users[1].averageAnalytics[key];
+                                let diff = u1Val - u0Val;
+                                // Cannot have sqrt of negative
+                                if (diff > 0) {
+                                    diff = Math.sqrt(diff)
+                                } else (diff = -Math.sqrt(Math.abs(diff)))
+                                const red = 255 * (1 - diff);
+                                const green = 255 * (1 + diff);
+                                const blue = 50;
+                                return (
+                                    <div className={'stat-block'} style={{cursor: 'auto'}}>
+                                        <h3 style={{fontSize: '14px'}}>{key}</h3>
+                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
+                                        <div className={'stat-bar'} style={{'--val': `${u1Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`}}></div>
+                                        <p>{Math.round(u1Val * 100)}%</p>
+                                    </div>
+                                )
+                            })}
+                        </div>
                         <div className='art-container' style={{transform: 'scale(75%)'}}>
                             <a className={'play-wrapper'}
                                style={{boxShadow: 'none'}}
