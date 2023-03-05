@@ -38,8 +38,6 @@ export const fetchData = async (path) => {
             alert(err);
         }
     })
-    console.log("Path: " + path + " Data: ");
-    console.log(data);
     return data;
 }
 

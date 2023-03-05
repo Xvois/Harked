@@ -29,9 +29,7 @@
     font-weight: 200;
 }
 
-.element:hover{
-    color: #22C55E;
-}
+
 
 .element-container{
     display: flex;
@@ -79,7 +77,7 @@
     color: black;
     height: max-content;
     width: 297px;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(20px);
     border: 2px solid #22C55E;
     border-top: 0;
     top: 50px;
@@ -98,9 +96,7 @@
     font-weight: 800;
     align-items: center;
   }
-  #result a:hover{
-    color: #22C55E;
-  }
+
 #result a img{
     height: 40px;
     width: 40px;
@@ -112,4 +108,13 @@
 
 #close-button:hover{
     cursor: pointer;
+}
+
+@media(hover: hover) and (pointer: fine) {
+    #result a:hover{
+        color: #22C55E;
+    }
+    .element:hover{
+        color: #22C55E;
+    }
 }

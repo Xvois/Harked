@@ -316,6 +316,32 @@ const createFauxUser = function (songs, analytics, artists) {
 }
 
 
+export const getLikedSongsFromArtist = async function(artistID, playlists){
+    let albums;
+    let albumsWithLikedSongs = [];
+
+    const trackPromises = playlists.map((playlist) => fetchData(`playlists/${playlist.id}/tracks`));
+    const trackResponses = await Promise.all(trackPromises);
+    const tracksInPlaylists = trackResponses.flatMap((res) => res.items.map((item) => item.track));
+
+    await fetchData(`artists/${artistID}/albums`).then((res) => albums = res.items);
+    const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
+    const albumResponses = await Promise.all(albumPromises);
+    for (let i = 0; i < albums.length; i++) {
+        const album = albums[i];
+        const albumResponse = albumResponses[i];
+        const tracks = albumResponse && albumResponse.items;
+        album["saved_songs"] = tracks.filter((track) =>
+            tracksInPlaylists.some((item) => item && item.name === track.name)
+        );
+        if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithLikedSongs.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
+            albumsWithLikedSongs.push(album);
+        }
+    }
+    return albumsWithLikedSongs;
+}
+
+
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.

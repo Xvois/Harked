@@ -49,19 +49,6 @@
   padding: 50px;
 }
 
-.down-arrow-container{
-  display: flex;
-  margin: 20vh auto auto -50px;
-}
-
-.down-arrow{
-  transform: scale(15%) rotate(90deg);
-  margin: auto;
-  border: 10px solid white;
-  padding: 50px;
-  border-radius: 100%;
-}
-
 .container{
   margin: 50px;
 }

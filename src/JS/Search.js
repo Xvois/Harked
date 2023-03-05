@@ -127,7 +127,7 @@ export const Search = () => {
                 <div id="result" style={{top: '140px'}}>
                     {searchResults.map(function (user) {
                         return <a href={`profile#${user.user_id}`}><img
-                            alt={"profile picture"}
+                            alt={"profile"}
                             src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
                         </a>
                     })

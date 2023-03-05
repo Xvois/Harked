@@ -4,7 +4,7 @@ import {postLoggedUser} from './PDM';
 import {fetchData} from './API';
 
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
-const REDIRECT_URI = "https://bhasvic-photon.vercel.app/authentication";
+const REDIRECT_URI = "http://localhost:3000/authentication";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 const RESPONSE_TYPE = "token";
 const SCOPES = "user-read-currently-playing, user-read-playback-state, user-top-read, user-follow-modify, user-follow-read"
@@ -34,8 +34,9 @@ function Authentication() {
             local_token = null
         }
         if (!local_token && hash) { //update token whenever authorised to
-            const re = new RegExp('(?<=\\=)(.*?)(?=\\&)')
+            const re = new RegExp('\\=(.*?)\\&')
             local_token = hash.match(re)[0]
+            local_token = local_token.substring(1, local_token.length - 1);
             window.location.hash = ""
             window.localStorage.setItem("token", local_token);
         }
