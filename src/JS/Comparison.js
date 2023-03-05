@@ -278,19 +278,15 @@ const Comparison = () => {
                             {analyticsMetrics.map(key => {
                                 const u0Val = users[0].averageAnalytics[key];
                                 const u1Val = users[1].averageAnalytics[key];
-                                let diff = u0Val - u1Val;
-                                // Cannot have sqrt of negative
-                                if (diff > 0) {
-                                    diff = Math.sqrt(diff)
-                                } else (diff = -Math.sqrt(Math.abs(diff)))
-                                const red = 255 * (1 - diff);
-                                const green = 255 * (1 + diff);
-                                const blue = 50;
+                                const red = 34 * (1.5 * Math.sqrt(u1Val));
+                                const green = 197 * (1.5 * Math.sqrt(u1Val));
+                                const blue = 94 * (1.5 * Math.sqrt(u1Val));
                                 return (
                                     <div className={'stat-block'} style={{cursor: 'auto'}}>
                                         <h3 style={{fontSize: '14px'}}>{key}</h3>
-                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
-                                        <div className={'stat-bar'} style={{'--val': `${u0Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`}}></div>
+                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px', zIndex: '0'}}></div>
+                                        <div className={'stat-bar'} style={{'--val': `${u0Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`, zIndex: '2'}}></div>
+                                        <div className={'stat-bar'} style={{'--val': `${u1Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`, opacity: '0.5', marginTop: '-10px', zIndex: '1'}}></div>
                                         <p>{Math.round(u0Val * 100)}%</p>
                                     </div>
                                 )
@@ -318,19 +314,15 @@ const Comparison = () => {
                             {analyticsMetrics.map(key => {
                                 const u0Val = users[0].averageAnalytics[key];
                                 const u1Val = users[1].averageAnalytics[key];
-                                let diff = u1Val - u0Val;
-                                // Cannot have sqrt of negative
-                                if (diff > 0) {
-                                    diff = Math.sqrt(diff)
-                                } else (diff = -Math.sqrt(Math.abs(diff)))
-                                const red = 255 * (1 - diff);
-                                const green = 255 * (1 + diff);
-                                const blue = 50;
+                                const red = 34 * (1.5 * Math.sqrt(u1Val));
+                                const green = 197 * (1.5 * Math.sqrt(u1Val));
+                                const blue = 94 * (1.5 * Math.sqrt(u1Val));
                                 return (
                                     <div className={'stat-block'} style={{cursor: 'auto'}}>
                                         <h3 style={{fontSize: '14px'}}>{key}</h3>
                                         <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
                                         <div className={'stat-bar'} style={{'--val': `${u1Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`}}></div>
+                                        <div className={'stat-bar'} style={{'--val': `${u0Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`, opacity: '0.5', marginTop: '-10px', zIndex: '1'}}></div>
                                         <p>{Math.round(u1Val * 100)}%</p>
                                     </div>
                                 )
