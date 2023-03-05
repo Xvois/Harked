@@ -331,7 +331,6 @@ export const getLikedSongsFromArtist = async function(artistID, playlists){
         const album = albums[i];
         const albumResponse = albumResponses[i];
         const tracks = albumResponse && albumResponse.items;
-        console.log("tracks:", tracks);
         album["saved_songs"] = tracks.filter((track) =>
             tracksInPlaylists.some((item) => item && item.name === track.name)
         );
@@ -339,7 +338,6 @@ export const getLikedSongsFromArtist = async function(artistID, playlists){
             albumsWithLikedSongs.push(album);
         }
     }
-    console.log(albumsWithLikedSongs)
     return albumsWithLikedSongs;
 }
 

@@ -73,6 +73,7 @@
     color: #22C55E;
 }
 
+/*noinspection ALL*/
 .selection-peek{
     position: fixed;
     top: var(--mouse-y);
