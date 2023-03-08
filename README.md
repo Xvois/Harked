@@ -1,6 +1,8 @@
-# Getting Started with Create React App
+# Photon
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a project I created for my Computer Science A-Level NEA.
+
+**For those examining, please note that this repo is set up so that the main branch is the project as it is sent for examination. This version (V 1.0.15) is legacy and will not work without hosting your own database using the below scripts and making subsequent modifications to the API endpoints within API.js. Hosted [here](https://bhasvic-photon.vercel.app/) is the V 1.1.0 branch which expands upon this legacy version.**
 
 ## Available Scripts
 
@@ -39,32 +41,15 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+### `node server.js`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+This will host the API on localhost:9000. This project automatically points to photon-database.tk/PRDB as this is where the live database is hosted.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+**Note: Versions greater than V 1.1.0 are not backwards compatible due to modifications to how datapoints are accessed, so those hosting versions beneath that will need to host their own database to access.**
 
-### Code Splitting
+### `node db.js`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+This will create the PRDB within the route server/db/database.db
 
-### Analyzing the Bundle Size
+It is a SQLite 3 relational database and can be accessed using the API endpoints routed in dbRoutes.js.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
