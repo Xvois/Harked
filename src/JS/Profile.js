@@ -196,7 +196,6 @@ const Profile = () => {
                 }
                 break;
             case "song":
-                // TODO: MAKE THIS A MORE ACCURATE
                 let maxAnalytic = "acousticness";
                 analyticsMetrics.forEach(analytic => {
                     let comparisonValue;
@@ -229,7 +228,7 @@ const Profile = () => {
                     :
                     (relevantArtists.length === 1 ?
                             message += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                            :    //TODO: THIS OCCURS WAYYY TOO OFTEN
+                            :
                             message += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
                     )
                 break;
