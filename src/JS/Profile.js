@@ -443,7 +443,7 @@ const Profile = () => {
                                 <div className='art-text-container'>
                                     <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
                                     <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
-                                       style={{fontSize: '40px'}}>{focus.secondary}</p>
+                                       style={{fontSize: '25px'}}>{focus.secondary}</p>
                                     <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
                                 </div>
                             </a>
