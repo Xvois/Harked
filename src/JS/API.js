@@ -42,7 +42,10 @@ export const fetchData = async (path) => {
     console.log(data);
     return data;
 }
-
+/**
+ * Makes a put request to the Spotify api.
+ * @param path
+ */
 export const putData = (path) => {
     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {
@@ -131,7 +134,10 @@ export const getAllUsers = async () => {
     )
     return users;
 }
-
+/**
+ * Makes an options call to the PRDB and returns true if a response is given and false if one is not.
+ * @returns {Promise<boolean>}
+ */
 export const isServerAlive = async () => {
     let alive = false;
     await axios.options('https://photon-database.tk/PRDB/all').then(function () {

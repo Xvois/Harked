@@ -20,7 +20,10 @@ export const parseSong = function (song) { //takes in the song item
     })
     return tempSong;
 }
-
+/**
+ * Returns an object of the media that a user is currently listening to.
+ * @returns {Promise<{name: string, image: string}>}
+ */
 export const retrieveMedia = async function () {
     let returnMedia;
     await fetchData("me/player").then(function (result) {
@@ -59,15 +62,24 @@ export const retrieveUser = async function (userID) {
     return user;
 }
 
-
+/**
+ * Makes a put request to the API to follow the argument user from the logged-in user's account.
+ * @param userID
+ */
 export const followUser = function (userID) {
     putData(`me/following?type=user&ids=${userID}`);
 }
-
+/**
+ * Makes a put request to the API to unfollow the argument user from the logged-in user's account.
+ * @param userID
+ */
 export const unfollowUser = function (userID) {
     deleteData(`me/following?type=user&ids=${userID}`);
 }
-
+/**
+ * Returns all of the userIDs currently in the database.
+ * @returns {Promise<[userID: string]>}
+ */
 export const retrieveAllUserIDs = async function () {
     let userIDs;
     // Deconstruct the array of objects to just an array
@@ -76,7 +88,11 @@ export const retrieveAllUserIDs = async function () {
     }));
     return userIDs;
 }
-
+/**
+ * Returns an array of public non-collaborative playlists from a given user.
+ * @param userID
+ * @returns {Promise<[]>}
+ */
 export const getPlaylists = async function (userID) {
     let globalUserID = userID;
     let result;
@@ -117,14 +133,21 @@ export const postLoggedUser = async function () {
     await profilePromise;
     await postUser(user);
 }
-
+/**
+ * Returns true if the logged-in user follows the user associated with that argument userID.
+ * @param userID
+ * @returns {Promise<*>}
+ */
 export const followsUser = async function (userID) {
     const data = await fetchData(`me/following/contains?type=user&ids=${userID}`);
     return data[0];
 }
-
+/**
+ * Returns true if the session user is logged in.
+ * @returns {boolean}
+ */
 export const isLoggedIn = function () {
-    return window.localStorage.getItem("userID") && window.localStorage.getItem("token");
+    return !!(window.localStorage.getItem("userID") && window.localStorage.getItem("token"));
 }
 
 /**
@@ -164,7 +187,9 @@ export const retrieveDatapoint = async function (userID, term) {
     }
     return currDatapoint;
 }
-
+/**
+ * A testing function that floods the database with faux users for testing.
+ */
 export const fillDatabase = async function () {
     let songs;
     let analytics;
@@ -200,7 +225,13 @@ export const fillDatabase = async function () {
         console.timeEnd("Creating user")
     }
 }
-
+/**
+ * Creates a faux user with their datapoints that will be added to the
+ * @param songs
+ * @param analytics
+ * @param artists
+ * @returns {{datapoints: *[], user: {profilePicture: string, media: null, userID: string, username: string}}}
+ */
 const createFauxUser = function (songs, analytics, artists) {
     let userID = '';
     let username = '';
@@ -344,7 +375,11 @@ const hydrateDatapoints = async function () {
     }
     console.warn("Hydration over.")
 }
-
+/**
+ * Creates an ordered array of a users top genres based on an order list of artists.
+ * @param artists
+ * @returns {*[]}
+ */
 const calculateTopGenres = function (artists) {
     let topGenres = [];
     artists.forEach(function (artist, i) {

@@ -268,9 +268,9 @@ const Profile = () => {
      * @constructor
      */
     const Graph = (props) => {
-        const key = props.keyEntry;
         const list = props.data;
         const parentObj = props.parent;
+        const key = props.keyEntry;
         const selections = props.selections;
         const title = props.title;
         let maxX;
@@ -297,7 +297,6 @@ const Profile = () => {
             let pointX = ((element[graphAxis.x] - minX) * 100) / (maxX - minX);
             let pointY = ((element[graphAxis.y] - minY) * 100) / (maxY - minY);
             let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
-            //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
             points.push(<div key={element[key]} className='point'
                              style={{left: `${pointX}%`, bottom: `${pointY}%`}}
                              onClick={() => updateFocus(parentObj[i], message)}></div>)
@@ -386,6 +385,7 @@ const Profile = () => {
             }
         }
         if (!loaded) {
+            // Get the user information
             retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
                 if (userID === window.localStorage.getItem("userID") || userID === "me") {
@@ -425,9 +425,11 @@ const Profile = () => {
     // The function that updates the focus.
     async function updateFocus(item, tertiaryText) {
         focus.item = item;
+        // Are we not trying to change the existing focus to itself?
         if (!((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name)) && showArt === true)) {
             setShowArt(false);
             let localState = focus;
+            // Delay for animation.
             await delay(300);
             localState.image = item.image;
             localState.link = item.link;
@@ -624,7 +626,7 @@ const Profile = () => {
                             <Focus/>
                         </div>
                     </div>
-                    <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
+                    <Graph title="Your top 50 songs" keyEntry={"song_id"} selections={analyticsMetrics}
                            data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
                     <h2 style={{
                         textTransform: `uppercase`,
