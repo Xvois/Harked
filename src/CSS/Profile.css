@@ -266,8 +266,6 @@
 .list-item:hover {
     cursor: pointer;
     color: #22C55E;
-    transform: scale(110%);
-    text-shadow: 0 0 75px #22C55E;
 }
 
 .list-item:before {
@@ -365,13 +363,13 @@
 
 
 .user-container {
-    padding: 30px;
     display: flex;
+    flex-grow: 1;
+    padding: 50px;
     flex-direction: row;
     height: max-content;
     overflow: hidden;
-    margin: 20px auto 20px auto;
-    border-radius: 10px;
+    margin: 20px auto 20px 0;
 }
 
 .term-container {
@@ -448,9 +446,8 @@
 .profile-picture {
     align-self: center;
     margin-right: 10px;
-    border-radius: 10%;
-    width: 150px;
-    height: 150px;
+    width: 175px;
+    height: 175px;
     object-fit: cover;
 }
 

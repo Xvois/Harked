@@ -631,35 +631,21 @@ const Profile = () => {
                     <div className='user-container' style={{'--pfp': `url(${currentUser.profilePicture})`}}>
                         <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
+                            <h3 style={{margin: '0 0 -2px 0' ,fontSize: '14px'}}>Profile for</h3>
                             <div className='username'>{currentUser.username}</div>
                             {userID !== "me" && isLoggedIn() ? <a className={"compare-button"}
                                                                   href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
-                            <div style={{
-                                display: `flex`,
-                                paddingTop: `5px`,
-                                gap: `20px`,
-                                width: `max-content`,
-                                flexWrap: `wrap`
-                            }}>
-                                <ThemeProvider theme={chipletTheme}>
-                                    <Chip label={`${chipletData[0].name} fan`} style={{borderWidth: `2px`}}
-                                          variant='outlined'
-                                          icon={<PersonIcon fontSize='small'/>}
-                                          color='primary'/>
-                                    <Chip label={`${chipletData[1]} fan`} style={{borderWidth: `2px`}} color='primary'
-                                          variant='outlined'
-                                          icon={<MusicNoteIcon fontSize='small'/>}/>
-                                </ThemeProvider>
-                            </div>
-                        </div>
-                        <div className='user-details'>
-                            <a href={`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link'>
+                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '0'}}><span style={{color: '#22C55E'}}>{chipletData[0].name}</span> fan · <span style={{color: '#22C55E'}}>{chipletData[1]}</span> fan</p>
+                            <a href={`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link' style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
                                      viewBox="0 0 168 168">
                                     <path fill="#22C55E"
                                           d="m83.996 0.277c-46.249 0-83.743 37.493-83.743 83.742 0 46.251 37.494 83.741 83.743 83.741 46.254 0 83.744-37.49 83.744-83.741 0-46.246-37.49-83.738-83.745-83.738l0.001-0.004zm38.404 120.78c-1.5 2.46-4.72 3.24-7.18 1.73-19.662-12.01-44.414-14.73-73.564-8.07-2.809 0.64-5.609-1.12-6.249-3.93-0.643-2.81 1.11-5.61 3.926-6.25 31.9-7.291 59.263-4.15 81.337 9.34 2.46 1.51 3.24 4.72 1.73 7.18zm10.25-22.805c-1.89 3.075-5.91 4.045-8.98 2.155-22.51-13.839-56.823-17.846-83.448-9.764-3.453 1.043-7.1-0.903-8.148-4.35-1.04-3.453 0.907-7.093 4.354-8.143 30.413-9.228 68.222-4.758 94.072 11.127 3.07 1.89 4.04 5.91 2.15 8.976v-0.001zm0.88-23.744c-26.99-16.031-71.52-17.505-97.289-9.684-4.138 1.255-8.514-1.081-9.768-5.219-1.254-4.14 1.08-8.513 5.221-9.771 29.581-8.98 78.756-7.245 109.83 11.202 3.73 2.209 4.95 7.016 2.74 10.733-2.2 3.722-7.02 4.949-10.73 2.739z"/>
                                 </svg>
+                                View profile in Spotify
                             </a>
+                        </div>
+                        <div className='user-details'>
                             {following !== null ?
                                 <ThemeProvider theme={chipletTheme}>
                                     {following ?
@@ -703,10 +689,10 @@ const Profile = () => {
                             alignItems: 'center',
                             height: '75px',
                         }}>
-                            <img src={arrow} style={{transform: `rotate(180deg) scale(20%)`, cursor: `pointer`}}
+                            <img src={arrow} style={{transform: `rotate(180deg) scale(10%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
                             <h2 className='datapoint-title' style={{height: 'max-content'}}>Top {simpleSelection}</h2>
-                            <img src={arrow} style={{transform: `scale(20%)`, cursor: `pointer`}}
+                            <img src={arrow} style={{transform: `scale(10%)`, cursor: `pointer`}}
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
                         <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
@@ -804,7 +790,14 @@ const Profile = () => {
                                 <></>
                             }
                             {simpleSelection === 'Artists' ?
-                                <ArtistConstellation/>
+                                (isLoggedIn() ?
+                                    <ArtistConstellation/>
+                                    :
+                                        <div style={{margin: 'auto', justifyContent: "center", textAlign: 'center'}}>
+                                            <h2 style={{fontFamily: 'Inter Tight'}}>Log-in to see this user's artist constellation.</h2>
+                                            <a className="auth-button" href={authURI}>Log-in</a>
+                                        </div>
+                                )
                                 :
                                 <></>
                             }

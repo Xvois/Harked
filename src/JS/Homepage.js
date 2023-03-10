@@ -48,7 +48,7 @@ function Homepage() {
                 <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
                 {!token || token === "denied-scopes" ?
                     <>
-                        <a className="auth-button" href={authURI}>Log-in</a>
+                        <a style={{marginLeft: '20px'}} className="auth-button" href={authURI}>Log-in</a>
                     </>
                     :
                     <div>
@@ -71,7 +71,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V
-                    1.1.0</p>
+                    1.1.1</p>
                 {token === "denied-scopes" ?
                     <p className="error-message">You need to accept the Spotify scopes to log in..</p>
                     :

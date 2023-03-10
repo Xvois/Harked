@@ -3,7 +3,6 @@
     height: min-content;
     display: block;
     align-items: center;
-    padding: 10px 50px;
 }
 
 .element {
@@ -34,7 +33,7 @@
 .element-container{
     display: flex;
     justify-content: space-around;
-    width: 100%;
+    padding: 10px;
 }
 
 #menu{

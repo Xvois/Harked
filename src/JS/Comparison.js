@@ -92,15 +92,15 @@ const Comparison = () => {
                         <h1 className={"card-num"}>{number}.</h1>
                         :
                         <>
-                            <p>{item[`${item.type === 'artist' ? 'name' : 'title'}`]}</p>
-                            <p style={{fontSize: '20px'}}>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
+                            <p style={{fontSize: '30px'}}>{item[`${item.type === 'artist' ? 'name' : 'title'}`]}</p>
+                            <p style={{fontSize: '20px', fontWeight: 'normal'}}>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
                         </>
 
                     }
                 </div>
-                <img alt="Artist" src={source} style={state.isExpanded ? {
+                <img alt="" src={source} style={state.isExpanded ? {
                     transform: 'scale(120%)',
-                    filter: 'blur(10px) brightness(75%)'
+                    filter: 'blur(0px) brightness(60%)'
                 } : {}}></img>
             </div>
         )
