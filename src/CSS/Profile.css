@@ -1,5 +1,6 @@
 /*noinspection CssUnknownTarget*/
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300&family=Lato:wght@900&family=Ubuntu:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
 .wrapper {
     display: flex;
@@ -236,6 +237,7 @@
     display: flex;
     flex-direction: row;
     height: max-content;
+
 }
 
 .simple-container ol {
@@ -254,10 +256,10 @@
 }
 
 .list-item {
-    font-size: 25px;
+    font-size: 30px;
     padding: 5px;
     font-family: 'Lato', sans-serif;
-    font-weight: 600;
+    font-weight: 900;
     counter-increment: item;
     width: max-content;
     transition: all 0.1s ease-out;
@@ -265,7 +267,7 @@
 
 .list-item:hover {
     cursor: pointer;
-    color: #22C55E;
+    color: #22c55e;
 }
 
 .list-item:before {
@@ -273,6 +275,7 @@
     content: counter(item);
     font-family: 'Roboto', sans-serif;
     font-size: 15px;
+    font-weight: 600;
     width: 1.2em;
     text-align: center;
     display: inline-block;
@@ -296,6 +299,7 @@
 
 .stats-title{
     font-family: 'Lato', sans-serif;
+    font-weight: 900;
     text-align: center;
     text-transform: uppercase;
 }
@@ -369,42 +373,32 @@
     flex-direction: row;
     height: max-content;
     overflow: hidden;
-    margin: 20px auto 20px 0;
 }
 
 .term-container {
     display: flex;
     flex-direction: row;
-    gap: 100px;
+    gap: 50px;
     justify-content: center;
     width: max-content;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 10px auto 10px auto;
 }
 
 
 .term-container > button {
     height: 30px;
     width: 100px;
-    border: 1px solid white;
     border-radius: 20px;
-    background-color: black;
-    margin-left: -35px;
-    margin-right: -35px;
+    border: none;
     transition: all 0.1s linear;
-    color: rgba(255, 255, 255, 10);
+    color: #343434;
     text-transform: uppercase;
     text-align: center;
     white-space: nowrap;
 }
 
-.term-container > button:hover {
-    --fill-color: white;
-    box-shadow: 0 0 10px var(--fill-color);
-}
-
 .term {
-    font-size: 18px;
+    font-size: 15px;
     margin-top: 0;
     text-align: center;
     color: #22C55E;
@@ -584,10 +578,10 @@
 /*noinspection ALL*/
 .circle {
     padding: 5px;
-    border: 1px solid white;
+    border: 1px solid #646464;
     border-radius: 100%;
-    background: white;
-    box-shadow: 0 0 15px 5px white;
+    background: #ffffff;
+    box-shadow: 0 0 5px white;
     z-index: -1;
     transform: scale(var(--scale-factor));
 }

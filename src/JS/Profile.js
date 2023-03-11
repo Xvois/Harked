@@ -680,7 +680,7 @@ const Profile = () => {
                             }
                         </div>
                     </div>
-                    <div>
+                    <div style={{marginTop: '20px'}}>
                         <div style={{
                             display: `flex`,
                             flexDirection: `row`,
@@ -695,7 +695,6 @@ const Profile = () => {
                             <img src={arrow} style={{transform: `scale(10%)`, cursor: `pointer`}}
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
-                        <h2 className='term'>of {term === "long_term" ? "all time" : (term === "medium_term" ? "the last 6 months" : "the last 4 Weeks")}</h2>
                         <div className='term-container'>
                             {terms.map(function (element) {
                                 return <button key={element} onClick={() => setTerm(element)}
@@ -705,11 +704,9 @@ const Profile = () => {
                                                    color: 'white',
                                                    "--fill-color": '#22C55E'
                                                } : {
-                                                   backgroundColor: `black`,
+                                                   backgroundColor: `#343434`,
                                                    cursor: `pointer`,
                                                    width: '100px',
-                                                   marginLeft: '-35px',
-                                                   marginRight: '-35px',
                                                    color: 'white',
                                                    "--fill-color": 'white'
                                                }}>{element === "long_term" ? "all time" : (element === "medium_term" ? "6 months" : "4 Weeks")}</button>

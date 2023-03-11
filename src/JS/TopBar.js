@@ -13,6 +13,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 
 const SearchBar = styled(TextField)({
+    "& .MuiInputBase-input": {
+        background: '#343434',
+        border: 'none',
+    },
     "& .MuiInputBase-root": {
         color: 'white'
     },
@@ -22,32 +26,28 @@ const SearchBar = styled(TextField)({
     '& .MuiFormLabel-root.Mui-disabled': {
         color: `white`,
     },
-    '& .MuiInput-underline:after': {
-        borderBottomColor: '#22C55E',
-    },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderColor: 'white',
             borderRadius: `40px`,
-            borderWidth: '2px',
+            border: 'none',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
-            borderColor: 'white',
+            border: 'none',
         },
         '&.Mui-focused fieldset': {
-            borderColor: '#22C55E',
-            borderRadius: `5px`,
-            transition: `all 0.1s ease-in`
+            border: 'none',
         },
     },
     '& label.Mui-focused': {
         color: 'white',
+        border: 'none',
         fontFamily: 'Inter Tight, sans-serif',
     },
     '& .MuiFormLabel-root': {
         color: 'white',
         marginLeft: `5px`,
+        border: 'none',
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
@@ -153,7 +153,7 @@ const TopBar = () => {
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                     <a className='element' href='feedback'><QuizIcon fontSize='large'/><p>Feedback</p></a>
                     <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
-                    <div className='element'>
+                    <div className='element' style={{display: 'flex', position: 'relative'}}>
                         <ClickAwayListener onClickAway={handleClickAway}>
                             <FormControl variant="standard">
                                 <SearchBar className='search-bar' inputProps={{className: `search-label`}}
@@ -163,10 +163,12 @@ const TopBar = () => {
                         {searchResults !== null ?
                             <div id="result">
                                 {searchResults.map(function (user) {
-                                    return <a href={`profile#${user.user_id}`}><img
+                                    return <>
+                                        <a href={`profile#${user.user_id}`}><img
                                         alt={"profile"}
                                         src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
-                                    </a>
+                                        </a>
+                                    </>
                                 })
                                 }</div>
                             :

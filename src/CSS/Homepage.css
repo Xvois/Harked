@@ -7,8 +7,6 @@
   font-family: 'Inter Tight', sans-serif;
   font-weight: 900;
   font-size: 5ex;
-  padding-left: 20px;
-  padding-right: 20px;
 }
 
 
@@ -25,7 +23,6 @@
 
 .server-status-text{
   font-family: 'Inter Tight', sans-serif;
-  margin-left: 5px;
 }
 
 @keyframes status-indicator {
@@ -38,10 +35,9 @@
 
 .server-status{
   display: flex;
+  gap: 10px;
   align-items: center;
   width: max-content;
-  margin-left: 20px;
-  margin-top: 10px;
 }
 
 .top-container{
@@ -57,23 +53,20 @@
   text-decoration: none;
   text-transform: uppercase;
   border-radius: 20px;
-  border: 2px solid white;
   color: white;
   width: max-content;
   padding: 5px 30px 5px 30px;
-  transition: all 0.2s ease-out;
+  transition: all 0.1s ease-out;
+  background-color: #343434;
 }
 
 .auth-button:hover{
-  background-color: rgb(255, 255, 255);
-  color: black;
-  box-shadow: 0 0 100px rgba(255, 255, 255, 0.81);
+  background-color: rgb(112, 112, 112);
+  cursor: pointer;
 }
 
 .under-text{
   font-size: 16px;
-  padding-left: 20px;
-  padding-right: 20px;
   margin-top: -30px;
 }
 

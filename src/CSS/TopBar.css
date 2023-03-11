@@ -65,7 +65,6 @@
 .search-bar{
     align-self: center;
     width: 300px;
-    transform: scale(85%);
 }
 
 
@@ -73,15 +72,9 @@
     display: flex;
     flex-direction: column;
     position: absolute;
-    color: black;
-    height: max-content;
-    width: 297px;
-    backdrop-filter: blur(20px);
-    border: 2px solid #22C55E;
-    border-top: 0;
-    top: 50px;
-    transform: scale(85%);
-    z-index: 1;
+    width: 300px;
+    top: 60px;
+    background-color: #343434;
 }
 
 #result a{
