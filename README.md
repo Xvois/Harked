@@ -2,7 +2,7 @@
 
 This is a project I created for my Computer Science A-Level NEA.
 
-**For those examining, please note that this repo is set up so that the main branch is the project as it is sent for examination. This version (V 1.0.15) is legacy and will not work without hosting your own database using the below scripts and making subsequent modifications to the API endpoints within API.js. Hosted [here](https://bhasvic-photon.vercel.app/) is the V 1.1.0 branch which expands upon this legacy version.**
+**For those examining, please note that this repo is set up so that the main branch is the project as it is sent for examination. This version (V 1.0.15) is legacy and will not work without hosting your own database using the scripts below and making subsequent modifications to the API endpoints within API.js. Hosted [here](https://bhasvic-photon.vercel.app/) is the V 1.1.0 branch which expands upon this legacy version.**
 
 ## Available Scripts
 
