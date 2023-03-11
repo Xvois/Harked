@@ -28,15 +28,14 @@ const SearchBar = styled(TextField)({
     },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderRadius: `40px`,
-            border: 'none',
+            border: '1px solid grey',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
-            border: 'none',
+            border: '1px solid grey',
         },
         '&.Mui-focused fieldset': {
-            border: 'none',
+            border: '1px solid grey',
         },
     },
     '& label.Mui-focused': {
@@ -164,9 +163,9 @@ const TopBar = () => {
                             <div id="result">
                                 {searchResults.map(function (user) {
                                     return <>
-                                        <a href={`profile#${user.user_id}`}><img
-                                        alt={"profile"}
-                                        src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
+                                        <a href={`profile#${user.user_id}`}>
+                                            <img alt={"profile"} src={user.picture_url}></img>
+                                            {user.username.length > 12 ? user.username.slice(0, 12) + "..." : user.username}
                                         </a>
                                     </>
                                 })

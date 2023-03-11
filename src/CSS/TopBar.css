@@ -73,8 +73,10 @@
     flex-direction: column;
     position: absolute;
     width: 300px;
-    top: 60px;
-    background-color: #343434;
+    top: 66px;
+    border: 1px solid grey;
+    border-radius: 0 0 10px 10px;
+    border-top: none;
 }
 
 #result a{

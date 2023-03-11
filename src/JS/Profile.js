@@ -633,9 +633,9 @@ const Profile = () => {
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <h3 style={{margin: '0 0 -2px 0' ,fontSize: '14px'}}>Profile for</h3>
                             <div className='username'>{currentUser.username}</div>
-                            {userID !== "me" && isLoggedIn() ? <a className={"compare-button"}
+                            {userID !== "me" && isLoggedIn() ? <a className={"auth-button"}
                                                                   href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
-                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '0'}}><span style={{color: '#22C55E'}}>{chipletData[0].name}</span> fan · <span style={{color: '#22C55E'}}>{chipletData[1]}</span> fan</p>
+                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0'}}><span style={{color: '#22C55E'}}>{chipletData[0].name}</span> fan · <span style={{color: '#22C55E'}}>{chipletData[1]}</span> fan</p>
                             <a href={`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link' style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
                                      viewBox="0 0 168 168">
@@ -712,14 +712,6 @@ const Profile = () => {
                                                }}>{element === "long_term" ? "all time" : (element === "medium_term" ? "6 months" : "4 Weeks")}</button>
                             })}
                         </div>
-                        {!!prevDatapoint ?
-                            <div id={'history-message'}>
-                                <HistoryIcon style={{marginTop: 'auto', marginBottom: 'auto', marginRight: '5px'}}></HistoryIcon>
-                                <p>Showing changes from {Math.floor((datapoint.collectionDate - prevDatapoint.collectionDate) / (8.64 * Math.pow(10,7)))} days ago (Last updated {Math.floor((Date.now() - datapoint.collectionDate) / (8.64 * Math.pow(10,7)))} days ago)</p>
-                            </div>
-                            :
-                            <></>
-                        }
                         <div className='simple-container'>
                             <ol style={{marginTop: '0', maxWidth: '500px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
