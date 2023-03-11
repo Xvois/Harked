@@ -74,14 +74,18 @@
     position: absolute;
     width: 300px;
     top: 66px;
+    padding-top: 6px;
+    padding-bottom: 6px;
     border: 1px solid grey;
     border-radius: 0 0 10px 10px;
     border-top: none;
+    backdrop-filter: blur(20px);
+    z-index: 1;
 }
 
 #result a{
     display: flex;
-    padding: 10px;
+    padding: 2px 10px 2px 10px;
     text-decoration: none;
     color: rgb(255, 255, 255);
     font-size: 20px;

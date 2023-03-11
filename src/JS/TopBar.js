@@ -161,12 +161,17 @@ const TopBar = () => {
                         </ClickAwayListener>
                         {searchResults !== null ?
                             <div id="result">
-                                {searchResults.map(function (user) {
+                                {searchResults.map(function (user, i) {
                                     return <>
                                         <a href={`profile#${user.user_id}`}>
                                             <img alt={"profile"} src={user.picture_url}></img>
                                             {user.username.length > 12 ? user.username.slice(0, 12) + "..." : user.username}
                                         </a>
+                                        {i !== searchResults.length - 1 ?
+                                            <hr style={{width: '200px'}} />
+                                            :
+                                            <></>
+                                        }
                                     </>
                                 })
                                 }</div>
