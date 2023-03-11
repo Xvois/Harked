@@ -3,15 +3,9 @@
 import React, {useEffect, useState} from "react";
 import './../CSS/Comparison.css';
 import './../CSS/Profile.css'
-import {ThemeProvider} from "@emotion/react";
-import {Chip} from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
 
-import {followUser, isLoggedIn, retrieveDatapoint, retrieveUser, unfollowUser} from "./PDM";
+import {retrieveDatapoint, retrieveUser} from "./PDM";
 import {createTheme} from "@mui/material/styles";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 const Comparison = () => {
     let re = /[^#&]+/g;

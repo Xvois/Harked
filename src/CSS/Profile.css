@@ -388,21 +388,12 @@
     height: 30px;
     width: 100px;
     border-radius: 20px;
-    border: none;
     transition: all 0.1s linear;
     border: 1px solid grey;
     color: #343434;
     text-transform: uppercase;
     text-align: center;
     white-space: nowrap;
-}
-
-.term {
-    font-size: 15px;
-    margin-top: 0;
-    text-align: center;
-    color: #22C55E;
-    text-transform: uppercase;
 }
 
 .user-details {

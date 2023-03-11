@@ -15,16 +15,12 @@ import {
     unfollowUser, getLikedSongsFromArtist
 } from './PDM';
 import arrow from './Arrow.png'
-import {Chip} from '@mui/material';
 import {createTheme} from '@mui/material/styles';
 import {ThemeProvider} from '@emotion/react';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import PersonIcon from '@mui/icons-material/Person';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import HistoryIcon from '@mui/icons-material/History';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -505,7 +501,7 @@ const Profile = () => {
     }
 
     String.prototype.hashCode = function() {
-        var hash = 0,
+        let hash = 0,
             i, chr;
         if (this.length === 0) return hash;
         for (i = 0; i < this.length; i++) {
@@ -853,7 +849,7 @@ const Profile = () => {
                                             </div>
 
                                         </div>
-                                        <img className={'playlist-art'} src={focusedPlaylist.images[0].url}></img>
+                                        <img alt={''} className={'playlist-art'} src={focusedPlaylist.images[0].url}></img>
                                     </div>
                                     </>
                                 }
