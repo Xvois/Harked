@@ -179,7 +179,7 @@ const Profile = () => {
         artists.forEach(artist => {
             // Add the genre quality to them
             // equal to their genre
-            if (genres.includes(artist.genre)) {
+            if (artist && genres.includes(artist.genre)) {
                 result[artist.name] = {
                     ...result[artist.name],
                     genre: artist.genre
@@ -229,13 +229,12 @@ const Profile = () => {
                     }
                 })
                 topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
-                if(datapoint.topArtists.some((element) => element.name === item.artist)){
+                if(datapoint.topArtists.some((element) => element && element.name === item.artist)){
                     const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
                     secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
             case undefined:
-                //TODO: COMPLETELY REWORK GENRE MESSAGE [INCLUDE REWORK OF ARTIST QUALITIES]
                 let relevantArtists = [];
                 for (let artist in artistQualities) {
                     if (artistQualities[artist].genre === item) {
@@ -714,7 +713,7 @@ const Profile = () => {
                         <div className='simple-container'>
                             <ol className={"list-item-ol"} style={{marginTop: '0', maxWidth: '500px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
-                                    if (i < 10) {
+                                    if (i < 10 && element) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
                                         const indexChange = getIndexChange(element, i, `top${simpleSelection}`);
                                         let changeMessage;

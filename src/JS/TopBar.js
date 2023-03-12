@@ -70,7 +70,6 @@ const TopBar = () => {
 
     const Levenshtein = (a, b) => {
         // First two conditions
-        console.log(b);
         if (!a.length) return b.length;
         if (!b.length) return a.length;
         const arr = [];
@@ -124,7 +123,8 @@ const TopBar = () => {
                 return object.username === user.username
             })]
         })
-        results.length = 5;
+        results.splice(5,results.length - 5);
+        console.log(results);
         setSearchResults(results);
     }
 

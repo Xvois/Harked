@@ -1,9 +1,8 @@
 // Import database
-// noinspection ES6MissingAwait
-
 const knex = require('./../db')
 
 // --- EXTRA FUNCS --- //
+// I DID NOT WRITE THESE - SEE https://stackoverflow.com/questions/25104442/hashing-array-of-strings-in-javascript
 
 charsum = function (s) {
     let i, sum = 0;
@@ -47,8 +46,9 @@ exports.getUsers = async (req, res) => {
             res.json({message: `There was an error retrieving users: ${err}`})
         })
 }
-
+// Retrieve a user
 exports.getUser = async (req, res) => {
+    // Initialise the error message and object for the user.
     let errorMessage;
     let user = {
         userID: req.query.userID,
@@ -56,6 +56,7 @@ exports.getUser = async (req, res) => {
         profilePicture: '',
         media: null
     }
+    // Get the user from the database
     await knex('users')
         .where({user_id: req.query.userID})
         .select('*')
@@ -69,6 +70,7 @@ exports.getUser = async (req, res) => {
     if (!errorMessage) {
         res.status(200).json(user);
     } else {
+        // Log the error in the terminal if one exists
         console.log(errorMessage)
     }
 }
@@ -106,12 +108,14 @@ exports.createUser = async (req, res) => {
         console.log(errorMessage)
     }
 }
-
+// Get a datapoint for a user
 exports.getDatapoint = async (req, res) => {
     const user_id = req.query.userID;
     const term = req.query.term;
     const time_sensitive = req.query.timed;
-    console.log(`Attempting to get datapoint for: ${user_id}, ${term}, ${time_sensitive === 'true' ? "time sensitive" : "not time sensitive"}`)
+    const delay = req.query.delay;
+    // Log the attempt to get a datapoint
+    console.log(`Attempting to get datapoint for: ${user_id}, ${term}, ${time_sensitive === 'true' ? "time sensitive" : `not time sensitive, ${delay} datapoints skipped`}`)
     let datapoint = {
         userID: user_id,
         collectionDate: null,
@@ -120,6 +124,7 @@ exports.getDatapoint = async (req, res) => {
         topArtists: [],
         topGenres: [],
     }
+    // Open the database
     await knex('datapoints')
         .select('collection_date', 'top_songs_id', 'top_artists_id', 'top_genres_id')
         .where({user_id: user_id, term: term})
@@ -129,14 +134,17 @@ exports.getDatapoint = async (req, res) => {
             // Return null if there are no matching datapoints
             if (results.length === 0) {
                 console.log("Datapoint requested but nullified: none found.");
-            } else {
+            }
+            else if(results.length - delay <= 0) {
+                console.log(`Datapoint requested but nullified: skip of ${delay} requested is out of range.`);
+            }
+            else {
                 // The datapoint contains the references
                 // to the other tables
-                const references = results[0];
+                const references = results[delay];
                 datapoint.collectionDate = references.collection_date;
-                const WEEK_IN_MILLISECONDS = 604800 * 1000;
-                //const WEEK_IN_SECONDS = 0;
-                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILLISECONDS || time_sensitive === 'false') {
+                const WEEK_IN_MILISECONDS = 604800 * 1000;
+                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS || time_sensitive === 'false') {
                     await knex('songs_ref')
                         // Find the top songs reference
                         .where('id', references.top_songs_id)
@@ -144,12 +152,14 @@ exports.getDatapoint = async (req, res) => {
                         // Add the results
                         .then(async function (song_ids) {
                             for (let i = 1; i < 51; i++) {
+                                // Grab the songs
                                 await knex('songs')
                                     .where('song_id', song_ids[0][`song_id_${i}`])
                                     .select('*')
                                     .then(async function (result) {
                                         let song = result[0]
                                         datapoint.topSongs.push(song)
+                                        // Grab the analytics for those songs
                                         await knex('analytics')
                                             .where({song_id: song.song_id})
                                             .then(function (analytic) {
@@ -195,14 +205,12 @@ exports.getDatapoint = async (req, res) => {
     }
     res.json(datapoint)
 }
-
+// Create a new datapoint
 exports.postDatapoint = async (req, res) => {
-	console.log(req.body);
+
     let songs_ref_id;
     const song_ids = [];
-    //TODO : MAKE IT SO THE ORDER OF THE VALUES MATTERS
-    // IN THE HASH
-    // Push all the song ids to an array
+    // Push all the song ids in an array
     req.body.topSongs.forEach(function (song) {
         song_ids.push(song.song_id);
     })
@@ -344,6 +352,7 @@ exports.postDatapoint = async (req, res) => {
     }).catch(err => console.log(err))
 
     const WEEK_IN_MILLISECONDS = 604800 * 1000;
+    // Create the final datapoint
     await knex('datapoints')
         .where({user_id: req.body.userID, term: req.body.term})
         .orderBy('collection_date', "desc")
@@ -370,17 +379,28 @@ exports.postDatapoint = async (req, res) => {
 }
 // Remove specific user
 exports.deleteUser = async (req, res) => {
+    // Delete all the datapoints for that user
+    knex('datapoints')
+        .where('user_id', req.body.userID)
+        .del()
+        .then(() => {
+            console.info(`Datapoint for ${req.body.userID} deleted!`)
+        })
+        .catch(err => {
+            console.warn(`Error deleting datapoint: ${err}`)
+            res.json({message: `There was an error deleting a datapoint for ${req.body.userID}: ${err}`})
+        })
     // Find specific user in the database and remove it
     knex('users')
         .where('id', req.body.userID) // find correct record based on id
         .del() // delete the record
         .then(() => {
             // Send a success message in response
-            res.json({message: `User ${req.body.userId} deleted.`})
+            res.json({message: `User ${req.body.userID} fully deleted.`})
         })
         .catch(err => {
             // Send a error message in response
-            res.json({message: `There was an error deleting ${req.body.userId} user: ${err}`})
+            res.json({message: `There was an error deleting ${req.body.userID} user: ${err}`})
         })
 }
 

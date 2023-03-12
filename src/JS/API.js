@@ -41,6 +41,14 @@ export const fetchData = async (path) => {
     return data;
 }
 
+export const deleteUser = (userID) => {
+    axios.put(`https://photon-database.tk/PRDB/delete?userID=${userID}`).catch(
+        function (err) {
+            console.warn(err)
+        }
+    )
+}
+
 export const putData = (path) => {
     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {

@@ -1,7 +1,7 @@
 // noinspection SpellCheckingInspection,JSValidateTypes
 
 import {authURI} from './Authentication';
-import {retrieveAllUserIDs} from './PDM';
+import {deleteAllFauxUsers, deleteUserFromDatabase, retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";

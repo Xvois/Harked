@@ -381,17 +381,23 @@ exports.postDatapoint = async (req, res) => {
 }
 // Remove specific user
 exports.deleteUser = async (req, res) => {
+    const userId = req.query.userID; // get user ID from query string parameter
+    await knex('datapoints')
+        .where('user_id', userId)
+        .del()
+        .then(() => console.info(`Datapoints for ${userId} deleted!`))
+        .catch((err => console.warn(`Error deleting datapoint: ${err}`)))
     // Find specific user in the database and remove it
     knex('users')
-        .where('id', req.body.userID) // find correct record based on id
+        .where('user_id', userId) // find correct record based on id
         .del() // delete the record
         .then(() => {
             // Send a success message in response
-            res.json({message: `User ${req.body.userId} deleted.`})
+            res.json({message: `User ${userId} deleted.`})
         })
         .catch(err => {
             // Send a error message in response
-            res.json({message: `There was an error deleting ${req.body.userId} user: ${err}`})
+            res.json({message: `There was an error deleting ${userId} user: ${err}`})
         })
 }
 

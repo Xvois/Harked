@@ -1,4 +1,14 @@
-import {deleteData, fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser, putData} from "./API";
+import {
+    deleteData,
+    deleteUser,
+    fetchData,
+    getAllUserIDs,
+    getDatapoint,
+    getUser,
+    postDatapoint,
+    postUser,
+    putData
+} from "./API";
 
 /**
  * Creates a combined song name with the associated artists in the form
@@ -313,6 +323,16 @@ const createFauxUser = function (songs, analytics, artists) {
         user: user,
         datapoints: datapoints
     };
+}
+
+export const deleteAllFauxUsers = async () => {
+    let userIDs;
+    await getAllUserIDs().then(res => userIDs = res.map(e => e.user_id));
+    for (const userID of userIDs) {
+        if(userID.length === 20){
+            await deleteUser(userID);
+        }
+    }
 }
 
 
