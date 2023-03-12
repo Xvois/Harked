@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
@@ -15,31 +15,24 @@ import {
     unfollowUser, getLikedSongsFromArtist
 } from './PDM';
 import arrow from './Arrow.png'
-import {createTheme} from '@mui/material/styles';
-import {ThemeProvider} from '@emotion/react';
+import Focus from "./Focus";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
 import {authURI} from "./Authentication";
 
 
 const Profile = () => {
-
-    const chipletTheme = createTheme({
-        palette: {
-            primary: {
-                main: '#22C55E',
-            },
-
-        },
-    });
     const [focusedPlaylist, setFocusedPlaylist] = useState();
     const [userID, setUserID] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
+    const [focusItem, setFocusItem] = useState();
+    const [focusTertiary, setFocusTertiary] = useState();
+    const [statsSelection, setStatsSelection] = useState();
     let [currentUser, setCurrentUser] = useState({
         userID: '',
         username: '',
@@ -65,19 +58,6 @@ const Profile = () => {
     });
     let [term, setTerm] = useState("long_term");
     const terms = ["short_term", "medium_term", "long_term"];
-    let [chipletData, setChipletData] = useState(false)
-    const [showArt, setShowArt] = useState(true)
-    const [focus, setFocus] = useState({
-        item: null,
-        title: '', //main text
-        secondary: '', //sub-title
-        tertiary: '', //desc
-        image: '',
-        link: '',
-    })
-    const [statsSelection, setStatsSelection] = useState();
-    const [artistQualities, setArtistQualities] = useState();
-    const [focusMessage, setFocusMessage] = useState(<p>See what is says.</p>);
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
     const [playlists, setPlaylists] = useState(null)
@@ -129,7 +109,7 @@ const Profile = () => {
         let newIndex;
         index === 2 ? newIndex = simpleDatapoints[0] : newIndex = simpleDatapoints[index + 1];
         setSimpleSelection(newIndex);
-        updateFocus(datapoint[`top${newIndex}`][0]);
+        setFocusItem(datapoint[`top${newIndex}`][0]);
     }
     // Change the simple datapoint -1
     const decrementSimple = function () {
@@ -137,7 +117,7 @@ const Profile = () => {
         let newIndex;
         index === 0 ? newIndex = simpleDatapoints[2] : newIndex = simpleDatapoints[index - 1];
         setSimpleSelection(newIndex);
-        updateFocus(datapoint[`top${newIndex}`][0]);
+        setFocusItem(datapoint[`top${newIndex}`][0]);
     }
     const getIndexChange = function (item, index, parentArray) {
         if (!prevDatapoint || prevDatapoint.term !== datapoint.term) {
@@ -150,129 +130,6 @@ const Profile = () => {
        //console.log(`----${item.name || item}----`);
         //console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
         return lastIndex - index;
-    }
-    // Update the artist attributes that are used to make the focus
-    // message.
-    const updateArtistQualities = async function (data) {
-        const songs = data.topSongs;
-        const artists = data.topArtists;
-        const genres = data.topGenres;
-        let result = {};
-        // The analytics from the datapoint that we will compare
-        // Get the artist that has the max value in each
-        // metric
-        analyticsMetrics.forEach(metric => {
-            let max = {artist: '', value: 0};
-            for (let i = 0; i < 50; i++) {
-                if (songs[i].analytics[metric] > max.value) {
-                    max.artist = songs[i].artist;
-                    max.value = songs[i].analytics[metric];
-                }
-            }
-            // Append the result to the existing result object
-            result = {
-                ...result,
-                [max.artist]: {theme: metric}
-            }
-        })
-        // For every artist [in order of listen time]
-        artists.forEach(artist => {
-            // Add the genre quality to them
-            // equal to their genre
-            if (artist && genres.includes(artist.genre)) {
-                result[artist.name] = {
-                    ...result[artist.name],
-                    genre: artist.genre
-                }
-            }
-        })
-        await setArtistQualities(result);
-    }
-    // Update the focus message to be
-    // relevant to the current focus
-    const updateFocusMessage = async function () {
-        // What do we use as our possessive? 
-        let possessive;
-        userID === 'me' ? possessive = 'your' : possessive = `${currentUser.username}'s`
-        const item = focus.item;
-        let topMessage = '';
-        let secondMessage = '';
-        switch (item.type) {
-            case "artist":
-                if (artistQualities[`${item.name}`] === undefined) {
-                    // If the artist doesn't have a genre analysis then we assume
-                    // that they are not wildly popular.
-                    // TODO: FIX THIS, IT ACTIVATES FOR BEYONCE?!?
-                    topMessage += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
-                } else {
-                    Object.keys(artistQualities[item.name]).length > 1 ?
-                        topMessage += `${item.name} represents ${possessive} love for ${artistQualities[item.name]["genre"]} and ${translateAnalytics[artistQualities[item.name]["theme"]].name} music.`
-                        :
-                        topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
-                }
-                // The index of the song in the user's top songs list made by this artist.
-                const songIndex = datapoint.topSongs.findIndex((element) => element.artist === item.name);
-                if(songIndex !== - 1){secondMessage += `${datapoint.topSongs[songIndex].title} by ${item.name} is Nº ${songIndex+1} on ${possessive} top 50 songs list for this time frame.`}
-                break;
-            case "song":
-                // TODO: MAKE THIS A MORE ACCURATE
-                let maxAnalytic = "acousticness";
-                analyticsMetrics.forEach(analytic => {
-                    let comparisonValue;
-                    if (analytic === "tempo") {
-                        comparisonValue = (item.analytics[analytic] - 50) / 150
-                    } else {
-                        comparisonValue = item.analytics[analytic]
-                    }
-                    if (comparisonValue > item.analytics[maxAnalytic]) {
-                        maxAnalytic = analytic;
-                    }
-                })
-                topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
-                if(datapoint.topArtists.some((element) => element && element.name === item.artist)){
-                    const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
-                    secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list in this time frame.`
-                }
-                break;
-            case undefined:
-                let relevantArtists = [];
-                for (let artist in artistQualities) {
-                    if (artistQualities[artist].genre === item) {
-                        relevantArtists.push(artist);
-                    }
-                }
-                datapoint.topArtists.forEach(artist => {
-                    if(!!artist){
-                        if (artist.genre === item && !relevantArtists.includes(artist.name)) {
-                            relevantArtists.push(artist.name)
-                        }
-                    }
-                });
-                if (relevantArtists.length > 1) {
-                    topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
-                    for(let i = 1; i < relevantArtists.length; i++){
-                        secondMessage += relevantArtists[i];
-                        if(i !== relevantArtists.length - 1){
-                            secondMessage += ', '
-                        }
-                    }
-                } else {
-                    if (relevantArtists.length === 1) {
-                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                    } else {
-                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
-                    }
-                }
-                break;
-            default:
-                console.warn("updateFocusMessage error: No focus type found.")
-        }
-        setFocusMessage(
-            <>
-                <h2>{topMessage}</h2>
-                <p style={{color: '#22C55E', fontFamily: 'Inter Tight', fontWeight: '600', fontSize: '20px'}}>{secondMessage}</p>
-            </>
-        );
     }
     /**
      * Stores the average song characteristics of all songs in the array.
@@ -377,7 +234,7 @@ const Profile = () => {
             //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
             points.push(<div key={element[key]} className='point'
                              style={{left: `${pointX}%`, bottom: `${pointY}%`}}
-                             onClick={() => updateFocus(parentObj[i], message)} onMouseEnter={handleMouseEnter(parentObj[i])} onMouseLeave={handleMouseExit}></div>)
+                             onClick={() => {setFocusItem(parentObj[i]); setFocusTertiary(message)}} onMouseEnter={handleMouseEnter(parentObj[i])} onMouseLeave={handleMouseExit}></div>)
         });
         // Return the whole structure, so it can simply
         // be dropped in
@@ -427,33 +284,6 @@ const Profile = () => {
         )
     }
 
-    const Focus = () => {
-        return (
-            <div className='focus-container'>
-                {simpleSelection !== "Genres" ?
-                    <div className='art-container'>
-                            <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
-                               href={focus.link} rel="noopener noreferrer" target="_blank">
-                                <img alt={'item artwork'} className='art' src={focus.image}></img>
-                                <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
-                                <div className='art-text-container'>
-                                    <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
-                                       style={{fontSize: '25px'}}>{focus.secondary}</p>
-                                    <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                                </div>
-                            </a>
-                    </div>
-                    :
-                    <div style={{width: `20%`}}></div>
-                }
-                <div className={'focus-message'}>
-                    {focusMessage}
-                </div>
-            </div>
-        )
-    }
-
     const ArtistConstellation = () => {
         const [showPeak, setShowPeak] = useState(false);
         const [peakObject, setPeakObject] = useState(null);
@@ -468,7 +298,7 @@ const Profile = () => {
             return <div className={'album-instance'} style={{
                 animationDelay: `${i / 5}s`,
                 '--bottom-val': `${album.id.hashCode() / 20000000 + 150}px`,
-                '--left-val': `${album.name.hashCode() / 5000000 + 200}px`
+                '--left-val': `${album.name.hashCode() / 7000000 + 200}px`
             }} onMouseEnter={handleMouseEnter(album)} onMouseLeave={handleMouseLeave}>
                 <div className={'circle'}  style={{'--scale-factor': `${(Math.pow(album.saved_songs.length, 1 / 4) / 2)}`, animationDelay: `${i}s`,}}></div>
                 <div style={(showPeak && peakObject === album) ? {position: 'absolute'} :  {display: 'none'}}>
@@ -483,14 +313,14 @@ const Profile = () => {
             </div>
         })
         return (<div className={'album-showcase'}>
-                    <h3 style={{top: '0', fontFamily: 'Inter Tight', position: 'absolute'}}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focus.title}</h3>
+                    <h3 style={{top: '0', fontFamily: 'Inter Tight', position: 'absolute'}}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focusItem ? focusItem.name : ''}</h3>
                     {points ?
                         (points.length > 0 ?
                                 points
                                 :
                                 <div style={{display: 'flex', flexDirection: 'column', fontFamily: 'Inter Tight', fontWeight: '600'}}>
                                     <p>There doesn't seem to be anything here.</p>
-                                    <p>Add some songs by <span style={{color: '#22C55E', fontWeight: 'bold'}}>{focus.title}</span> to public playlists to uncover your constellation.</p>
+                                    <p>Add some songs by <span style={{color: '#22C55E', fontWeight: 'bold'}}>{focusItem ? focusItem.name : ''}</span> to public playlists to uncover your constellation.</p>
                                 </div>
                         )
                         :
@@ -538,20 +368,15 @@ const Profile = () => {
             })
         }
         // Update the datapoint
-        retrieveDatapoint(userID, term).then(function (result) {
-            console.log(result)
-            setDatapoint(result)
-            updateArtistQualities(result).then(() => {
-                if (!chipletData) {
-                    setChipletData([result.topArtists[0], result.topGenres[0]])
-                }
-            });
-            analyseSongs(result.topSongs);
+        retrieveDatapoint(userID, term).then(function (dpResult) {
+            console.log(dpResult)
+            setDatapoint(dpResult)
+            analyseSongs(dpResult.topSongs);
             if (isLoggedIn()) {
-                getPlaylists(userID).then(results => {
-                    setFocusedPlaylist(results[0]);
-                    console.log(results);
-                    setPlaylists(results);
+                getPlaylists(userID).then(pResults => {
+                    setFocusedPlaylist(pResults[0]);
+                    console.log(pResults);
+                    setPlaylists(pResults);
                 })
             }
             retrievePreviousDatapoint(userID, term).then(function (prevD) {
@@ -559,43 +384,7 @@ const Profile = () => {
             })
             setLoaded(true);
         })
-        // Refresh the focus
-        // Indicate that the loading is over
     }
-    // Delay function mainly used for animations
-    const delay = ms => new Promise(res => setTimeout(res, ms));
-
-    // The function that updates the focus.
-    async function updateFocus(item, tertiaryText) {
-        focus.item = item;
-        if (!((focus.tertiary === tertiaryText && (focus.title === item.title || focus.title === item.name)) && showArt === true) && !!item) {
-            setShowArt(false);
-            let localState = focus;
-            await delay(300);
-            localState.image = item.image;
-            localState.link = item.link;
-            if (item.type === "song") {
-                localState.title = item.title;
-                localState.secondary = `by ${item.artist}`;
-                localState.tertiary = tertiaryText;
-                setStatsSelection(item.analytics);
-            } else if (item.type === "artist") {
-                setLikedSongsFromArtist(null);
-                localState.title = item.name;
-                localState.secondary = item.genre;
-                localState.tertiary = tertiaryText;
-                getLikedSongsFromArtist(item.artist_id, playlists).then(res => setLikedSongsFromArtist(res));
-            } else {
-                localState.title = '';
-                localState.secondary = item;
-                localState.tertiary = '';
-            }
-            setFocus(localState);
-            await updateFocusMessage();
-            setShowArt(true)
-        }
-    }
-
     useEffect(() => {
         if (!isLoggedIn() && userID === "me") {
             window.location.replace(authURI)
@@ -603,11 +392,16 @@ const Profile = () => {
         loadPage();
     }, [term, userID])
 
-    // Get the top artist to show immediately.
     useEffect(() => {
-        if(simpleSelection === 'Artists'){updateFocus(datapoint.topArtists[0])}
-    }, [artistQualities])
-
+        const updateItem = datapoint[`top${simpleSelection}`][0];
+        console.log(updateItem)
+        if(updateItem){
+            setFocusItem(updateItem);
+            if(updateItem.type === 'artist'){
+                getLikedSongsFromArtist(updateItem.artist_id, playlists).then(res => setLikedSongsFromArtist(res));
+            }
+        }
+    }, [datapoint])
 
     return (
         <>
@@ -633,7 +427,7 @@ const Profile = () => {
                             <div className='username'>{currentUser.username}</div>
                             {userID !== "me" && isLoggedIn() ? <a className={"auth-button"}
                                                                   href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
-                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0'}}><span style={{color: '#22C55E'}}>{chipletData[0].name}</span> fan · <span style={{color: '#22C55E'}}>{chipletData[1]}</span> fan</p>
+                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0'}}><span style={{color: '#22C55E'}}>{datapoint.topArtists[0].name}</span> fan · <span style={{color: '#22C55E'}}>{datapoint.topSongs[1].title}</span> fan</p>
                             <a target="_blank" href={`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link' style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
                                      viewBox="0 0 168 168">
@@ -645,8 +439,7 @@ const Profile = () => {
                         </div>
                         <div className='user-details'>
                             {following !== null ?
-                                <ThemeProvider theme={chipletTheme}>
-                                    {following ?
+                                (following ?
                                         <div className={"follow-button"} style={{
                                             display: 'flex',
                                             flexDirection: 'row',
@@ -671,8 +464,7 @@ const Profile = () => {
                                         }}>
                                             <AddCircleOutlineIcon fontSize="medium"/>
                                         </div>
-                                    }
-                                </ThemeProvider>
+                                )
                                 :
                                 <></>
                             }
@@ -711,7 +503,7 @@ const Profile = () => {
                             })}
                         </div>
                         <div className='simple-container'>
-                            <ol className={"list-item-ol"} style={{marginTop: '0', maxWidth: '500px'}}>
+                            <ol className={"list-item-ol"} style={{width: '400px'}}>
                                 {datapoint[`top${simpleSelection}`].map(function (element, i) {
                                     if (i < 10 && element) {
                                         const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
@@ -719,9 +511,9 @@ const Profile = () => {
                                         let changeMessage;
                                         if (indexChange < 0) {
                                             changeMessage = <><span style={{
-                                                color: 'red',
+                                                color: 'grey',
                                                 fontSize: '10px',
-                                            }}>{indexChange}</span><ArrowCircleDownIcon style={{color: 'red', animation: 'down-change-animation 0.5s ease-out'}}
+                                            }}>{indexChange}</span><ArrowCircleDownIcon style={{color: 'grey', animation: 'down-change-animation 0.5s ease-out'}}
                                                                                         fontSize={"small"}></ArrowCircleDownIcon></>
                                         } else if (indexChange > 0) {
                                             changeMessage = <><span style={{
@@ -730,11 +522,19 @@ const Profile = () => {
                                             }}>{indexChange}</span><ArrowCircleUpIcon style={{color: '#22C55E', animation: 'up-change-animation 0.5s ease-out'}}
                                                                                       fontSize={"small"}></ArrowCircleUpIcon></>
                                         } else if (indexChange === 0) {
-                                            changeMessage = <ClearAllIcon style={{color: 'orange', animation: 'equals-animation 0.5s ease-out'}} fontSize={"small"}></ClearAllIcon>
+                                            changeMessage = <ClearAllOutlinedIcon style={{color: '#22C55E', animation: 'equals-animation 0.5s ease-out'}} fontSize={"small"}></ClearAllOutlinedIcon>
                                         }
                                         return <li key={element.type ? element[`${element.type}_id`] : element}
                                                    className='list-item'
-                                                   onClick={() => updateFocus(element, message)}>{getLIName(element)} {changeMessage}</li>
+                                                   onClick={() => {
+                                                       if(element.type === 'artist'){
+                                                           getLikedSongsFromArtist(element.artist_id, playlists).then(res => {
+                                                               setLikedSongsFromArtist(res);
+                                                           });
+                                                       }
+                                                       setFocusItem(element);
+                                                       setFocusTertiary(message);
+                                                   }}>{getLIName(element)} {changeMessage}</li>
                                     } else {
                                         return <></>
                                     }
@@ -743,7 +543,7 @@ const Profile = () => {
                             {simpleSelection === 'Songs' ?
                                 <div style={{display: 'flex', flexDirection: 'column', margin: 'auto'}}>
                                     {statsSelection ?
-                                        <h2 className={'stats-title'} style={{color: '#22C55E', cursor: 'pointer', zIndex: '1'}} onClick={() => setStatsSelection(null)}>{focus.title}<ClearIcon fontSize={'small'}/></h2>
+                                        <h2 className={'stats-title'} style={{color: '#22C55E', cursor: 'pointer', zIndex: '1'}} onClick={() => setStatsSelection(null)}>{focusItem.title}<ClearIcon fontSize={'small'}/></h2>
                                         :
                                         <h2 className={'stats-title'}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>average</span> song analytics.</h2>
                                     }
@@ -790,14 +590,14 @@ const Profile = () => {
                             }
                             {simpleSelection === 'Genres' ?
                                 <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
-                                    {focusMessage}
+                                    {focusTertiary}
                                 </div>
                                 :
                                 <></>
                             }
                         </div>
                         {simpleSelection !== 'Genres' ?
-                            <Focus/>
+                            <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint} tertiary={focusTertiary}/>
                             :
                             <></>
                         }

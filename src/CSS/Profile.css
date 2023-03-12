@@ -240,12 +240,7 @@
 
 }
 
-.list-item-ol {
-    list-style: none;
-    counter-reset: item;
-    justify-content: space-evenly;
-    height: max-content;
-}
+
 
 .arrow {
     margin: auto;
@@ -255,13 +250,21 @@
 }
 
 .list-item {
-    font-size: 30px;
+    font-size: 25px;
     padding: 5px;
     font-family: 'Lato', sans-serif;
     font-weight: 900;
     counter-increment: item;
     width: max-content;
     transition: all 0.1s ease-out;
+}
+
+.list-item-ol {
+    margin: auto auto auto 0;
+    list-style: none;
+    counter-reset: item;
+    justify-content: space-evenly;
+    height: max-content;
 }
 
 .list-item:hover {
