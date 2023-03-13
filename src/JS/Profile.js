@@ -33,14 +33,15 @@ const Profile = () => {
     const [focusItem, setFocusItem] = useState();
     const [focusTertiary, setFocusTertiary] = useState();
     const [statsSelection, setStatsSelection] = useState();
-    let [currentUser, setCurrentUser] = useState({
+    const [artistQualities, setArtistQualities] = useState();
+    const [currentUser, setCurrentUser] = useState({
         userID: '',
         username: '',
         profilePicture: '',
         media: {name: '', image: ''},
     });
-    let [likedSongsFromArtist, setLikedSongsFromArtist] = useState([]);
-    let [datapoint, setDatapoint] = useState({
+    const [likedSongsFromArtist, setLikedSongsFromArtist] = useState([]);
+    const [datapoint, setDatapoint] = useState({
         userID: '',
         collectionDate: '',
         term: '',
@@ -48,7 +49,7 @@ const Profile = () => {
         topArtists: [],
         topGenres: [],
     });
-    let [prevDatapoint, setPrevDatapoint] = useState({
+    const [prevDatapoint, setPrevDatapoint] = useState({
         userID: '',
         collectionDate: '',
         term: '',
@@ -56,11 +57,12 @@ const Profile = () => {
         topArtists: [],
         topGenres: [],
     });
-    let [term, setTerm] = useState("long_term");
+    const [term, setTerm] = useState("long_term");
     const terms = ["short_term", "medium_term", "long_term"];
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("Artists")
     const [playlists, setPlaylists] = useState(null)
+    const [genreMessage, setGenreMessage] = useState(<p>Undefined</p>);
     const simpleDatapoints = ["Artists", "Songs", "Genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     // Take it to be "X music"
@@ -76,6 +78,7 @@ const Profile = () => {
     }
     const [following, setFollowing] = useState(null);
     const [selectionAnalysis, setSelectionAnalysis] = useState();
+    const [chipData, setChipData] = useState();
     // Update page when new user is chosen
     window.addEventListener("hashchange", function () {
         window.location.reload(false);
@@ -110,6 +113,9 @@ const Profile = () => {
         index === 2 ? newIndex = simpleDatapoints[0] : newIndex = simpleDatapoints[index + 1];
         setSimpleSelection(newIndex);
         setFocusItem(datapoint[`top${newIndex}`][0]);
+        if(newIndex === 'Genres'){
+            createGenreMessage(datapoint[`topGenres`][0])
+        }
     }
     // Change the simple datapoint -1
     const decrementSimple = function () {
@@ -118,6 +124,9 @@ const Profile = () => {
         index === 0 ? newIndex = simpleDatapoints[2] : newIndex = simpleDatapoints[index - 1];
         setSimpleSelection(newIndex);
         setFocusItem(datapoint[`top${newIndex}`][0]);
+        if(newIndex === 'Genres'){
+            createGenreMessage(datapoint[`topGenres`][0])
+        }
     }
     const getIndexChange = function (item, index, parentArray) {
         if (!prevDatapoint || prevDatapoint.term !== datapoint.term) {
@@ -156,6 +165,50 @@ const Profile = () => {
             })
         })
         setSelectionAnalysis(res);
+    }
+    const createGenreMessage = (item) => {
+        let possessive;
+        userID === 'me' ? possessive = 'your' : possessive = `${currentUser.username}'s`
+        let topMessage;
+        let secondMessage;
+        let relevantArtists = [];
+        for (let artist in artistQualities) {
+            if (artistQualities[artist].genre === item) {
+                relevantArtists.push(artist);
+            }
+        }
+        datapoint.topArtists.forEach(artist => {
+            if(!!artist){
+                if (artist.genre === item && !relevantArtists.includes(artist.name)) {
+                    relevantArtists.push(artist.name)
+                }
+            }
+        });
+        if (relevantArtists.length > 1) {
+            topMessage = <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is not only defined by {possessive} love for <span style={{color: '#22C55E'}}>{relevantArtists[0]}</span> but also {relevantArtists.length - 1} other artist{relevantArtists.length - 1 === 1 ? `` : "s"}...</h2>
+            let secondMessageText = '';
+            for(let i = 1; i < relevantArtists.length; i++){
+                secondMessageText += relevantArtists[i];
+                if(i === relevantArtists.length - 2){
+                    secondMessageText += ' and '
+                }else if(i !== relevantArtists.length - 1){
+                    secondMessageText += ', ';
+                }
+            }
+            secondMessage = <h3>{secondMessageText}</h3>
+        } else {
+            if (relevantArtists.length === 1) {
+                topMessage = <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is very well marked by {userID === 'me' ? 'your' : 'their'} time listening to <span style={{color: '#22C55E'}}>{relevantArtists[0]}</span>.</h2>
+            } else {
+                topMessage = <h2>{possessive[0].toUpperCase() + possessive.substring(1)} taste in {item} music isn't well defined by one artist, it's the product of many songs over many artists.</h2>
+            }
+        }
+        setGenreMessage(
+            <div style={{fontFamily: 'Inter Tight'}}>
+                {topMessage}
+                {secondMessage}
+            </div>
+        )
     }
 
     // Construct the description for an item in a graph.
@@ -379,6 +432,9 @@ const Profile = () => {
                     setPlaylists(pResults);
                 })
             }
+            if (!chipData) {
+                setChipData([dpResult.topArtists[0], dpResult.topGenres[0]])
+            }
             retrievePreviousDatapoint(userID, term).then(function (prevD) {
                 setPrevDatapoint(prevD);
             })
@@ -427,7 +483,7 @@ const Profile = () => {
                             <div className='username'>{currentUser.username}</div>
                             {userID !== "me" && isLoggedIn() ? <a className={"auth-button"}
                                                                   href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
-                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0'}}><span style={{color: '#22C55E'}}>{datapoint.topArtists[0].name}</span> fan · <span style={{color: '#22C55E'}}>{datapoint.topSongs[1].title}</span> fan</p>
+                                <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0'}}><span style={{color: '#22C55E'}}>{chipData[0].name}</span> fan · <span style={{color: '#22C55E'}}>{chipData[1]}</span> fan</p>
                             <a target="_blank" href={`https://open.spotify.com/user/${currentUser.userID}`} className='spotify-link' style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
                                      viewBox="0 0 168 168">
@@ -533,7 +589,12 @@ const Profile = () => {
                                                            });
                                                        }
                                                        setFocusItem(element);
-                                                       setFocusTertiary(message);
+                                                       if(element.type){
+                                                           setFocusTertiary(message);
+                                                       }
+                                                       else{
+                                                            createGenreMessage(element);
+                                                       }
                                                    }}>{getLIName(element)} {changeMessage}</li>
                                     } else {
                                         return <></>
@@ -590,17 +651,15 @@ const Profile = () => {
                             }
                             {simpleSelection === 'Genres' ?
                                 <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
-                                    {focusTertiary}
+                                    {genreMessage}
                                 </div>
                                 :
                                 <></>
                             }
                         </div>
-                        {simpleSelection !== 'Genres' ?
+                        <div style={simpleSelection === 'Genres' ? {display: 'none'} : {}}>
                             <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint} tertiary={focusTertiary}/>
-                            :
-                            <></>
-                        }
+                        </div>
                     </div>
                     {simpleSelection === 'Songs' ?
                     <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}

@@ -107,6 +107,7 @@ const Focus = React.memo((props) => {
         const item = focus.item;
         let topMessage = '';
         let secondMessage = '';
+        console.log(artistQualities);
         switch (item.type) {
             case "artist":
                 if (artistQualities[`${item.name}`] === undefined) {
@@ -140,36 +141,6 @@ const Focus = React.memo((props) => {
                 if(datapoint.topArtists.some((element) => element && element.name === item.artist)){
                     const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
                     secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list in this time frame.`
-                }
-                break;
-            case undefined:
-                let relevantArtists = [];
-                for (let artist in artistQualities) {
-                    if (artistQualities[artist].genre === item) {
-                        relevantArtists.push(artist);
-                    }
-                }
-                datapoint.topArtists.forEach(artist => {
-                    if(!!artist){
-                        if (artist.genre === item && !relevantArtists.includes(artist.name)) {
-                            relevantArtists.push(artist.name)
-                        }
-                    }
-                });
-                if (relevantArtists.length > 1) {
-                    topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
-                    for(let i = 1; i < relevantArtists.length; i++){
-                        secondMessage += relevantArtists[i];
-                        if(i !== relevantArtists.length - 1){
-                            secondMessage += ', '
-                        }
-                    }
-                } else {
-                    if (relevantArtists.length === 1) {
-                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
-                    } else {
-                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
-                    }
                 }
                 break;
             default:
