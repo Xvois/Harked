@@ -212,6 +212,36 @@ const Comparison = () => {
                                 }}>Of all time.</h1>
                             </div>
                         </div>
+                        <div style={{
+                            flexGrow: '1',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                        }}>
+                            <h1 style={{
+                                position: 'absolute',
+                                width: '400px',
+                                fontSize: '5em',
+                                marginTop: '0',
+                                textTransform: 'uppercase',
+                                fontFamily: 'Inter Tight',
+                                color: '#22C55E'
+                            }}>
+                                Quintessential
+                            </h1>
+                        </div>
+                        <div className='art-container' style={{transform: 'scale(75%)'}}>
+                            <a className={'play-wrapper'}
+                               style={{boxShadow: 'none'}}
+                               href={users[0].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
+                                <img className='art' src={users[0].quintessentialSong.image} alt='Cover art'></img>
+                                <div className='art-text-container'>
+                                    <h1 className={"art-name-shown"}>{users[0].quintessentialSong.title}</h1>
+                                    <p className={"art-desc-shown"}
+                                       style={{fontSize: '20px'}}>{users[0].username}'s quintessential song</p>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                     <div className="right">
                         <UserContainer user={users[1]} justification={'left'}/>
@@ -231,7 +261,7 @@ const Comparison = () => {
                                     width: '400px',
                                     fontSize: '7em',
                                     textTransform: 'uppercase',
-                                    fontFamily: 'Inter Tight'
+                                    fontFamily: 'Inter Tight',
                                 }}>Of all time.</h1>
                             </div>
                         </div>
@@ -242,6 +272,36 @@ const Comparison = () => {
                             <Card item={users[1].datapoint.topSongs[0]} num="1"/>
                             <Card item={users[1].datapoint.topSongs[1]} num="2"/>
                             <Card item={users[1].datapoint.topSongs[2]} num="3"/>
+                        </div>
+                        <div className='art-container' style={{transform: 'scale(75%)'}}>
+                            <a className={'play-wrapper'}
+                               style={{boxShadow: 'none'}}
+                               href={users[1].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
+                                <img className='art' src={users[1].quintessentialSong.image} alt='Cover art'></img>
+                                <div className='art-text-container'>
+                                    <h1 className={"art-name-shown"}>{users[1].quintessentialSong.title}</h1>
+                                    <p className={"art-desc-shown"}
+                                       style={{fontSize: '20px'}}>{users[1].username}'s quintessential song</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div style={{
+                            flexGrow: '1',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end',
+                        }}>
+                            <h1 style={{
+                                position: 'absolute',
+                                width: '300px',
+                                fontSize: '5em',
+                                marginTop: '-80px',
+                                textTransform: 'uppercase',
+                                fontFamily: 'Inter Tight',
+                                zIndex: '-1'
+                            }}>
+                                Songs
+                            </h1>
                         </div>
                     </div>
                 </div>
@@ -277,18 +337,6 @@ const Comparison = () => {
                                 )
                             })}
                         </div>
-                        <div className='art-container' style={{transform: 'scale(75%)'}}>
-                            <a className={'play-wrapper'}
-                               style={{boxShadow: 'none'}}
-                               href={users[0].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
-                                <img className='art' src={users[0].quintessentialSong.image} alt='Cover art'></img>
-                                <div className='art-text-container'>
-                                    <h1 className={"art-name-shown"}>{users[0].quintessentialSong.title}</h1>
-                                    <p className={"art-desc-shown"}
-                                       style={{fontSize: '20px'}}>{users[0].username}'s quintessential song</p>
-                                </div>
-                            </a>
-                        </div>
                         <p style={{marginTop: '25px'}}>Top genre: <span
                             style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></p>
                     </div>
@@ -312,18 +360,6 @@ const Comparison = () => {
                                     </div>
                                 )
                             })}
-                        </div>
-                        <div className='art-container' style={{transform: 'scale(75%)'}}>
-                            <a className={'play-wrapper'}
-                               style={{boxShadow: 'none'}}
-                               href={users[1].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
-                                <img className='art' src={users[1].quintessentialSong.image} alt='Cover art'></img>
-                                <div className='art-text-container'>
-                                    <h1 className={"art-name-shown"}>{users[1].quintessentialSong.title}</h1>
-                                    <p className={"art-desc-shown"}
-                                       style={{fontSize: '20px'}}>{users[1].username}'s quintessential song</p>
-                                </div>
-                            </a>
                         </div>
                         <p style={{marginTop: '25px'}}>Top genre: <span
                             style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></p>

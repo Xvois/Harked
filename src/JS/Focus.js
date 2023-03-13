@@ -40,7 +40,7 @@ const Focus = React.memo((props) => {
         focus.item = item;
         setShowArt(false);
         let localState = focus;
-        await delay(350);
+        await delay(400);
         localState.image = item.image;
         localState.link = item.link;
         if (item.type === "song") {
@@ -107,7 +107,6 @@ const Focus = React.memo((props) => {
         const item = focus.item;
         let topMessage = '';
         let secondMessage = '';
-        console.log(artistQualities);
         switch (item.type) {
             case "artist":
                 if (artistQualities[`${item.name}`] === undefined) {
@@ -143,6 +142,36 @@ const Focus = React.memo((props) => {
                     secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
+            case undefined:
+                let relevantArtists = [];
+                for (let artist in artistQualities) {
+                    if (artistQualities[artist].genre === item) {
+                        relevantArtists.push(artist);
+                    }
+                }
+                datapoint.topArtists.forEach(artist => {
+                    if(!!artist){
+                        if (artist.genre === item && !relevantArtists.includes(artist.name)) {
+                            relevantArtists.push(artist.name)
+                        }
+                    }
+                });
+                if (relevantArtists.length > 1) {
+                    topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
+                    for(let i = 1; i < relevantArtists.length; i++){
+                        secondMessage += relevantArtists[i];
+                        if(i !== relevantArtists.length - 1){
+                            secondMessage += ', '
+                        }
+                    }
+                } else {
+                    if (relevantArtists.length === 1) {
+                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked by ${possessive} time listening to ${relevantArtists[0]}.`
+                    } else {
+                        topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined by one artist, it's the product of many songs over many artists.`
+                    }
+                }
+                break;
             default:
                 console.warn("updateFocusMessage error: No focus type found.")
         }
@@ -159,7 +188,7 @@ const Focus = React.memo((props) => {
             <div className='art-container'>
                 <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
                    href={focus.link} rel="noopener noreferrer" target="_blank">
-                    <img alt={'item artwork'} className='art' src={focus.image}></img>
+                    <img alt={''} className='art' src={focus.image}></img>
                     <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
                     <div className='art-text-container'>
                         <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>

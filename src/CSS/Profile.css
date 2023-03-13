@@ -217,8 +217,7 @@
 
 .focus-message {
     padding: 20px;
-    min-width: 400px;
-    max-width: 800px;
+    width: 40%;
     height: max-content;
     margin: auto 0;
 
@@ -524,10 +523,12 @@
 .focus-container {
     display: flex;
     flex-direction: row;
-    justify-content: left;
+    justify-content: center;
     margin: auto;
+    width: 80%;
+    height: max-content;
     padding: 50px;
-    gap: 50px
+    gap: 50px;
 }
 
 .album-showcase {

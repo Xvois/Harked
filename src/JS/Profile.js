@@ -113,6 +113,8 @@ const Profile = () => {
         index === 2 ? newIndex = simpleDatapoints[0] : newIndex = simpleDatapoints[index + 1];
         setSimpleSelection(newIndex);
         setFocusItem(datapoint[`top${newIndex}`][0]);
+        const possessive = userID === 'me' ?  'your' : `${currentUser.username}'s`
+        setFocusTertiary(`${possessive} top ${newIndex.slice(0,newIndex.length-1)}`);
         if(newIndex === 'Genres'){
             createGenreMessage(datapoint[`topGenres`][0])
         }
@@ -124,6 +126,8 @@ const Profile = () => {
         index === 0 ? newIndex = simpleDatapoints[2] : newIndex = simpleDatapoints[index - 1];
         setSimpleSelection(newIndex);
         setFocusItem(datapoint[`top${newIndex}`][0]);
+        const possessive = userID === 'me' ? 'your' : `${currentUser.username}'s`
+        setFocusTertiary(`${possessive} top ${newIndex.slice(0,newIndex.length-1)}`);
         if(newIndex === 'Genres'){
             createGenreMessage(datapoint[`topGenres`][0])
         }
@@ -324,6 +328,7 @@ const Profile = () => {
                             })}}
                         </select>
                     </h1>
+                    <p style={{margin: 'auto', fontFamily: 'Inter Tight', fontWeight: '500', fontSize: '0.75em'}}>CLICK POINTS TO INTERACT</p>
                     <div className='top'>
                         <div className='point-container'>{points}</div>
                         <p className='y-title'>{graphAxis.y}</p>
@@ -450,10 +455,12 @@ const Profile = () => {
 
     useEffect(() => {
         const updateItem = datapoint[`top${simpleSelection}`][0];
-        console.log(updateItem)
         if(updateItem){
             setFocusItem(updateItem);
+            const possessive = userID === 'me' ?  'your' : `${currentUser.username}'s`
+            setFocusTertiary(`${possessive} top ${simpleSelection.slice(0,simpleSelection.length-1)}`);
             if(updateItem.type === 'artist'){
+                console.info('Updating liked songs from artist!')
                 getLikedSongsFromArtist(updateItem.artist_id, playlists).then(res => setLikedSongsFromArtist(res));
             }
         }
@@ -587,6 +594,8 @@ const Profile = () => {
                                                            getLikedSongsFromArtist(element.artist_id, playlists).then(res => {
                                                                setLikedSongsFromArtist(res);
                                                            });
+                                                       }else if(element.type === 'song'){
+                                                           setStatsSelection(element.analytics);
                                                        }
                                                        setFocusItem(element);
                                                        if(element.type){
