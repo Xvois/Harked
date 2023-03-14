@@ -189,7 +189,7 @@ export const retrieveDatapoint = async function (userID, term, delay = 0) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
-    if (!currDatapoint) {
+    if (!currDatapoint && userID === 'me') {
         await hydrateDatapoints().then(async () =>
             await getDatapoint(globalUserID, term, timeSensitive).then(result =>
                 currDatapoint = result
@@ -213,6 +213,7 @@ export const retrievePreviousDatapoint = async function (userID, term) {
     await getDatapoint(globalUserID, term, false, 1).then(r => result = r);
     return result;
 }
+// noinspection JSUnusedGlobalSymbols
 /**
  * A testing function that will begin filling the database with faux users.
  * Unless stopped, the function will populate it with 1000 users.
@@ -325,18 +326,19 @@ const createFauxUser = function (songs, analytics, artists) {
     };
 }
 
+// noinspection JSUnusedGlobalSymbols
 export const deleteAllFauxUsers = async () => {
     let userIDs;
     await getAllUserIDs().then(res => userIDs = res.map(e => e.user_id));
     for (const userID of userIDs) {
-        if(userID.length === 20){
+        if (userID.length === 20) {
             await deleteUser(userID);
         }
     }
 }
 
 
-export const getLikedSongsFromArtist = async function(artistID, playlists){
+export const getLikedSongsFromArtist = async function (artistID, playlists) {
     let albums;
     let albumsWithLikedSongs = [];
 

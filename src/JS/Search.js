@@ -6,6 +6,10 @@ import "./../CSS/Search.css"
 import {getAllUsers} from "./API";
 
 const SearchBar = styled(TextField)({
+    "& .MuiInputBase-input": {
+        background: '#343434',
+        border: 'none',
+    },
     "& .MuiInputBase-root": {
         color: 'white'
     },
@@ -15,32 +19,27 @@ const SearchBar = styled(TextField)({
     '& .MuiFormLabel-root.Mui-disabled': {
         color: `white`,
     },
-    '& .MuiInput-underline:after': {
-        borderBottomColor: '#22C55E',
-    },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderColor: 'white',
-            borderRadius: `0px`,
-            borderWidth: '2px',
+            border: '1px solid grey',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
-            borderColor: 'white',
+            border: '1px solid grey',
         },
         '&.Mui-focused fieldset': {
-            borderColor: '#22C55E',
-            borderRadius: `5px`,
-            transition: `all 0.1s ease-in`
+            border: '1px solid grey',
         },
     },
     '& label.Mui-focused': {
         color: 'white',
+        border: 'none',
         fontFamily: 'Inter Tight, sans-serif',
     },
     '& .MuiFormLabel-root': {
         color: 'white',
         marginLeft: `5px`,
+        border: 'none',
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
@@ -84,26 +83,26 @@ export const Search = () => {
         let searchParam = event.target.value;
         const usernames = cachedUsers.map(user => user.username);
         let results = [];
-        // Don't check if the user has only typed in a couple of characters
-        if (searchParam.length > 2) {
-            usernames.forEach(username => {
-                let weight = Levenshtein(searchParam, username)
-                if (weight < 10) {
-                    results.push({username: username, weight: weight})
-                }
-            })
-            // Order results by their relevance.
-            results.sort((a, b) => a.weight - b.weight)
-            // Match each username to their user record in the DB
-            results.forEach((user, i) => {
-                results[i] = cachedUsers[cachedUsers.findIndex(object => {
-                    return object.username === user.username
-                })]
-            })
-            setSearchResults(results);
-        } else {
-            setSearchResults(null)
-        }
+        usernames.forEach((username) => {
+            let weight = Levenshtein(searchParam, username);
+            if (username.length > searchParam.length) {
+                weight -= username.length - searchParam.length
+            }
+            if (weight < 10) {
+                results.push({username: username, weight: weight})
+            }
+        })
+        // Order results by their relevance.
+        results.sort((a, b) => a.weight - b.weight)
+        // Match each username to their user record in the DB
+        results.forEach((user, i) => {
+            results[i] = cachedUsers[cachedUsers.findIndex(object => {
+                return object.username === user.username
+            })]
+        })
+        results.splice(5, results.length - 5);
+        console.log(results);
+        setSearchResults(results);
     }
 
     const updateCachedUsers = () => {
@@ -124,12 +123,19 @@ export const Search = () => {
                 </FormControl>
             </ClickAwayListener>
             {searchResults !== null ?
-                <div id="result" style={{top: '140px'}}>
-                    {searchResults.map(function (user) {
-                        return <a href={`profile#${user.user_id}`}><img
-                            alt={"profile"}
-                            src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
-                        </a>
+                <div id="result" style={{top: '125px'}}>
+                    {searchResults.map(function (user, i) {
+                        return <>
+                            <a href={`profile#${user.user_id}`}>
+                                <img alt={"profile"} src={user.picture_url}></img>
+                                {user.username.length > 12 ? user.username.slice(0, 12) + "..." : user.username}
+                            </a>
+                            {i !== searchResults.length - 1 ?
+                                <hr style={{width: '200px'}}/>
+                                :
+                                <></>
+                            }
+                        </>
                     })
                     }</div>
                 :

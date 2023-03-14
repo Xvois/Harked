@@ -1,8 +1,16 @@
 // noinspection DuplicatedCode
 
+/**
+ * This component is the comparison page, which can be found by logging in and
+ * pressing 'compare' on someone else's profile page. Alternatively the format
+ * /compare#userID1&userID2 can be used as the page simply captures the hash
+ * for the IDs.
+ */
+
 import React, {useEffect, useState} from "react";
 import './../CSS/Comparison.css';
-import './../CSS/Profile.css'
+import './../CSS/Profile.css';
+import './../CSS/Focus.css';
 
 import {retrieveDatapoint, retrieveUser} from "./PDM";
 import {createTheme} from "@mui/material/styles";
@@ -57,12 +65,12 @@ const Comparison = () => {
         for (const key in u0Metrics) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
         }
-        similarity = (genresSimilarity + 3 * artistsSimilarity  + 2 * (1 - Math.sqrt(metricDelta*2))/3);
+        similarity = (genresSimilarity + 3 * artistsSimilarity + 2 * (1 - Math.sqrt(metricDelta * 2)) / 3);
         similarity = Math.round(100 * similarity)
         console.log("---STAT BREAKDOWN---");
         console.log("Genres: " + genresSimilarity);
         console.log("Artists: " + artistsSimilarity);
-        console.log("Metrics: " + (1 - Math.sqrt(metricDelta*2)));
+        console.log("Metrics: " + (1 - Math.sqrt(metricDelta * 2)));
         if (similarity > 100) {
             similarity = 100
         } // Ensure not over 100%
@@ -89,7 +97,10 @@ const Comparison = () => {
                         :
                         <>
                             <p style={{fontSize: '30px'}}>{item[`${item.type === 'artist' ? 'name' : 'title'}`]}</p>
-                            <p style={{fontSize: '20px', fontWeight: 'normal'}}>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
+                            <p style={{
+                                fontSize: '20px',
+                                fontWeight: 'normal'
+                            }}>{item[`${item.type === 'artist' ? 'genre' : 'artist'}`]}</p>
                         </>
 
                     }
@@ -121,26 +132,32 @@ const Comparison = () => {
     const UserContainer = (props) => {
         const user = props.user;
         const justification = props.justification;
-        const chipletTheme = createTheme({
-            palette: {
-                primary: {
-                    main: '#22C55E',
-                },
-
-            },
-        });
         return (
-            <div className='user-container' style={{'--pfp': `url(${user.profilePicture})`, justifyContent: justification}}>
+            <div className='user-container'
+                 style={{'--pfp': `url(${user.profilePicture})`, justifyContent: justification}}>
                 {justification === 'left' ?
                     <img className='profile-picture' alt='Profile' src={user.profilePicture}></img>
                     :
                     <></>
                 }
-                <div style={{display: `flex`, flex: '0 0 auto', flexDirection: `column`, paddingLeft: `5px`, paddingRight: '5px'}}>
+                <div style={{
+                    display: `flex`,
+                    flex: '0 0 auto',
+                    flexDirection: `column`,
+                    paddingLeft: `5px`,
+                    paddingRight: '5px'
+                }}>
                     <div className='username'>{user.username}</div>
                     <a className={"auth-button"} href={`/profile#${user.userID}`}>View profile</a>
-                    <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0', width: 'max-content'}}><span style={{color: '#22C55E'}}>{user.datapoint.topArtists[0].name}</span> fan · <span style={{color: '#22C55E'}}>{user.datapoint.topGenres[0]}</span> fan</p>
-                    <a target="_blank" href={`https://open.spotify.com/user/${user.userID}`} className='spotify-link' style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
+                    <p style={{
+                        fontWeight: 'bold',
+                        fontFamily: 'Inter Tight',
+                        margin: '10px 0 0 0',
+                        width: 'max-content'
+                    }}><span style={{color: '#22C55E'}}>{user.datapoint.topArtists[0].name}</span> fan · <span
+                        style={{color: '#22C55E'}}>{user.datapoint.topGenres[0]}</span> fan</p>
+                    <a target="_blank" href={`https://open.spotify.com/user/${user.userID}`} className='spotify-link'
+                       style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                         <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
                              viewBox="0 0 168 168">
                             <path fill="#22C55E"
@@ -150,7 +167,8 @@ const Comparison = () => {
                     </a>
                 </div>
                 {justification === 'right' ?
-                    <img className='profile-picture' alt='Profile' src={user.profilePicture} style={{marginLeft: '10px'}}></img>
+                    <img className='profile-picture' alt='Profile' src={user.profilePicture}
+                         style={{marginLeft: '10px'}}></img>
                     :
                     <></>
                 }
@@ -182,7 +200,17 @@ const Comparison = () => {
     return (
         <>{users.length ?
             <>
-                <div className="top-compare-wrapper">
+                <div className="similarity-score">
+                    <h2 style={{
+                        marginLeft: "auto",
+                        marginRight: "auto",
+                        fontSize: '5vw',
+                        fontFamily: 'Inter Tight',
+                        textTransform: 'uppercase'
+                    }}>Your similarity is <span style={{color: '#22C55E'}}>{similarity}%</span></h2>
+                    <p style={{fontSize: '25px'}}>Let's have a look at that a little more...</p>
+                </div>
+                <div className="top-compare-wrapper" style={{paddingBottom: '100px'}}>
                     <div className="left">
                         <UserContainer user={users[0]} justification={'right'}/>
                         <div className="card-container">
@@ -229,6 +257,7 @@ const Comparison = () => {
                             }}>
                                 Quintessential
                             </h1>
+
                         </div>
                         <div className='art-container' style={{transform: 'scale(75%)'}}>
                             <a className={'play-wrapper'}
@@ -236,12 +265,20 @@ const Comparison = () => {
                                href={users[0].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
                                 <img className='art' src={users[0].quintessentialSong.image} alt='Cover art'></img>
                                 <div className='art-text-container'>
-                                    <h1 className={"art-name-shown"}>{users[0].quintessentialSong.title}</h1>
-                                    <p className={"art-desc-shown"}
+                                    <h1 className={"art-name"}>{users[0].quintessentialSong.title}</h1>
+                                    <p className={"art-desc"}
                                        style={{fontSize: '20px'}}>{users[0].username}'s quintessential song</p>
                                 </div>
                             </a>
                         </div>
+                        <h2 style={{
+                            margin: 'auto',
+                            width: 'max-content',
+                            textTransform: 'uppercase',
+                            fontWeight: '900',
+                            fontFamily: 'Inter Tight'
+                        }}>Top genre: <span
+                            style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></h2>
                     </div>
                     <div className="right">
                         <UserContainer user={users[1]} justification={'left'}/>
@@ -279,8 +316,8 @@ const Comparison = () => {
                                href={users[1].quintessentialSong.link} rel="noopener noreferrer" target="_blank">
                                 <img className='art' src={users[1].quintessentialSong.image} alt='Cover art'></img>
                                 <div className='art-text-container'>
-                                    <h1 className={"art-name-shown"}>{users[1].quintessentialSong.title}</h1>
-                                    <p className={"art-desc-shown"}
+                                    <h1 className={"art-name"}>{users[1].quintessentialSong.title}</h1>
+                                    <p className={"art-desc"}
                                        style={{fontSize: '20px'}}>{users[1].username}'s quintessential song</p>
                                 </div>
                             </a>
@@ -302,67 +339,14 @@ const Comparison = () => {
                             }}>
                                 Songs
                             </h1>
+                            <h2 style={{
+                                margin: 'auto',
+                                textTransform: 'uppercase',
+                                fontWeight: '900',
+                                fontFamily: 'Inter Tight'
+                            }}>Top genre: <span
+                                style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></h2>
                         </div>
-                    </div>
-                </div>
-                <div className="similarity-score">
-                    <h2 style={{
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                        fontSize: '5vw',
-                        fontFamily: 'Inter Tight',
-                        textTransform: 'uppercase'
-                    }}>Your similarity is {similarity}%.</h2>
-                    <p style={{fontSize: '30px'}}>Let's have a look at that a little more...</p>
-                </div>
-                <div style={{display: 'flex', flexDirection: 'row'}}>
-                    <div className="comparison-metrics">
-                        <div className="username">{users[0].username}</div>
-                        <p style={{fontSize: '10px'}}>Avg. song characteristics</p>
-                        <div style={{margin: 'auto', width: 'max-content'}}>
-                            {analyticsMetrics.map(key => {
-                                const u0Val = users[0].averageAnalytics[key];
-                                const u1Val = users[1].averageAnalytics[key];
-                                const red = 34 * (1.5 * Math.sqrt(u1Val));
-                                const green = 197 * (1.5 * Math.sqrt(u1Val));
-                                const blue = 94 * (1.5 * Math.sqrt(u1Val));
-                                return (
-                                    <div className={'stat-block'} style={{cursor: 'auto'}}>
-                                        <h3 style={{fontSize: '14px'}}>{key}</h3>
-                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px', zIndex: '0'}}></div>
-                                        <div className={'stat-bar'} style={{'--val': `${u0Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`, zIndex: '2'}}></div>
-                                        <div className={'stat-bar'} style={{'--val': `${u1Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`, opacity: '0.5', marginTop: '-10px', zIndex: '1'}}></div>
-                                        <p>{Math.round(u0Val * 100)}%</p>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                        <p style={{marginTop: '25px'}}>Top genre: <span
-                            style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></p>
-                    </div>
-                    <div className="comparison-metrics">
-                        <div className="username">{users[1].username}</div>
-                        <p style={{fontSize: '10px'}}>Avg. song characteristics</p>
-                        <div style={{margin: 'auto', width: 'max-content'}}>
-                            {analyticsMetrics.map(key => {
-                                const u0Val = users[0].averageAnalytics[key];
-                                const u1Val = users[1].averageAnalytics[key];
-                                const red = 34 * (1.5 * Math.sqrt(u1Val));
-                                const green = 197 * (1.5 * Math.sqrt(u1Val));
-                                const blue = 94 * (1.5 * Math.sqrt(u1Val));
-                                return (
-                                    <div className={'stat-block'} style={{cursor: 'auto'}}>
-                                        <h3 style={{fontSize: '14px'}}>{key}</h3>
-                                        <div className={'stat-bar'} style={{'--val': `100%`, backgroundColor: 'black', marginBottom: '-10px'}}></div>
-                                        <div className={'stat-bar'} style={{'--val': `${u1Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`}}></div>
-                                        <div className={'stat-bar'} style={{'--val': `${u0Val * 100}%`, backgroundColor: `rgb(${red}, ${green}, ${blue})`, opacity: '0.5', marginTop: '-10px', zIndex: '1'}}></div>
-                                        <p>{Math.round(u1Val * 100)}%</p>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                        <p style={{marginTop: '25px'}}>Top genre: <span
-                            style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></p>
                     </div>
                 </div>
             </>
