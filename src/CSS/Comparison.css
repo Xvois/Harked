@@ -116,25 +116,6 @@
     font-family: 'Inter Tight', sans-serif;
 }
 
-.comparison-metrics{
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: bold;
-    font-size: 1.5em;
-    text-transform: uppercase;
-    width: 50%;
-    text-align: center;
-}
-
-.comparison-analytic{
-    font-size: 30px;
-    margin: 10px;
-    font-family: 'Lato', sans-serif;
-    font-weight: 800;
-    counter-increment: item;
-    transition: all 0.1s ease-out;
-    text-align: center;
-}
-
 .left{
     width: 50%;
 }

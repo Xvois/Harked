@@ -31,6 +31,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
 import {authURI} from "./Authentication";
+import {redirect, useNavigate} from "react-router-dom";
 
 
 const Profile = () => {
@@ -467,22 +468,25 @@ const Profile = () => {
         }
         // Update the datapoint
         retrieveDatapoint(userID, term).then(function (dpResult) {
-            console.log(dpResult)
-            setDatapoint(dpResult)
-            analyseSongs(dpResult.topSongs);
-            if (isLoggedIn()) {
-                getPlaylists(userID).then(pResults => {
-                    setFocusedPlaylist(pResults[0]);
-                    console.log(pResults);
-                    setPlaylists(pResults);
+            if(!dpResult){alert(`There is no datapoint found for ${currentUser.username} in this term. This is likely because they do not use Spotify enough.`);}
+            else{
+                console.log(dpResult)
+                setDatapoint(dpResult)
+                analyseSongs(dpResult.topSongs);
+                if (isLoggedIn()) {
+                    getPlaylists(userID).then(pResults => {
+                        setFocusedPlaylist(pResults[0]);
+                        console.log(pResults);
+                        setPlaylists(pResults);
+                    })
+                }
+                if (!chipData) {
+                    setChipData([dpResult.topArtists[0], dpResult.topGenres[0]])
+                }
+                retrievePreviousDatapoint(userID, term).then(function (prevD) {
+                    setPrevDatapoint(prevD);
                 })
             }
-            if (!chipData) {
-                setChipData([dpResult.topArtists[0], dpResult.topGenres[0]])
-            }
-            retrievePreviousDatapoint(userID, term).then(function (prevD) {
-                setPrevDatapoint(prevD);
-            })
             setLoaded(true);
         })
     }
