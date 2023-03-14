@@ -102,17 +102,13 @@ const TopBar = () => {
         let searchParam = event.target.value;
         const usernames = cachedUsers.map(user => user.username);
         let results = [];
-        usernames.forEach( (username, i) => {
-            //TODO: REMOVE ALL FAUX USERS IN THE DATABASE
-            // To weed out faux users coming up in the search
-            if (!(/[A-Z]/.test(cachedUsers[i].userID))) {
-                let weight = Levenshtein(searchParam, username);
-                if (username.length > searchParam.length) {
-                    weight -= username.length - searchParam.length
-                }
-                if (weight < 10) {
-                    results.push({username: username, weight: weight})
-                }
+        usernames.forEach((username) => {
+            let weight = Levenshtein(searchParam, username);
+            if (username.length > searchParam.length) {
+                weight -= username.length - searchParam.length
+            }
+            if (weight < 10) {
+                results.push({username: username, weight: weight})
             }
         })
         // Order results by their relevance.
@@ -123,7 +119,7 @@ const TopBar = () => {
                 return object.username === user.username
             })]
         })
-        results.splice(5,results.length - 5);
+        results.splice(5, results.length - 5);
         console.log(results);
         setSearchResults(results);
     }
@@ -168,7 +164,7 @@ const TopBar = () => {
                                             {user.username.length > 12 ? user.username.slice(0, 12) + "..." : user.username}
                                         </a>
                                         {i !== searchResults.length - 1 ?
-                                            <hr style={{width: '200px'}} />
+                                            <hr style={{width: '200px'}}/>
                                             :
                                             <></>
                                         }

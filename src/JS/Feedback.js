@@ -1,3 +1,7 @@
+/**
+ * A static page used to retrieve feedback from users.
+ */
+
 import "./../CSS/Feedback.css"
 import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
 import BugReportIcon from '@mui/icons-material/BugReport';

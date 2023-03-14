@@ -1,12 +1,18 @@
+/**
+ * The focus component displays an image with a title and description, as well
+ * as an accompanying message. It is used to display artist and song art and give
+ * context about them for a specific user.
+ */
+
 import React, {useEffect, useState} from "react";
-import {getLikedSongsFromArtist} from "./PDM";
+import './../CSS/Focus.css'
 
 
 const Focus = React.memo((props) => {
-    const { user, playlists, item, datapoint, tertiary } = props;
+    const {user, item, datapoint, tertiary} = props;
     useEffect(() => {
         updateArtistQualities(datapoint);
-        if(item){
+        if (item) {
             updateFocus();
         }
     }, [item])
@@ -34,6 +40,7 @@ const Focus = React.memo((props) => {
     }
     // Delay function used for animations
     const delay = ms => new Promise(res => setTimeout(res, ms));
+
     // The function that updates the focus.
     async function updateFocus() {
         console.info("updateFocus called!")
@@ -60,6 +67,7 @@ const Focus = React.memo((props) => {
         await updateFocusMessage();
         setShowArt(true)
     }
+
     // Update the artist attributes that are used to make the focus
     // message.
     const updateArtistQualities = function (data) {
@@ -121,7 +129,9 @@ const Focus = React.memo((props) => {
                 }
                 // The index of the song in the user's top songs list made by this artist.
                 const songIndex = datapoint.topSongs.findIndex((element) => element.artist === item.name);
-                if(songIndex !== - 1){secondMessage += `${datapoint.topSongs[songIndex].title} by ${item.name} is Nº ${songIndex+1} on ${possessive} top 50 songs list for this time frame.`}
+                if (songIndex !== -1) {
+                    secondMessage += `${datapoint.topSongs[songIndex].title} by ${item.name} is Nº ${songIndex + 1} on ${possessive} top 50 songs list for this time frame.`
+                }
                 break;
             case "song":
                 let maxAnalytic = "acousticness";
@@ -137,9 +147,9 @@ const Focus = React.memo((props) => {
                     }
                 })
                 topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
-                if(datapoint.topArtists.some((element) => element && element.name === item.artist)){
+                if (datapoint.topArtists.some((element) => element && element.name === item.artist)) {
                     const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
-                    secondMessage += `${item.artist} is Nº ${index+1} on ${possessive} top artists list in this time frame.`
+                    secondMessage += `${item.artist} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
             case undefined:
@@ -150,7 +160,7 @@ const Focus = React.memo((props) => {
                     }
                 }
                 datapoint.topArtists.forEach(artist => {
-                    if(!!artist){
+                    if (!!artist) {
                         if (artist.genre === item && !relevantArtists.includes(artist.name)) {
                             relevantArtists.push(artist.name)
                         }
@@ -158,9 +168,9 @@ const Focus = React.memo((props) => {
                 });
                 if (relevantArtists.length > 1) {
                     topMessage += `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined by ${possessive} love for ${relevantArtists[0]} but also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
-                    for(let i = 1; i < relevantArtists.length; i++){
+                    for (let i = 1; i < relevantArtists.length; i++) {
                         secondMessage += relevantArtists[i];
-                        if(i !== relevantArtists.length - 1){
+                        if (i !== relevantArtists.length - 1) {
                             secondMessage += ', '
                         }
                     }
@@ -178,26 +188,32 @@ const Focus = React.memo((props) => {
         setFocusMessage(
             <>
                 <h2>{topMessage}</h2>
-                <p style={{color: '#22C55E', fontFamily: 'Inter Tight', fontWeight: '600', fontSize: '20px'}}>{secondMessage}</p>
+                <p style={{
+                    color: '#22C55E',
+                    fontFamily: 'Inter Tight',
+                    fontWeight: '600',
+                    fontSize: '20px'
+                }}>{secondMessage}</p>
             </>
         );
     }
 
     return (
         <div className='focus-container'>
-            <div className='art-container'>
-                <a className={showArt ? 'play-wrapper' : 'play-wrapper-hidden'}
-                   href={focus.link} rel="noopener noreferrer" target="_blank">
-                    <img alt={''} className='art' src={focus.image}></img>
-                    <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
-                    <div className='art-text-container'>
-                        <h1 className={showArt === true ? "art-name-shown" : "art-name-hidden"}>{focus.title}</h1>
-                        <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}
-                           style={{fontSize: '25px'}}>{focus.secondary}</p>
-                        <p className={showArt === true ? "art-desc-shown" : "art-desc-hidden"}>{focus.tertiary}</p>
-                    </div>
-                </a>
-            </div>
+            <a className={'play-wrapper'}
+               style={showArt ? {opacity: '1'} : {opacity: '0'}}
+               href={focus.link} rel="noopener noreferrer" target="_blank">
+                <img alt={''} className='art' src={focus.image}></img>
+                <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
+                <div className='art-text-container'>
+                    <h1 className={"art-name"}
+                        style={showArt ? {animation: 'swoopUpR 0.4s ease-out'} : {animation: 'swoopUpH 0.2s ease-out forwards'}}>{focus.title}</h1>
+                    <h2 className={"art-desc"}
+                        style={showArt ? {animation: 'swoopUpR 0.6s ease-out'} : {animation: 'swoopUpH 0.2s ease-out forwards'}}>{focus.secondary}</h2>
+                    <p className={"art-desc"}
+                       style={showArt ? {animation: 'swoopUpR 0.8s ease-out'} : {animation: 'swoopUpH 0.2s ease-out forwards'}}>{focus.tertiary}</p>
+                </div>
+            </a>
             <div className={'focus-message'}>
                 {focusMessage}
             </div>

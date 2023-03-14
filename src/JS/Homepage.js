@@ -1,7 +1,12 @@
 // noinspection SpellCheckingInspection,JSValidateTypes
 
+/**
+ * The home component. This deals with loggin in, out, checking the server status and
+ * handelling a user declining the Spotify scopes.
+ */
+
 import {authURI} from './Authentication';
-import {deleteAllFauxUsers, deleteUserFromDatabase, retrieveAllUserIDs} from './PDM';
+import {retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -30,7 +35,7 @@ function Homepage() {
             do {
                 let index = Math.round(Math.random() * (IDs.length - 1));
                 userID = IDs[index];
-            } while (userID === undefined || userID.length === 20)
+            } while (userID === undefined)
             navigate(`/compare#${currUserID}&${userID}`)
         } while (userID === currUserID)
     }
@@ -43,10 +48,11 @@ function Homepage() {
                 {token && token !== "denied-scopes" ?
                     <h1 className="main-text">Welcome.</h1>
                     :
-                    <h1 className="main-text">Get true insights on your <span style={{color: '#22C55E'}}>Spotify</span> profile.</h1>
+                    <h1 className="main-text">Get true insights on your <span
+                        style={{color: '#22C55E'}}>Spotify</span> profile.</h1>
                 }
                 <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
-                <div style={{display: 'flex',gap: '10px'}}>
+                <div style={{display: 'flex', gap: '10px'}}>
                     {!token || token === "denied-scopes" ?
                         <a className="auth-button" href={authURI}>Log-in</a>
                         :
@@ -73,7 +79,7 @@ function Homepage() {
                 <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V
                     1.1.3</p>
                 {token === "denied-scopes" ?
-                    <p className="error-message">You need to accept the Spotify scopes to log in..</p>
+                    <p className="error-message">You need to accept the Spotify scopes to log in.</p>
                     :
                     <></>
                 }

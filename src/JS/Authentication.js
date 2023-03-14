@@ -1,3 +1,9 @@
+/**
+ * This component deals with capturing and storing the authentication token after
+ * authorisation by the Spotify OAuth service.
+ */
+
+
 import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import {postLoggedUser} from './PDM';
