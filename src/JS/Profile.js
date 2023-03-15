@@ -687,7 +687,7 @@ const Profile = () => {
                                             fontSize={'small'}/></h2>
                                         :
                                         <h2 className={'stats-title'}>{userID === 'me' ? 'your' : `${currentUser.username}'s`}
-                                            <span style={{color: '#22C55E'}}>average</span> song analytics.</h2>
+                                            <span style={{color: '#22C55E'}}> average</span> song analytics.</h2>
                                     }
                                     <div className={'simple-stats'}>
                                         {

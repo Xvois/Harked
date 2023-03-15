@@ -111,7 +111,7 @@ const Focus = React.memo((props) => {
     const updateFocusMessage = async function () {
         // What do we use as our possessive?
         let possessive;
-        user.userID === 'me' ? possessive = 'your' : possessive = `${user.username}'s`
+        window.location.hash === 'me' ? possessive = 'your' : possessive = `${user.username}'s`
         const item = focus.item;
         let topMessage = '';
         let secondMessage = '';
