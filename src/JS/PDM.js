@@ -1,4 +1,14 @@
-import {deleteData, fetchData, getAllUserIDs, getDatapoint, getUser, postDatapoint, postUser, putData} from "./API";
+import {
+    deleteData,
+    deleteUser,
+    fetchData,
+    getAllUserIDs,
+    getDatapoint,
+    getUser,
+    postDatapoint,
+    postUser,
+    putData
+} from "./API";
 
 /**
  * Creates a combined song name with the associated artists in the form
@@ -21,7 +31,7 @@ export const parseSong = function (song) { //takes in the song item
     return tempSong;
 }
 /**
- * Returns an object of the media that a user is currently listening to.
+ * Returns a media object containing the content (if any) the logged-in user is listening to.
  * @returns {Promise<{name: string, image: string}>}
  */
 export const retrieveMedia = async function () {
@@ -29,7 +39,7 @@ export const retrieveMedia = async function () {
     await fetchData("me/player").then(function (result) {
         if (result) {
             // Update the user's media information with the current song and album image
-            returnMedia = {name: parseSong(result.item), image: result.item.album.images[2].url}
+            returnMedia = {name: parseSong(result.item), image: result.item.album.images[0].url}
         }
     })
     return returnMedia;
@@ -134,7 +144,7 @@ export const postLoggedUser = async function () {
     await postUser(user);
 }
 /**
- * Returns true if the logged-in user follows the user associated with that argument userID.
+ * A boolean function that returns true if the currently logged-in user follows the target and false if not.
  * @param userID
  * @returns {Promise<*>}
  */
@@ -143,7 +153,7 @@ export const followsUser = async function (userID) {
     return data[0];
 }
 /**
- * Returns true if the session user is logged in.
+ * A boolean function for checking whether the session user is logged in or not.
  * @returns {boolean}
  */
 export const isLoggedIn = function () {
@@ -154,11 +164,12 @@ export const isLoggedIn = function () {
  * Returns a valid datapoint for a given user in a given term.
  * If the function does not get a valid datapoint from the database, it will hydrate the user's datapoints
  * and return a valid one from that selection.
- * @param userID A global user id.
+ * @param userID
  * @param term [short_term, medium_term, long_term]
+ * @param delay
  * @returns {Promise<*>} A datapoint object.
  */
-export const retrieveDatapoint = async function (userID, term) {
+export const retrieveDatapoint = async function (userID, term, delay = 0) {
     let currDatapoint;
     let timeSensitive = false;
     let globalUserID = userID;
@@ -172,13 +183,13 @@ export const retrieveDatapoint = async function (userID, term) {
         timeSensitive = true;
         globalUserID = window.localStorage.getItem("userID");
     }
-    await getDatapoint(globalUserID, term, timeSensitive).then(function (result) {
+    await getDatapoint(globalUserID, term, timeSensitive, delay).then(function (result) {
         currDatapoint = result;
     }).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
-    if (!currDatapoint) {
+    if (!currDatapoint && userID === 'me') {
         await hydrateDatapoints().then(async () =>
             await getDatapoint(globalUserID, term, timeSensitive).then(result =>
                 currDatapoint = result
@@ -188,7 +199,25 @@ export const retrieveDatapoint = async function (userID, term) {
     return currDatapoint;
 }
 /**
- * A testing function that floods the database with faux users for testing.
+ * Retrieves the last previous datapoint instead of the most recent one. False is returned if none exists.
+ * @param userID
+ * @param term [short_term, medium_term, long_term]
+ * @returns {Promise<*> || false} A datapoint object.
+ */
+export const retrievePreviousDatapoint = async function (userID, term) {
+    let result;
+    let globalUserID = userID;
+    if (globalUserID === "me") {
+        globalUserID = window.localStorage.getItem("userID");
+    }
+    await getDatapoint(globalUserID, term, false, 1).then(r => result = r);
+    return result;
+}
+// noinspection JSUnusedGlobalSymbols
+/**
+ * A testing function that will begin filling the database with faux users.
+ * Unless stopped, the function will populate it with 1000 users.
+ * @returns {Promise<void>}
  */
 export const fillDatabase = async function () {
     let songs;
@@ -303,11 +332,47 @@ const createFauxUser = function (songs, analytics, artists) {
     };
 }
 
+// noinspection JSUnusedGlobalSymbols
+export const deleteAllFauxUsers = async () => {
+    let userIDs;
+    await getAllUserIDs().then(res => userIDs = res.map(e => e.user_id));
+    for (const userID of userIDs) {
+        if (userID.length === 20) {
+            await deleteUser(userID);
+        }
+    }
+}
+
+
+export const getLikedSongsFromArtist = async function (artistID, playlists) {
+    let albums;
+    let albumsWithLikedSongs = [];
+
+    const trackPromises = playlists.map((playlist) => fetchData(`playlists/${playlist.id}/tracks`));
+    const trackResponses = await Promise.all(trackPromises);
+    const tracksInPlaylists = trackResponses.flatMap((res) => res.items.map((item) => item.track));
+
+    await fetchData(`artists/${artistID}/albums`).then((res) => albums = res.items);
+    const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
+    const albumResponses = await Promise.all(albumPromises);
+    for (let i = 0; i < albums.length; i++) {
+        const album = albums[i];
+        const albumResponse = albumResponses[i];
+        const tracks = albumResponse && albumResponse.items;
+        album["saved_songs"] = tracks.filter((track) =>
+            tracksInPlaylists.some((item) => item && item.name === track.name)
+        );
+        if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithLikedSongs.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
+            albumsWithLikedSongs.push(album);
+        }
+    }
+    return albumsWithLikedSongs;
+}
+
 
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.
- * @returns {Promise<void>}
  */
 const hydrateDatapoints = async function () {
     console.info("Hydrating...");

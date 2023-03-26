@@ -7,20 +7,14 @@
   font-family: 'Inter Tight', sans-serif;
   font-weight: 900;
   font-size: 5ex;
-  padding-left: 20px;
-  padding-right: 20px;
 }
 
-.showcase-text{
-  text-transform: uppercase;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  font-size: 5ex;
-}
 
 .server-status-indicator{
   padding: 5px;
+  /*noinspection CssUnresolvedCustomProperty*/
   border: 1px solid var(--colour);
+  /*noinspection CssUnresolvedCustomProperty*/
   background: var(--colour);
   border-radius: 100%;
   height: max-content;
@@ -29,39 +23,26 @@
 
 .server-status-text{
   font-family: 'Inter Tight', sans-serif;
-  margin-left: 5px;
 }
 
 @keyframes status-indicator {
-  0%{box-shadow: 0 0 10px var(--colour)}
+  0%{ /*noinspection CssUnresolvedCustomProperty*/
+    box-shadow: 0 0 10px var(--colour)}
   50%{box-shadow: 0 0 20px rgba(255, 255, 255, 0)}
-  100%{box-shadow: 0 0 10px var(--colour)}
+  100%{ /*noinspection CssUnresolvedCustomProperty*/
+    box-shadow: 0 0 10px var(--colour)}
 }
 
 .server-status{
   display: flex;
+  gap: 10px;
   align-items: center;
   width: max-content;
-  margin-left: 20px;
-  margin-top: 10px;
 }
 
 .top-container{
   margin-top: 50px;
   padding: 50px;
-}
-
-.down-arrow-container{
-  display: flex;
-  margin: 20vh auto auto -50px;
-}
-
-.down-arrow{
-  transform: scale(15%) rotate(90deg);
-  margin: auto;
-  border: 10px solid white;
-  padding: 50px;
-  border-radius: 100%;
 }
 
 .container{
@@ -72,24 +53,21 @@
   text-decoration: none;
   text-transform: uppercase;
   border-radius: 20px;
-  border: 2px solid white;
   color: white;
   width: max-content;
   padding: 5px 30px 5px 30px;
-  margin-left: 20px;
-  transition: all 0.2s ease-out;
+  transition: all 0.1s ease-out;
+  border: 1px solid grey;
+  background-color: #343434;
 }
 
 .auth-button:hover{
-  background-color: rgb(255, 255, 255);
-  color: black;
-  box-shadow: 0 0 100px rgba(255, 255, 255, 0.81);
+  background-color: rgb(112, 112, 112);
+  cursor: pointer;
 }
 
 .under-text{
   font-size: 16px;
-  padding-left: 20px;
-  padding-right: 20px;
   margin-top: -30px;
 }
 

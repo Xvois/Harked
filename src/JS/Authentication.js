@@ -1,3 +1,9 @@
+/**
+ * This component deals with capturing and storing the authentication token after
+ * authorisation by the Spotify OAuth service.
+ */
+
+
 import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import {postLoggedUser} from './PDM';
@@ -34,8 +40,9 @@ function Authentication() {
             local_token = null
         }
         if (!local_token && hash) { //update token whenever authorised to
-            const re = new RegExp('(?<=\\=)(.*?)(?=\\&)')
+            const re = new RegExp('\\=(.*?)\\&')
             local_token = hash.match(re)[0]
+            local_token = local_token.substring(1, local_token.length - 1);
             window.location.hash = ""
             window.localStorage.setItem("token", local_token);
         }

@@ -1,4 +1,9 @@
-// noinspection SpellCheckingInspection
+// noinspection SpellCheckingInspection,JSValidateTypes
+
+/**
+ * The home component. This deals with loggin in, out, checking the server status and
+ * handelling a user declining the Spotify scopes.
+ */
 
 import {authURI} from './Authentication';
 import {retrieveAllUserIDs} from './PDM';
@@ -30,7 +35,7 @@ function Homepage() {
             do {
                 let index = Math.round(Math.random() * (IDs.length - 1));
                 userID = IDs[index];
-            } while (userID === undefined || userID.length === 20)
+            } while (userID === undefined)
             navigate(`/compare#${currUserID}&${userID}`)
         } while (userID === currUserID)
     }
@@ -43,20 +48,21 @@ function Homepage() {
                 {token && token !== "denied-scopes" ?
                     <h1 className="main-text">Welcome.</h1>
                     :
-                    <h1 className="main-text">Get true insights on your Spotify profile.</h1>
+                    <h1 className="main-text">Get true insights on your <span
+                        style={{color: '#22C55E'}}>Spotify</span> profile.</h1>
                 }
                 <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
-                {!token || token === "denied-scopes" ?
-                    <>
+                <div style={{display: 'flex', gap: '10px'}}>
+                    {!token || token === "denied-scopes" ?
                         <a className="auth-button" href={authURI}>Log-in</a>
-                    </>
-                    :
-                    <div>
-                        <a className="auth-button" href='/profile#me'>Explore your profile</a>
-                        <a className="auth-button" onClick={handleCompare}>Compare to others</a>
-                        <a className="auth-button" onClick={handleLogOut}>Log out</a>
-                    </div>
-                }
+                        :
+                        <>
+                            <a className="auth-button" href='/profile#me'>Explore your profile</a>
+                            <a className="auth-button" onClick={handleCompare}>Compare to others</a>
+                            <a className="auth-button" onClick={handleLogOut}>Log out</a>
+                        </>
+                    }
+                </div>
                 <div className={"server-status"}>
                     {serverStatus ?
                         <>
@@ -71,9 +77,9 @@ function Homepage() {
                     }
                 </div>
                 <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V
-                    1.0.15</p>
+                    1.1.4</p>
                 {token === "denied-scopes" ?
-                    <p className="error-message">You need to accept the Spotify scopes to log in..</p>
+                    <p className="error-message">You need to accept the Spotify scopes to log in.</p>
                     :
                     <></>
                 }

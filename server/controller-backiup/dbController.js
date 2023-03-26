@@ -1,6 +1,4 @@
 // Import database
-// noinspection ES6MissingAwait
-
 const knex = require('./../db')
 
 // --- EXTRA FUNCS --- //
@@ -145,8 +143,8 @@ exports.getDatapoint = async (req, res) => {
                 // to the other tables
                 const references = results[delay];
                 datapoint.collectionDate = references.collection_date;
-                const WEEK_IN_MILLISECONDS = 604800 * 1000;
-                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILLISECONDS || time_sensitive === 'false') {
+                const WEEK_IN_MILISECONDS = 604800 * 1000;
+                if (Date.now() - datapoint.collectionDate < WEEK_IN_MILISECONDS || time_sensitive === 'false') {
                     await knex('songs_ref')
                         // Find the top songs reference
                         .where('id', references.top_songs_id)
@@ -381,23 +379,28 @@ exports.postDatapoint = async (req, res) => {
 }
 // Remove specific user
 exports.deleteUser = async (req, res) => {
-    const userId = req.query.userID; // get user ID from query string parameter
-    await knex('datapoints')
-        .where('user_id', userId)
+    // Delete all the datapoints for that user
+    knex('datapoints')
+        .where('user_id', req.body.userID)
         .del()
-        .then(() => console.info(`Datapoints for ${userId} deleted!`))
-        .catch((err => console.warn(`Error deleting datapoint: ${err}`)))
+        .then(() => {
+            console.info(`Datapoint for ${req.body.userID} deleted!`)
+        })
+        .catch(err => {
+            console.warn(`Error deleting datapoint: ${err}`)
+            res.json({message: `There was an error deleting a datapoint for ${req.body.userID}: ${err}`})
+        })
     // Find specific user in the database and remove it
     knex('users')
-        .where('user_id', userId) // find correct record based on id
+        .where('id', req.body.userID) // find correct record based on id
         .del() // delete the record
         .then(() => {
             // Send a success message in response
-            res.json({message: `User ${userId} deleted.`})
+            res.json({message: `User ${req.body.userID} fully deleted.`})
         })
         .catch(err => {
             // Send a error message in response
-            res.json({message: `There was an error deleting ${userId} user: ${err}`})
+            res.json({message: `There was an error deleting ${req.body.userID} user: ${err}`})
         })
 }
 

@@ -38,14 +38,22 @@ export const fetchData = async (path) => {
             alert(err);
         }
     })
-    console.log("Path: " + path + " Data: ");
-    console.log(data);
     return data;
 }
+
+export const deleteUser = (userID) => {
+    axios.put(`https://photon-database.tk/PRDB/delete?userID=${userID}`).catch(
+        function (err) {
+            console.warn(err)
+        }
+    )
+}
+
 /**
  * Makes a put request to the Spotify api.
  * @param path
  */
+
 export const putData = (path) => {
     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {
@@ -71,9 +79,8 @@ export const deleteData = (path) => {
 // noinspection JSUnusedGlobalSymbols
 /**
  * @deprecated
- * Makes a get request to the PRDB at the given endpoint and return the response as an object.
+ * Makes a get request to the PRDB at the given endpoint and output the response.
  * @param path The endpoint.
- * @returns {Promise<void>} An object containing the response.
  */
 export const fetchLocalData = async (path) => {
     console.info("Local API call made to " + path);
@@ -135,7 +142,7 @@ export const getAllUsers = async () => {
     return users;
 }
 /**
- * Makes an options call to the PRDB and returns true if a response is given and false if one is not.
+ * Makes an options call to the PRDB and will return true if no error is caught, false if one is.
  * @returns {Promise<boolean>}
  */
 export const isServerAlive = async () => {
@@ -150,7 +157,6 @@ export const isServerAlive = async () => {
 }
 
 /**
- /**
  * Will return all the user IDs in the database.
  * @returns {Promise<void>} An array.
  */
@@ -209,11 +215,13 @@ export const postDatapoint = async (datapoint) => {
  * @param userID A global user ID.
  * @param term [short_term, medium_term, long_term]
  * @param timeSens Whether or not the datapoint collection should be time sensitive.
+ * @param delay If not time sensitive, enter the number of datapoints to skip. Default is
+ * 0, and this behaviour will get the last known datapoint regardless of date.
  * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async (userID, term, timeSens) => {
+export const getDatapoint = async (userID, term, timeSens, delay = 0) => {
     let returnRes;
-    await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}`).then(result => {
+    await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}&delay=${delay}`).then(result => {
         if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
             returnRes = result.data;
         } else {

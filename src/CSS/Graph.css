@@ -52,7 +52,7 @@
     align-self: flex-end;
 }
 .point:hover{
-    transform: scale(150%);
+    transform: scale(200%);
 }
 
 .x-title{
@@ -71,4 +71,18 @@
     text-align: center;
     margin-right: 40px;
     color: #22C55E;
+}
+
+/*noinspection ALL*/
+.selection-peek{
+    position: fixed;
+    top: var(--mouse-y);
+    left: var(--mouse-x);
+    width: 100px;
+    height: 100px;
+    z-index: 2;
+    background-size: 100px 100px;
+    background-repeat: no-repeat;
+    filter: blur(2px);
+    transition: 5s all ease-in-out;
 }
