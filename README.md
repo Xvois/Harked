@@ -1,4 +1,4 @@
-# Photon
+# Muse
 
 This is a project I created for my Computer Science A-Level NEA.
 
