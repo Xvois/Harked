@@ -260,9 +260,9 @@ const Profile = () => {
      * @constructor
      */
     const Graph = (props) => {
-        const key = props.keyEntry;
         const list = props.data;
         const parentObj = props.parent;
+        const key = props.keyEntry;
         const selections = props.selections;
         const title = props.title;
         let maxX;
@@ -303,7 +303,6 @@ const Profile = () => {
             let pointX = ((element[graphAxis.x] - minX) * 100) / (maxX - minX);
             let pointY = ((element[graphAxis.y] - minY) * 100) / (maxY - minY);
             let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
-            //              No alt text                 Key is assigned as param                        Style defines where the point is                    Update the focus when they are clicked
             points.push(<div key={element[key]} className='point'
                              style={{left: `${pointX}%`, bottom: `${pointY}%`}}
                              onClick={() => {
@@ -453,6 +452,7 @@ const Profile = () => {
             }
         }
         if (!loaded) {
+            // Get the user information
             retrieveUser(userID).then(function (result) {
                 setCurrentUser(result);
                 if (userID === window.localStorage.getItem("userID") || userID === "me") {

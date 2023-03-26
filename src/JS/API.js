@@ -49,6 +49,11 @@ export const deleteUser = (userID) => {
     )
 }
 
+/**
+ * Makes a put request to the Spotify api.
+ * @param path
+ */
+
 export const putData = (path) => {
     axios.put(`https://api.spotify.com/v1/${path}`, {}, {
         headers: {

@@ -73,22 +73,22 @@ export const retrieveUser = async function (userID) {
 }
 
 /**
- * Makes a request to follow the target from the logged-in user's account on Spotify.
+ * Makes a put request to the API to follow the argument user from the logged-in user's account.
  * @param userID
  */
 export const followUser = function (userID) {
     putData(`me/following?type=user&ids=${userID}`);
 }
 /**
- * Makes a request to unfollow the target from the logged-in user's account on Spotify.
+ * Makes a put request to the API to unfollow the argument user from the logged-in user's account.
  * @param userID
  */
 export const unfollowUser = function (userID) {
     deleteData(`me/following?type=user&ids=${userID}`);
 }
 /**
- * Returns an array of all user objects in the PRDB.
- * @returns {Promise<*>}
+ * Returns all of the userIDs currently in the database.
+ * @returns {Promise<[userID: string]>}
  */
 export const retrieveAllUserIDs = async function () {
     let userIDs;
@@ -99,9 +99,9 @@ export const retrieveAllUserIDs = async function () {
     return userIDs;
 }
 /**
- * Returns an array of all public playlists associated with a user's account.
+ * Returns an array of public non-collaborative playlists from a given user.
  * @param userID
- * @returns {Promise<*>}
+ * @returns {Promise<[]>}
  */
 export const getPlaylists = async function (userID) {
     let globalUserID = userID;
@@ -254,7 +254,13 @@ export const fillDatabase = async function () {
         console.timeEnd("Creating user")
     }
 }
-
+/**
+ * Creates a faux user with their datapoints that will be added to the
+ * @param songs
+ * @param analytics
+ * @param artists
+ * @returns {{datapoints: *[], user: {profilePicture: string, media: null, userID: string, username: string}}}
+ */
 const createFauxUser = function (songs, analytics, artists) {
     let userID = '';
     let username = '';
@@ -434,7 +440,11 @@ const hydrateDatapoints = async function () {
     }
     console.warn("Hydration over.")
 }
-
+/**
+ * Creates an ordered array of a users top genres based on an order list of artists.
+ * @param artists
+ * @returns {*[]}
+ */
 const calculateTopGenres = function (artists) {
     let topGenres = [];
     artists.forEach(function (artist, i) {
