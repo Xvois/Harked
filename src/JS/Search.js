@@ -1,54 +1,25 @@
-import {ClickAwayListener, FormControl, TextField} from "@mui/material";
-import React, {useEffect, useState} from "react";
-import {styled} from "@mui/material/styles";
-import "./../CSS/TopBar.css";
-import "./../CSS/Search.css"
+import {ClickAwayListener, FormControl, Input, InputAdornment, ThemeProvider} from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
+import {useEffect, useState} from "react";
 import {getAllUsers} from "./API";
+import {createTheme} from "@mui/material/styles";
 
-const SearchBar = styled(TextField)({
-    "& .MuiInputBase-input": {
-        background: '#343434',
-        border: 'none',
-    },
-    "& .MuiInputBase-root": {
-        color: 'white'
-    },
-    '& .MuiInput-underline': {
-        color: `white`,
-    },
-    '& .MuiFormLabel-root.Mui-disabled': {
-        color: `white`,
-    },
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            border: '1px solid grey',
-            transition: `all 0.1s ease-in`
+const searchTheme = createTheme({
+    palette: {
+        primary: {
+            main: '#22C55E',
         },
-        '&:hover fieldset': {
-            border: '1px solid grey',
-        },
-        '&.Mui-focused fieldset': {
-            border: '1px solid grey',
-        },
+        neutral: {
+            main: 'white'
+        }
     },
-    '& label.Mui-focused': {
-        color: 'white',
-        border: 'none',
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-    '& .MuiFormLabel-root': {
-        color: 'white',
-        marginLeft: `5px`,
-        border: 'none',
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-});
-
-export const Search = () => {
-    const [searchResults, setSearchResults] = useState(null)
-    const [cachedUsers, setCachedUsers] = useState(null)
-
-
+})
+const Search = () => {
+    const [searchResults, setSearchResults] = useState(null);
+    const [cachedUsers, setCachedUsers] = useState(null);
+    const handleNavigate = (user) => {
+        console.log(`Click on ${user.username} identified!`);
+    }
     const Levenshtein = (a, b) => {
         // First two conditions
         if (!a.length) return b.length;
@@ -73,11 +44,6 @@ export const Search = () => {
         // Return the result
         return arr[b.length][a.length];
     }
-
-    const handleClickAway = () => {
-        setSearchResults(null);
-    }
-
     const handleChange = (event) => {
         // What the user has typed in so far.
         let searchParam = event.target.value;
@@ -101,48 +67,48 @@ export const Search = () => {
             })]
         })
         results.splice(5, results.length - 5);
-        console.log(results);
         setSearchResults(results);
     }
-
-    const updateCachedUsers = () => {
+    useEffect(() => {
         getAllUsers().then(function (result) {
             setCachedUsers(result);
+            console.log(result);
         })
-    }
-    useEffect(() => {
-        updateCachedUsers();
     }, [])
-
     return (
-        <div className='search-bar-container'>
-            <ClickAwayListener onClickAway={handleClickAway}>
-                <FormControl variant="outlined">
-                    <SearchBar className='search-bar' inputProps={{className: `search-label`}}
-                               onChange={handleChange} label="Search"></SearchBar>
-                </FormControl>
-            </ClickAwayListener>
-            {searchResults !== null ?
-                <div id="result" style={{top: '125px'}}>
-                    {searchResults.map(function (user, i) {
-                        return <>
-                            <a href={`profile#${user.user_id}`}>
-                                <img alt={"profile"} src={user.picture_url}></img>
-                                {user.username.length > 12 ? user.username.slice(0, 12) + "..." : user.username}
-                            </a>
-                            {i !== searchResults.length - 1 ?
-                                <hr style={{width: '200px'}}/>
-                                :
-                                <></>
+        <ClickAwayListener onClickAway={() => setSearchResults(null)}>
+            <div style={{flexDirection: 'column', width: '100%'}}>
+                <ThemeProvider theme={searchTheme}>
+                    <FormControl sx={{ input: { color: 'white' } }} variant="standard" id={'input'} onChange={handleChange} onClick={handleChange}>
+                        <Input
+                            id="input-with-icon-adornment"
+                            startAdornment={
+                                <InputAdornment position="start">
+                                    <SearchIcon style={{color: 'white'}} fontSize={'large'} />
+                                </InputAdornment>
                             }
-                        </>
-                    })
-                    }</div>
-                :
-                <></>
-            }
-
-        </div>
+                        />
+                    </FormControl>
+                    {!!searchResults ?
+                        <div className={'results'}>
+                            {searchResults.map(result => {
+                                return (
+                                    <a className={'result'} href={`/profile#${result.user_id}`}>
+                                        <img alt='' src={result.picture_url}></img>
+                                        <div className={'result-title'}>
+                                            <h2>{result.username}</h2>
+                                            <p>Follows you.</p>
+                                        </div>
+                                    </a>
+                                )
+                            })}
+                        </div>
+                        :
+                        <></>
+                    }
+                </ThemeProvider>
+            </div>
+        </ClickAwayListener>
     )
 }
 

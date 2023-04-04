@@ -7,10 +7,12 @@
 import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import {postLoggedUser} from './PDM';
-import {fetchData} from './API';
+import {fetchData, setAuthData} from './API';
+import PocketBase from 'pocketbase';
 
+const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
-const REDIRECT_URI = "https://bhasvic-photon.vercel.app/authentication";
+const REDIRECT_URI = "http://localhost:3000/authentication";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 const RESPONSE_TYPE = "token";
 const SCOPES = "user-read-currently-playing, user-read-playback-state, user-top-read, user-follow-modify, user-follow-read"
@@ -25,7 +27,7 @@ function Authentication() {
             navigate(path);
         } else {
             fetchData('me').then(result => {
-                window.localStorage.setItem("userID", result.id);
+                window.localStorage.setItem("user_id", result.id);
                 postLoggedUser().then(() => {
                     navigate(path);
                 });

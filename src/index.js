@@ -6,7 +6,6 @@ import Authentication from './JS/Authentication';
 import Comparison from './JS/Comparison'
 import reportWebVitals from './JS/reportWebVitals';
 import Feedback from "./JS/Feedback";
-import Search from "./JS/Search"
 import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './JS/TopBar';
 import Profile from './JS/Profile';
@@ -22,7 +21,6 @@ root.render(
                 <Route path="profile" element={<Profile />}/>
                 <Route path="compare" element={<Comparison />}/>
                 <Route path="feedback" element={<Feedback />}/>
-                <Route path="search" element={<Search />}/>
             </Routes>
         </BrowserRouter>
     </>

@@ -1,15 +1,8 @@
 import axios from 'axios';
 import {authURI} from './Authentication';
+import PocketBase from 'pocketbase';
 
-const LRU = require('lru-cache');
-
-// Create a new LRU cache with a maximum size of 1000 items
-// and a default expiration time of 1 hour
-const cache = new LRU({
-    max: 1000,
-    ttl: 1000 * 60 * 60,
-});
-
+const pb = new PocketBase('http://127.0.0.1:8090/');
 /**
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.
@@ -99,28 +92,15 @@ export const fetchLocalData = async (path) => {
  * @param userID The user's global user ID.
  * @returns {Promise<*>} A user object.
  */
-export const getUser = async (userID) => {
-    // Check if the user data is already in the cache
-    let user = cache.get(userID);
-    if (user) {
-        // Return the cached user data
-        return user;
-    }
-
-    // If the user data is not in the cache, make the API call and cache the result
-    await axios.get(`https://photon-database.tk/PRDB/getUser?userID=${userID}`).then(
-        function (result) {
-            user = result.data;
-            // Add the user data to the cache
-            cache.set(userID, user);
-        }
-    ).catch(
+export const getUser = async (user_id) => {
+    console.log('Getting: ' + user_id)
+    return await pb.collection('users').getFirstListItem(`user_id="${user_id}"`)
+    .catch(
         function (err) {
             console.warn("Error getting user: ");
             console.warn(err);
         }
-    )
-    return user;
+    );
 }
 
 /**
@@ -128,32 +108,17 @@ export const getUser = async (userID) => {
  * @returns {Promise<*>} An array of user objects.
  */
 export const getAllUsers = async () => {
+    console.info('Get users called!');
     let users;
-    await axios.get(`https://photon-database.tk/PRDB/all`,).then(
-        function (result) {
-            users = result.data;
-        }
-    ).catch(
-        function (err) {
-            console.warn("Error getting all users: ")
-            console.warn(err);
-        }
-    )
+    await pb.collection('users').getFullList()
+        .then(res => users = res)
+        .catch(
+            function (err) {
+                console.warn("Error getting all users: ")
+                console.warn(err);
+            }
+        );
     return users;
-}
-/**
- * Makes an options call to the PRDB and will return true if no error is caught, false if one is.
- * @returns {Promise<boolean>}
- */
-export const isServerAlive = async () => {
-    let alive = false;
-    await axios.options('https://photon-database.tk/PRDB/all').then(function () {
-        alive = true;
-    }).catch(function (err) {
-        console.warn("Error checking server status: ");
-        console.warn(err);
-    })
-    return alive;
 }
 
 /**
@@ -161,19 +126,19 @@ export const isServerAlive = async () => {
  * @returns {Promise<void>} An array.
  */
 export const getAllUserIDs = async () => {
-    let userIDs;
+    let user_ids;
     await axios.get(`https://photon-database.tk/PRDB/getIDs`).then(
         function (result) {
             console.log(result.data);
-            userIDs = result.data;
+            user_ids = result.data;
         }
     ).catch(
         function (err) {
-            console.warn("Error getting all userIDs: ")
+            console.warn("Error getting all user_ids: ")
             console.warn(err);
         }
     )
-    return userIDs;
+    return user_ids;
 }
 
 
@@ -184,12 +149,23 @@ export const getAllUserIDs = async () => {
  */
 export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
-    await axios.post(`https://photon-database.tk/PRDB/create`, user).catch(
+    await pb.collection('users').create(user).catch(
         function (err) {
             console.warn("Error posting user: ")
             console.warn(err);
         }
     )
+}
+
+const handleCreationException = (err) => {
+    switch (err.status){
+        case 400:
+            console.warn(`Error making an entry in the database, likely a unique constraint failure.`);
+            break;
+        default:
+            console.error(`Error ${err.status} creating database record.`)
+            console.error(err.data);
+    }
 }
 
 /**
@@ -199,37 +175,74 @@ export const postUser = async (user) => {
  * @returns {Promise<void>}
  */
 export const postDatapoint = async (datapoint) => {
-    await axios.post(`https://photon-database.tk/PRDB/addDatapoint`, datapoint).then((res) => {
-        console.log(res.data)
-    }).catch(
-        function (err) {
-            console.warn("Error posting datapoint: ");
-            console.warn(err);
+    console.info('Posting datapoint.')
+    const d = new Date();
+    const WEEK_IN_MILLISECONDS = 6.048e+8;
+    d.setMilliseconds(d.getMilliseconds() - WEEK_IN_MILLISECONDS);
+    const valid_exists = await pb.collection('datapoints').getFirstListItem( `created >= "${d.toISOString()}" && term="${datapoint.term}"`)
+        .catch(function(err){if(err.status !== 404){console.warn(err);}})
+    if(!!valid_exists){
+        console.info("Attempted to post new datapoint, but valid already exists.");
+        return;
+    }
+
+
+    let genres_db_ids = [];
+    for(let i = 0; i < datapoint.top_genres.length; i++){
+        await pb.collection('genres').create({genre: datapoint.top_genres[i]})
+            .catch(handleCreationException);
+        await pb.collection('genres').getFirstListItem(`genre="${datapoint.top_genres[i]}"`).then(res => genres_db_ids.push(res.id));
+    }
+    datapoint.top_genres = genres_db_ids;
+    let song_db_ids = [];
+    for (const song of datapoint.top_songs) {
+        await pb.collection('songs').create(song)
+            .catch(handleCreationException);
+        await pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`).then(res => song_db_ids.push(res.id));
+    }
+    datapoint.top_songs = song_db_ids;
+    let artist_db_ids = [];
+    for (const artist of datapoint.top_artists) {
+        if(!!artist.genre){
+            await pb.collection('genres').getFirstListItem(`genre="${artist.genre}"`).then(async function(res){
+                if(!!res){artist.genre = res.id;}
+                // Handle case where genre is not already in the database
+                else{
+                    await pb.collection('genres').create({genre: artist.genre})
+                        .catch(handleCreationException);
+                    await pb.collection('genres').getFirstListItem(`genre="${artist.genre}"`).then(new_res => artist.genre = new_res.id);
+                }});
+        }else{
+            artist.genre = null;
         }
-    )
+        await pb.collection('artists').create(artist)
+            .catch(handleCreationException);
+        // Turn the name of the genre into its id in the database
+        await pb.collection('artists').getFirstListItem(`artist_id="${artist.artist_id}"`).then(res => artist_db_ids.push(res.id));
+    }
+    datapoint.top_artists = artist_db_ids;
+    await pb.collection('datapoints').create(datapoint)
+        .catch(handleCreationException);
 }
 
 /**
  * getDatapoint makes a GET HTTP request to the PRDB to retrieve the most recent datapoint for a given user
  * in the database.
- * @param userID A global user ID.
+ * @param user_id A global user ID.
  * @param term [short_term, medium_term, long_term]
  * @param timeSens Whether or not the datapoint collection should be time sensitive.
  * @param delay If not time sensitive, enter the number of datapoints to skip. Default is
  * 0, and this behaviour will get the last known datapoint regardless of date.
  * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async (userID, term, timeSens, delay = 0) => {
-    let returnRes;
-    await axios.get(`https://photon-database.tk/PRDB/getDatapoint?userID=${userID}&term=${term}&timed=${timeSens}&delay=${delay}`).then(result => {
-        if (result.data != null) { // Does the datapoint exist? (Has the collectionDate been overwritten?)
-            returnRes = result.data;
-        } else {
-            returnRes = false;
-        }
-    }).catch(function (err) {
-        console.warn("Error getting datapoint: ")
-        console.warn(err)
-    })
-    return returnRes;
+export const getDatapoint = async (user_id, term, timeSens, delay = 0) => {
+     return await pb.collection('datapoints').getFirstListItem(
+         `user_id="${user_id}"&&term="${term}"`, {
+             expand: 'top_songs,top_artists,top_genres,top_artists.genre'
+         })
+        .catch(err => {
+            if(err.status === 404){
+                console.info(`No datapoints for ${user_id} found.`)
+            } else(console.warn(err));
+        })
 }

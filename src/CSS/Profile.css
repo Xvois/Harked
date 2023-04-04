@@ -27,11 +27,6 @@
     }
 }
 
-@media screen and (max-width: 1200px) {
-    .datapoint-title {
-        font-size: 20vw;
-    }
-}
 
 .compare-button{
     background: none;
@@ -75,7 +70,6 @@
     font-weight: 900;
     counter-increment: item;
     width: max-content;
-    transition: all 0.1s ease-out;
 }
 
 .list-item-ol {
@@ -444,9 +438,16 @@
     animation: fadeIn 0.5s ease-out;
 }
 
-@media screen and (max-width: 1160px) {
+@media screen and (max-width: 800px) {
+    .list-item-ol {
+        margin: 50px auto 50px auto;
+        padding: 0;
+        justify-content: center;
+        width: max-content;
+    }
     .list-item {
-        padding: 10px;
+        margin: auto;
+        font-weight: 600;
     }
     .focus-container {
         flex-direction: column;
@@ -456,6 +457,10 @@
     }
     .user-container {
         justify-content: center;
+    }
+    .datapoint-title {
+        width: max-content;
+        font-size: 20px;
     }
 }
 

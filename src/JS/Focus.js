@@ -9,7 +9,7 @@ import './../CSS/Focus.css'
 
 
 const Focus = React.memo((props) => {
-    const {user, item, datapoint, tertiary} = props;
+    const {user, item, datapoint, tertiary, type} = props;
     useEffect(() => {
         updateArtistQualities(datapoint);
         if (item) {
@@ -50,15 +50,15 @@ const Focus = React.memo((props) => {
         await delay(400);
         localState.image = item.image;
         localState.link = item.link;
-        if (item.type === "song") {
+        if (type === "songs") {
             localState.title = item.title;
             localState.secondary = `by ${item.artist}`;
             localState.tertiary = tertiary;
-        } else if (item.type === "artist") {
+        } else if (type === "artists") {
             localState.title = item.name;
             localState.secondary = item.genre;
             localState.tertiary = tertiary;
-        } else {
+        } else if (type == "genres") {
             localState.title = '';
             localState.secondary = item;
             localState.tertiary = '';
@@ -71,9 +71,9 @@ const Focus = React.memo((props) => {
     // Update the artist attributes that are used to make the focus
     // message.
     const updateArtistQualities = function (data) {
-        const songs = data.topSongs;
-        const artists = data.topArtists;
-        const genres = data.topGenres;
+        const songs = data.top_songs;
+        const artists = data.top_artists;
+        const genres = data.top_genres;
         let result = {};
         // The analytics from the datapoint that we will compare
         // Get the artist that has the max value in each
@@ -115,8 +115,8 @@ const Focus = React.memo((props) => {
         const item = focus.item;
         let topMessage = '';
         let secondMessage = '';
-        switch (item.type) {
-            case "artist":
+        switch (type) {
+            case "artists":
                 if (artistQualities[`${item.name}`] === undefined) {
                     // If the artist doesn't have a genre analysis then we assume
                     // that they are not wildly popular.
@@ -128,12 +128,12 @@ const Focus = React.memo((props) => {
                         topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
                 }
                 // The index of the song in the user's top songs list made by this artist.
-                const songIndex = datapoint.topSongs.findIndex((element) => element.artist === item.name);
+                const songIndex = datapoint.top_songs.findIndex((element) => element.artist === item.name);
                 if (songIndex !== -1) {
-                    secondMessage += `${datapoint.topSongs[songIndex].title} by ${item.name} is Nº ${songIndex + 1} on ${possessive} top 50 songs list for this time frame.`
+                    secondMessage += `${datapoint.top_songs[songIndex].title} by ${item.name} is Nº ${songIndex + 1} on ${possessive} top 50 songs list for this time frame.`
                 }
                 break;
-            case "song":
+            case "songs":
                 let maxAnalytic = "acousticness";
                 analyticsMetrics.forEach(analytic => {
                     let comparisonValue;
@@ -147,19 +147,19 @@ const Focus = React.memo((props) => {
                     }
                 })
                 topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
-                if (datapoint.topArtists.some((element) => element && element.name === item.artist)) {
-                    const index = datapoint.topArtists.findIndex((element) => element.name === item.artist);
+                if (datapoint.top_artists.some((element) => element && element.name === item.artist)) {
+                    const index = datapoint.top_artists.findIndex((element) => element.name === item.artist);
                     secondMessage += `${item.artist} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
-            case undefined:
+            case "genres":
                 let relevantArtists = [];
                 for (let artist in artistQualities) {
                     if (artistQualities[artist].genre === item) {
                         relevantArtists.push(artist);
                     }
                 }
-                datapoint.topArtists.forEach(artist => {
+                datapoint.top_artists.forEach(artist => {
                     if (!!artist) {
                         if (artist.genre === item && !relevantArtists.includes(artist.name)) {
                             relevantArtists.push(artist.name)

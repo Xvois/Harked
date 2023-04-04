@@ -24,8 +24,9 @@
     display: flex;
     text-decoration: none;
     opacity: 1;
-    width: auto;
+    width: 450px;
     height: 450px;
+    margin: auto;
     border-radius: 10%;
     transition: opacity 0.4s ease-in-out;
 }
@@ -122,6 +123,15 @@
     font-family: 'Inter Tight', sans-serif;
 
     text-align: justify;
+}
+
+@media screen and (max-width: 800px) {
+    .focus-container {
+        flex-direction: column;
+    }
+    .focus-message {
+        width: 80%;
+    }
 }
 
 

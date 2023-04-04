@@ -48,70 +48,71 @@ export const retrieveMedia = async function () {
 /**
  * Gets a user from the PRDB as well as updating the media attribute for the
  * current user, if that is the parameter.
- * @param userID A local userID.
- * @returns {Promise<{profilePicture: string, media: {image: string, name: string}, userID: string, username: string}>} A user object.
+ * @param user_id A local user_id.
+ * @returns {Promise<{profilePicture: string, media: {image: string, name: string}, user_id: string, username: string}>} A user object.
  */
-export const retrieveUser = async function (userID) {
+export const retrieveUser = async function (user_id) {
     let user = {
-        userID: '',
+        user_id: '',
         username: '',
-        profilePicture: '',
+        profile_picture: '',
         media: {name: '', image: ''},
     }
     // Check if we are retrieving the current user
-    if (userID === 'me') {
+    if (user_id === 'me') {
         // Get the global user ID from local storage
-        let globalUserID = window.localStorage.getItem("userID");
-        user.userID = globalUserID;
+        let globalUser_id = window.localStorage.getItem("user_id");
+        user.user_id = globalUser_id;
         // Get the user's profile information from the local database
-        await getUser(globalUserID).then(result => user = result);
+        await getUser(globalUser_id).then(result => user = result);
     } else {
         // Get the user's profile information from the local database
-        await getUser(userID).then(result => user = result);
+        await getUser(user_id).then(result => user = result);
     }
+    console.log(user);
     return user;
 }
 
 /**
  * Makes a put request to the API to follow the argument user from the logged-in user's account.
- * @param userID
+ * @param user_id
  */
-export const followUser = function (userID) {
-    putData(`me/following?type=user&ids=${userID}`);
+export const followUser = function (user_id) {
+    putData(`me/following?type=user&ids=${user_id}`);
 }
 /**
  * Makes a put request to the API to unfollow the argument user from the logged-in user's account.
- * @param userID
+ * @param user_id
  */
-export const unfollowUser = function (userID) {
-    deleteData(`me/following?type=user&ids=${userID}`);
+export const unfollowUser = function (user_id) {
+    deleteData(`me/following?type=user&ids=${user_id}`);
 }
 /**
- * Returns all of the userIDs currently in the database.
- * @returns {Promise<[userID: string]>}
+ * Returns all the user_ids currently in the database.
+ * @returns {Promise<[user_id: string]>}
  */
 export const retrieveAllUserIDs = async function () {
-    let userIDs;
+    let user_ids;
     // Deconstruct the array of objects to just an array
-    await getAllUserIDs().then(r => userIDs = r.map(function (id) {
+    await getAllUserIDs().then(r => user_ids = r.map(function (id) {
         return id.user_id
     }));
-    return userIDs;
+    return user_ids;
 }
 /**
  * Returns an array of public non-collaborative playlists from a given user.
- * @param userID
+ * @param user_id
  * @returns {Promise<[]>}
  */
-export const getPlaylists = async function (userID) {
-    let globalUserID = userID;
+export const getPlaylists = async function (user_id) {
+    let globalUser_id = user_id;
     let result;
-    if (globalUserID === 'me') {
-        globalUserID = window.localStorage.getItem("userID")
+    if (globalUser_id === 'me') {
+        globalUser_id = window.localStorage.getItem("user_id")
     }
-    await fetchData(`users/${globalUserID}/playlists`).then(data => result = data.items);
+    await fetchData(`users/${globalUser_id}/playlists`).then(data => result = data.items);
     await result.forEach(playlist => {
-        if (playlist.owner.id !== globalUserID) {
+        if (playlist.owner.id !== globalUser_id) {
             result.splice(result.indexOf(playlist), 1)
         }
     })
@@ -123,21 +124,21 @@ export const getPlaylists = async function (userID) {
  * @returns {Promise<void>}
  */
 export const postLoggedUser = async function () {
-    // Get our global userID
-    let globalUserID = window.localStorage.getItem("userID");
+    // Get our global user_id
+    let globalUser_id = window.localStorage.getItem("user_id");
     let user = {
-        userID: globalUserID,
+        user_id: globalUser_id,
         username: '',
-        profilePicture: '',
+        profile_picture: '',
         media: null,
     }
     // Get the profile details
     let profilePromise = fetchData("me").then(function (result) {
         user.username = result.display_name;
         if (result.images[0]) {
-            user.profilePicture = result.images[0].url;
+            user.profile_picture = result.images[0].url;
         } else if (result.images[0] === undefined) {
-            user.profilePicture = 'https://www.alphr.com/wp-content/uploads/2020/10/twitter.png';
+            user.profile_picture = 'https://www.alphr.com/wp-content/uploads/2020/10/twitter.png';
         }
     })
     await profilePromise;
@@ -145,11 +146,11 @@ export const postLoggedUser = async function () {
 }
 /**
  * A boolean function that returns true if the currently logged-in user follows the target and false if not.
- * @param userID
+ * @param user_id
  * @returns {Promise<*>}
  */
-export const followsUser = async function (userID) {
-    const data = await fetchData(`me/following/contains?type=user&ids=${userID}`);
+export const followsUser = async function (user_id) {
+    const data = await fetchData(`me/following/contains?type=user&ids=${user_id}`);
     return data[0];
 }
 /**
@@ -157,60 +158,70 @@ export const followsUser = async function (userID) {
  * @returns {boolean}
  */
 export const isLoggedIn = function () {
-    return !!(window.localStorage.getItem("userID") && window.localStorage.getItem("token"));
+    return !!(window.localStorage.getItem("user_id") && window.localStorage.getItem("token"));
 }
 
 /**
  * Returns a valid datapoint for a given user in a given term.
  * If the function does not get a valid datapoint from the database, it will hydrate the user's datapoints
  * and return a valid one from that selection.
- * @param userID
+ * @param user_id
  * @param term [short_term, medium_term, long_term]
  * @param delay
  * @returns {Promise<*>} A datapoint object.
  */
-export const retrieveDatapoint = async function (userID, term, delay = 0) {
+export const retrieveDatapoint = async function (user_id, term, delay = 0) {
     let currDatapoint;
     let timeSensitive = false;
-    let globalUserID = userID;
+    let globalUser_id = user_id;
     // Are we accessing the logged-in user?
     // [Unknowingly]
-    if (globalUserID === window.localStorage.getItem("userID")) {
+    if (globalUser_id === window.localStorage.getItem("user_id")) {
         timeSensitive = true
     }
     // [Knowingly]
-    else if (globalUserID === "me") {
+    else if (globalUser_id === "me") {
         timeSensitive = true;
-        globalUserID = window.localStorage.getItem("userID");
+        globalUser_id = window.localStorage.getItem("user_id");
     }
-    await getDatapoint(globalUserID, term, timeSensitive, delay).then(function (result) {
+    await getDatapoint(globalUser_id, term, timeSensitive, delay).then(function (result) {
         currDatapoint = result;
     }).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
-    if (!currDatapoint && userID === 'me') {
+    if (!currDatapoint && user_id === 'me') {
         await hydrateDatapoints().then(async () =>
-            await getDatapoint(globalUserID, term, timeSensitive).then(result =>
+            await getDatapoint(globalUser_id, term, timeSensitive).then(result =>
                 currDatapoint = result
             )
         );
     }
+    // Turn relation ids into the actual arrays / records themselves using
+    // pocketbase's expand property
+    currDatapoint.top_artists = currDatapoint.expand.top_artists;
+    currDatapoint.top_songs = currDatapoint.expand.top_songs;
+    currDatapoint.top_genres = currDatapoint.expand.top_genres.map(e => e.genre);
+    currDatapoint.top_artists.map(e => e.genre = e.expand.genre?.genre);
+    delete currDatapoint.expand;
+    currDatapoint.top_artists.forEach(e => delete e.expand);
+
+    console.log(currDatapoint);
     return currDatapoint;
 }
 /**
  * Retrieves the last previous datapoint instead of the most recent one. False is returned if none exists.
- * @param userID
+ * @param user_id
  * @param term [short_term, medium_term, long_term]
  * @returns {Promise<*> || false} A datapoint object.
  */
-export const retrievePreviousDatapoint = async function (userID, term) {
+export const retrievePreviousDatapoint = async function (user_id, term) {
     let result;
-    let globalUserID = userID;
-    if (globalUserID === "me") {
-        globalUserID = window.localStorage.getItem("userID");
+    let globalUser_id = user_id;
+    if (globalUser_id === "me") {
+        globalUser_id = window.localStorage.getItem("user_id");
     }
-    await getDatapoint(globalUserID, term, false, 1).then(r => result = r);
+    await getDatapoint(globalUser_id, term, false, 1).then(r => result = r);
     return result;
 }
 // noinspection JSUnusedGlobalSymbols
@@ -259,19 +270,19 @@ export const fillDatabase = async function () {
  * @param songs
  * @param analytics
  * @param artists
- * @returns {{datapoints: *[], user: {profilePicture: string, media: null, userID: string, username: string}}}
+ * @returns {{datapoints: *[], user: {profilePicture: string, media: null, user_id: string, username: string}}}
  */
 const createFauxUser = function (songs, analytics, artists) {
-    let userID = '';
+    let user_id = '';
     let username = '';
     let datapoints = []
     for (let i = 0; i < 20; i++) {
         // Get capital letters
-        userID += String.fromCharCode(Math.floor(Math.random() * 25) + 65);
+        user_id += String.fromCharCode(Math.floor(Math.random() * 25) + 65);
         username += String.fromCharCode(Math.floor(Math.random() * 25) + 65);
     }
     let user = {
-        userID: userID,
+        user_id: user_id,
         username: username,
         // Twitter default profile picture
         profilePicture: 'https://i0.wp.com/www.alphr.com/wp-content/uploads/2020/10/twitter.png?w=690&ssl=1',
@@ -280,7 +291,7 @@ const createFauxUser = function (songs, analytics, artists) {
     const terms = ['short_term', 'medium_term', 'long_term'];
     terms.forEach(function (term) {
         let datapoint = {
-            userID: userID,
+            user_id: user_id,
             collectionDate: Date.now(),
             term: term,
             topSongs: [],
@@ -293,8 +304,6 @@ const createFauxUser = function (songs, analytics, artists) {
             if (!usedSongSeeds.includes(songSeed)) {
                 datapoint.topSongs.push({
                     song_id: songs[songSeed].id,
-                    type: "song",
-                    name: parseSong(songs[songSeed]),
                     title: songs[songSeed].name,
                     artist: songs[songSeed].artists[0].name,
                     image: songs[songSeed].album.images[1].url,
@@ -311,7 +320,6 @@ const createFauxUser = function (songs, analytics, artists) {
                 try {
                     datapoint.topArtists.push({
                         artist_id: artists[artistSeed].id,
-                        type: "artist",
                         name: artists[artistSeed].name,
                         image: artists[artistSeed].images[1].url,
                         link: `https://open.spotify.com/artist/${artists[artistSeed].id}`,
@@ -334,11 +342,11 @@ const createFauxUser = function (songs, analytics, artists) {
 
 // noinspection JSUnusedGlobalSymbols
 export const deleteAllFauxUsers = async () => {
-    let userIDs;
-    await getAllUserIDs().then(res => userIDs = res.map(e => e.user_id));
-    for (const userID of userIDs) {
-        if (userID.length === 20) {
-            await deleteUser(userID);
+    let user_ids;
+    await getAllUserIDs().then(res => user_ids = res.map(e => e.user_id));
+    for (const user_id of user_ids) {
+        if (user_id.length === 20) {
+            await deleteUser(user_id);
         }
     }
 }
@@ -374,71 +382,69 @@ export const getLikedSongsFromArtist = async function (artistID, playlists) {
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.
  */
-const hydrateDatapoints = async function () {
-    console.info("Hydrating...");
+export const hydrateDatapoints = async function () {
     const terms = ['short_term', 'medium_term', 'long_term'];
     for (const term of terms) {
-        console.warn("Hydrating: " + term)
+        console.info("Hydrating: " + term)
         let datapoint = {
-            userID: window.localStorage.getItem("userID"),
+            user_id: window.localStorage.getItem("user_id"),
             collectionDate: Date.now(),
             term: term,
-            topSongs: [],
-            topArtists: [],
-            topGenres: [],
+            top_songs: [],
+            top_artists: [],
+            top_genres: [],
         }
-        let topTracks;
-        let topArtists;
+        let top_songs;
+        let top_artists;
         let analyticsIDs = "";
         let analytics;
         // Queue up promises
         let promises = [await fetchData(`me/top/tracks?time_range=${term}&limit=50`), await fetchData(`me/top/artists?time_range=${term}`)];
         // Await the promises for the arrays of data
         await Promise.all(promises).then(function (result) {
-            topTracks = result[0].items;
-            topArtists = result[1].items;
+            top_songs = result[0].items;
+            top_artists = result[1].items;
         })
         // Concatenate the strings, so they can be
         // used in the analytics call
-        topTracks.forEach(track => analyticsIDs += track.id + ',')
+        top_songs.forEach(track => analyticsIDs += track.id + ',')
         await fetchData(`audio-features?ids=${analyticsIDs}`).then(function (result) {
             analytics = result.audio_features
         })
         // Add all the songs
-        for (let i = 0; i < topTracks.length; i++) {
-            datapoint.topSongs.push({
-                song_id: topTracks[i].id,
+        for (let i = 0; i < top_songs.length; i++) {
+            datapoint.top_songs.push({
+                song_id: top_songs[i].id,
                 song: true,
-                name: parseSong(topTracks[i]),
-                title: topTracks[i].name,
-                artist: topTracks[i].artists[0].name,
-                image: topTracks[i].album.images[1].url,
-                link: topTracks[i].external_urls.spotify,
+                name: parseSong(top_songs[i]),
+                title: top_songs[i].name,
+                artist: top_songs[i].artists[0].name,
+                image: top_songs[i].album.images[1].url,
+                link: top_songs[i].external_urls.spotify,
                 analytics: analytics[i]
             })
         }
         // Add all the artists
-        for (let i = 0; i < topArtists.length; i++) {
+        for (let i = 0; i < top_artists.length; i++) {
             try {
-                datapoint.topArtists.push({
-                    artist_id: topArtists[i].id,
+                datapoint.top_artists.push({
+                    artist_id: top_artists[i].id,
                     artist: true,
-                    name: topArtists[i].name,
-                    image: topArtists[i].images[1].url,
-                    link: `https://open.spotify.com/artist/${topArtists[i].id}`,
-                    genre: topArtists[i].genres[0]
+                    name: top_artists[i].name,
+                    image: top_artists[i].images[1].url,
+                    link: `https://open.spotify.com/artist/${top_artists[i].id}`,
+                    genre: top_artists[i].genres[0]
                 })
             } catch (error) { //catch error when artist does not have PFP
                 console.warn(error)
             }
         }
-        datapoint.topGenres = calculateTopGenres(topArtists);
+        datapoint.top_genres = calculateTopGenres(top_artists);
         await postDatapoint(datapoint).then(function () {
-            console.log(term + " success!");
-            console.log(datapoint)
+            console.info(term + " success!");
         });
     }
-    console.warn("Hydration over.")
+    console.info("Hydration over.")
 }
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.

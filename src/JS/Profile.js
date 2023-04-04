@@ -36,42 +36,42 @@ import {redirect, useNavigate} from "react-router-dom";
 
 const Profile = () => {
     const [focusedPlaylist, setFocusedPlaylist] = useState();
-    const [userID, setUserID] = useState(window.location.hash.split("#")[1]);
+    const [user_id, setuser_id] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
     const [focusItem, setFocusItem] = useState();
     const [focusTertiary, setFocusTertiary] = useState();
     const [statsSelection, setStatsSelection] = useState();
     const [artistQualities, setArtistQualities] = useState();
     const [currentUser, setCurrentUser] = useState({
-        userID: '',
+        user_id: '',
         username: '',
-        profilePicture: '',
+        profile_picture: '',
         media: {name: '', image: ''},
     });
     const [likedSongsFromArtist, setLikedSongsFromArtist] = useState([]);
     const [datapoint, setDatapoint] = useState({
-        userID: '',
+        user_id: '',
         collectionDate: '',
         term: '',
-        topSongs: [],
-        topArtists: [],
-        topGenres: [],
+        top_songs: [],
+        top_artists: [],
+        top_genres: [],
     });
     const [prevDatapoint, setPrevDatapoint] = useState({
-        userID: '',
+        user_id: '',
         collectionDate: '',
         term: '',
-        topSongs: [],
-        topArtists: [],
-        topGenres: [],
+        top_songs: [],
+        top_artists: [],
+        top_genres: [],
     });
     const [term, setTerm] = useState("long_term");
     const terms = ["short_term", "medium_term", "long_term"];
     // The datapoint we are currently on
-    const [simpleSelection, setSimpleSelection] = useState("Artists")
+    const [simpleSelection, setSimpleSelection] = useState("artists")
     const [playlists, setPlaylists] = useState(null)
     const [genreMessage, setGenreMessage] = useState(<p>Undefined</p>);
-    const simpleDatapoints = ["Artists", "Songs", "Genres"]
+    const simpleDatapoints = ["artists", "songs", "genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     // Take it to be "X music"
     const translateAnalytics = {
@@ -87,6 +87,11 @@ const Profile = () => {
     const [following, setFollowing] = useState(null);
     const [selectionAnalysis, setSelectionAnalysis] = useState();
     const [chipData, setChipData] = useState();
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const mobileWidth = 800;
+    window.addEventListener("resize", function() {
+        setWindowWidth(window.innerWidth);
+    });
     // Update page when new user is chosen
     window.addEventListener("hashchange", function () {
         window.location.reload(false);
@@ -95,14 +100,14 @@ const Profile = () => {
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;
-        switch (data.type) {
-            case "artist":
+        switch (simpleSelection) {
+            case "artists":
                 result = data.name;
                 break;
-            case "song":
+            case "songs":
                 result = data.title;
                 break;
-            case undefined:
+            case "genres":
                 result = data;
                 break;
             default:
@@ -120,11 +125,11 @@ const Profile = () => {
         let newIndex;
         index === 2 ? newIndex = simpleDatapoints[0] : newIndex = simpleDatapoints[index + 1];
         setSimpleSelection(newIndex);
-        setFocusItem(datapoint[`top${newIndex}`][0]);
-        const possessive = userID === 'me' ? 'your' : `${currentUser.username}'s`
+        setFocusItem(datapoint[`top_${newIndex}`][0]);
+        const possessive = user_id === 'me' ? 'your' : `${currentUser.username}'s`
         setFocusTertiary(`${possessive} top ${newIndex.slice(0, newIndex.length - 1)}`);
         if (newIndex === 'Genres') {
-            createGenreMessage(datapoint[`topGenres`][0])
+            createGenreMessage(datapoint[`top_genres`][0])
         }
     }
     // Change the simple datapoint -1
@@ -133,11 +138,11 @@ const Profile = () => {
         let newIndex;
         index === 0 ? newIndex = simpleDatapoints[2] : newIndex = simpleDatapoints[index - 1];
         setSimpleSelection(newIndex);
-        setFocusItem(datapoint[`top${newIndex}`][0]);
-        const possessive = userID === 'me' ? 'your' : `${currentUser.username}'s`
+        setFocusItem(datapoint[`top_${newIndex}`][0]);
+        const possessive = user_id === 'me' ? 'your' : `${currentUser.username}'s`
         setFocusTertiary(`${possessive} top ${newIndex.slice(0, newIndex.length - 1)}`);
         if (newIndex === 'Genres') {
-            createGenreMessage(datapoint[`topGenres`][0])
+            createGenreMessage(datapoint[`top_genres`][0])
         }
     }
     const getIndexChange = function (item, index, parentArray) {
@@ -180,7 +185,7 @@ const Profile = () => {
     }
     const createGenreMessage = (item) => {
         let possessive;
-        userID === 'me' ? possessive = 'your' : possessive = `${currentUser.username}'s`
+        user_id === 'me' ? possessive = 'your' : possessive = `${currentUser.username}'s`
         let topMessage;
         let secondMessage;
         let relevantArtists = [];
@@ -189,7 +194,7 @@ const Profile = () => {
                 relevantArtists.push(artist);
             }
         }
-        datapoint.topArtists.forEach(artist => {
+        datapoint.top_artists.forEach(artist => {
             if (!!artist) {
                 if (artist.genre === item && !relevantArtists.includes(artist.name)) {
                     relevantArtists.push(artist.name)
@@ -214,7 +219,7 @@ const Profile = () => {
             if (relevantArtists.length === 1) {
                 topMessage =
                     <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is very well marked
-                        by {userID === 'me' ? 'your' : 'their'} time listening to <span
+                        by {user_id === 'me' ? 'your' : 'their'} time listening to <span
                             style={{color: '#22C55E'}}>{relevantArtists[0]}</span>.</h2>
             } else {
                 topMessage =
@@ -401,7 +406,7 @@ const Profile = () => {
                 top: '0',
                 fontFamily: 'Inter Tight',
                 position: 'absolute'
-            }}>{userID === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focusItem ? focusItem.name : ''}
+            }}>{user_id === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focusItem ? focusItem.name : ''}
             </h3>
             {points ?
                 (points.length > 0 ?
@@ -442,20 +447,21 @@ const Profile = () => {
     // Function that loads the page when necessary
     const loadPage = () => {
         // If the page hasn't loaded then grab the user data
-        if (userID === window.localStorage.getItem("userID") || userID === "me") {
+        if (user_id === window.localStorage.getItem("user_id") || user_id === "me") {
             window.location.hash = "me";
-            setUserID("me")
+            setuser_id("me")
         } else {
-            setUserID(window.location.hash.split("#")[1])
+            setuser_id(window.location.hash.split("#")[1])
             if (isLoggedIn()) {
-                followsUser(userID).then(following => setFollowing(following));
+                followsUser(user_id).then(following => setFollowing(following));
             }
         }
         if (!loaded) {
             // Get the user information
-            retrieveUser(userID).then(function (result) {
+            retrieveUser(user_id).then(function (result) {
+                console.log(result)
                 setCurrentUser(result);
-                if (userID === window.localStorage.getItem("userID") || userID === "me") {
+                if (user_id === window.localStorage.getItem("user_id") || user_id === "me") {
                     retrieveMedia().then(function (media) {
                         setCurrentUser({
                             ...result,
@@ -463,27 +469,27 @@ const Profile = () => {
                         })
                     })
                 }
-                document.title = `Photon | ${result.username}`;
+                document.title = `Harked | ${result.username}`;
             })
         }
         // Update the datapoint
-        retrieveDatapoint(userID, term).then(function (dpResult) {
+        retrieveDatapoint(user_id, term).then(function (dpResult) {
             if(!dpResult){alert(`There is no datapoint found for ${currentUser.username} in this term. This is likely because they do not use Spotify enough.`);}
             else{
                 console.log(dpResult)
                 setDatapoint(dpResult)
-                analyseSongs(dpResult.topSongs);
+                analyseSongs(dpResult.top_songs);
                 if (isLoggedIn()) {
-                    getPlaylists(userID).then(pResults => {
+                    getPlaylists(user_id).then(pResults => {
                         setFocusedPlaylist(pResults[0]);
                         console.log(pResults);
                         setPlaylists(pResults);
                     })
                 }
                 if (!chipData) {
-                    setChipData([dpResult.topArtists[0], dpResult.topGenres[0]])
+                    setChipData([dpResult.top_artists[0], dpResult.top_genres[0]])
                 }
-                retrievePreviousDatapoint(userID, term).then(function (prevD) {
+                retrievePreviousDatapoint(user_id, term).then(function (prevD) {
                     setPrevDatapoint(prevD);
                 })
             }
@@ -491,19 +497,19 @@ const Profile = () => {
         })
     }
     useEffect(() => {
-        if (!isLoggedIn() && userID === "me") {
+        if (!isLoggedIn() && user_id === "me") {
             window.location.replace(authURI)
         }
         loadPage();
-    }, [term, userID])
+    }, [term, user_id])
 
     useEffect(() => {
-        const updateItem = datapoint[`top${simpleSelection}`][0];
+        const updateItem = datapoint[`top_${simpleSelection}`][0];
         if (updateItem) {
             setFocusItem(updateItem);
-            const possessive = userID === 'me' ? 'your' : `${currentUser.username}'s`
+            const possessive = user_id === 'me' ? 'your' : `${currentUser.username}'s`
             setFocusTertiary(`${possessive} top ${simpleSelection.slice(0, simpleSelection.length - 1)}`);
-            if (updateItem.type === 'artist') {
+            if (simpleSelection === 'artists') {
                 console.info('Updating liked songs from artist!')
                 getLikedSongsFromArtist(updateItem.artist_id, playlists).then(res => setLikedSongsFromArtist(res));
             }
@@ -540,17 +546,17 @@ const Profile = () => {
                 </div>
                 :
                 <div className='wrapper'>
-                    <div className='user-container' style={{'--pfp': `url(${currentUser.profilePicture})`}}>
-                        <img className='profile-picture' alt='Profile' src={currentUser.profilePicture}></img>
+                    <div className='user-container' style={{'--pfp': `url(${currentUser.profile_picture})`}}>
+                        <img className='profile-picture' alt='Profile' src={currentUser.profile_picture}></img>
                         <div style={{display: `flex`, flexDirection: `column`, paddingLeft: `5px`}}>
                             <h3 style={{margin: '0 0 -2px 0', fontSize: '14px'}}>Profile for</h3>
                             <div className='username'>{currentUser.username}</div>
-                            {userID !== "me" && isLoggedIn() ? <a className={"auth-button"}
-                                                                  href={`/compare#${window.localStorage.getItem("userID")}&${currentUser.userID}`}>Compare</a> : <></>}
+                            {user_id !== "me" && isLoggedIn() ? <a className={"auth-button"}
+                                                                  href={`/compare#${window.localStorage.getItem("user_id")}&${currentUser.user_id}`}>Compare</a> : <></>}
                             <p style={{fontWeight: 'bold', fontFamily: 'Inter Tight', margin: '10px 0 0 0'}}><span
                                 style={{color: '#22C55E'}}>{chipData[0].name}</span> fan · <span
                                 style={{color: '#22C55E'}}>{chipData[1]}</span> fan</p>
-                            <a target="_blank" href={`https://open.spotify.com/user/${currentUser.userID}`}
+                            <a target="_blank" href={`https://open.spotify.com/user/${currentUser.user_id}`}
                                className='spotify-link'
                                style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
@@ -570,7 +576,7 @@ const Profile = () => {
                                             alignItems: 'center',
                                             justifyContent: 'right',
                                         }} onClick={function () {
-                                            unfollowUser(userID);
+                                            unfollowUser(user_id);
                                             setFollowing(false)
                                         }}>
                                             <CheckCircleOutlineIcon className={"follow-button"} fontSize="medium"
@@ -583,7 +589,7 @@ const Profile = () => {
                                             alignItems: 'center',
                                             justifyContent: 'right'
                                         }} onClick={function () {
-                                            followUser(userID);
+                                            followUser(user_id);
                                             setFollowing(true)
                                         }}>
                                             <AddCircleOutlineIcon fontSize="medium"/>
@@ -605,7 +611,7 @@ const Profile = () => {
                         }}>
                             <img src={arrow} style={{transform: `rotate(180deg) scale(10%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
-                            <h2 className='datapoint-title' style={{height: 'max-content'}}>Top {simpleSelection}</h2>
+                            <h2 className='datapoint-title'>Top {simpleSelection}</h2>
                             <img src={arrow} style={{transform: `scale(10%)`, cursor: `pointer`}}
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
@@ -627,11 +633,11 @@ const Profile = () => {
                             })}
                         </div>
                         <div className='simple-container'>
-                            <ol className={"list-item-ol"} style={{width: '400px'}}>
-                                {datapoint[`top${simpleSelection}`].map(function (element, i) {
+                            <ol className={"list-item-ol"}>
+                                {datapoint[`top_${simpleSelection}`].map(function (element, i) {
                                     if (i < 10 && element) {
-                                        const message = i < 3 ? `${userID === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${element.type}` : ``;
-                                        const indexChange = getIndexChange(element, i, `top${simpleSelection}`);
+                                        const message = i < 3 ? `${user_id === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${simpleSelection.slice(0, simpleSelection.length - 1)}` : ``;
+                                        const indexChange = getIndexChange(element, i, `top_${simpleSelection}`);
                                         let changeMessage;
                                         if (indexChange < 0) {
                                             changeMessage = <><span style={{
@@ -656,18 +662,18 @@ const Profile = () => {
                                                 style={{color: '#22C55E', animation: 'equals-animation 0.5s ease-out'}}
                                                 fontSize={"small"}></ClearAllOutlinedIcon>
                                         }
-                                        return <li key={element.type ? element[`${element.type}_id`] : element}
+                                        return <li key={simpleSelection !== 'genres' ? element[`${simpleSelection.slice(0, simpleSelection.length - 1)}_id`] : element}
                                                    className='list-item'
                                                    onClick={() => {
-                                                       if (element.type === 'artist') {
+                                                       if (simpleSelection === 'artists') {
                                                            getLikedSongsFromArtist(element.artist_id, playlists).then(res => {
                                                                setLikedSongsFromArtist(res);
                                                            });
-                                                       } else if (element.type === 'song') {
+                                                       } else if (simpleSelection === 'songs') {
                                                            setStatsSelection(element.analytics);
                                                        }
                                                        setFocusItem(element);
-                                                       if (element.type) {
+                                                       if (simpleSelection !== 'genres') {
                                                            setFocusTertiary(message);
                                                        } else {
                                                            createGenreMessage(element);
@@ -678,7 +684,7 @@ const Profile = () => {
                                     }
                                 })}
                             </ol>
-                            {simpleSelection === 'Songs' ?
+                            {simpleSelection === 'songs' && windowWidth > mobileWidth ?
                                 <div style={{display: 'flex', flexDirection: 'column', margin: 'auto'}}>
                                     {statsSelection ?
                                         <h2 className={'stats-title'}
@@ -686,7 +692,7 @@ const Profile = () => {
                                             onClick={() => setStatsSelection(null)}>{focusItem.title}<ClearIcon
                                             fontSize={'small'}/></h2>
                                         :
-                                        <h2 className={'stats-title'}>{userID === 'me' ? 'your' : `${currentUser.username}'s`}
+                                        <h2 className={'stats-title'}>{user_id === 'me' ? 'your' : `${currentUser.username}'s`}
                                             <span style={{color: '#22C55E'}}> average</span> song analytics.</h2>
                                     }
                                     <div className={'simple-stats'}>
@@ -728,7 +734,7 @@ const Profile = () => {
                                 :
                                 <></>
                             }
-                            {simpleSelection === 'Artists' ?
+                            {simpleSelection === 'artists' && windowWidth > mobileWidth ?
                                 (isLoggedIn() ?
                                         <ArtistConstellation/>
                                         :
@@ -741,7 +747,7 @@ const Profile = () => {
                                 :
                                 <></>
                             }
-                            {simpleSelection === 'Genres' ?
+                            {simpleSelection === 'aenres' && windowWidth > mobileWidth ?
                                 <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
                                     {genreMessage}
                                 </div>
@@ -751,12 +757,12 @@ const Profile = () => {
                         </div>
                         <div style={simpleSelection === 'Genres' ? {display: 'none'} : {}}>
                             <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint}
-                                   tertiary={focusTertiary}/>
+                                   tertiary={focusTertiary} type={simpleSelection}/>
                         </div>
                     </div>
                     {simpleSelection === 'Songs' ?
                         <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
-                               data={datapoint.topSongs.map(song => song.analytics)} parent={datapoint.topSongs}/>
+                               data={datapoint.top_songs.map(song => song.analytics)} parent={datapoint.top_songs}/>
                         :
                         <></>
                     }
@@ -775,7 +781,7 @@ const Profile = () => {
                                     <p>There's nothing here...</p>
                                     :
                                     <>
-                                        <ol className={"list-item-ol"} style={{width: "max-content"}}>
+                                        <ol className={"list-item-ol"}>
                                             {
                                                 playlists.map(function (playlist) {
                                                     return <li onClick={() => setFocusedPlaylist(playlist)}
