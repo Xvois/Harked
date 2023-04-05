@@ -168,6 +168,13 @@ const handleCreationException = (err) => {
             console.error(err.data);
     }
 }
+const handleUpdateException = (err) => {
+    switch (err.status){
+        default:
+            console.error(`Error ${err.status} updating database record.`)
+            console.error(err.data);
+    }
+}
 async function artistsToIDs(artists) {
     let artist_db_ids = [];
     for (const artist of artists) {
@@ -255,13 +262,13 @@ async function genresToIDs(genres) {
     return genres_db_ids;
 }
 // TODO: MAKE PLAYLISTS GET POSTED ON LOG-IN
-// TODO: ENSURE ANALYTICS OF SONGS ALREADY IN DB ARE NOT FETCHED
-// TODO: ADD SYSTEM TO POST MULTIPLE PLAYLISTS
 export const postPlaylist = async (playlist) => {
     // Fetch the tracks of the playlist from the Spotify API
     const res = await fetchData(`playlists/${playlist.id}/tracks`);
+
     // Extract the track objects from the response
     const tracks = res.items.map(e => e.track);
+
     // Transform the track objects into our desired format
     const transformedTracks = tracks.map(track => ({
         song_id: track.id,
@@ -271,13 +278,38 @@ export const postPlaylist = async (playlist) => {
         link: track.external_urls.spotify,
         analytics: {}
     }));
+
+    let newTracks = [];
+    for (const track of transformedTracks) {
+        await pb.collection('songs').getFirstListItem(`song_id="${track.song_id}"`) //TODO : THIS TAKES A WHILE
+            .then(res => track.analytics = res.analytics)
+            .catch(function (err) {
+                switch (err.status) {
+                    case 404:
+                        // Track not found, add to newTracks array
+                        newTracks.push(track);
+                        // Remove the track from the transformedTracks array
+                        transformedTracks.slice(transformedTracks.findIndex(t => t.song_id === track.song_id), 1);
+                        break;
+                    default:
+                        console.error('Error finding song.');
+                        console.error(err);
+                        break;
+                }
+            });
+    }
+
     // Add audio feature analytics to all songs
-    const analytics = await batchAnalytics(transformedTracks);
-    transformedTracks.forEach((track, i) => track.analytics = analytics[i]);
+    const analytics = await batchAnalytics(newTracks);
+    newTracks.forEach((track, i) => track.analytics = analytics[i]);
+    transformedTracks.push(...newTracks);
+
     // Convert the transformed tracks into an array of IDs
     const ids = await songsToIDs(transformedTracks);
+
     // Get the playlist owner's ID from our database
     const owner = await pb.collection('users').getFirstListItem(`user_id="${playlist.owner.id}"`);
+
     // Construct the playlist object with the extracted data
     const playlistObj = {
         playlist_id: playlist.id,
@@ -287,9 +319,30 @@ export const postPlaylist = async (playlist) => {
         tracks: ids,
         image: playlist.images[0].url
     };
-    // Create the playlist in our database
-    await pb.collection('playlists').create(playlistObj)
-        .catch(handleCreationException);
+
+    try {
+        // Check if the playlist already exists in our database
+        const res = await pb.collection('playlists').getFirstListItem(`playlist_id="${playlist.id}"`);
+        await pb.collection('playlists').update(res.id, playlistObj);
+    } catch (err) {
+        if (err.status === 404) {
+            // Playlist not found, create a new one in our database
+            await pb.collection('playlists').create(playlistObj);
+        } else {
+            console.error('Error finding/updating playlist.');
+            console.error(err);
+        }
+    }
+
+    console.info(`PLAYLIST: '${playlist.name}' posted!`)
+};
+
+
+
+export const postMultiplePlaylists = async (playlists) => {
+    for (const playlist of playlists) {
+        await postPlaylist(playlist);
+    }
 };
 
 /**

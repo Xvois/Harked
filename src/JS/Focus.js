@@ -56,9 +56,9 @@ const Focus = React.memo((props) => {
             localState.tertiary = tertiary;
         } else if (type === "artists") {
             localState.title = item.name;
-            localState.secondary = item.genre;
+            localState.secondary = item.genres[0];
             localState.tertiary = tertiary;
-        } else if (type == "genres") {
+        } else if (type === "genres") {
             localState.title = '';
             localState.secondary = item;
             localState.tertiary = '';

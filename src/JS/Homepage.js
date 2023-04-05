@@ -10,7 +10,7 @@ import {hydrateDatapoints, retrieveAllUserIDs, retrieveDatapoint, retrievePlayli
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {getAllUsers, getUser, postPlaylist, getPlaylists} from "./API";
+import {getAllUsers, getUser, postPlaylist, getPlaylists, fetchData, postMultiplePlaylists} from "./API";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -65,7 +65,7 @@ function Homepage() {
                     <button onClick={() => getAllUsers().then(res => console.log(res))}>Get all.</button>
                     <button onClick={() => retrieveDatapoint('me', 'long_term').then(res => console.log(res))}>Get datapoint.</button>
                     <button onClick={() => hydrateDatapoints()}>Force hydration.</button>
-                    <button onClick={() => retrievePlaylists('me').then(res => postPlaylist(res[0]))}>Post playlist.</button>
+                    <button onClick={() => fetchData('users/sonn-gb/playlists').then(res => postMultiplePlaylists(res.items))}>Post playlists.</button>
                     <button onClick={() => getPlaylists('sonn-gb').then(res => console.log(res))}>Get playlists.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
