@@ -52,7 +52,7 @@ const Focus = React.memo((props) => {
         localState.link = item.link;
         if (type === "songs") {
             localState.title = item.title;
-            localState.secondary = `by ${item.artist}`;
+            localState.secondary = `by${item.artists.map((e,i) => ' ' + e.name)}`;
             localState.tertiary = tertiary;
         } else if (type === "artists") {
             localState.title = item.name;
@@ -82,7 +82,7 @@ const Focus = React.memo((props) => {
             let max = {artist: '', value: 0};
             for (let i = 0; i < 50; i++) {
                 if (songs[i].analytics[metric] > max.value) {
-                    max.artist = songs[i].artist;
+                    max.artist = songs[i].artists[0].name;
                     max.value = songs[i].analytics[metric];
                 }
             }
@@ -96,10 +96,10 @@ const Focus = React.memo((props) => {
         artists.forEach(artist => {
             // Add the genre quality to them
             // equal to their genre
-            if (artist && genres.includes(artist.genre)) {
+            if (!!artist.genres && genres.includes(artist.genres[0])) {
                 result[artist.name] = {
                     ...result[artist.name],
-                    genre: artist.genre
+                    genre: artist.genres[0]
                 }
             }
         })
@@ -128,7 +128,7 @@ const Focus = React.memo((props) => {
                         topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistQualities[item.name][Object.keys(artistQualities[item.name])[0]]} music.`
                 }
                 // The index of the song in the user's top songs list made by this artist.
-                const songIndex = datapoint.top_songs.findIndex((element) => element.artist === item.name);
+                const songIndex = datapoint.top_songs.findIndex((element) => element.artists[0].name === item.name);
                 if (songIndex !== -1) {
                     secondMessage += `${datapoint.top_songs[songIndex].title} by ${item.name} is Nº ${songIndex + 1} on ${possessive} top 50 songs list for this time frame.`
                 }
@@ -146,10 +146,10 @@ const Focus = React.memo((props) => {
                         maxAnalytic = analytic;
                     }
                 })
-                topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by ${item.artist}.`
-                if (datapoint.top_artists.some((element) => element && element.name === item.artist)) {
-                    const index = datapoint.top_artists.findIndex((element) => element.name === item.artist);
-                    secondMessage += `${item.artist} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
+                topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by${item.artists.map((e,i) => ' ' + e.name)}.`
+                if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
+                    const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
+                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
             case "genres":
@@ -160,8 +160,8 @@ const Focus = React.memo((props) => {
                     }
                 }
                 datapoint.top_artists.forEach(artist => {
-                    if (!!artist) {
-                        if (artist.genre === item && !relevantArtists.includes(artist.name)) {
+                    if (!!artist.genres) {
+                        if (artist.genres[0] === item && !relevantArtists.includes(artist.name)) {
                             relevantArtists.push(artist.name)
                         }
                     }

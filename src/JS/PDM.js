@@ -3,9 +3,9 @@ import {
     deleteUser,
     fetchData,
     getAllUserIDs,
-    getDatapoint,
+    getDatapoint, getPlaylists,
     getUser,
-    postDatapoint,
+    postDatapoint, postPlaylist,
     postUser,
     putData
 } from "./API";
@@ -104,19 +104,13 @@ export const retrieveAllUserIDs = async function () {
  * @param user_id
  * @returns {Promise<[]>}
  */
-export const getPlaylists = async function (user_id) {
+export const retrievePlaylists = async function (user_id) {
     let globalUser_id = user_id;
     let result;
     if (globalUser_id === 'me') {
         globalUser_id = window.localStorage.getItem("user_id")
     }
-    await fetchData(`users/${globalUser_id}/playlists`).then(data => result = data.items);
-    await result.forEach(playlist => {
-        if (playlist.owner.id !== globalUser_id) {
-            result.splice(result.indexOf(playlist), 1)
-        }
-    })
-    return result;
+    return getPlaylists(globalUser_id);
 }
 
 /**
@@ -138,7 +132,7 @@ export const postLoggedUser = async function () {
         if (result.images[0]) {
             user.profile_picture = result.images[0].url;
         } else if (result.images[0] === undefined) {
-            user.profile_picture = 'https://www.alphr.com/wp-content/uploads/2020/10/twitter.png';
+            user.profile_picture = null;
         }
     })
     await profilePromise;
@@ -202,11 +196,15 @@ export const retrieveDatapoint = async function (user_id, term, delay = 0) {
     currDatapoint.top_artists = currDatapoint.expand.top_artists;
     currDatapoint.top_songs = currDatapoint.expand.top_songs;
     currDatapoint.top_genres = currDatapoint.expand.top_genres.map(e => e.genre);
-    currDatapoint.top_artists.map(e => e.genre = e.expand.genre?.genre);
+    currDatapoint.top_artists.map(e => e.genres = e.expand.genres?.map(g => g.genre));
+    currDatapoint.top_songs.map(e => e.artists = e.expand.artists);
+    currDatapoint.top_songs.map(e => e.artists.map(a => a.genres = a.expand.genres?.map(g => g.genre)));
+    // Delete redundant expansions
     delete currDatapoint.expand;
     currDatapoint.top_artists.forEach(e => delete e.expand);
+    currDatapoint.top_songs.forEach(e => delete e.expand);
+    currDatapoint.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
 
-    console.log(currDatapoint);
     return currDatapoint;
 }
 /**
@@ -340,6 +338,25 @@ const createFauxUser = function (songs, analytics, artists) {
     };
 }
 
+function chunks(array, size) {
+    const result = [];
+    for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size));
+    }
+    return result;
+}
+
+export const batchAnalytics = async (songs) => {
+    const songChunks = chunks(songs, 50);
+    const analytics = [];
+    for (const chunk of songChunks) {
+        const songIDs = chunk.map(song => song.song_id).join(',');
+        const result = await fetchData(`audio-features?ids=${songIDs}`);
+        analytics.push(...result.audio_features);
+    }
+    return analytics;
+};
+
 // noinspection JSUnusedGlobalSymbols
 export const deleteAllFauxUsers = async () => {
     let user_ids;
@@ -351,7 +368,7 @@ export const deleteAllFauxUsers = async () => {
     }
 }
 
-
+// TODO: REWRITE THIS
 export const getLikedSongsFromArtist = async function (artistID, playlists) {
     let albums;
     let albumsWithLikedSongs = [];
@@ -376,19 +393,17 @@ export const getLikedSongsFromArtist = async function (artistID, playlists) {
     }
     return albumsWithLikedSongs;
 }
-
-
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.
  */
 export const hydrateDatapoints = async function () {
+    console.time("Hydration.");
     const terms = ['short_term', 'medium_term', 'long_term'];
-    for (const term of terms) {
+    const promises = terms.map(async (term) => {
         console.info("Hydrating: " + term)
         let datapoint = {
             user_id: window.localStorage.getItem("user_id"),
-            collectionDate: Date.now(),
             term: term,
             top_songs: [],
             top_artists: [],
@@ -396,8 +411,6 @@ export const hydrateDatapoints = async function () {
         }
         let top_songs;
         let top_artists;
-        let analyticsIDs = "";
-        let analytics;
         // Queue up promises
         let promises = [await fetchData(`me/top/tracks?time_range=${term}&limit=50`), await fetchData(`me/top/artists?time_range=${term}`)];
         // Await the promises for the arrays of data
@@ -405,35 +418,32 @@ export const hydrateDatapoints = async function () {
             top_songs = result[0].items;
             top_artists = result[1].items;
         })
-        // Concatenate the strings, so they can be
-        // used in the analytics call
-        top_songs.forEach(track => analyticsIDs += track.id + ',')
-        await fetchData(`audio-features?ids=${analyticsIDs}`).then(function (result) {
-            analytics = result.audio_features
-        })
         // Add all the songs
         for (let i = 0; i < top_songs.length; i++) {
             datapoint.top_songs.push({
                 song_id: top_songs[i].id,
-                song: true,
-                name: parseSong(top_songs[i]),
                 title: top_songs[i].name,
-                artist: top_songs[i].artists[0].name,
+                artists: top_songs[i].artists,
                 image: top_songs[i].album.images[1].url,
                 link: top_songs[i].external_urls.spotify,
-                analytics: analytics[i]
+                analytics: {}
             })
         }
+        await batchAnalytics(datapoint.top_songs).then(res =>
+            datapoint.top_songs.map((e,i) =>
+                e.analytics = res[i]
+            )
+        );
+        console.log(datapoint.top_songs)
         // Add all the artists
         for (let i = 0; i < top_artists.length; i++) {
             try {
                 datapoint.top_artists.push({
                     artist_id: top_artists[i].id,
-                    artist: true,
                     name: top_artists[i].name,
                     image: top_artists[i].images[1].url,
                     link: `https://open.spotify.com/artist/${top_artists[i].id}`,
-                    genre: top_artists[i].genres[0]
+                    genres: top_artists[i].genres
                 })
             } catch (error) { //catch error when artist does not have PFP
                 console.warn(error)
@@ -443,9 +453,12 @@ export const hydrateDatapoints = async function () {
         await postDatapoint(datapoint).then(function () {
             console.info(term + " success!");
         });
-    }
-    console.info("Hydration over.")
+    });
+    await Promise.all(promises);
+    console.info("Hydration over.");
+    console.timeEnd("Hydration.");
 }
+
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.
  * @param artists

@@ -6,11 +6,11 @@
  */
 
 import {authURI} from './Authentication';
-import {hydrateDatapoints, retrieveAllUserIDs, retrieveDatapoint} from './PDM';
+import {hydrateDatapoints, retrieveAllUserIDs, retrieveDatapoint, retrievePlaylists} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {getAllUsers, getUser, isServerAlive, postUser} from "./API";
+import {getAllUsers, getUser, postPlaylist, getPlaylists} from "./API";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -61,11 +61,12 @@ function Homepage() {
                             <a className="auth-button" onClick={handleCompare}>Compare to others</a>
                         </>
                     }
-                    <button onClick={() => getUser('sonn_gb').then(res => console.log(res))}>Get user.</button>
+                    <button onClick={() => getUser(window.localStorage.getItem('user_id')).then(res => console.log(res))}>Get user.</button>
                     <button onClick={() => getAllUsers().then(res => console.log(res))}>Get all.</button>
-                    <button onClick={() => postUser()}>Post data.</button>
                     <button onClick={() => retrieveDatapoint('me', 'long_term').then(res => console.log(res))}>Get datapoint.</button>
                     <button onClick={() => hydrateDatapoints()}>Force hydration.</button>
+                    <button onClick={() => retrievePlaylists('me').then(res => postPlaylist(res[0]))}>Post playlist.</button>
+                    <button onClick={() => getPlaylists('sonn-gb').then(res => console.log(res))}>Get playlists.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
                     1.2.0</p>

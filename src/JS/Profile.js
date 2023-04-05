@@ -13,7 +13,7 @@ import {
     followsUser,
     followUser,
     getLikedSongsFromArtist,
-    getPlaylists,
+    retrievePlaylists,
     isLoggedIn,
     retrieveDatapoint,
     retrieveMedia,
@@ -190,20 +190,20 @@ const Profile = () => {
         let secondMessage;
         let relevantArtists = [];
         for (let artist in artistQualities) {
-            if (artistQualities[artist].genre === item) {
+            if (artistQualities[artist].genres[0] === item) {
                 relevantArtists.push(artist);
             }
         }
         datapoint.top_artists.forEach(artist => {
-            if (!!artist) {
-                if (artist.genre === item && !relevantArtists.includes(artist.name)) {
+            if (!!artist.genres) {
+                if (artist.genres[0] === item && !relevantArtists.includes(artist.name)) {
                     relevantArtists.push(artist.name)
                 }
             }
         });
         if (relevantArtists.length > 1) {
             topMessage = <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is not only defined
-                by {possessive} love for <span style={{color: '#22C55E'}}>{relevantArtists[0]}</span> but
+                by {possessive} love for <a href="https://google.com" style={{color: '#22C55E', textDecoration: '0.5px underline'}}>{relevantArtists[0]}</a> but
                 also {relevantArtists.length - 1} other artist{relevantArtists.length - 1 === 1 ? `` : "s"}...</h2>
             let secondMessageText = '';
             for (let i = 1; i < relevantArtists.length; i++) {
@@ -219,8 +219,8 @@ const Profile = () => {
             if (relevantArtists.length === 1) {
                 topMessage =
                     <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is very well marked
-                        by {user_id === 'me' ? 'your' : 'their'} time listening to <span
-                            style={{color: '#22C55E'}}>{relevantArtists[0]}</span>.</h2>
+                        by {user_id === 'me' ? 'your' : 'their'} time listening to <a href="https://google.com"
+                            style={{color: '#22C55E', textDecoration: '0.5px underline'}}>{relevantArtists[0]}</a>.</h2>
             } else {
                 topMessage =
                     <h2>{possessive[0].toUpperCase() + possessive.substring(1)} taste in {item} music isn't well defined
@@ -480,7 +480,7 @@ const Profile = () => {
                 setDatapoint(dpResult)
                 analyseSongs(dpResult.top_songs);
                 if (isLoggedIn()) {
-                    getPlaylists(user_id).then(pResults => {
+                    retrievePlaylists(user_id).then(pResults => {
                         setFocusedPlaylist(pResults[0]);
                         console.log(pResults);
                         setPlaylists(pResults);
@@ -747,7 +747,7 @@ const Profile = () => {
                                 :
                                 <></>
                             }
-                            {simpleSelection === 'aenres' && windowWidth > mobileWidth ?
+                            {simpleSelection === 'genres' && windowWidth > mobileWidth ?
                                 <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
                                     {genreMessage}
                                 </div>
@@ -755,12 +755,12 @@ const Profile = () => {
                                 <></>
                             }
                         </div>
-                        <div style={simpleSelection === 'Genres' ? {display: 'none'} : {}}>
+                        <div style={simpleSelection === 'genres' ? {display: 'none'} : {}}>
                             <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint}
                                    tertiary={focusTertiary} type={simpleSelection}/>
                         </div>
                     </div>
-                    {simpleSelection === 'Songs' ?
+                    {simpleSelection === 'songs' ?
                         <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
                                data={datapoint.top_songs.map(song => song.analytics)} parent={datapoint.top_songs}/>
                         :
@@ -798,7 +798,7 @@ const Profile = () => {
                                                 <h3>{focusedPlaylist.description}</h3>
                                                 <hr/>
                                                 <div style={{display: 'flex', flexDirection: 'row'}}>
-                                                    <a target="_blank" href={focusedPlaylist.external_urls.spotify}
+                                                    <a target="_blank" href={`https://open.spotify.com/playlist/${focusedPlaylist.playlist_id}`}
                                                        style={{display: 'flex', gap: '10px', fontFamily: 'Inter Tight'}}
                                                        className={"spotify-link"}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" height="25px"
@@ -809,12 +809,12 @@ const Profile = () => {
                                                         </svg>
                                                         Open in Spotify
                                                     </a>
-                                                    <p>{focusedPlaylist.tracks.total} songs</p>
+                                                    <p>{focusedPlaylist.tracks.length} songs</p>
                                                 </div>
 
                                             </div>
                                             <img alt={''} className={'playlist-art'}
-                                                 src={focusedPlaylist.images[0].url}></img>
+                                                 src={focusedPlaylist.image}></img>
                                         </div>
                                     </>
                                 }

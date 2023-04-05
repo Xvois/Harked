@@ -1,8 +1,9 @@
 import axios from 'axios';
 import {authURI} from './Authentication';
 import PocketBase from 'pocketbase';
+import {batchAnalytics} from "./PDM";
 
-const pb = new PocketBase('http://127.0.0.1:8090/');
+const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
 /**
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.
@@ -167,6 +168,138 @@ const handleCreationException = (err) => {
             console.error(err.data);
     }
 }
+async function artistsToIDs(artists) {
+    let artist_db_ids = [];
+    for (const artist of artists) {
+        await pb.collection('artists').getFirstListItem(`artist_id="${artist.artist_id}"`).then(res => artist_db_ids.push(res.id))
+            .catch(async function (err){
+                switch (err.status){
+                    case 404:
+                        if (!!artist.genres) {
+                            await genresToIDs(artist.genres).then(ids => artist.genres = ids);
+                        } else {
+                            artist.genres = null;
+                        }
+                        await pb.collection('artists').create(artist)
+                            .catch(handleCreationException);
+                        // Turn the name of the genre into its id in the database
+                        await pb.collection('artists').getFirstListItem(`artist_id="${artist.artist_id}"`).then(res => artist_db_ids.push(res.id));
+                        break;
+                    default:
+                        console.error("Error finding artist.");
+                        console.error(err);
+                        break;
+                }
+            })
+    }
+    return artist_db_ids;
+}
+
+async function songsToIDs(songs) {
+    let song_db_ids = [];
+    for (const song of songs) {
+        // Check if the song already exists
+        await pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`).then(res => song_db_ids.push(res.id))
+            .catch(async function(err){
+                switch (err.status){
+                    case 404:
+                        for (let i = 0; i < song.artists.length; i++) {
+                            // Check that each artist is in the correct format
+                            // If not then get the information and format again
+                            if(!song.artists[i].hasOwnProperty('artist_id')){
+                                await fetchData(`artists/${song.artists[i].id}`)
+                                    .then(function (res) {
+                                        song.artists[i] = {
+                                            artist_id: res.id,
+                                            name: res.name,
+                                            image: res.images[1]?.url,
+                                            link: `https://open.spotify.com/artist/${res.id}`,
+                                            genres: res.genres
+                                        }
+                                    });
+                            }
+                        }
+                        await artistsToIDs(song.artists).then(ids => song.artists = ids);
+                        await pb.collection('songs').create(song)
+                            .catch(handleCreationException);
+                        await pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`).then(res => song_db_ids.push(res.id));
+                        break;
+                    default:
+                        console.error("Error finding song.");
+                        console.error(err);
+                        break;
+                }
+            })
+    }
+    return song_db_ids;
+}
+
+async function genresToIDs(genres) {
+    let genres_db_ids = [];
+    for (let i = 0; i < genres.length; i++) {
+        await pb.collection('genres').getFirstListItem(`genre="${genres[i]}"`).then(res => genres_db_ids.push(res.id))
+            .catch(async function(err){
+                switch (err.status){
+                    case 404:
+                        await pb.collection('genres').create({genre: genres[i]})
+                            .catch(handleCreationException);
+                        await pb.collection('genres').getFirstListItem(`genre="${genres[i]}"`).then(res => genres_db_ids.push(res.id));
+                        break;
+                    default:
+                        console.error("Error finding genre.");
+                        console.error(err);
+                        break;
+                }
+            })
+    }
+    return genres_db_ids;
+}
+// TODO: MAKE PLAYLISTS GET POSTED ON LOG-IN
+// TODO: ENSURE ANALYTICS OF SONGS ALREADY IN DB ARE NOT FETCHED
+// TODO: ADD SYSTEM TO POST MULTIPLE PLAYLISTS
+export const postPlaylist = async (playlist) => {
+    // Fetch the tracks of the playlist from the Spotify API
+    const res = await fetchData(`playlists/${playlist.id}/tracks`);
+    // Extract the track objects from the response
+    const tracks = res.items.map(e => e.track);
+    // Transform the track objects into our desired format
+    const transformedTracks = tracks.map(track => ({
+        song_id: track.id,
+        title: track.name,
+        artists: track.artists,
+        image: track.album.images[1].url,
+        link: track.external_urls.spotify,
+        analytics: {}
+    }));
+    // Add audio feature analytics to all songs
+    const analytics = await batchAnalytics(transformedTracks);
+    transformedTracks.forEach((track, i) => track.analytics = analytics[i]);
+    // Convert the transformed tracks into an array of IDs
+    const ids = await songsToIDs(transformedTracks);
+    // Get the playlist owner's ID from our database
+    const owner = await pb.collection('users').getFirstListItem(`user_id="${playlist.owner.id}"`);
+    // Construct the playlist object with the extracted data
+    const playlistObj = {
+        playlist_id: playlist.id,
+        name: playlist.name,
+        description: playlist.description,
+        owner: owner.id,
+        tracks: ids,
+        image: playlist.images[0].url
+    };
+    // Create the playlist in our database
+    await pb.collection('playlists').create(playlistObj)
+        .catch(handleCreationException);
+};
+
+/**
+ * Retrieves all playlists for a given user from the local PocketBase database.
+ * @param userId The ID of the user to retrieve playlists for.
+ * @returns {Promise<Array>} An array of playlist objects.
+ */
+export const getPlaylists = (userId) => {
+    return pb.collection('playlists').getFullList(`owner.user_id="${userId}"`);
+}
 
 /**
  * postDatapoint will post the datapoint to the PRDB. Checks in the database controller are made to ensure the
@@ -175,55 +308,46 @@ const handleCreationException = (err) => {
  * @returns {Promise<void>}
  */
 export const postDatapoint = async (datapoint) => {
+    // Disable auto-cancellation to avoid the script being canceled during async operations.
+    pb.autoCancellation(false);
     console.info('Posting datapoint.')
+
+    // Calculate the date of a week ago.
     const d = new Date();
     const WEEK_IN_MILLISECONDS = 6.048e+8;
     d.setMilliseconds(d.getMilliseconds() - WEEK_IN_MILLISECONDS);
-    const valid_exists = await pb.collection('datapoints').getFirstListItem( `created >= "${d.toISOString()}" && term="${datapoint.term}"`)
-        .catch(function(err){if(err.status !== 404){console.warn(err);}})
-    if(!!valid_exists){
+
+    // Check if a valid datapoint already exists in the database for the given term and within the past week.
+    const valid_exists = await pb.collection('datapoints').getFirstListItem(`created >= "${d.toISOString()}" && term="${datapoint.term}"`)
+        .catch(function (err) {
+            if (err.status !== 404) {
+                console.warn(err);
+            }
+        })
+
+    // If a valid datapoint already exists, log a message and return without creating a new datapoint.
+    if (!!valid_exists) {
         console.info("Attempted to post new datapoint, but valid already exists.");
         return;
     }
 
+    // Convert top genres, songs, and artists to their respective IDs.
+    await genresToIDs(datapoint.top_genres).then(ids => datapoint.top_genres = ids);
+    await songsToIDs(datapoint.top_songs).then(ids => datapoint.top_songs = ids);
+    await artistsToIDs(datapoint.top_artists).then(ids => datapoint.top_artists = ids);
 
-    let genres_db_ids = [];
-    for(let i = 0; i < datapoint.top_genres.length; i++){
-        await pb.collection('genres').create({genre: datapoint.top_genres[i]})
-            .catch(handleCreationException);
-        await pb.collection('genres').getFirstListItem(`genre="${datapoint.top_genres[i]}"`).then(res => genres_db_ids.push(res.id));
-    }
-    datapoint.top_genres = genres_db_ids;
-    let song_db_ids = [];
-    for (const song of datapoint.top_songs) {
-        await pb.collection('songs').create(song)
-            .catch(handleCreationException);
-        await pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`).then(res => song_db_ids.push(res.id));
-    }
-    datapoint.top_songs = song_db_ids;
-    let artist_db_ids = [];
-    for (const artist of datapoint.top_artists) {
-        if(!!artist.genre){
-            await pb.collection('genres').getFirstListItem(`genre="${artist.genre}"`).then(async function(res){
-                if(!!res){artist.genre = res.id;}
-                // Handle case where genre is not already in the database
-                else{
-                    await pb.collection('genres').create({genre: artist.genre})
-                        .catch(handleCreationException);
-                    await pb.collection('genres').getFirstListItem(`genre="${artist.genre}"`).then(new_res => artist.genre = new_res.id);
-                }});
-        }else{
-            artist.genre = null;
-        }
-        await pb.collection('artists').create(artist)
-            .catch(handleCreationException);
-        // Turn the name of the genre into its id in the database
-        await pb.collection('artists').getFirstListItem(`artist_id="${artist.artist_id}"`).then(res => artist_db_ids.push(res.id));
-    }
-    datapoint.top_artists = artist_db_ids;
+    // Log the datapoint being posted.
+    console.info('Attempting to post...');
+    console.log(datapoint);
+
+    // Post the datapoint to the database and catch any errors.
     await pb.collection('datapoints').create(datapoint)
         .catch(handleCreationException);
+
+    // Re-enable auto-cancellation.
+    pb.autoCancellation(true);
 }
+
 
 /**
  * getDatapoint makes a GET HTTP request to the PRDB to retrieve the most recent datapoint for a given user
@@ -238,7 +362,7 @@ export const postDatapoint = async (datapoint) => {
 export const getDatapoint = async (user_id, term, timeSens, delay = 0) => {
      return await pb.collection('datapoints').getFirstListItem(
          `user_id="${user_id}"&&term="${term}"`, {
-             expand: 'top_songs,top_artists,top_genres,top_artists.genre'
+             expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres'
          })
         .catch(err => {
             if(err.status === 404){
