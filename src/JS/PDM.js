@@ -5,7 +5,7 @@ import {
     getAllUserIDs,
     getDatapoint, getPlaylists,
     getUser,
-    postDatapoint, postPlaylist,
+    postDatapoint, postMultiplePlaylists, postPlaylist,
     postUser,
     putData
 } from "./API";
@@ -106,15 +106,12 @@ export const retrieveAllUserIDs = async function () {
  */
 export const retrievePlaylists = async function (user_id) {
     let globalUser_id = user_id;
-    let result;
-    if (globalUser_id === 'me') {
-        globalUser_id = window.localStorage.getItem("user_id")
-    }
-    return getPlaylists(globalUser_id);
+    if (globalUser_id === 'me') {globalUser_id = window.localStorage.getItem("user_id")}
+    return await getPlaylists(globalUser_id);
 }
 
 /**
- * Creates / updates the logged-in user's record in the PRDB using postUser.
+ * Creates / updates the logged-in user's record.
  * @returns {Promise<void>}
  */
 export const postLoggedUser = async function () {
@@ -126,6 +123,7 @@ export const postLoggedUser = async function () {
         profile_picture: '',
         media: null,
     }
+    const playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
     // Get the profile details
     let profilePromise = fetchData("me").then(function (result) {
         user.username = result.display_name;
@@ -137,6 +135,7 @@ export const postLoggedUser = async function () {
     })
     await profilePromise;
     await postUser(user);
+    await postMultiplePlaylists(playlists);
 }
 /**
  * A boolean function that returns true if the currently logged-in user follows the target and false if not.
@@ -368,25 +367,21 @@ export const deleteAllFauxUsers = async () => {
     }
 }
 
-// TODO: REWRITE THIS
-export const getLikedSongsFromArtist = async function (artistID, playlists) {
-    let albums;
+export const getLikedSongsFromArtist = async function (user_id, artistID) {
     let albumsWithLikedSongs = [];
-
-    const trackPromises = playlists.map((playlist) => fetchData(`playlists/${playlist.id}/tracks`));
-    const trackResponses = await Promise.all(trackPromises);
-    const tracksInPlaylists = trackResponses.flatMap((res) => res.items.map((item) => item.track));
-
-    await fetchData(`artists/${artistID}/albums`).then((res) => albums = res.items);
+    let globalUser_id = user_id;
+    if (globalUser_id === "me") {
+        globalUser_id = window.localStorage.getItem("user_id");
+    }
+    const tracks = (await getPlaylists(globalUser_id, true)).flatMap(e => e.expand.tracks);
+    const albums = (await fetchData(`artists/${artistID}/albums`)).items;
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
-    const albumResponses = await Promise.all(albumPromises);
+    const albumTracks = await Promise.all(albumPromises);
+
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
-        const albumResponse = albumResponses[i];
-        const tracks = albumResponse && albumResponse.items;
-        album["saved_songs"] = tracks.filter((track) =>
-            tracksInPlaylists.some((item) => item && item.name === track.name)
-        );
+        const trackList = albumTracks[i].items;
+        album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.name === t2.title));
         if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithLikedSongs.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithLikedSongs.push(album);
         }

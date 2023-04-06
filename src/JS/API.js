@@ -175,6 +175,14 @@ const handleUpdateException = (err) => {
             console.error(err.data);
     }
 }
+
+const handleFetchException = (err) => {
+    switch (err.status){
+        default:
+            console.error(`Error ${err.status} fetching database record.`)
+            console.error(err.data);
+    }
+}
 async function artistsToIDs(artists) {
     let artist_db_ids = [];
     for (const artist of artists) {
@@ -347,12 +355,18 @@ export const postMultiplePlaylists = async (playlists) => {
 
 /**
  * Retrieves all playlists for a given user from the local PocketBase database.
- * @param userId The ID of the user to retrieve playlists for.
+ * @param user_id The ID of the user to retrieve playlists for.
+ * @param expandTracks
  * @returns {Promise<Array>} An array of playlist objects.
  */
-export const getPlaylists = (userId) => {
-    return pb.collection('playlists').getFullList(`owner.user_id="${userId}"`);
+export const getPlaylists = (user_id, expandTracks = false) => {
+    return pb.collection('playlists').getList(1, 50, {
+        filter: `owner.user_id="${user_id}"`,
+        expand: expandTracks ? 'tracks' : ''
+    }).then(response => response.items) // <--- Only return the items property
+        .catch(handleFetchException);
 }
+
 
 /**
  * postDatapoint will post the datapoint to the PRDB. Checks in the database controller are made to ensure the
