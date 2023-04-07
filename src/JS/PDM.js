@@ -134,7 +134,6 @@ export const postLoggedUser = async function () {
         }
     })
     await profilePromise;
-    await postUser(user);
     await postMultiplePlaylists(playlists);
 }
 /**

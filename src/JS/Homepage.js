@@ -5,12 +5,21 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {authURI} from './Authentication';
 import {hydrateDatapoints, retrieveAllUserIDs, retrieveDatapoint, retrievePlaylists} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {getAllUsers, getUser, postPlaylist, getPlaylists, fetchData, postMultiplePlaylists, authenticate} from "./API";
+import {handleLogIn} from "./Authentication";
+import {
+    getAllUsers,
+    getUser,
+    postPlaylist,
+    getPlaylists,
+    fetchData,
+    postMultiplePlaylists,
+    authenticate,
+    authenticateDB
+} from "./API";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -19,6 +28,7 @@ function Homepage() {
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
     }, [token])
+
 
     const handleLogOut = () => {
         window.localStorage.clear();
@@ -53,7 +63,7 @@ function Homepage() {
                 <div className={'button-wrapper'}>
                     {!token || token === "denied-scopes" ?
                         <>
-                            <a className="auth-button" href={authURI}>Log-in</a>
+                            <a className="auth-button">FIX ME</a>
                         </>
                         :
                         <>
@@ -67,6 +77,9 @@ function Homepage() {
                     <button onClick={() => hydrateDatapoints()}>Force hydration.</button>
                     <button onClick={() => fetchData('users/sonn-gb/playlists').then(res => postMultiplePlaylists(res.items))}>Post playlists.</button>
                     <button onClick={() => retrievePlaylists('me').then(res => console.log(res))}>Get playlists.</button>
+                    <button onClick={handleLogIn}>Attempt new log-in.</button>
+                    <button onClick={() => console.log(process.env.REACT_APP_REDIRECT_URL)}>Get redirect url.</button>
+                    <button onClick={handleLogOut}>Log-out.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
                     1.2.0</p>

@@ -30,7 +30,7 @@ import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
-import {authURI} from "./Authentication";
+import {handleLogIn} from "./Authentication";
 import {redirect, useNavigate} from "react-router-dom";
 
 
@@ -495,7 +495,7 @@ const Profile = () => {
     }
     useEffect(() => {
         if (!isLoggedIn() && user_id === "me") {
-            window.location.replace(authURI)
+            handleLogIn();
         }
         loadPage();
     }, [term, user_id])
@@ -738,7 +738,7 @@ const Profile = () => {
                                         <div style={{margin: 'auto', justifyContent: "center", textAlign: 'center'}}>
                                             <h2 style={{fontFamily: 'Inter Tight'}}>Log-in to see this user's artist
                                                 constellation.</h2>
-                                            <a className="auth-button" href={authURI}>Log-in</a>
+                                            <a className="auth-button" >FIX ME</a>
                                         </div>
                                 )
                                 :

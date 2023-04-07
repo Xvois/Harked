@@ -70,10 +70,6 @@ const Search = () => {
         setSearchResults(results);
     }
     useEffect(() => {
-        getAllUsers().then(function (result) {
-            setCachedUsers(result);
-            console.log(result);
-        })
     }, [])
     return (
         <ClickAwayListener onClickAway={() => setSearchResults(null)}>

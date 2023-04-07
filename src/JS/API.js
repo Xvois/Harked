@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {authURI} from './Authentication';
+import {authURI, handleLogIn} from './Authentication';
 import PocketBase from 'pocketbase';
 import {batchAnalytics} from "./PDM";
 
@@ -21,8 +21,7 @@ export const fetchData = async (path) => {
             console.warn("[Error in Spotify API call] " + err);
         }
         if (err.response.status === 401) {
-            window.localStorage.setItem("token", "");
-            window.location.replace(authURI)
+            handleLogIn();
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
         } else if (err.response.status === 503) {
