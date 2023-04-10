@@ -30,8 +30,6 @@ import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
-import {handleLogIn} from "./Authentication";
-import {redirect, useNavigate} from "react-router-dom";
 
 
 const Profile = () => {
@@ -351,7 +349,7 @@ const Profile = () => {
                                 } else {
                                     return <></>
                                 }
-                            })}}
+                            })}
                         </select>
                     </h1>
                     <p style={{margin: 'auto', fontFamily: 'Inter Tight', fontWeight: '500', fontSize: '0.75em'}}>CLICK
@@ -495,7 +493,7 @@ const Profile = () => {
     }
     useEffect(() => {
         if (!isLoggedIn() && user_id === "me") {
-            handleLogIn();
+            //handleLogin();
         }
         loadPage();
     }, [term, user_id])

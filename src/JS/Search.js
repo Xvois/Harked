@@ -1,8 +1,8 @@
 import {ClickAwayListener, FormControl, Input, InputAdornment, ThemeProvider} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import {useEffect, useState} from "react";
-import {getAllUsers} from "./API";
 import {createTheme} from "@mui/material/styles";
+import {retrieveAllUsers} from "./PDM";
 
 const searchTheme = createTheme({
     palette: {
@@ -17,9 +17,6 @@ const searchTheme = createTheme({
 const Search = () => {
     const [searchResults, setSearchResults] = useState(null);
     const [cachedUsers, setCachedUsers] = useState(null);
-    const handleNavigate = (user) => {
-        console.log(`Click on ${user.username} identified!`);
-    }
     const Levenshtein = (a, b) => {
         // First two conditions
         if (!a.length) return b.length;
@@ -70,6 +67,7 @@ const Search = () => {
         setSearchResults(results);
     }
     useEffect(() => {
+        retrieveAllUsers().then(res => setCachedUsers(res));
     }, [])
     return (
         <ClickAwayListener onClickAway={() => setSearchResults(null)}>
@@ -90,7 +88,7 @@ const Search = () => {
                             {searchResults.map(result => {
                                 return (
                                     <a className={'result'} href={`/profile#${result.user_id}`}>
-                                        <img alt='' src={result.picture_url}></img>
+                                        <img alt='' src={result.profile_picture}></img>
                                         <div className={'result-title'}>
                                             <h2>{result.username}</h2>
                                             <p>Follows you.</p>

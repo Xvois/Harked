@@ -52,11 +52,16 @@ const Focus = React.memo((props) => {
         localState.link = item.link;
         if (type === "songs") {
             localState.title = item.title;
-            localState.secondary = `by${item.artists.map((e,i) => ' ' + e.name)}`;
+            localState.secondary = `by${item.artists.map(e => ' ' + e.name)}`;
             localState.tertiary = tertiary;
         } else if (type === "artists") {
             localState.title = item.name;
-            localState.secondary = item.genres[0];
+            if(item.genres){
+                localState.secondary = item.genres[0];
+            }
+            else{
+                localState.secondary = null;
+            }
             localState.tertiary = tertiary;
         } else if (type === "genres") {
             localState.title = '';
@@ -146,7 +151,7 @@ const Focus = React.memo((props) => {
                         maxAnalytic = analytic;
                     }
                 })
-                topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by${item.artists.map((e,i) => ' ' + e.name)}.`
+                topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by${item.artists.map(e => ' ' + e.name)}.`
                 if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
                     const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
                     secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`

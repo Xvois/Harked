@@ -5,21 +5,11 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {hydrateDatapoints, retrieveAllUserIDs, retrieveDatapoint, retrievePlaylists} from './PDM';
+import {isLoggedIn, retrieveAllUserIDs} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {handleLogIn} from "./Authentication";
-import {
-    getAllUsers,
-    getUser,
-    postPlaylist,
-    getPlaylists,
-    fetchData,
-    postMultiplePlaylists,
-    authenticate,
-    authenticateDB
-} from "./API";
+import {handleLogin} from "./Authentication";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -53,7 +43,7 @@ function Homepage() {
     return (
         <div className='homepage-container'>
             <div className='top-container'>
-                {token && token !== "denied-scopes" ?
+                {isLoggedIn() ?
                     <h1 className="main-text">Welcome.</h1>
                     :
                     <h1 className="main-text">Get true insights on your <span
@@ -61,28 +51,20 @@ function Homepage() {
                 }
                 <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
                 <div className={'button-wrapper'}>
-                    {!token || token === "denied-scopes" ?
+                    {!isLoggedIn() ?
                         <>
-                            <a className="auth-button">FIX ME</a>
+                            <button className="auth-button" onClick={handleLogin}>Login with Spotify</button>
                         </>
                         :
                         <>
-                            <a className="auth-button" href='/profile#me'>Explore your profile</a>
-                            <a className="auth-button" onClick={handleCompare}>Compare to others</a>
+                            <button className="auth-button" onClick={() => window.location = '/profile#me'}>Explore your profile</button>
+                            <button className="auth-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
-                    <button onClick={() => getUser(window.localStorage.getItem('user_id')).then(res => console.log(res))}>Get user.</button>
-                    <button onClick={() => getAllUsers().then(res => console.log(res))}>Get all.</button>
-                    <button onClick={() => retrieveDatapoint('me', 'long_term').then(res => console.log(res))}>Get datapoint.</button>
-                    <button onClick={() => hydrateDatapoints()}>Force hydration.</button>
-                    <button onClick={() => fetchData('users/sonn-gb/playlists').then(res => postMultiplePlaylists(res.items))}>Post playlists.</button>
-                    <button onClick={() => retrievePlaylists('me').then(res => console.log(res))}>Get playlists.</button>
-                    <button onClick={handleLogIn}>Attempt new log-in.</button>
-                    <button onClick={() => console.log(process.env.REACT_APP_REDIRECT_URL)}>Get redirect url.</button>
-                    <button onClick={handleLogOut}>Log-out.</button>
+                    <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
-                    1.2.0</p>
+                    1.2.0pb</p>
                 {token === "denied-scopes" ?
                     <p className="error-message">You need to accept the Spotify scopes to log in.</p>
                     :

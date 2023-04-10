@@ -1,11 +1,10 @@
 import {
-    deleteData,
-    deleteUser,
+    deleteData, disableAutoCancel, enableAutoCancel,
     fetchData,
-    getAllUserIDs,
+    getAllUserIDs, getAllUsers,
     getDatapoint, getPlaylists,
     getUser,
-    postDatapoint, postMultiplePlaylists, postPlaylist,
+    postDatapoint, postMultiplePlaylists,
     postUser,
     putData
 } from "./API";
@@ -43,6 +42,14 @@ export const retrieveMedia = async function () {
         }
     })
     return returnMedia;
+}
+
+export const retrieveAllUsers = async function () {
+    // BUG : MUST DISABLE AUTO CANCEL FOR SEARCH COMPONENT AS IT DOUBLE RENDERS
+    await disableAutoCancel();
+    const users = await getAllUsers();
+    await enableAutoCancel();
+    return users;
 }
 
 /**
@@ -92,12 +99,7 @@ export const unfollowUser = function (user_id) {
  * @returns {Promise<[user_id: string]>}
  */
 export const retrieveAllUserIDs = async function () {
-    let user_ids;
-    // Deconstruct the array of objects to just an array
-    await getAllUserIDs().then(r => user_ids = r.map(function (id) {
-        return id.user_id
-    }));
-    return user_ids;
+    return await getAllUserIDs();
 }
 /**
  * Returns an array of public non-collaborative playlists from a given user.
@@ -112,28 +114,21 @@ export const retrievePlaylists = async function (user_id) {
 
 /**
  * Creates / updates the logged-in user's record.
- * @returns {Promise<void>}
+ * @returns {Promise<{user_id, profile_picture: null, media: null, username: *}>}
  */
-export const postLoggedUser = async function () {
+export const formatUser = async function (user) {
     // Get our global user_id
-    let globalUser_id = window.localStorage.getItem("user_id");
-    let user = {
-        user_id: globalUser_id,
-        username: '',
-        profile_picture: '',
+    return {
+        user_id: user.id,
+        username: user.display_name,
+        profile_picture: user.images[0].url ?? null,
         media: null,
     }
+}
+
+export const postUsersPlaylists = async function () {
+    const globalUser_id = window.localStorage.getItem('user_id');
     const playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
-    // Get the profile details
-    let profilePromise = fetchData("me").then(function (result) {
-        user.username = result.display_name;
-        if (result.images[0]) {
-            user.profile_picture = result.images[0].url;
-        } else if (result.images[0] === undefined) {
-            user.profile_picture = null;
-        }
-    })
-    await profilePromise;
     await postMultiplePlaylists(playlists);
 }
 /**
@@ -150,7 +145,7 @@ export const followsUser = async function (user_id) {
  * @returns {boolean}
  */
 export const isLoggedIn = function () {
-    return !!(window.localStorage.getItem("user_id") && window.localStorage.getItem("token"));
+    return !!(window.localStorage.getItem("user_id") && window.localStorage.getItem("access-token"));
 }
 
 /**
@@ -355,16 +350,26 @@ export const batchAnalytics = async (songs) => {
     return analytics;
 };
 
-// noinspection JSUnusedGlobalSymbols
-export const deleteAllFauxUsers = async () => {
-    let user_ids;
-    await getAllUserIDs().then(res => user_ids = res.map(e => e.user_id));
-    for (const user_id of user_ids) {
-        if (user_id.length === 20) {
-            await deleteUser(user_id);
-        }
+export const batchArtists = async (artist_ids) => {
+    const artistChunks = chunks(artist_ids, 50);
+    const artists = [];
+    for (const chunk of artistChunks) {
+        const ids = chunk.join(',');
+        const result = (await fetchData(`artists/?ids=${ids}`)).artists;
+        artists.push(...result.map(function(e){
+            let image = null;
+            if(e.images.length > 0){image = e.images[1].url}
+            return {
+                artist_id: e.id,
+                name: e.name,
+                image: image,
+                link: `https://open.spotify.com/artist/${e.id}`,
+                genres: e.genres
+            }
+        }));
     }
-}
+    return artists;
+};
 
 export const getLikedSongsFromArtist = async function (user_id, artistID) {
     let albumsWithLikedSongs = [];
@@ -387,6 +392,32 @@ export const getLikedSongsFromArtist = async function (user_id, artistID) {
     }
     return albumsWithLikedSongs;
 }
+
+export const formatArtist = (artist) => {
+    let image = null;
+    if(artist.images !== undefined){image = artist.images[1].url}
+    return {
+        artist_id: artist.id,
+        name: artist.name,
+        image: image,
+        link: `https://open.spotify.com/artist/${artist.id}`,
+        genres: artist.genres
+    }
+}
+
+export const formatSong = (song) => {
+    let image = null;
+    if(song.album.images !== undefined){image = song.album.images[1].url}
+    return {
+        song_id: song.id,
+        title: song.name,
+        artists: song.artists,
+        image: image,
+        link: song.external_urls.spotify,
+        analytics: {}
+    }
+}
+
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.
@@ -394,7 +425,8 @@ export const getLikedSongsFromArtist = async function (user_id, artistID) {
 export const hydrateDatapoints = async function () {
     console.time("Hydration.");
     const terms = ['short_term', 'medium_term', 'long_term'];
-    const promises = terms.map(async (term) => {
+    for (let i = 0; i < terms.length; i++) {
+        const term = terms[i];
         console.info("Hydrating: " + term)
         let datapoint = {
             user_id: window.localStorage.getItem("user_id"),
@@ -413,45 +445,25 @@ export const hydrateDatapoints = async function () {
             top_artists = result[1].items;
         })
         // Add all the songs
-        for (let i = 0; i < top_songs.length; i++) {
-            datapoint.top_songs.push({
-                song_id: top_songs[i].id,
-                title: top_songs[i].name,
-                artists: top_songs[i].artists,
-                image: top_songs[i].album.images[1].url,
-                link: top_songs[i].external_urls.spotify,
-                analytics: {}
-            })
-        }
+        datapoint.top_songs = top_songs.map(s => formatSong(s));
         await batchAnalytics(datapoint.top_songs).then(res =>
             datapoint.top_songs.map((e,i) =>
                 e.analytics = res[i]
             )
         );
-        console.log(datapoint.top_songs)
         // Add all the artists
-        for (let i = 0; i < top_artists.length; i++) {
-            try {
-                datapoint.top_artists.push({
-                    artist_id: top_artists[i].id,
-                    name: top_artists[i].name,
-                    image: top_artists[i].images[1].url,
-                    link: `https://open.spotify.com/artist/${top_artists[i].id}`,
-                    genres: top_artists[i].genres
-                })
-            } catch (error) { //catch error when artist does not have PFP
-                console.warn(error)
-            }
-        }
+        datapoint.top_artists = top_artists.map(a => formatArtist(a));
+
         datapoint.top_genres = calculateTopGenres(top_artists);
+        console.log(datapoint);
         await postDatapoint(datapoint).then(function () {
             console.info(term + " success!");
         });
-    });
-    await Promise.all(promises);
+    }
     console.info("Hydration over.");
     console.timeEnd("Hydration.");
 }
+
 
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.
