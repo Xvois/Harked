@@ -11,7 +11,7 @@ const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL;
 
 export async function handleLogin(){
     const SCOPES = "user-read-currently-playing user-read-playback-state user-top-read user-follow-modify user-follow-read"
-    const pb = new PocketBase('http://127.0.0.1:8090');
+    const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
     const authMethods = await pb.collection('users').listAuthMethods();
     const provider = authMethods.authProviders[0];
     const authURL = new URL(provider.authUrl + REDIRECT_URL);
@@ -22,16 +22,17 @@ export async function handleLogin(){
 }
 
 export async function authRefresh() {
-    const pb = new PocketBase("http://127.0.0.1:8090");
+    console.info("Refreshing auth token.")
+    const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
     await pb.collection('users').authRefresh().then(function(auth) {
-        window.localStorage.setItem("access-token", auth.meta.accessToken);
-        window.localStorage.setItem("refresh-token", auth.meta.refreshToken);
+        console.info(auth)
+        window.localStorage.setItem("access-token", auth.token);
     })
 }
 
 
 function Authentication() {
-    const pb = new PocketBase("http://127.0.0.1:8090");
+    const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
     const navigate = useNavigate();
     const redirect = useCallback((path) => {
         console.warn("Redirecting...");

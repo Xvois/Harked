@@ -1,6 +1,7 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {batchAnalytics, batchArtists, formatArtist, formatSong} from "./PDM";
+import {authRefresh, handleLogin} from "./Authentication";
 
 const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
 /**
@@ -19,8 +20,8 @@ export const fetchData = async (path) => {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         }
-        if (err.response.status === 401) {
-            //handleLogin();
+        else if (err.response.status === 401) {
+            handleLogin(); //TODO : FIX THIS - SHOULD USE authRefresh BUT THAT DOES NOT WORK
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
         } else if (err.response.status === 503) {
@@ -144,19 +145,14 @@ const handleFetchException = (err) => {
             break;
     }
 }
-const postArtist = async (artist) => {
+const postArtist = async (artist, cache = null) => {
     // Ensure the artist is properly formatted first
     if (!artist.hasOwnProperty("artist_id")) {
         artist = formatArtist(artist);
     }
     try {
         let res;
-        console.log(artist.genres)
-        res = await genresToRefIDs(artist.genres);
-        console.log({
-            ...artist,
-            genres: res
-        })
+        res = await genresToRefIDs(artist.genres, cache);
         await pb.collection('artists').create({
             ...artist,
             genres: res
@@ -170,17 +166,13 @@ const postGenre = async (genre) => {
     await pb.collection('genres').create({genre: genre}).catch(handleCreationException);
 }
 
-const postSong = async (song) => {
+const postSong = async (song, cache = null) => {
     // Ensure the song is properly formatted first
     if(!song.hasOwnProperty("song_id")){
         song = formatSong(song);
     }
     const resolvedArtists = await batchArtists(song.artists.map(e => e.id));
-    await artistsToRefIDs(resolvedArtists).then(async function(res){
-        console.log({
-            ...song,
-            artists: res
-        })
+    await artistsToRefIDs(resolvedArtists, cache).then(async function(res){
         await pb.collection('songs').create(
             {
                 ...song,
@@ -190,15 +182,14 @@ const postSong = async (song) => {
     });
 }
 /**
-
  artistsToRefIDs takes an array of artist objects and returns an array of their corresponding Ref IDs in the artists collection.
-
  @param {Array} artists An array of artist objects.
-
+ @param cache
  @returns {Array} An array of Ref IDs for the given artist objects.
  **/
-const artistsToRefIDs = async (artists) => {
+const artistsToRefIDs = async (artists, cache = null) => {
     let ids = [];
+    const storedArtists = cache?.artists;
 
     for (const artist of artists) {
         // Copy the artist object to avoid modifying the original input
@@ -208,25 +199,19 @@ const artistsToRefIDs = async (artists) => {
         if (!formattedArtist.hasOwnProperty("artist_id")) {
             formattedArtist = formatArtist(formattedArtist);
         }
-
-        try {
-            const res = await pb.collection('artists').getFirstListItem(`artist_id="${formattedArtist.artist_id}"`);
-            ids.push(res.id);
-        } catch (err) {
-            if (err.status === 404) {
+        const index = storedArtists.findIndex(e => e.artist_id === formattedArtist.artist_id);
+        if(index !== -1) {
+            ids.push(storedArtists[index].id);
+        } else {
                 try {
-                    await postArtist(formattedArtist);
+                    await postArtist(formattedArtist, cache);
                     const res = await pb.collection('artists').getFirstListItem(`artist_id="${formattedArtist.artist_id}"`);
                     ids.push(res.id);
                 } catch (postErr) {
                     handleCreationException(postErr);
                 }
-            } else {
-                handleFetchException(err);
             }
         }
-    }
-
     return ids;
 }
 
@@ -234,28 +219,26 @@ const artistsToRefIDs = async (artists) => {
 
  genresToRefIDs takes an array of genre strings and returns an array of their corresponding Ref IDs in the genres collection.
  @param {Array} genres An array of genre strings.
+ @param cache
  @returns {Array} An array of Ref IDs for the given genre strings.
  **/
-const genresToRefIDs = async (genres) => {
+const genresToRefIDs = async (genres, cache = null) => {
     if(genres === undefined || genres === null){
         throw new Error(genres + " value inserted into genresToRefIDS.")
     }
     let ids = [];
+    const storedGenres = cache?.genres;
     for (let i = 0; i < genres.length; i++) {
-        try {
-            const res = await pb.collection('genres').getFirstListItem(`genre="${genres[i]}"`);
-            ids.push(res.id);
-        } catch (err) {
-            if (err.status === 404) {
-                try {
-                    await postGenre(genres[i]);
-                    const res = await pb.collection('genres').getFirstListItem(`genre="${genres[i]}"`);
-                    ids.push(res.id);
-                } catch (err) {
-                    handleCreationException(err);
-                }
-            } else {
-                handleFetchException(err);
+        const index = storedGenres.findIndex(e => e.genre === genres[i]);
+        if(index !== -1) {
+            ids.push(storedGenres[index].id);
+        } else {
+            try {
+                await postGenre(genres[i]);
+                const res = await pb.collection('genres').getFirstListItem(`genre="${genres[i]}"`);
+                ids.push(res.id);
+            } catch (err) {
+                handleCreationException(err);
             }
         }
     }
@@ -266,34 +249,36 @@ const genresToRefIDs = async (genres) => {
 
  songsToRefIDs takes an array of song objects and returns an array of their corresponding Ref IDs in the songs collection.
  @param {Array} songs An array of song objects.
+ @param cache
  @returns {Array} An array of Ref IDs for the given song objects.
  **/
-const songsToRefIDs = async (songs) => {
+const songsToRefIDs = async (songs, cache = null) => {
     let ids = [];
+    const storedSongs = cache?.songs;
+    let promises = [];
     for (let song of songs) {
         // Ensure the song is properly formatted first
         if (!song.hasOwnProperty("song_id")) {
             song = formatSong(song);
         }
-        try {
-            const res = await pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`);
-            ids.push(res.id);
-        } catch (err) {
-            if (err.status === 404) {
-                await postSong(song)
-                    .then(async function(){
-                        const res = await pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`);
-                        ids.push(res.id);
-                    });
-            } else {
-                handleFetchException(err);
-            }
+        const index = storedSongs.findIndex(e => e.song_id === song.song_id);
+        if(index !== -1){
+            ids.push(storedSongs[index].id);
+        }else{
+            promises.push(await postSong(song, cache)
+                .then(function(){
+                    pb.collection('songs').getFirstListItem(`song_id="${song.song_id}"`)
+                        .then(res => ids.push(res.id));
+                })
+            )
         }
     }
+    await Promise.all(promises);
     return ids;
 }
 
 export const postPlaylist = async (playlist) => {
+    const cache = await getCache();
     // Fetch the tracks of the playlist from the Spotify API
     const res = await fetchData(`playlists/${playlist.id}/tracks`);
 
@@ -305,22 +290,14 @@ export const postPlaylist = async (playlist) => {
 
     let newTracks = [];
     for (const track of transformedTracks) {
-        await pb.collection('songs').getFirstListItem(`song_id="${track.song_id}"`)
-            .then(res => track.analytics = res.analytics)
-            .catch(function (err) {
-                switch (err.status) {
-                    case 404:
-                        // Track not found, add to newTracks array
-                        newTracks.push(track);
-                        // Remove the track from the transformedTracks array
-                        transformedTracks.slice(transformedTracks.findIndex(t => t.song_id === track.song_id), 1);
-                        break;
-                    default:
-                        console.error('Error finding song.');
-                        console.error(err);
-                        break;
-                }
-            });
+        const index = cache.songs.findIndex(e => e.song_id === track.song_id);
+        if(index !== -1){track.analytics = cache.songs[index].analytics}
+        else{
+            // Track not found, add to newTracks array
+            newTracks.push(track);
+            // Remove the track from the transformedTracks array
+            transformedTracks.slice(transformedTracks.findIndex(t => t.song_id === track.song_id), 1);
+        }
     }
 
     // Add audio feature analytics to all songs
@@ -329,7 +306,7 @@ export const postPlaylist = async (playlist) => {
     transformedTracks.push(...newTracks);
 
     // Convert the transformed tracks into an array of IDs
-    const ids = await songsToRefIDs(transformedTracks);
+    const ids = await songsToRefIDs(transformedTracks, cache);
 
     // Get the playlist owner's ID from our database
     const owner = await pb.collection('users').getFirstListItem(`user_id="${playlist.owner.id}"`);
@@ -383,6 +360,19 @@ export const getPlaylists = (user_id, expandTracks = false) => {
         .catch(handleFetchException);
 }
 
+const getCache = async () => {
+    let p = [];
+    p.push(await pb.collection('artists').getFullList());
+    p.push(await pb.collection('songs').getFullList());
+    p.push(await pb.collection('genres').getFullList());
+    let cache = await Promise.all(p);
+    return {
+        artists: cache[0],
+        songs: cache[1],
+        genres: cache[2]
+    }
+}
+
 
 /**
  * postDatapoint will post the datapoint to the PRDB. Checks in the database controller are made to ensure the
@@ -413,12 +403,23 @@ export const postDatapoint = async (datapoint) => {
         console.info("Attempted to post new datapoint, but valid already exists.");
         return;
     }
-    console.log(datapoint.top_artists)
     // Convert top genres, songs, artists and the owner to their respective IDs.
-    await artistsToRefIDs(datapoint.top_artists).then(ids => datapoint.top_artists = ids);
-    await songsToRefIDs(datapoint.top_songs).then(ids => datapoint.top_songs = ids);
-    await genresToRefIDs(datapoint.top_genres).then(ids => datapoint.top_genres = ids);
+    let cache = await getCache();
+    console.log(cache);
+    console.time('artistsToRefIDs');
+    await artistsToRefIDs(datapoint.top_artists, cache).then(ids => datapoint.top_artists = ids);
+    console.timeEnd('artistsToRefIDs');
+    cache = await getCache();
+    console.time('songsToRefIDs');
+    await songsToRefIDs(datapoint.top_songs, cache).then(ids => datapoint.top_songs = ids);
+    console.timeEnd('songsToRefIDs');
+    cache = await getCache();
+    console.time('genresToRefIDs');
+    await genresToRefIDs(datapoint.top_genres, cache).then(ids => datapoint.top_genres = ids);
+    console.timeEnd('genresToRefIDs');
+    console.time('resolveOwner');
     await pb.collection('users').getFirstListItem(`user_id="${datapoint.user_id}"`).then(user => datapoint.owner = user.id);
+    console.timeEnd('resolveOwner');
 
     // Log the datapoint being posted.
     console.log(datapoint);

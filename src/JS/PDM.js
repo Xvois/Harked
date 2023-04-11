@@ -178,6 +178,7 @@ export const retrieveDatapoint = async function (user_id, term, delay = 0) {
         console.warn(err);
     })
     if (!currDatapoint && user_id === 'me') {
+        await postUsersPlaylists();
         await hydrateDatapoints().then(async () =>
             await getDatapoint(globalUser_id, term, timeSensitive).then(result =>
                 currDatapoint = result

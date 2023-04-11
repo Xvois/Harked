@@ -194,7 +194,7 @@ const Profile = () => {
         }
         datapoint.top_artists.forEach(artist => {
             if (!!artist.genres) {
-                if (artist.genres[0] === item && !relevantArtists.includes(artist.name)) {
+                if (artist.genres.includes(item) && !relevantArtists.includes(artist.name)) {
                     relevantArtists.push(artist.name)
                 }
             }
