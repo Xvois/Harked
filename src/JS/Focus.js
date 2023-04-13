@@ -24,7 +24,7 @@ const Focus = React.memo((props) => {
         image: '',
         link: '',
     })
-    const [focusMessage, setFocusMessage] = useState(<p>See what is says.</p>);
+    const [focusMessage, setFocusMessage] = useState(<p></p>);
     const [showArt, setShowArt] = useState(true);
     const [artistQualities, setArtistQualities] = useState();
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
@@ -116,7 +116,7 @@ const Focus = React.memo((props) => {
     const updateFocusMessage = async function () {
         // What do we use as our possessive?
         let possessive;
-        window.location.hash === 'me' ? possessive = 'your' : possessive = `${user.username}'s`
+        window.location.hash.slice(1, window.location.hash.length) === 'me' ? possessive = 'your' : possessive = `${user.username}'s`
         const item = focus.item;
         let topMessage = '';
         let secondMessage = '';
@@ -210,14 +210,6 @@ const Focus = React.memo((props) => {
                href={focus.link} rel="noopener noreferrer" target="_blank">
                 <img alt={''} className='art' src={focus.image}></img>
                 <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
-                <div className='art-text-container'>
-                    <h1 className={"art-name"}
-                        style={showArt ? {animation: 'swoopUpR 0.4s ease-out'} : {animation: 'swoopUpH 0.2s ease-out forwards'}}>{focus.title}</h1>
-                    <h2 className={"art-desc"}
-                        style={showArt ? {animation: 'swoopUpR 0.6s ease-out'} : {animation: 'swoopUpH 0.2s ease-out forwards'}}>{focus.secondary}</h2>
-                    <p className={"art-desc"}
-                       style={showArt ? {animation: 'swoopUpR 0.8s ease-out'} : {animation: 'swoopUpH 0.2s ease-out forwards'}}>{focus.tertiary}</p>
-                </div>
             </a>
             <div className={'focus-message'}>
                 {focusMessage}
