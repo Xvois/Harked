@@ -17,7 +17,6 @@ import {
     isLoggedIn,
     retrieveDatapoint,
     retrieveMedia,
-    retrievePreviousDatapoint,
     retrieveUser,
     unfollowUser
 } from './PDM';
@@ -27,14 +26,14 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
+import {handleLogin} from "./Authentication";
 
 
 const Profile = () => {
     const [focusedPlaylist, setFocusedPlaylist] = useState();
-    const [user_id, setuser_id] = useState(window.location.hash.split("#")[1]);
+    const [user_id, setUser_id] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
     const [focusItem, setFocusItem] = useState();
     const [focusTertiary, setFocusTertiary] = useState();
@@ -393,7 +392,6 @@ const Profile = () => {
                          src={album.images[0].url}></img>
                     <div className={'album-text'}>
                         <h2>{(album.name.length > 25 ? album.name.slice(0, 23) + '...' : album.name)}</h2>
-                        <FavoriteIcon fontSize={'small'} style={{transform: 'scale(50%)'}}/>
                         <p>{album.saved_songs.length} song(s) saved from this album.</p>
                     </div>
                 </div>
@@ -447,18 +445,14 @@ const Profile = () => {
         // If the page hasn't loaded then grab the user data
         if (user_id === window.localStorage.getItem("user_id") || user_id === "me") {
             window.location.hash = "me";
-            setuser_id("me")
+            setUser_id("me")
         } else {
-            setuser_id(window.location.hash.split("#")[1])
+            setUser_id(window.location.hash.split("#")[1])
             if (isLoggedIn()) {
                 followsUser(user_id).then(following => setFollowing(following));
             }
         }
         if (!loaded) {
-            retrievePlaylists(user_id).then(function(p){
-                setPlaylists(p);
-                setFocusedPlaylist(p[0]);
-            });
             // Get the user information
             retrieveUser(user_id).then(function (result) {
                 console.log(result)
@@ -484,16 +478,19 @@ const Profile = () => {
                 if (!chipData) {
                     setChipData([dpResult.top_artists[0], dpResult.top_genres[0]])
                 }
-                retrievePreviousDatapoint(user_id, term).then(function (prevD) {
-                    setPrevDatapoint(prevD);
-                })
             }
             setLoaded(true);
         })
+        retrievePlaylists(user_id).then(function(p){
+            setPlaylists(p);
+            if(p.length > 0){
+                setFocusedPlaylist(p[0]);
+            }
+        });
     }
     useEffect(() => {
         if (!isLoggedIn() && user_id === "me") {
-            //handleLogin();
+            handleLogin();
         }
         loadPage();
     }, [term, user_id])
@@ -502,7 +499,7 @@ const Profile = () => {
         const updateItem = datapoint[`top_${simpleSelection}`][0];
         if (updateItem) {
             setFocusItem(updateItem);
-            const possessive = user_id === 'me' ? 'your' : `${currentUser.username}'s`
+            const possessive = user_id === "me" ? 'your' : `${currentUser.username}'s`
             setFocusTertiary(`${possessive} top ${simpleSelection.slice(0, simpleSelection.length - 1)}`);
             if (simpleSelection === 'artists') {
                 console.info('Updating liked songs from artist!')

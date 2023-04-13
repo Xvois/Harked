@@ -104,12 +104,14 @@ export const retrieveAllUserIDs = async function () {
 /**
  * Returns an array of public non-collaborative playlists from a given user.
  * @param user_id
- * @returns {Promise<[]>}
+ * @returns {Promise<Array>}
  */
 export const retrievePlaylists = async function (user_id) {
     let globalUser_id = user_id;
     if (globalUser_id === 'me') {globalUser_id = window.localStorage.getItem("user_id")}
-    return await getPlaylists(globalUser_id);
+    let playlists = (await getPlaylists(globalUser_id, true));
+    playlists.forEach(p => p.tracks = p.expand.tracks);
+    return playlists;
 }
 
 /**
@@ -396,7 +398,11 @@ export const getLikedSongsFromArtist = async function (user_id, artistID) {
 
 export const formatArtist = (artist) => {
     let image = null;
-    if(artist.images !== undefined){image = artist.images[1].url}
+    if(artist.hasOwnProperty("images")){
+        if(artist.images[1] !== undefined){
+            image = artist.images[1].url
+        }
+    }
     return {
         artist_id: artist.id,
         name: artist.name,
@@ -409,10 +415,11 @@ export const formatArtist = (artist) => {
 export const formatSong = (song) => {
     let image = null;
     if(song.album.images !== undefined){image = song.album.images[1].url}
+    let artists = song.artists.map(a => formatArtist(a));
     return {
         song_id: song.id,
         title: song.name,
-        artists: song.artists,
+        artists: artists,
         image: image,
         link: song.external_urls.spotify,
         analytics: {}
