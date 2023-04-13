@@ -1,12 +1,10 @@
 // noinspection HtmlUnknownAnchorTarget
 
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import './../CSS/TopBar.css';
-import {ClickAwayListener, FormControl, TextField} from '@mui/material';
+import {ClickAwayListener} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
-import {styled} from '@mui/material/styles';
-import QuizIcon from '@mui/icons-material/Quiz';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Search from "./Search"
@@ -31,7 +29,6 @@ const TopBar = () => {
             {windowWidth > 1000 ?
                 <div className="element-container">
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                    <a className='element' href='feedback'><QuizIcon fontSize='large'/><p>Feedback</p></a>
                     <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                     <div className='element'><Search></Search></div>
 
@@ -53,7 +50,6 @@ const TopBar = () => {
                 {!sideMenuSearchFocused ?
                     <>
                         <a className='menu-element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                        <a className='menu-element' href='feedback'><QuizIcon fontSize='large'/><p>Feedback</p></a>
                         <a className='menu-element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                     </>
                     :

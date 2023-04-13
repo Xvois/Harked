@@ -50,7 +50,7 @@ function Homepage() {
                     <h1 className="main-text">Get true insights on your <span
                         style={{color: '#22C55E'}}>Spotify</span> profile.</h1>
                 }
-                <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
+                <p className='under-text'>{isLoggedIn() ? exploreMessage : welcomeMessage}</p>
                 <div className={'button-wrapper'}>
                     {!isLoggedIn() ?
                         <>
