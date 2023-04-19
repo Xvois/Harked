@@ -12,7 +12,6 @@ import './../CSS/Graph.css'
 import {
     followsUser,
     followUser,
-    getLikedSongsFromArtist,
     retrievePlaylists,
     isLoggedIn,
     retrieveDatapoint,
@@ -366,6 +365,7 @@ const Profile = () => {
         )
     }
 
+
     const ArtistConstellation = () => {
         const [showPeak, setShowPeak] = useState(false);
         const [peakObject, setPeakObject] = useState(null);
@@ -501,10 +501,6 @@ const Profile = () => {
             setFocusItem(updateItem);
             const possessive = user_id === "me" ? 'your' : `${currentUser.username}'s`
             setFocusTertiary(`${possessive} top ${simpleSelection.slice(0, simpleSelection.length - 1)}`);
-            if (simpleSelection === 'artists') {
-                console.info('Updating liked songs from artist!')
-                getLikedSongsFromArtist(user_id ,updateItem.artist_id).then(res => setLikedSongsFromArtist(res));
-            }
         }
     }, [datapoint])
 
@@ -601,10 +597,10 @@ const Profile = () => {
                             alignItems: 'center',
                             height: '75px',
                         }}>
-                            <img src={arrow} style={{transform: `rotate(180deg) scale(10%)`, cursor: `pointer`}}
+                            <img src={arrow} style={{transform: `rotate(180deg) scale(5%)`, cursor: `pointer`}}
                                  onClick={() => decrementSimple()} alt={"arrow"}></img>
                             <h2 className='datapoint-title'>Top {simpleSelection}</h2>
-                            <img src={arrow} style={{transform: `scale(10%)`, cursor: `pointer`}}
+                            <img src={arrow} style={{transform: `scale(5%)`, cursor: `pointer`}}
                                  onClick={() => incrementSimple()} alt={"arrow"}></img>
                         </div>
                         <div className='term-container'>
@@ -657,11 +653,7 @@ const Profile = () => {
                                         return <li key={simpleSelection !== 'genres' ? element[`${simpleSelection.slice(0, simpleSelection.length - 1)}_id`] : element}
                                                    className='list-item'
                                                    onClick={() => {
-                                                       if (simpleSelection === 'artists') {
-                                                           getLikedSongsFromArtist(user_id, element.artist_id).then(res => {
-                                                               setLikedSongsFromArtist(res);
-                                                           });
-                                                       } else if (simpleSelection === 'songs') {
+                                                       if (simpleSelection === 'songs') {
                                                            setStatsSelection(element.analytics);
                                                        }
                                                        setFocusItem(element);
@@ -676,69 +668,8 @@ const Profile = () => {
                                     }
                                 })}
                             </ol>
-                            {simpleSelection === 'songs' && windowWidth > mobileWidth ?
-                                <div style={{display: 'flex', flexDirection: 'column', margin: 'auto'}}>
-                                    {statsSelection ?
-                                        <h2 className={'stats-title'}
-                                            style={{color: '#22C55E', cursor: 'pointer', zIndex: '1'}}
-                                            onClick={() => setStatsSelection(null)}>{focusItem.title}<ClearIcon
-                                            fontSize={'small'}/></h2>
-                                        :
-                                        <h2 className={'stats-title'}>{user_id === 'me' ? 'your' : `${currentUser.username}'s`}
-                                            <span style={{color: '#22C55E'}}> average</span> song analytics.</h2>
-                                    }
-                                    <div className={'simple-stats'}>
-                                        {
-                                            Object.keys(translateAnalytics).map(function (key) {
-                                                if (key !== 'loudness' && key !== 'liveness') {
-                                                    return <div className={'stat-block'} onClick={function () {
-                                                        if (simpleSelection === 'Songs') {
-                                                            window.scrollTo({left: 0, top: 1350, behavior: "smooth"});
-                                                            if (graphAxis.y !== key) {
-                                                                setGraphAxis({...graphAxis, x: key})
-                                                            }
-                                                        }
-                                                    }}>
-                                                        <h3>{translateAnalytics[key].name}</h3>
-                                                        <div className={'stat-bar'} style={{
-                                                            '--val': `100%`,
-                                                            backgroundColor: 'black',
-                                                            marginBottom: '-10px'
-                                                        }}></div>
-                                                        <div className={'stat-bar'}
-                                                             style={{'--val': `${statsSelection ? (key === 'tempo' ? 100 * (statsSelection[key] - 50) / 150 : statsSelection[key] * 100) : selectionAnalysis[key] * 100}%`}}></div>
-                                                        {statsSelection ?
-                                                            <div className={'stat-bar'} style={{
-                                                                '--val': `${selectionAnalysis[key] * 100}%`,
-                                                                opacity: '0.25',
-                                                                marginTop: '-10px'
-                                                            }}></div>
-                                                            :
-                                                            <></>
-                                                        }
-                                                        <p>{translateAnalytics[key].description}</p>
-                                                    </div>
-                                                }
-                                            })
-                                        }
-                                    </div>
-                                </div>
-                                :
-                                <></>
-                            }
-                            {simpleSelection === 'artists' && windowWidth > mobileWidth ?
-                                (isLoggedIn() ?
-                                        <ArtistConstellation/>
-                                        :
-                                        <div style={{margin: 'auto', justifyContent: "center", textAlign: 'center'}}>
-                                            <h2 style={{fontFamily: 'Inter Tight'}}>Log-in to see this user's artist
-                                                constellation.</h2>
-                                            <a className="auth-button" >FIX ME</a>
-                                        </div>
-                                )
-                                :
-                                <></>
-                            }
+                            <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint}
+                                   tertiary={focusTertiary} type={simpleSelection}/>
                             {simpleSelection === 'genres' && windowWidth > mobileWidth ?
                                 <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
                                     {genreMessage}
@@ -748,8 +679,6 @@ const Profile = () => {
                             }
                         </div>
                         <div style={simpleSelection === 'genres' ? {display: 'none'} : {}}>
-                            <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint}
-                                   tertiary={focusTertiary} type={simpleSelection}/>
                         </div>
                     </div>
                     {simpleSelection === 'songs' ?

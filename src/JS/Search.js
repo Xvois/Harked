@@ -1,5 +1,4 @@
-import {ClickAwayListener, FormControl, Input, InputAdornment, ThemeProvider} from "@mui/material";
-import SearchIcon from '@mui/icons-material/Search';
+import {ClickAwayListener, FormControl, Input, InputAdornment, TextField, ThemeProvider} from "@mui/material";
 import {useEffect, useState} from "react";
 import {createTheme} from "@mui/material/styles";
 import {retrieveAllUsers} from "./PDM";
@@ -71,18 +70,15 @@ const Search = () => {
     }, [])
     return (
         <ClickAwayListener onClickAway={() => setSearchResults(null)}>
-            <div style={{flexDirection: 'column', width: '100%'}}>
+            <div className={'search-bar'}>
                 <ThemeProvider theme={searchTheme}>
-                    <FormControl sx={{ input: { color: 'white' } }} variant="standard" id={'input'} onChange={handleChange} onClick={handleChange}>
-                        <Input
-                            id="input-with-icon-adornment"
-                            startAdornment={
-                                <InputAdornment position="start">
-                                    <SearchIcon style={{color: 'white'}} fontSize={'large'} />
-                                </InputAdornment>
-                            }
+                        <TextField
+                            id="standard-textarea"
+                            label="Search"
+                            placeholder="Placeholder"
+                            multiline
+                            variant="standard"
                         />
-                    </FormControl>
                     {!!searchResults ?
                         <div className={'results'}>
                             {searchResults.map(result => {
@@ -91,7 +87,7 @@ const Search = () => {
                                         <img alt='' src={result.profile_picture}></img>
                                         <div className={'result-title'}>
                                             <h2>{result.username}</h2>
-                                            <p>Follows you.</p>
+                                            <p>Some information..</p>
                                         </div>
                                     </a>
                                 )

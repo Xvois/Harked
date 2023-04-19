@@ -208,11 +208,11 @@ export const postPlaylist = async (playlist) => {
 
     try {
         // Check if the playlist already exists in our database
-        await pb.collection('playlists').update(playlistId, playlistObj).catch(handleUpdateException);
+        await pb.collection('playlists').update(playlistId, playlistObj);
     } catch (err) {
         if (err.status === 404) {
             // Playlist not found, create a new one in our database
-            await pb.collection('playlists').create(playlistObj);
+            await pb.collection('playlists').create(playlistObj).catch(handleCreationException);
         } else {
             console.error('Error finding/updating playlist.');
             console.error(err);
@@ -270,27 +270,31 @@ const updateDatabaseCacheWithItems = (items) => {
 
 
 const postSong = async (song) => {
-    if(song.hasOwnProperty("song_id") && !song.hasOwnProperty("id")){
-        throw new Error("Song must have database id before posting!");
+    if(!song.song_id || !song.id) {
+        throw new Error("Song must have a database ID and be formatted before posting!");
     }
-    else if(!song.hasOwnProperty("song_id") && song.hasOwnProperty("id")){
-        throw new Error("Song must be formatted before posting!");
+
+    if(databaseCache.songs.some(s => s.id === song.id)) {
+        console.info('Song attempting to be posted already cached.');
+        return;
     }
-    const newArtists = song.artists.filter(a1 => !databaseCache.artists.some(a2 => a1.artist_id === a2.artist_id));
-    const cachedArtists = databaseCache.artists.filter(a1 => song.artists.some(a2 => a1.artist_id === a2.artist_id));
-    song.artists = cachedArtists;
-    if(newArtists.length > 0){
-        console.log({
-            cachedArtists: cachedArtists,
-            newArtists: newArtists
-        })
-        const artistPromises = newArtists.map(async e => await fetchData(`artists/${e.artist_id}`));
-        const resolvedArtists = (await Promise.all(artistPromises)).map(e => formatArtist(e));
-        song.artists = song.artists.concat(resolvedArtists);
-    }
-    song.artists = await artistsToRefIDs(song.artists);
+
+    let artists = song.artists;
+    const unresolvedArtists = song.artists.filter(a1 => !databaseCache.artists.some(a2 => a1.artist_id === a2.artist_id));
+    const cachedArtists = databaseCache.artists.filter(a => artists.some(e => e.artist_id === a.artist_id));
+    if(unresolvedArtists.length > 0){ artists = cachedArtists.concat(await resolveNewArtists(unresolvedArtists)); }
+
+    song.artists = await artistsToRefIDs(artists);
     await pb.collection('songs').create(song);
     updateDatabaseCacheWithItems({songs: [song]});
+}
+
+async function resolveNewArtists(newArtists) {
+    const artistPromises = newArtists.map(async (e) => {
+        const artistData = await fetchData(`artists/${e.artist_id}`);
+        return formatArtist(artistData);
+    });
+    return Promise.all(artistPromises);
 }
 
 const postArtist = async (artist) => {

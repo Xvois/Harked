@@ -64,9 +64,9 @@
 }
 
 .list-item {
-    font-size: 25px;
+    font-size: 20px;
     padding: 5px;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Inter Tight', sans-serif;
     font-weight: 900;
     counter-increment: item;
     width: max-content;
@@ -108,66 +108,8 @@
     font-family: 'Ubuntu', sans-serif;
     text-transform: uppercase;
     text-align: center;
-    font-size: 50px;
+    font-size: 30px;
     font-weight: 800;
-}
-
-.stats-title{
-    font-family: 'Lato', sans-serif;
-    font-weight: 900;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-.simple-stats{
-    flex-grow: 1;
-    max-width: 1000px;
-    display: flex;
-    gap: 50px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-}
-
-.stat-block {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 75px;
-    width: 200px;
-    padding: 10px;
-    transition: all 0.1s;
-}
-
-.stat-block:hover {
-    cursor: pointer;
-}
-
-.stat-block > h3 {
-    font-family: 'Lato', sans-serif;
-    text-transform: uppercase;
-    margin-top: 0;
-    margin-bottom: 5px;
-}
-
-.stat-block > p {
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 10px;
-    margin: 5px 0 0 0;
-    color: rgba(100,100,100);
-}
-
-/*noinspection ALL*/
-.stat-bar {
-    position: relative;
-    height: 10px;
-    width: var(--val);
-    margin-right: auto;
-
-    background-color: #22C55E;
-    border-radius: 10px;
-    box-shadow: 0 0 2px #22C55E;
-    transition: all 0.5s ease-out;
 }
 
 @keyframes hover {

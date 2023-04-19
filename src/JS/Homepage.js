@@ -65,12 +65,7 @@ function Homepage() {
                     <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
-                    1.2.2pb</p>
-                {token === "denied-scopes" ?
-                    <p className="error-message">You need to accept the Spotify scopes to log in.</p>
-                    :
-                    <></>
-                }
+                    1.2.3pb</p>
             </div>
         </div>
     );

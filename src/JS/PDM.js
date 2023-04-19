@@ -374,7 +374,7 @@ export const batchArtists = async (artist_ids) => {
     return artists;
 };
 
-export const getLikedSongsFromArtist = async function (user_id, artistID) {
+export const getAlbumsWithLikedSongs = async function (user_id, artistID) {
     let albumsWithLikedSongs = [];
     let globalUser_id = user_id;
     if (globalUser_id === "me") {
@@ -433,8 +433,8 @@ export const formatSong = (song) => {
 export const hydrateDatapoints = async function () {
     console.time("Hydration.");
     const terms = ['short_term', 'medium_term', 'long_term'];
-    for (let i = 0; i < terms.length; i++) {
-        const term = terms[i];
+
+    const datapointPromises = terms.map(async (term) => {
         console.info("Hydrating: " + term)
         let datapoint = {
             user_id: window.localStorage.getItem("user_id"),
@@ -446,31 +446,41 @@ export const hydrateDatapoints = async function () {
         let top_songs;
         let top_artists;
         // Queue up promises
-        let promises = [await fetchData(`me/top/tracks?time_range=${term}&limit=50`), await fetchData(`me/top/artists?time_range=${term}`)];
-        // Await the promises for the arrays of data
-        await Promise.all(promises).then(function (result) {
-            top_songs = result[0].items;
-            top_artists = result[1].items;
-        })
+        let result = await Promise.all([fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}`)]);
+        top_songs = result[0].items;
+        top_artists = result[1].items;
+
         // Add all the songs
         datapoint.top_songs = top_songs.map(s => formatSong(s));
         await batchAnalytics(datapoint.top_songs).then(res =>
-            datapoint.top_songs.map((e,i) =>
+            datapoint.top_songs.map((e, i) =>
                 e.analytics = res[i]
             )
         );
+
         // Add all the artists
         datapoint.top_artists = top_artists.map(a => formatArtist(a));
 
         datapoint.top_genres = calculateTopGenres(top_artists);
         console.log(datapoint);
+
+        return datapoint;
+    });
+
+    const datapoints = await Promise.all(datapointPromises);
+
+    console.info("Posting datapoints...");
+    for (let i = 0; i < datapoints.length; i++) {
+        const datapoint = datapoints[i];
         await postDatapoint(datapoint).then(function () {
-            console.info(term + " success!");
+            console.info(datapoint.term + " success!");
         });
     }
+
     console.info("Hydration over.");
     console.timeEnd("Hydration.");
 }
+
 
 
 /**

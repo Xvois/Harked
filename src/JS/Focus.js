@@ -6,6 +6,8 @@
 
 import React, {useEffect, useState} from "react";
 import './../CSS/Focus.css'
+import * as PropTypes from "prop-types";
+import {getAlbumsWithLikedSongs, getLikedSongsFromArtist} from "./PDM";
 
 
 const Focus = React.memo((props) => {
@@ -16,6 +18,7 @@ const Focus = React.memo((props) => {
             updateFocus();
         }
     }, [item])
+    const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ?  'your' : `${user.username}'s`
     const [focus, setFocus] = useState({
         item: null,
         title: '', //main text
@@ -25,8 +28,8 @@ const Focus = React.memo((props) => {
         link: '',
     })
     const [focusMessage, setFocusMessage] = useState(<p></p>);
-    const [showArt, setShowArt] = useState(true);
     const [artistQualities, setArtistQualities] = useState();
+    const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState([]);
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     const translateAnalytics = {
         acousticness: {name: 'acoustic', description: 'Music with no electric instruments.'},
@@ -38,16 +41,17 @@ const Focus = React.memo((props) => {
         valence: {name: 'positive', description: 'Music that feels upbeat.'},
         tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
     }
-    // Delay function used for animations
-    const delay = ms => new Promise(res => setTimeout(res, ms));
+    const [showWrapperArt, setShowWrapperArt] = useState(true);
+
+    function flip() {
+        setShowWrapperArt(!showWrapperArt);
+    }
 
     // The function that updates the focus.
     async function updateFocus() {
         console.info("updateFocus called!")
         focus.item = item;
-        setShowArt(false);
         let localState = focus;
-        await delay(400);
         localState.image = item.image;
         localState.link = item.link;
         if (type === "songs") {
@@ -56,6 +60,7 @@ const Focus = React.memo((props) => {
             localState.tertiary = tertiary;
         } else if (type === "artists") {
             localState.title = item.name;
+            setArtistsAlbumsWithLikedSongs(await getAlbumsWithLikedSongs(user.user_id, item.artist_id));
             if(item.genres){
                 localState.secondary = item.genres[0];
             }
@@ -70,7 +75,6 @@ const Focus = React.memo((props) => {
         }
         setFocus(localState);
         await updateFocusMessage();
-        setShowArt(true)
     }
 
     // Update the artist attributes that are used to make the focus
@@ -111,12 +115,66 @@ const Focus = React.memo((props) => {
         setArtistQualities(result);
     }
 
+    const SongAnalysis = (props) => {
+        const song = props.song;
+        if(song.hasOwnProperty("song_id")){
+            const analytics = song.analytics;
+            return (
+                <div style={{width: '100%', height: '100%', justifyContent: 'center', alignContent: 'center'}}>
+                    {
+                        Object.keys(translateAnalytics).map(function (key) {
+                            if (key !== 'loudness' && key !== 'liveness') {
+                                return (
+                                    <div className={'stat-block'}>
+                                        <h3>{translateAnalytics[key].name}</h3>
+                                        <div className={'stat-bar'} style={{
+                                            '--val': `100%`,
+                                            backgroundColor: 'black',
+                                            marginBottom: '-5px'
+                                        }}></div>
+                                        <div className={'stat-bar'}
+                                             style={{'--val': `${analytics ? (key === 'tempo' ? 100 * (analytics[key] - 50) / 150 : analytics[key] * 100) : analytics[key] * 100}%`}}></div>
+                                        <p>{translateAnalytics[key].description}</p>
+                                    </div>)
+
+                            }
+                        })
+                    }
+                </div>
+            )
+        }
+    }
+
+    const ArtistAnalysis = (props) => {
+        const artist = props.artist;
+        if(artist.hasOwnProperty("artist_id")) {
+            const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 5);
+            return (
+                <div style={{width: '100%', height: '100%', justifyContent: 'center', alignContent: 'center'}}>
+                    <h2 className={'artist-analysis-title'}>{possessive.charAt(0).toUpperCase() + possessive.slice(1)} top
+                        albums for {artist.name} [PH]</h2>
+                    <ol className={'top-albums'}>
+                        {
+                            orderedAlbums.map(function (album) {
+                                return (
+                                    <li className={'album-li'}>
+                                        <h3 style={{margin: 0}}>{album.name.length > 25 ? album.name.slice(0, 25) + '...' : album.name}</h3>
+                                        <p>{album.saved_songs.length} saved
+                                            song{album.saved_songs.length > 1 ? 's' : ''}.</p>
+                                    </li>
+                                )
+                            })
+                        }
+                    </ol>
+                </div>
+            )
+        }
+    }
+
     // Update the focus message to be
     // relevant to the current focus
     const updateFocusMessage = async function () {
         // What do we use as our possessive?
-        let possessive;
-        window.location.hash.slice(1, window.location.hash.length) === 'me' ? possessive = 'your' : possessive = `${user.username}'s`
         const item = focus.item;
         let topMessage = '';
         let secondMessage = '';
@@ -205,12 +263,26 @@ const Focus = React.memo((props) => {
 
     return (
         <div className='focus-container'>
-            <a className={'play-wrapper'}
-               style={showArt ? {opacity: '1'} : {opacity: '0'}}
-               href={focus.link} rel="noopener noreferrer" target="_blank">
-                <img alt={''} className='art' src={focus.image}></img>
-                <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
-            </a>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                <div className={'play-wrapper'} onClick={flip}
+                    rel="noopener noreferrer">
+                    {showWrapperArt ?
+                        <>
+                            <img alt={''} className='art' src={focus.image} loading="lazy"></img>
+                            <img alt={''} className='art' id={'art-backdrop'} src={focus.image}></img>
+                        </>
+                        :
+                        <div className={'item-analysis'}>
+                            {type === "songs" ?
+                                <SongAnalysis song={focus.item}/>
+                                :
+                                <ArtistAnalysis artist={focus.item}/>
+                            }
+                        </div>
+                    }
+                    <p>View <span style={{color: '#22C55E'}}>{showWrapperArt ? "analysis" : "art"}</span></p>
+                </div>
+            </div>
             <div className={'focus-message'}>
                 {focusMessage}
             </div>
