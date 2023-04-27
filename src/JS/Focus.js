@@ -19,7 +19,6 @@ const Focus = React.memo((props) => {
     const {user, item, datapoint, type, interactive} = props;
     let artistQualities;
     useEffect(() => {
-        console.log(item);
         updateArtistQualities(datapoint);
         updateFocus();
     }, [item])
@@ -55,6 +54,7 @@ const Focus = React.memo((props) => {
     // The function that updates the focus.
     function updateFocus() {
         console.info("updateFocus called!")
+        console.log(item)
         focus.item = item;
         let localState = focus;
         localState.image = item.image;
@@ -76,6 +76,19 @@ const Focus = React.memo((props) => {
         } else if (type === "genres") {
             localState.title = '';
             localState.secondary = item;
+            let artistName;
+            for (const key of Object.keys(artistQualities)){
+                if(artistQualities[key].hasOwnProperty('genre')){
+                    if(artistQualities[key].genre === item){
+                        artistName = key;
+                        break;
+                    }
+                }
+            }
+            const artists = datapoint.top_artists.filter(a => a.name === artistName);
+            if(artists.length > 0){
+                localState.image = artists[0].image;
+            }
         }
         setFocus(localState);
         updateFocusMessage();
@@ -126,6 +139,7 @@ const Focus = React.memo((props) => {
                     secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
                 }
                 break;
+                //TODO: REWRITE THIS WHOLE AREA
             case "genres":
                 let relevantArtists = [];
                 for (let artist in datapoint.top_artists) {
@@ -141,29 +155,24 @@ const Focus = React.memo((props) => {
                     }
                 });
                 if (relevantArtists.length > 1) {
-                    topMessage = <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is not only defined
-                        by {possessive} love for <a href="https://google.com" style={{color: '#22C55E', textDecoration: '0.5px underline'}}>{relevantArtists[0]}</a> but
-                        also {relevantArtists.length - 1} other artist{relevantArtists.length - 1 === 1 ? `` : "s"}...</h2>
-                    let secondMessageText = '';
+                    topMessage = `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined
+                        by ${possessive} love for ${relevantArtists[0]} but
+                        also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
                     for (let i = 1; i < relevantArtists.length; i++) {
-                        secondMessageText += relevantArtists[i];
+                        secondMessage += relevantArtists[i];
                         if (i === relevantArtists.length - 2) {
-                            secondMessageText += ' and '
+                            secondMessage += ' and '
                         } else if (i !== relevantArtists.length - 1) {
-                            secondMessageText += ', ';
+                            secondMessage += ', ';
                         }
                     }
-                    secondMessage = <h3>{secondMessageText}</h3>
                 } else {
                     if (relevantArtists.length === 1) {
-                        topMessage =
-                            <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is very well marked
-                                by {possessive} time listening to <a href="https://google.com"
-                                                                     style={{color: '#22C55E', textDecoration: '0.5px underline'}}>{relevantArtists[0]}</a>.</h2>
+                        topMessage = `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked
+                                by ${possessive} time listening to ${relevantArtists[0]}`
                     } else {
-                        topMessage =
-                            <h2>{possessive[0].toUpperCase() + possessive.substring(1)} taste in {item} music isn't well defined
-                                by one artist, it's the product of many songs over many artists.</h2>
+                        topMessage = `${possessive[0].toUpperCase() + possessive.substring(1)} taste in ${item} music isn't well defined
+                                by one artist, it's the product of many songs over many artists.`
                     }
                 }
                 break;
@@ -230,19 +239,7 @@ const Focus = React.memo((props) => {
                     {
                         Object.keys(translateAnalytics).map(function (key) {
                             if (key !== 'loudness' && key !== 'liveness') {
-                                return (
-                                    <div className={'stat-block'}>
-                                        <h3>{translateAnalytics[key].name}</h3>
-                                        <div className={'stat-bar'} style={{
-                                            '--val': `100%`,
-                                            backgroundColor: 'black',
-                                            marginBottom: '-5px'
-                                        }}></div>
-                                        <div className={'stat-bar'}
-                                             style={{'--val': `${analytics ? (key === 'tempo' ? 100 * (analytics[key] - 50) / 150 : analytics[key] * 100) : analytics[key] * 100}%`}}></div>
-                                        <p>{translateAnalytics[key].description}</p>
-                                    </div>)
-
+                                return <StatBlock name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={analytics ? (key === 'tempo' ? 100 * (analytics[key] - 50) / 150 : analytics[key] * 100) : analytics[key] * 100}/>
                             }
                         })
                     }
@@ -251,27 +248,37 @@ const Focus = React.memo((props) => {
         }
     }
 
+    const StatBlock = (props) => {
+        const {name, description, value} = props;
+        return (
+            <div className={'stat-block'}>
+                <h3>{name}</h3>
+                <div className={'stat-bar'} style={{
+                    '--val': `100%`,
+                    backgroundColor: 'black',
+                    marginBottom: '-5px'
+                }}></div>
+                <div className={'stat-bar'}
+                     style={{'--val': `${value}%`}}></div>
+                <p>{description}</p>
+            </div>
+        )
+    }
+
     const ArtistAnalysis = (props) => {
         const artist = props.artist;
         if(artist.hasOwnProperty("artist_id")) {
-            const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 5);
+            const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 6);
             return (
-                <div style={{width: '100%', height: '100%', justifyContent: 'center', alignContent: 'center'}}>
-                    <h2 className={'artist-analysis-title'}>{possessive.charAt(0).toUpperCase() + possessive.slice(1)} top
-                        albums for {artist.name} [PH]</h2>
-                    <ol className={'top-albums'}>
-                        {
+                <div style={{width: '100%', justifyContent: 'center', alignContent: 'center'}}>
+                        {orderedAlbums.length > 0 ?
                             orderedAlbums.map(function (album) {
-                                return (
-                                    <li className={'album-li'}>
-                                        <h3 style={{margin: 0}}>{album.name.length > 25 ? album.name.slice(0, 25) + '...' : album.name}</h3>
-                                        <p>{album.saved_songs.length} saved
-                                            song{album.saved_songs.length > 1 ? 's' : ''}.</p>
-                                    </li>
-                                )
+                                console.log(album)
+                                return <StatBlock name={album.name.length > 35 ? album.name.slice(0,35) + '...' : album.name} description={`${album.saved_songs.length} saved songs.`} value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
                             })
+                            :
+                            <p>There are no saved songs from this artist on {possessive} public profile.</p>
                         }
-                    </ol>
                 </div>
             )
         }
@@ -289,7 +296,7 @@ const Focus = React.memo((props) => {
                 let seed_genres = [];
                 item.artists.forEach(artist => seed_genres = seed_genres.concat(artist.genres))
                 const seed_track = item.song_id;
-                getTrackRecommendations(seed_artists, seed_genres, seed_track, 5).then(function(result) {
+                getTrackRecommendations(seed_artists, seed_genres, seed_track, 4).then(function(result) {
                     setRecommendations(result.map(t => formatSong(t)));
                 });
         }
@@ -302,7 +309,7 @@ const Focus = React.memo((props) => {
         return (
             <div className={'rec-items'}>
                 {
-                    recommendations.slice(0,5).map(function(rec, index){
+                    recommendations.slice(0,4).map(function(rec, index){
                         return (
                         <div className={'rec-tile-wrapper'}
                              onMouseEnter={() => setHoverItem(index)}
@@ -324,22 +331,14 @@ const Focus = React.memo((props) => {
 
     const RecommendationTile = (props) => {
         const {item} = props;
+        const title = type === 'songs' ? item.title : item.name
+        const subtitle = type === 'songs' ? item.artists[0].name : item.genres[0]
         return (
             <a href={item.link} target={"_blank"}>
                 <img alt={`${type.slice(0, type.length-1)} art`} src={item.image}></img>
                 <div className={'tile-text'}>
-                    <h2>
-                        {type === 'songs' ?
-                            item.title
-                            :
-                            item.name
-                        }
-                    </h2>
-                    {type === 'songs' ?
-                        <p>{item.artists[0].name}</p>
-                        :
-                        <p>{item.genres[0]}</p>
-                    }
+                    <h2 style={{fontSize: `${30 - ( 2 * Math.sqrt(title.length) )}px`}}>{title}</h2>
+                    <p style={{fontSize: `${20 - ( 2 * Math.sqrt(subtitle.length) )}px`}}>{subtitle}</p>
                 </div>
             </a>
         )
@@ -375,7 +374,7 @@ const Focus = React.memo((props) => {
                 <div className={'focus-message'}>
                     {focusMessage}
                     {isLoggedIn() && type !== 'genres' ?
-                        <button className={'auth-button'} onClick={handleRecommendations}>Recommend me similar {type}</button>
+                        <button className={'auth-button'} onClick={handleRecommendations}>Recommend similar {type}</button>
                         :
                         <></>
                     }
@@ -383,6 +382,10 @@ const Focus = React.memo((props) => {
             </div>
             {recommendations.length > 0 ?
                 <div className={'recommendations'}>
+                    <div style={{display: 'flex', position: 'relative', alignItems: 'center', width: '100%', marginBottom: '30px'}}>
+                        <h2 className={'recommendations-title'}><span style={{color: '#22C55E'}}>Recommendations</span> for {focus.title}</h2>
+                        <button className={'recommendations-exit'} onClick={() => setRecommendations([])}>X</button>
+                    </div>
                     <Recommendations/>
                 </div>
                 :
