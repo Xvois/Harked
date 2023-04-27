@@ -372,12 +372,6 @@ const songsToRefIDs = async (songs) => {
 }
 
 
-/**
- * postDatapoint will post the datapoint to the PRDB. Checks in the database controller are made to ensure the
- * datapoint is not redundant in the database.
- * @param datapoint A datapoint object.
- * @returns {Promise<void>}
- */
 export const postDatapoint = async (datapoint) => {
     // Disable auto-cancellation to avoid the script being canceled during async operations.
     pb.autoCancellation(false);

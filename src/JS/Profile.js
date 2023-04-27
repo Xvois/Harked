@@ -19,32 +19,23 @@ import {
     retrieveUser,
     unfollowUser
 } from './PDM';
-import arrow from './Arrow.png'
 import Focus from "./Focus";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
-import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
-import ClearIcon from '@mui/icons-material/Clear';
 import {handleLogin} from "./Authentication";
 
 
 const Profile = () => {
+    const [possessive, setPossessive] = useState('')
     const [focusedPlaylist, setFocusedPlaylist] = useState();
     const [user_id, setUser_id] = useState(window.location.hash.split("#")[1]);
     const [loaded, setLoaded] = useState(false);
-    const [focusItem, setFocusItem] = useState();
-    const [focusTertiary, setFocusTertiary] = useState();
-    const [statsSelection, setStatsSelection] = useState();
-    const [artistQualities, setArtistQualities] = useState();
     const [currentUser, setCurrentUser] = useState({
         user_id: '',
         username: '',
         profile_picture: '',
         media: {name: '', image: ''},
     });
-    const [likedSongsFromArtist, setLikedSongsFromArtist] = useState([]);
     const [datapoint, setDatapoint] = useState({
         user_id: '',
         collectionDate: '',
@@ -66,20 +57,8 @@ const Profile = () => {
     // The datapoint we are currently on
     const [simpleSelection, setSimpleSelection] = useState("artists")
     const [playlists, setPlaylists] = useState([])
-    const [genreMessage, setGenreMessage] = useState(<p>Undefined</p>);
     const simpleDatapoints = ["artists", "songs", "genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
-    // Take it to be "X music"
-    const translateAnalytics = {
-        acousticness: {name: 'acoustic', description: 'Music with no electric instruments.'},
-        danceability: {name: 'danceable', description: 'Music that makes you want to move it.'},
-        energy: {name: 'energetic', description: 'Music that feels fast and loud.'},
-        instrumentalness: {name: 'instrumental', description: 'Music that contains no vocals.'},
-        liveness: {name: 'live', description: 'Music that is performed live.'},
-        loudness: {name: 'loud', description: 'Music that is noisy.'},
-        valence: {name: 'positive', description: 'Music that feels upbeat.'},
-        tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
-    }
     const [following, setFollowing] = useState(null);
     const [selectionAnalysis, setSelectionAnalysis] = useState();
     const [chipData, setChipData] = useState();
@@ -96,50 +75,17 @@ const Profile = () => {
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;
-        switch (simpleSelection) {
-            case "artists":
-                result = data.name;
-                break;
-            case "songs":
-                result = data.title;
-                break;
-            case "genres":
-                result = data;
-                break;
-            default:
-                console.warn("getLIName error: No name returned.");
-                break;
+        if(data.hasOwnProperty('artist_id')){
+            result = data.name;
+        }else if(data.hasOwnProperty('song_id')){
+            result = data.title;
+        }else{
+            result = data;
         }
         if (result.length > 30) {
             result = result.substring(0, 30) + "..."
         }
         return result;
-    }
-    // Change the simple datapoint +1
-    const incrementSimple = function () {
-        const index = simpleDatapoints.indexOf(simpleSelection);
-        let newIndex;
-        index === 2 ? newIndex = simpleDatapoints[0] : newIndex = simpleDatapoints[index + 1];
-        setSimpleSelection(newIndex);
-        setFocusItem(datapoint[`top_${newIndex}`][0]);
-        const possessive = user_id === 'me' ? 'your' : `${currentUser.username}'s`
-        setFocusTertiary(`${possessive} top ${newIndex.slice(0, newIndex.length - 1)}`);
-        if (newIndex === 'Genres') {
-            createGenreMessage(datapoint[`top_genres`][0])
-        }
-    }
-    // Change the simple datapoint -1
-    const decrementSimple = function () {
-        const index = simpleDatapoints.indexOf(simpleSelection);
-        let newIndex;
-        index === 0 ? newIndex = simpleDatapoints[2] : newIndex = simpleDatapoints[index - 1];
-        setSimpleSelection(newIndex);
-        setFocusItem(datapoint[`top_${newIndex}`][0]);
-        const possessive = user_id === 'me' ? 'your' : `${currentUser.username}'s`
-        setFocusTertiary(`${possessive} top ${newIndex.slice(0, newIndex.length - 1)}`);
-        if (newIndex === 'Genres') {
-            createGenreMessage(datapoint[`top_genres`][0])
-        }
     }
     const getIndexChange = function (item, index, parentArray) {
         if (!prevDatapoint || prevDatapoint.term !== datapoint.term) {
@@ -179,58 +125,6 @@ const Profile = () => {
         })
         setSelectionAnalysis(res);
     }
-    const createGenreMessage = (item) => {
-        let possessive;
-        user_id === 'me' ? possessive = 'your' : possessive = `${currentUser.username}'s`
-        let topMessage;
-        let secondMessage;
-        let relevantArtists = [];
-        for (let artist in artistQualities) {
-            if (artistQualities[artist].genres[0] === item) {
-                relevantArtists.push(artist);
-            }
-        }
-        datapoint.top_artists.forEach(artist => {
-            if (!!artist.genres) {
-                if (artist.genres.includes(item) && !relevantArtists.includes(artist.name)) {
-                    relevantArtists.push(artist.name)
-                }
-            }
-        });
-        if (relevantArtists.length > 1) {
-            topMessage = <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is not only defined
-                by {possessive} love for <a href="https://google.com" style={{color: '#22C55E', textDecoration: '0.5px underline'}}>{relevantArtists[0]}</a> but
-                also {relevantArtists.length - 1} other artist{relevantArtists.length - 1 === 1 ? `` : "s"}...</h2>
-            let secondMessageText = '';
-            for (let i = 1; i < relevantArtists.length; i++) {
-                secondMessageText += relevantArtists[i];
-                if (i === relevantArtists.length - 2) {
-                    secondMessageText += ' and '
-                } else if (i !== relevantArtists.length - 1) {
-                    secondMessageText += ', ';
-                }
-            }
-            secondMessage = <h3>{secondMessageText}</h3>
-        } else {
-            if (relevantArtists.length === 1) {
-                topMessage =
-                    <h2>{possessive[0].toUpperCase() + possessive.substring(1)} love for {item} is very well marked
-                        by {user_id === 'me' ? 'your' : 'their'} time listening to <a href="https://google.com"
-                            style={{color: '#22C55E', textDecoration: '0.5px underline'}}>{relevantArtists[0]}</a>.</h2>
-            } else {
-                topMessage =
-                    <h2>{possessive[0].toUpperCase() + possessive.substring(1)} taste in {item} music isn't well defined
-                        by one artist, it's the product of many songs over many artists.</h2>
-            }
-        }
-        setGenreMessage(
-            <div style={{fontFamily: 'Inter Tight'}}>
-                {topMessage}
-                {secondMessage}
-            </div>
-        )
-    }
-
     // Construct the description for an item in a graph.
     const getGraphQualities = (val1, type1, val2, type2) => {
         let message = "";
@@ -306,10 +200,7 @@ const Profile = () => {
             let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
             points.push(<div key={element[key]} className='point'
                              style={{left: `${pointX}%`, bottom: `${pointY}%`}}
-                             onClick={() => {
-                                 setFocusItem(parentObj[i]);
-                                 setFocusTertiary(message)
-                             }} onMouseEnter={handleMouseEnter(parentObj[i])} onMouseLeave={handleMouseExit}></div>)
+                             onMouseEnter={handleMouseEnter(parentObj[i])} onMouseLeave={handleMouseExit}></div>)
         });
         // Return the whole structure, so it can simply
         // be dropped in
@@ -328,7 +219,7 @@ const Profile = () => {
                     }
                     <h1 className='graph-title'>
                         {title}
-                        <select className='graph-dropdown' defaultValue={graphAxis.x}
+                        <select className='dropdown' defaultValue={graphAxis.x}
                                 onChange={(event) => setGraphAxis({...graphAxis, x: event.target.value})}>
                             {selections.map(function (option) {
                                 if (option !== graphAxis.y) {
@@ -339,7 +230,7 @@ const Profile = () => {
                             })}
                         </select>
                         vs.
-                        <select className='graph-dropdown' defaultValue={graphAxis.y}
+                        <select className='dropdown' defaultValue={graphAxis.y}
                                 onChange={(event) => setGraphAxis({...graphAxis, y: event.target.value})}>
                             {selections.map(function (option) {
                                 if (option !== graphAxis.x) {
@@ -366,67 +257,6 @@ const Profile = () => {
     }
 
 
-    const ArtistConstellation = () => {
-        const [showPeak, setShowPeak] = useState(false);
-        const [peakObject, setPeakObject] = useState(null);
-        const handleMouseEnter = (param) => (e) => {
-            setShowPeak(true);
-            setPeakObject(param);
-        }
-        const handleMouseLeave = (e) => {
-            setShowPeak(false);
-        }
-        let points = !likedSongsFromArtist ? null : likedSongsFromArtist.map((album, i) => {
-            return <div className={'album-instance'} style={{
-                animationDelay: `${i / 5}s`,
-                '--bottom-val': `${album.id.hashCode() / 20000000 + 150}px`,
-                '--left-val': `${album.name.hashCode() / 7000000 + 200}px`
-            }} onMouseEnter={handleMouseEnter(album)} onMouseLeave={handleMouseLeave}>
-                <div className={'circle'} style={{
-                    '--scale-factor': `${(Math.pow(album.saved_songs.length, 1 / 4) / 2)}`,
-                    animationDelay: `${i}s`,
-                }}></div>
-                <div style={(showPeak && peakObject === album) ? {position: 'absolute'} : {display: 'none'}}>
-                    <img alt={''} className={'album-image-backdrop'} src={album.images[2].url}></img>
-                    <img alt={'item artwork'} className={'album-image'} onMouseLeave={handleMouseLeave}
-                         src={album.images[0].url}></img>
-                    <div className={'album-text'}>
-                        <h2>{(album.name.length > 25 ? album.name.slice(0, 23) + '...' : album.name)}</h2>
-                        <p>{album.saved_songs.length} song(s) saved from this album.</p>
-                    </div>
-                </div>
-            </div>
-        })
-        return (<div className={'album-showcase'}>
-            <h3 style={{
-                top: '0',
-                fontFamily: 'Inter Tight',
-                position: 'absolute'
-            }}>{user_id === 'me' ? 'your' : `${currentUser.username}'s`} <span style={{color: '#22C55E'}}>album constellation</span> for {focusItem ? focusItem.name : ''}
-            </h3>
-            {points ?
-                (points.length > 0 ?
-                        points
-                        :
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            fontFamily: 'Inter Tight',
-                            fontWeight: '600'
-                        }}>
-                            <p>There doesn't seem to be anything here.</p>
-                            <p>Add some songs by <span style={{
-                                color: '#22C55E',
-                                fontWeight: 'bold'
-                            }}>{focusItem ? focusItem.name : ''}</span> to public playlists to uncover your
-                                constellation.</p>
-                        </div>
-                )
-                :
-                <></>
-            }
-        </div>)
-    }
 
     String.prototype.hashCode = function () {
         let hash = 0,
@@ -464,6 +294,9 @@ const Profile = () => {
                             media: media
                         })
                     })
+                    setPossessive('your')
+                }else{
+                    setPossessive(result.username + `'s`)
                 }
                 document.title = `Harked | ${result.username}`;
             })
@@ -495,18 +328,8 @@ const Profile = () => {
         loadPage();
     }, [term, user_id])
 
-    useEffect(() => {
-        const updateItem = datapoint[`top_${simpleSelection}`][0];
-        if (updateItem) {
-            setFocusItem(updateItem);
-            const possessive = user_id === "me" ? 'your' : `${currentUser.username}'s`
-            setFocusTertiary(`${possessive} top ${simpleSelection.slice(0, simpleSelection.length - 1)}`);
-        }
-    }, [datapoint])
-
     return (
         <>
-
             {!loaded ?
                 <div style={{top: '40%', left: '0', right: '0', position: 'absolute'}}>
                     <div className="lds-grid">
@@ -588,105 +411,28 @@ const Profile = () => {
                             }
                         </div>
                     </div>
-                    <div style={{marginTop: '20px'}}>
-                        <div style={{
-                            display: `flex`,
-                            flexDirection: `row`,
-                            marginLeft: 'auto',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            height: '75px',
-                        }}>
-                            <img src={arrow} style={{transform: `rotate(180deg) scale(5%)`, cursor: `pointer`}}
-                                 onClick={() => decrementSimple()} alt={"arrow"}></img>
-                            <h2 className='datapoint-title'>Top {simpleSelection}</h2>
-                            <img src={arrow} style={{transform: `scale(5%)`, cursor: `pointer`}}
-                                 onClick={() => incrementSimple()} alt={"arrow"}></img>
-                        </div>
-                        <div className='term-container'>
-                            {terms.map(function (element) {
-                                return <button key={element} onClick={() => setTerm(element)}
-                                               style={term === element ? {
-                                                   backgroundColor: `#22CC5E`,
-                                                   transform: 'scale(95%)',
-                                                   color: 'white',
-                                                   "--fill-color": '#22C55E'
-                                               } : {
-                                                   backgroundColor: `#343434`,
-                                                   cursor: `pointer`,
-                                                   width: '100px',
-                                                   color: 'white',
-                                                   "--fill-color": 'white'
-                                               }}>{element === "long_term" ? "all time" : (element === "medium_term" ? "6 months" : "4 Weeks")}</button>
-                            })}
-                        </div>
-                        <div className='simple-container'>
-                            <ol className={"list-item-ol"}>
-                                {datapoint[`top_${simpleSelection}`].map(function (element, i) {
-                                    if (i < 10 && element) {
-                                        const message = i < 3 ? `${user_id === "me" ? "Your" : `${currentUser.username}'s`} ${i > 0 ? (i === 1 ? `2ⁿᵈ to` : `3ʳᵈ to`) : ``} top ${simpleSelection.slice(0, simpleSelection.length - 1)}` : ``;
-                                        const indexChange = getIndexChange(element, i, `top_${simpleSelection}`);
-                                        let changeMessage;
-                                        if (indexChange < 0) {
-                                            changeMessage = <><span style={{
-                                                color: 'grey',
-                                                fontSize: '10px',
-                                            }}>{indexChange}</span><ArrowCircleDownIcon style={{
-                                                color: 'grey',
-                                                animation: 'down-change-animation 0.5s ease-out'
-                                            }}
-                                                                                        fontSize={"small"}></ArrowCircleDownIcon></>
-                                        } else if (indexChange > 0) {
-                                            changeMessage = <><span style={{
-                                                color: '#22C55E',
-                                                fontSize: '10px'
-                                            }}>{indexChange}</span><ArrowCircleUpIcon style={{
-                                                color: '#22C55E',
-                                                animation: 'up-change-animation 0.5s ease-out'
-                                            }}
-                                                                                      fontSize={"small"}></ArrowCircleUpIcon></>
-                                        } else if (indexChange === 0) {
-                                            changeMessage = <ClearAllOutlinedIcon
-                                                style={{color: '#22C55E', animation: 'equals-animation 0.5s ease-out'}}
-                                                fontSize={"small"}></ClearAllOutlinedIcon>
-                                        }
-                                        return <li key={simpleSelection !== 'genres' ? element[`${simpleSelection.slice(0, simpleSelection.length - 1)}_id`] : element}
-                                                   className='list-item'
-                                                   onClick={() => {
-                                                       if (simpleSelection === 'songs') {
-                                                           setStatsSelection(element.analytics);
-                                                       }
-                                                       setFocusItem(element);
-                                                       if (simpleSelection !== 'genres') {
-                                                           setFocusTertiary(message);
-                                                       } else {
-                                                           createGenreMessage(element);
-                                                       }
-                                                   }}>{getLIName(element)} {changeMessage}</li>
-                                    } else {
-                                        return <></>
-                                    }
-                                })}
-                            </ol>
-                            <Focus user={currentUser} playlists={playlists} item={focusItem} datapoint={datapoint}
-                                   tertiary={focusTertiary} type={simpleSelection}/>
-                            {simpleSelection === 'genres' && windowWidth > mobileWidth ?
-                                <div style={{textAlign: 'center', margin: 'auto', maxWidth: '800px'}}>
-                                    {genreMessage}
+                    {simpleDatapoints.map(function(type){
+                        return (
+                            <>
+                                <div className='simple-container'>
+                                    <div className={'datapoint-title'}>
+                                        <p>{possessive}</p>
+                                        <h2>Top <span style={{color: '#22C55E'}}>{type}</span></h2>
+                                    </div>
+                                    <h2 className={'no-1-item'}>{possessive} top {type.slice(0, type.length-1)}</h2>
+                                    <Focus user={currentUser} playlists={playlists} item={datapoint[`top_${type}`][0]} datapoint={datapoint}
+                                           type={type} interactive={true}/>
                                 </div>
-                                :
-                                <></>
-                            }
-                        </div>
-                        <div style={simpleSelection === 'genres' ? {display: 'none'} : {}}>
-                        </div>
-                    </div>
+                            </>
+                        )
+                    })}
                     {simpleSelection === 'songs' ?
-                        <Graph title="Your top 50 songs" keyEntry="song_id" selections={analyticsMetrics}
+                        <Graph title={`${possessive} top 50 songs`} keyEntry="song_id" selections={analyticsMetrics}
                                data={datapoint.top_songs.map(song => song.analytics)} parent={datapoint.top_songs}/>
                         :
                         <></>
                     }
+
                     <h2 style={{
                         textTransform: `uppercase`,
                         fontFamily: 'Inter Tight, sans-serif',

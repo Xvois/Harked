@@ -3,6 +3,15 @@
 /*noinspection CssUnknownTarget*/
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
+select:hover {
+    cursor: pointer;
+}
+
+select.dropdown {
+    width: max-content;
+    text-align: center;
+}
+
 .wrapper {
     display: flex;
     flex-direction: column;
@@ -47,37 +56,50 @@
     box-shadow: 0 0 45px rgba(255, 255, 255, 0.81);
 }
 
-
-
 .simple-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    position: relative;
     height: max-content;
-
+    padding: 50px 50px 0 50px;
 }
 
-.arrow {
-    margin: auto;
-    transform: scale(20%);
-    border: 10px solid red;
-    padding: 10px;
+
+.no-1-item {
+    position: absolute;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 200px;
+    height: max-content;
+    max-width: 1500px;
+    top: 20%;
+    bottom: 0;
+    right: 0;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+    color: #1e1c1a;
+    text-transform: uppercase;
+    z-index: -1;
 }
 
 .list-item {
-    font-size: 20px;
-    padding: 5px;
+    font-size: 27px;
     font-family: 'Inter Tight', sans-serif;
+    text-align: center;
+    margin: auto;
     font-weight: 900;
     counter-increment: item;
     width: max-content;
+    padding: 10px 0 2px 0;
 }
 
 .list-item-ol {
-    margin: auto auto auto 0;
+    min-width: 400px;
+    margin: auto auto auto auto;
     list-style: none;
     counter-reset: item;
-    justify-content: space-evenly;
     height: max-content;
+    padding: 0;
 }
 
 .list-item:hover {
@@ -104,12 +126,35 @@
 
 .datapoint-title {
     height: max-content;
-    margin: 0;
-    font-family: 'Ubuntu', sans-serif;
+    width: max-content;
+    margin: 50px auto 0 auto;
+    font-family: 'Inter Tight', sans-serif;
     text-transform: uppercase;
-    text-align: center;
-    font-size: 30px;
     font-weight: 800;
+}
+
+.datapoint-title > p {
+    margin: 0;
+    text-align: left;
+    font-size: 15px;
+}
+
+.datapoint-title > h2 {
+    margin: 0;
+    font-size: 50px;
+}
+
+
+.dropdown{
+    background-color: transparent;
+    border: none;
+    text-transform: uppercase;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 800;
+    font-size: 1em;
+    text-align: center;
+    margin-right: 40px;
+    color: #22C55E;
 }
 
 @keyframes hover {
@@ -126,7 +171,7 @@
 .user-container {
     display: flex;
     flex-grow: 1;
-    padding: 50px;
+    
     flex-direction: row;
     height: max-content;
     overflow: hidden;
@@ -215,7 +260,7 @@
 .playlist-wrapper {
     display: flex;
     gap: 20px;
-    padding: 50px;
+    
     justify-content: space-between;
     flex-direction: row;
     flex-wrap: wrap;
@@ -284,7 +329,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 50px;
+    
     height: 300px;
     width: 500px;
 
