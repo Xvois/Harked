@@ -426,6 +426,14 @@ export const formatSong = (song) => {
     }
 }
 
+export const getSimilarArtists = async (artist) => {
+    return (await fetchData(`artists/${artist.artist_id}/related-artists`)).artists;
+}
+
+export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tracks, limit = 20) => {
+    return (await fetchData(`recommendations?seed_artists=${seed_artists}&seed_genres=${seed_genres}&seed_tracks=${seed_tracks}&limit=${limit}`)).tracks;
+}
+
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
  * to the database using postDatapoint.

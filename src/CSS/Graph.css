@@ -61,18 +61,6 @@
     text-transform: uppercase;
 }
 
-.graph-dropdown{
-    background-color: transparent;
-    border: none;
-    text-transform: uppercase;
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 800;
-    font-size: 1em;
-    text-align: center;
-    margin-right: 40px;
-    color: #22C55E;
-}
-
 /*noinspection ALL*/
 .selection-peek{
     position: fixed;
