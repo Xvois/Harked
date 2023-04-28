@@ -497,6 +497,8 @@ export const hydrateDatapoints = async function () {
  * @returns {*[]}
  */
 const calculateTopGenres = function (artists) {
+    console.info('CALC TOP GENRES')
+    console.log(artists);
     let topGenres = [];
     artists.forEach(function (artist, i) {
         artist.genres.forEach(function (genre) {

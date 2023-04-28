@@ -111,6 +111,7 @@ export const getAllUserIDs = async () => {
  */
 export const postUser = async (user) => {
     //console.info("User " + user.username + " posted.");
+    user["id"] = hashString(user.user_id);
     await pb.collection('users').create(user).catch(
         function (err) {
             console.warn("Error posting user: ")

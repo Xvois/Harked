@@ -23,6 +23,7 @@ import Focus from "./Focus";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import {handleLogin} from "./Authentication";
+import {getItemDescription} from "./Analysis";
 
 
 const Profile = () => {
@@ -256,6 +257,91 @@ const Profile = () => {
         )
     }
 
+    const ShowcaseList = (props) => {
+        const {type} = props;
+
+        const [hoverItem, setHoverItem] = useState(-1);
+        const [selectedItem, setSelectedItem] = useState(-1);
+
+        return (
+            <div className={'showcase-list-wrapper'}>
+                {datapoint[`top_${type}`].map(function(element, index){
+                    if(index > 0 && index < 10){
+                        return (
+                            <div
+                                onMouseEnter={() => setHoverItem(index)}
+                                onMouseLeave={() => setHoverItem(-1)}
+                                onClick={() => setSelectedItem(index)}
+                                onBlur={() => setSelectedItem(-1)}
+                                tabIndex={0}
+                                style={
+                                    selectedItem !== -1 ?
+                                        selectedItem === index ? {} : {filter: 'brightness(60%)'}
+                                        :
+                                        hoverItem !== -1 ?
+                                            hoverItem === index ? {cursor: 'pointer'} : {filter: 'brightness(60%)'}
+                                            :
+                                            {}
+
+                                }>
+                                <ShowcaseListItem element={element} index={index} type={type} />
+                            </div>
+                        )
+                    }
+                })}
+            </div>
+        )
+    }
+
+    const ShowcaseListItem = (props) => {
+        const {element, index, type} = props;
+
+        const [expanded, setExpanded] = useState(false);
+
+        let subtitle = '';
+        if(type === 'songs'){
+            subtitle = element.artists[0].name;
+        }else if(type === 'artists'){
+            if(element.genres?.length > 0){
+                subtitle = element.genres[0];
+            }
+        }
+
+        const description = getItemDescription(element, type, currentUser, datapoint);
+
+
+        return (
+            <div className={"showcase-list-item"} tabIndex={1} style={expanded ? {height: '300px'} : {}}  onClick={() => setExpanded(true)} onBlur={() => setExpanded(false)}>
+                {type !== 'genres' ?
+                    <img src={element.image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}} />
+                    :
+                    <></>
+                }
+                <h3>{index + 1}.</h3>
+                {expanded ?
+                    <div className={"showcase-list-item-expanded"}>
+                        <div>
+                            <h2 style={{marginBottom: '0'}}>{getLIName(element)}</h2>
+                            <p style={{margin: '0', textTransform: 'uppercase'}}>{subtitle}</p>
+                            <p style={{marginTop: '0 auto'}}>{description.header}</p>
+                            <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
+                        </div>
+                        <div style={{textAlign: 'center'}}>
+                        </div>
+                        <div style={{textAlign: 'right'}}>
+                        </div>
+                    </div>
+                    :
+                    <div className={"showcase-list-item-text"}>
+                        <h2>{getLIName(element)}</h2>
+                        <p>{subtitle}</p>
+                    </div>
+                }
+
+            </div>
+        )
+    }
+
 
 
     String.prototype.hashCode = function () {
@@ -422,6 +508,8 @@ const Profile = () => {
                                     <h2 className={'no-1-item'}>{possessive} top {type.slice(0, type.length-1)}</h2>
                                     <Focus user={currentUser} playlists={playlists} item={datapoint[`top_${type}`][0]} datapoint={datapoint}
                                            type={type} interactive={true}/>
+                                    <h2 className={'no-1-item'} style={{left: '0', fontSize: '500px'}}>1.</h2>
+                                    <ShowcaseList type={type}/>
                                 </div>
                             </>
                         )

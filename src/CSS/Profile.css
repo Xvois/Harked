@@ -73,13 +73,98 @@ select.dropdown {
     max-width: 1500px;
     top: 150px;
     bottom: 0;
-    right: 0;
     text-align: right;
     margin: 0;
     padding: 0;
     color: #1e1c1a;
     text-transform: uppercase;
+    z-index: -2;
+}
+
+.showcase-list-wrapper{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.showcase-list-wrapper > div {
+    transition: all 0.5s;
+}
+
+.showcase-list-item-expanded {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 90%;
+    margin: auto;
+}
+
+.showcase-list-item-expanded > div {
+    position: relative;
+    max-width: 300px;
+    padding: 30px;
+    flex-grow: 1;
+}
+
+.showcase-list-item{
+    display: flex;
+    flex-direction: row;
+    height: 75px;
+    position: relative;
+    align-items: center;
+    align-content: center;
+    border: 1px solid #343434;
+    transition: all 0.5s;
+}
+
+.showcase-list-item > h3 {
+    position: absolute;
+    font-family: "Inter Tight", sans-serif;
+    font-size: 20px;
+    opacity: 0.5;
+    height: max-content;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    padding-left: 15px;
+}
+
+.showcase-list-item > img {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    clip-path: inset(1px);
+    filter: blur(15px) brightness(60%);
     z-index: -1;
+    transition: all 0.5s;
+}
+
+
+.showcase-list-item-text{
+    height: max-content;
+    width: max-content;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.26);
+    transition: all 0.5s;
+}
+
+.showcase-list-item-text > h2 {
+    font-family: "Inter Tight", sans-serif;
+    text-align: center;
+    width: 100%;
+    margin: 0;
+    transition: inherit;
+}
+
+.showcase-list-item-text > p {
+    font-family: "Inter Tight", sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    height: max-content;
+    margin: 0;
+    transition: inherit;
 }
 
 .list-item {
