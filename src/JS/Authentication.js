@@ -6,6 +6,7 @@ import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import PocketBase from "pocketbase";
 import {formatUser} from "./PDM";
+import {hashString} from "./API";
 
 const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL;
 
@@ -64,7 +65,12 @@ function Authentication() {
             window.localStorage.setItem("refresh-token", auth.meta.refreshToken);
             window.localStorage.setItem('user_id', user.id);
             formatUser(user).then(function(fUser){
-                pb.collection('users').update(auth.record.id, fUser);
+                pb.collection('users').update(auth.record.id, fUser)
+                    .then(() => {
+                        const item = {id: hashString(fUser.user_id), user: auth.record.id, followers: []}
+                        pb.collection("user_followers").create(item);
+                    });
+
             })
             redirect('/profile#me');
         });

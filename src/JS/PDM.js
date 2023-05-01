@@ -2,11 +2,11 @@ import {
     deleteData, disableAutoCancel, enableAutoCancel,
     fetchData,
     getAllUserIDs, getAllUsers,
-    getDatapoint, getPlaylists,
-    getUser,
+    getDatapoint, getLocalData, getLocalDataByID, getPlaylists,
+    getUser, hashString,
     postDatapoint, postMultiplePlaylists,
     postUser,
-    putData
+    putData, putLocalData, updateLocalData
 } from "./API";
 
 /**
@@ -81,18 +81,69 @@ export const retrieveUser = async function (user_id) {
 }
 
 /**
- * Makes a put request to the API to follow the argument user from the logged-in user's account.
- * @param user_id
+ * A boolean function that returns true if the currently logged-in user follows the target and false if not.
+ * @returns {Promise<*>}
+ * @param primaryUserID
+ * @param targetUserID
  */
-export const followUser = function (user_id) {
-    putData(`me/following?type=user&ids=${user_id}`);
+export const followsUser = async function (primaryUserID, targetUserID) {
+    let follows = false;
+    const primaryUser = await getUser(primaryUserID);
+    await getLocalData("user_followers", `user.user_id=${targetUserID}`)
+        .then((res) => {
+            const item = res[0];
+            if(item.followers.some(e => e === primaryUser.id)){
+                follows = true;
+            }
+    });
+    console.log(follows);
+    return follows;
+}
+
+
+/**
+ *
+ * @param primaryUserID
+ * @param targetUserID
+ */
+export const followUser = async function (primaryUserID, targetUserID) {
+    let [primaryUser, targetUser] = [await getUser(primaryUserID), await getUser(targetUserID)];
+    if(!primaryUser.following.some(e => e === targetUser.id)){
+        primaryUser.following.push(targetUser.id);
+        console.log(primaryUser);
+        await updateLocalData("users", primaryUser, primaryUser.id);
+        await getLocalData("user_followers", `user.user_id="${targetUserID}"`)
+            .then((res) => {
+                let item = res[0];
+                item.followers.push(primaryUser.id);
+                updateLocalData("user_followers", item, item.id);
+            })
+    }
 }
 /**
- * Makes a put request to the API to unfollow the argument user from the logged-in user's account.
- * @param user_id
+ *
+ * @param primaryUserID
+ * @param targetUserID
  */
-export const unfollowUser = function (user_id) {
-    deleteData(`me/following?type=user&ids=${user_id}`);
+export const unfollowUser = async function (primaryUserID, targetUserID) {
+    let [primaryUser, targetUser] = [await getUser(primaryUserID), await getUser(targetUserID)];
+    primaryUser.following = primaryUser.following.filter(e => e !== targetUser.id);
+    await updateLocalData("users", primaryUser, primaryUser.id);
+    await getLocalData("user_followers", `user.user_id="${targetUserID}"`)
+        .then((res) => {
+            let item = res[0];
+            item.followers = item.followers.filter(e => e !== primaryUser.id);
+            updateLocalData("user_followers", item, item.id);
+        })
+}
+
+export const retrieveFollowers = async function(user_id) {
+    const res = await getLocalDataByID("user_followers", hashString(user_id), "followers");
+    if(res.followers.length > 0){
+        return res.expand.followers;
+    }else{
+        return [];
+    }
 }
 /**
  * Returns all the user_ids currently in the database.
@@ -132,15 +183,6 @@ export const postUsersPlaylists = async function () {
     const globalUser_id = window.localStorage.getItem('user_id');
     const playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
     await postMultiplePlaylists(playlists);
-}
-/**
- * A boolean function that returns true if the currently logged-in user follows the target and false if not.
- * @param user_id
- * @returns {Promise<*>}
- */
-export const followsUser = async function (user_id) {
-    const data = await fetchData(`me/following/contains?type=user&ids=${user_id}`);
-    return data[0];
 }
 /**
  * A boolean function for checking whether the session user is logged in or not.
@@ -380,7 +422,10 @@ export const getAlbumsWithLikedSongs = async function (user_id, artistID) {
     if (globalUser_id === "me") {
         globalUser_id = window.localStorage.getItem("user_id");
     }
-    const tracks = (await getPlaylists(globalUser_id, true)).flatMap(e => e.expand.tracks);
+
+    const tracks = (await getPlaylists(globalUser_id, true))?.flatMap(e => e.expand.tracks);
+    if(!tracks){return [];}
+
     const albums = (await fetchData(`artists/${artistID}/albums`)).items;
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
     const albumTracks = await Promise.all(albumPromises);
@@ -388,7 +433,7 @@ export const getAlbumsWithLikedSongs = async function (user_id, artistID) {
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
         const trackList = albumTracks[i].items;
-        album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.name === t2.title));
+        album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
         if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithLikedSongs.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithLikedSongs.push(album);
         }

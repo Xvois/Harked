@@ -2,6 +2,17 @@
  * Holds all the methods used to generate analysis for certain objects within the context of a datapoint.
  */
 
+export const translateAnalytics = {
+    acousticness: {name: 'acoustic', description: 'Music with no electric instruments.'},
+    danceability: {name: 'danceable', description: 'Music that makes you want to move it.'},
+    energy: {name: 'energetic', description: 'Music that feels fast and loud.'},
+    instrumentalness: {name: 'instrumental', description: 'Music that contains no vocals.'},
+    liveness: {name: 'live', description: 'Music that is performed live.'},
+    loudness: {name: 'loud', description: 'Music that is noisy.'},
+    valence: {name: 'positive', description: 'Music that feels upbeat.'},
+    tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
+}
+
 export const getAllArtistAssociations = function() {
     console.info('getAllArtistAssociations called!');
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
@@ -39,22 +50,6 @@ export const getAllArtistAssociations = function() {
         return result;
     }
 }();
-
-
-const getRelevantArtists = function (genre, artists){
-    console.info('getRelevantArtists called!')
-    let relevantArtists = [];
-    for (let artist in artists) {
-        if (artist.genres !== undefined) {
-            if(artist.genres.indexOf(genre) !== -1){
-                relevantArtists.push(artist.name)
-            }
-        }
-    }
-    console.log(relevantArtists)
-    return relevantArtists;
-}
-
 // Update the focus message to be
 // relevant to the current focus
 export const getItemDescription = function (item, type, user, datapoint) {
@@ -64,16 +59,6 @@ export const getItemDescription = function (item, type, user, datapoint) {
     let secondMessage = '';
     const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ?  'your' : `${user.username}'s`;
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
-    const translateAnalytics = {
-        acousticness: {name: 'acoustic', description: 'Music with no electric instruments.'},
-        danceability: {name: 'danceable', description: 'Music that makes you want to move it.'},
-        energy: {name: 'energetic', description: 'Music that feels fast and loud.'},
-        instrumentalness: {name: 'instrumental', description: 'Music that contains no vocals.'},
-        liveness: {name: 'live', description: 'Music that is performed live.'},
-        loudness: {name: 'loud', description: 'Music that is noisy.'},
-        valence: {name: 'positive', description: 'Music that feels upbeat.'},
-        tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
-    }
     switch (type) {
         case "artists":
             if (artistAssociations[`${item.name}`] === undefined) {
@@ -82,7 +67,7 @@ export const getItemDescription = function (item, type, user, datapoint) {
                 topMessage += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
             } else {
                 Object.keys(artistAssociations[item.name]).length > 1 ?
-                    topMessage += `${item.name} represents ${possessive} love for ${artistAssociations[item.name]["genre"]} and ${translateAnalytics[artistAssociations[item.name]["theme"]].name} music.`
+                    topMessage += `${item.name} represents ${possessive} love for ${artistAssociations[item.name]["genre"]} and ${translateAnalytics[artistAssociations[item.name]["theme"]].name === 'tempo' ? 'high' : ''} ${translateAnalytics[artistAssociations[item.name]["theme"]].name} music.`
                     :
                     topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistAssociations[item.name][Object.keys(artistAssociations[item.name])[0]]} music.`
             }
@@ -105,7 +90,7 @@ export const getItemDescription = function (item, type, user, datapoint) {
                     maxAnalytic = analytic;
                 }
             })
-            topMessage += `${item.title} is a very ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} song by${item.artists.map(e => ' ' + e.name)}.`
+            topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
             if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
                 const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
                 secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
@@ -113,27 +98,7 @@ export const getItemDescription = function (item, type, user, datapoint) {
             break;
         //TODO: REWRITE THIS WHOLE AREA
         case "genres":
-            let relevantArtists = getRelevantArtists(item, datapoint.top_artists);
-            if (relevantArtists.length > 1) {
-                topMessage = `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is not only defined
-                        by ${possessive} love for ${relevantArtists[0]} but
-                        also ${relevantArtists.length - 1} other artist${relevantArtists.length - 1 === 1 ? `` : "s"}...`
-                for (let i = 1; i < relevantArtists.length; i++) {
-                    secondMessage += relevantArtists[i];
-                    if (i === relevantArtists.length - 2) {
-                        secondMessage += ' and '
-                    } else if (i !== relevantArtists.length - 1) {
-                        secondMessage += ', ';
-                    }
-                }
-            } else {
-                if (relevantArtists.length === 1) {
-                    topMessage = `${possessive[0].toUpperCase() + possessive.substring(1)} love for ${item} is very well marked
-                                by ${possessive} time listening to ${relevantArtists[0]}`
-                } else {
-                    topMessage = `Unknown!`
-                }
-            }
+
             break;
         default:
             console.warn("updateFocusMessage error: No focus type found.")

@@ -147,7 +147,7 @@ const handleFetchException = (err) => {
     }
 }
 
-function hashString(inputString) {
+export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
     if (inputString.length === 0) {
         return '0000000000000000';
@@ -394,6 +394,7 @@ export const postDatapoint = async (datapoint) => {
     // If a valid datapoint already exists, log a message and return without creating a new datapoint.
     if (!!valid_exists) {
         console.info("Attempted to post new datapoint, but valid already exists.");
+        console.info(valid_exists)
         return;
     }
 
@@ -430,6 +431,23 @@ export const enableAutoCancel = async () => {
     await pb.autoCancellation(true);
 }
 
+export const getLocalData = async (collection, filter) => {
+    return (await pb.collection(collection).getList(1, 50, filter)).items;
+}
+
+export const getLocalDataByID = async (collection, id, expand) => {
+    return await pb.collection(collection).getOne(id, {expand: expand})
+}
+
+export const putLocalData = async (collection, data) => {
+    await pb.collection(collection).create(data);
+}
+
+export const updateLocalData = async (collection, data, id) => {
+    await pb.collection(collection).update(id, data);
+}
+
+
 
 /**
  * getDatapoint makes a GET HTTP request to the PRDB to retrieve the most recent datapoint for a given user
@@ -442,13 +460,30 @@ export const enableAutoCancel = async () => {
  * @returns {Promise<*>} A datapoint object or false.
  */
 export const getDatapoint = async (user_id, term, timeSens, delay = 0) => {
-     return await pb.collection('datapoints').getFirstListItem(
-         `owner.user_id="${user_id}"&&term="${term}"`, {
-             expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres'
+    const WEEK_IN_MILLISECONDS = 6.048e+8;
+    // Calculate the start boundary time.
+    const d1 = new Date();
+    d1.setMilliseconds(d1.getMilliseconds() - (delay + 1) * WEEK_IN_MILLISECONDS);
+    // Calculate the end boundary time.
+    const d2 = new Date();
+    d1.setMilliseconds(d1.getMilliseconds() - delay * WEEK_IN_MILLISECONDS);
+
+    let filter;
+    if(timeSens){
+        filter = `owner.user_id="${user_id}"&&term="${term}"&&created>="${d1.toISOString()}"&&created<="${d2.toISOString()}"`;
+    }else{
+        filter = `owner.user_id="${user_id}"&&term="${term}"`;
+    }
+
+
+    return await pb.collection('datapoints').getFirstListItem(
+         filter, {
+             expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
+            sort: '-created'
          })
         .catch(err => {
             if(err.status === 404){
-                console.info(`No datapoints for ${user_id} found.`)
+                console.info(`No datapoints for ${user_id} found for within ${delay} weeks.`)
             } else(console.warn(err));
         })
 }

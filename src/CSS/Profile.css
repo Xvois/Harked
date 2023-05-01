@@ -64,47 +64,110 @@ select.dropdown {
     padding: 50px 50px 0 50px;
 }
 
-
-.no-1-item {
-    position: absolute;
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 200px;
-    height: max-content;
-    max-width: 1500px;
-    top: 150px;
-    bottom: 0;
-    text-align: right;
-    margin: 0;
-    padding: 0;
-    color: #1e1c1a;
-    text-transform: uppercase;
-    z-index: -2;
-}
-
 .showcase-list-wrapper{
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 5px;
 }
 
 .showcase-list-wrapper > div {
     transition: all 0.5s;
+    width: 80%;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .showcase-list-item-expanded {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
     height: 100%;
     width: 90%;
     margin: auto;
+    cursor: auto;
 }
 
 .showcase-list-item-expanded > div {
     position: relative;
+    overflow: hidden;
     max-width: 300px;
     padding: 30px;
     flex-grow: 1;
+    animation: fadeIn 0.5s ease;
 }
+.showcase-rec-button {
+    font-family: "Inter Tight", sans-serif;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    border-radius: 20px;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+}
+
+.showcase-exit-button {
+    position: absolute;
+    font-size: 20px;
+    top: 20px;
+    right: 20px;
+    color: white;
+    background: none;
+    padding: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.analysis{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    overflow: hidden;
+}
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: right;
+    height: max-content;
+}
+
+.stat-block > h3 {
+    font-size: 15px;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.stat-block > p {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 10px;
+    margin: 5px 0 0 0;
+    opacity: 0.5;
+    color: white;
+}
+
+/*noinspection ALL*/
+.stat-bar {
+    position: relative;
+    height: 5px;
+    width: var(--val);
+
+    background-color: white;
+    border-radius: 10px;
+    transition: all 0.5s ease-out;
+
+    animation: expand 1s ease;
+}
+
+@keyframes expand {
+    from {width: 0}
+}
+
 
 .showcase-list-item{
     display: flex;
@@ -135,6 +198,7 @@ select.dropdown {
     width: 100%;
     object-fit: cover;
     clip-path: inset(1px);
+    opacity: 0.5;
     filter: blur(15px) brightness(60%);
     z-index: -1;
     transition: all 0.5s;
@@ -212,23 +276,30 @@ select.dropdown {
 .datapoint-title {
     height: max-content;
     width: max-content;
-    margin: 50px auto 0 auto;
+    margin: 0 auto 50px auto;
     font-family: 'Inter Tight', sans-serif;
     text-transform: uppercase;
     font-weight: 800;
 }
 
 .datapoint-title > p {
-    margin: 0;
+    margin: -5px 0 -5px 0;
     text-align: left;
-    font-size: 15px;
+    font-size: 20px;
 }
 
 .datapoint-title > h2 {
     margin: 0;
-    font-size: 50px;
+    font-size: 80px;
 }
 
+.datapoint-sub-title {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    width: max-content;
+    margin: -5px auto 0 auto;
+}
 
 .dropdown{
     background-color: transparent;
@@ -255,11 +326,60 @@ select.dropdown {
 
 .user-container {
     display: flex;
+    position: relative;
     flex-grow: 1;
-    
     flex-direction: row;
+    justify-content: space-between;
     height: max-content;
     overflow: hidden;
+    border: 1px solid #343434;
+    padding: 15px;
+}
+
+.user-container > img {
+    height: 175px;
+    aspect-ratio: 1;
+}
+
+.user-details {
+    font-family: "Inter Tight", sans-serif;
+    max-height: 175px;
+    height: max-content;
+    width: max-content;
+    padding: 0 15px;
+}
+
+.user-details > h2 {
+    width: max-content;
+    font-size: 60px;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.user-details > p {
+    width: max-content;
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-followers {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    font-family: "Inter Tight", sans-serif;
+    font-weight: bold;
+}
+
+.std-button {
+    font-family: "Inter Tight", sans-serif;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    border-radius: 20px;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
 }
 
 .term-container {
@@ -270,70 +390,6 @@ select.dropdown {
     width: max-content;
     margin: 10px auto 10px auto;
 }
-
-
-.term-container > button {
-    height: 30px;
-    width: 100px;
-    border-radius: 20px;
-    transition: all 0.1s linear;
-    border: 1px solid grey;
-    color: #343434;
-    text-transform: uppercase;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.user-details {
-    padding: 20px 10px 20px 10px;
-    display: flex;
-    gap: 10px;
-    flex-direction: column;
-    text-align: right;
-}
-
-.user-details P {
-    font-family: 'Ubuntu', sans-serif;
-    color: rgb(255, 255, 255);
-}
-
-.spotify-link {
-    justify-content: space-evenly;
-    width: max-content;
-    height: min-content;
-    align-items: center;
-    display: flex;
-    flex-direction: row;
-    color: white;
-    text-decoration: none;
-}
-
-.spotify-link p:hover {
-    color: #22C55E;
-}
-
-.spotify-link p {
-    margin-left: 10px;
-}
-
-.profile-picture {
-    align-self: center;
-    margin-right: 10px;
-    width: 175px;
-    height: 175px;
-    object-fit: cover;
-}
-
-.username {
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 60px;
-    font-weight: 900;
-    color: rgb(255, 255, 255);
-    text-transform: uppercase;
-    position: relative;
-    height: max-content;
-}
-
 #history-message{
     margin: 0 auto 0 auto;
     display: flex;
@@ -524,6 +580,7 @@ select.dropdown {
         text-align: center;
     }
     .user-container {
+        flex-direction: column;
         justify-content: center;
     }
     .datapoint-title {

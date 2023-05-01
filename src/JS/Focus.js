@@ -16,8 +16,6 @@ import {
 import {
     getAllArtistAssociations,
     getItemDescription,
-    memoizedGetAllArtistAssociations,
-    MemoizedGetAllArtistAssociations
 } from "./Analysis";
 
 
@@ -242,7 +240,7 @@ const Focus = React.memo((props) => {
                 </div>
                 <div className={'focus-message'}>
                     <h2>{focusMessage.header}</h2>
-                    <p>{focusMessage.subtitle}</p>
+                    <p style={{color: '#22C55E'}}>{focusMessage.subtitle}</p>
                     {isLoggedIn() && type !== 'genres' ?
                         <button className={'auth-button'} onClick={handleRecommendations}>Recommend similar {type}</button>
                         :
