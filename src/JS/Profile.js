@@ -24,14 +24,11 @@ import {
     formatArtist,
     getTrackRecommendations, formatSong, retrieveFollowers
 } from './PDM';
-import Focus from "./Focus";
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {handleLogin} from "./Authentication";
-import {getItemDescription, translateAnalytics} from "./Analysis";
+import {getItemAnalysis, getItemDescription, translateAnalytics} from "./Analysis";
 
 
 const Profile = () => {
@@ -72,16 +69,6 @@ const Profile = () => {
     const [followers, setFollowers] = useState([]);
     const [selectionAnalysis, setSelectionAnalysis] = useState();
     const [chipData, setChipData] = useState();
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-    const mobileWidth = 800;
-    window.addEventListener("resize", function() {
-        setWindowWidth(window.innerWidth);
-    });
-    // Update page when new user is chosen
-    window.addEventListener("hashchange", function () {
-        window.location.reload(false);
-    })
-
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;
@@ -92,11 +79,31 @@ const Profile = () => {
         }else{
             result = data;
         }
+        if (result.length > 30) {
+            result = result.substring(0, 30) + "..."
+        }
+        return result;
+    }
+
+    const getLIDescription = function (data) {
+        let result;
+        if(data.hasOwnProperty('artist_id')){
+            if(data.genres && data.genres.length > 0) {
+                result = data.genres[0];
+            }else{
+                result = '';
+            }
+        }else if(data.hasOwnProperty('song_id')){
+            result = data.artists[0].name;
+        }else{
+            result = '';
+        }
         if (result.length > 40) {
             result = result.substring(0, 40) + "..."
         }
         return result;
     }
+
     const getIndexChange = function (item, index, type) {
         if (!prevDatapoint || prevDatapoint.term !== datapoint.term) {
             return null
@@ -134,136 +141,6 @@ const Profile = () => {
             })
         })
         setSelectionAnalysis(res);
-    }
-    // Construct the description for an item in a graph.
-    const getGraphQualities = (val1, type1, val2, type2) => {
-        let message = "";
-        if (val1 > 75) {
-            message += `high ${type1}`;
-        } else if (val1 > 25) {
-            message += `medium ${type1}`;
-        } else {
-            message += `low ${type1}`;
-        }
-        if (val2) {
-            message += ", ";
-            message += getGraphQualities(val2, type2);
-        }
-        return message;
-    }
-    const [graphAxis, setGraphAxis] = useState({
-        x: "danceability",
-        y: "energy"
-    })
-    /**
-     * The Graph is a dynamic component that creates a scatter plot
-     * from an array of objects. Its title is the in the format "{title} X vs Y".
-     * The keys can be changed using a drop-down menu and the array of
-     * these keys can be passed in as selections.
-     * @param props title, key, list, parentObject and selections.
-     * @returns {JSX.Element} HTML for a graph.
-     * @constructor
-     */
-    const Graph = (props) => {
-        const list = props.data;
-        const parentObj = props.parent;
-        const key = props.keyEntry;
-        const selections = props.selections;
-        const title = props.title;
-        let maxX;
-        let minX;
-        let [mousePos, setMousePos] = useState({x: 0, y: 0});
-        let [showPeak, setShowPeak] = useState(false);
-        let [peakContent, setPeakContent] = useState();
-        if (graphAxis.x === "tempo") {
-            minX = 50;
-            maxX = 200
-        } else {
-            minX = 0;
-            maxX = 1
-        }
-        let maxY;
-        let minY;
-        if (graphAxis.y === "tempo") {
-            minY = 50;
-            maxY = 200
-        } else {
-            minY = 0;
-            maxY = 1
-        }
-        const points = [];
-
-        const handleMouseEnter = (param) => (e) => {
-            setMousePos({x: e.clientX, y: e.clientY})
-            setShowPeak(true);
-            setPeakContent(param);
-        }
-
-        const handleMouseExit = () => {
-            setShowPeak(false);
-        }
-
-        list.forEach((element, i) => {
-            // Coords as a percentage
-            let pointX = ((element[graphAxis.x] - minX) * 100) / (maxX - minX);
-            let pointY = ((element[graphAxis.y] - minY) * 100) / (maxY - minY);
-            let message = getGraphQualities(pointX, graphAxis.x, pointY, graphAxis.y);
-            points.push(<div key={element[key]} className='point'
-                             style={{left: `${pointX}%`, bottom: `${pointY}%`}}
-                             onMouseEnter={handleMouseEnter(parentObj[i])} onMouseLeave={handleMouseExit}></div>)
-        });
-        // Return the whole structure, so it can simply
-        // be dropped in
-        return (
-            <>
-                <div className='graph-container'>
-                    {showPeak ?
-                        <div className={'selection-peek'} style={{
-                            '--mouse-x': `${mousePos.x + 10}px`,
-                            '--mouse-y': `${mousePos.y - 110}px`,
-                            backgroundImage: `url(${(peakContent ? peakContent.image : '')})`
-                        }}>
-                        </div>
-                        :
-                        <></>
-                    }
-                    <h1 className='graph-title'>
-                        {title}
-                        <select className='dropdown' defaultValue={graphAxis.x}
-                                onChange={(event) => setGraphAxis({...graphAxis, x: event.target.value})}>
-                            {selections.map(function (option) {
-                                if (option !== graphAxis.y) {
-                                    return <option value={option}>{option}</option>
-                                } else {
-                                    return <></>
-                                }
-                            })}
-                        </select>
-                        vs.
-                        <select className='dropdown' defaultValue={graphAxis.y}
-                                onChange={(event) => setGraphAxis({...graphAxis, y: event.target.value})}>
-                            {selections.map(function (option) {
-                                if (option !== graphAxis.x) {
-                                    return <option value={option}>{option}</option>
-                                } else {
-                                    return <></>
-                                }
-                            })}
-                        </select>
-                    </h1>
-                    <p style={{margin: 'auto', fontFamily: 'Inter Tight', fontWeight: '500', fontSize: '0.75em'}}>CLICK
-                        POINTS TO INTERACT</p>
-                    <div className='top'>
-                        <div className='point-container'>{points}</div>
-                        <p className='y-title'>{graphAxis.y}</p>
-                    </div>
-                    <div className='bottom'>
-                        <p className='x-title'>{graphAxis.x}</p>
-                    </div>
-                </div>
-            </>
-
-        )
     }
 
     const ArtistAnalysis = (props) => {
@@ -366,24 +243,35 @@ const Profile = () => {
         const {element, index, type} = props;
 
         const [expanded, setExpanded] = useState(index === 0);
-        const [recommendations, setRecommendations] = useState([]);
+        const [recommendations, setRecommendations] = useState(null);
+        const [seeRecommendations, setSeeRecommendations] = useState(false);
         const indexChange = getIndexChange(element, index, type);
 
         const handleRecommendations = () => {
-            switch (type){
-                case 'artists':
-                    getSimilarArtists(element).then(function(result) {
-                        setRecommendations(result.map(a => formatArtist(a)));
-                    });
-                    break;
-                case 'songs':
-                    const seed_artists = element.artists.map(a => a.artist_id);
-                    let seed_genres = [];
-                    element.artists.forEach(artist => seed_genres = seed_genres.concat(artist.genres))
-                    const seed_track = element.song_id;
-                    getTrackRecommendations(seed_artists, seed_genres, seed_track, 4).then(function(result) {
-                        setRecommendations(result.map(t => formatSong(t)));
-                    });
+            if(recommendations === null){
+                switch (type){
+                    case 'artists':
+                        getSimilarArtists(element).then(function(result) {
+                            setRecommendations(result.map(a => formatArtist(a)));
+                            setSeeRecommendations(!seeRecommendations);
+                        });
+                        break;
+                    case 'songs':
+                        const seed_artists = element.artists.map(a => a.artist_id);
+                        let seed_genres = [];
+                        element.artists.forEach(artist => {
+                            if(artist.genres){
+                                seed_genres.push(artist.genres)
+                            }
+                        })
+                        const seed_track = element.song_id;
+                        getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function(result) {
+                            setRecommendations(result.map(t => formatSong(t)));
+                            setSeeRecommendations(!seeRecommendations);
+                        });
+                }
+            }else{
+                setSeeRecommendations(!seeRecommendations);
             }
         }
 
@@ -411,16 +299,7 @@ const Profile = () => {
                 style={{color: 'white', animation: 'equals-animation 0.5s ease-out'}}
                 fontSize={"small"}></ClearAllOutlinedIcon>
         }
-
-        let subtitle = '';
-        if(type === 'songs'){
-            subtitle = element.artists[0].name;
-        }else if(type === 'artists'){
-            if(element.genres?.length > 0){
-                subtitle = element.genres[0];
-            }
-        }
-        const description = getItemDescription(element, type, currentUser, datapoint);
+        const description = getItemAnalysis(element, type, currentUser, datapoint);
         return (
             <div className={"showcase-list-item"}
                  tabIndex={1}
@@ -437,25 +316,48 @@ const Profile = () => {
                         <div className={"showcase-list-item-expanded"}>
                             <div style={{fontFamily: 'Inter Tight'}}>
                                 <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
-                                <p style={{margin: '0', textTransform: 'uppercase'}}>{subtitle}</p>
+                                <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
-                                {type !== 'genres' ?
+                                {type !== 'genres' && isLoggedIn() ?
                                     <button className={'showcase-rec-button'}
                                             onClick={handleRecommendations}>
-                                        Get recommendations
+                                        {seeRecommendations ?
+                                            "See analysis"
+                                            :
+                                            "See recommendations"
+                                        }
                                     </button>
                                     :
                                     <></>
                                 }
                             </div>
-                            {type === 'songs' && windowWidth > mobileWidth + 100 ?
-                                <SongAnalysis song={element}/>
+                            {seeRecommendations ?
+                                <div style={{textAlign: 'right', fontFamily: 'Inter Tight'}}>
+                                    <h2 style={{margin: '0'}}>Recommendations</h2>
+                                    <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(element)}</p>
+                                    <div className={'recommendations-wrapper'}>
+                                        {recommendations.map(function(item, index){
+                                            if(index < 3){
+                                                return (
+                                                    <a href={item.link} className={'recommendation'}>
+                                                        <p style={{margin: '0', fontWeight: 'bold'}}>{getLIName(item)}</p>
+                                                        <p style={{margin: '0'}}>{getLIDescription(item)}</p>
+                                                    </a>
+                                                )
+                                            }
+                                        })}
+                                    </div>
+
+                                </div>
                                 :
-                                type === 'artists' ?
-                                    <ArtistAnalysis artist={element} user={currentUser} />
+                                type === 'songs' ?
+                                    <SongAnalysis song={element}/>
                                     :
-                                    <></>
+                                    type === 'artists' ?
+                                        <ArtistAnalysis artist={element} user={currentUser} />
+                                        :
+                                        <></>
                             }
                         </div>
                         <button className={'showcase-exit-button'} onClick={() => setExpanded(false)} >x</button>
@@ -463,7 +365,7 @@ const Profile = () => {
                     :
                     <div className={"showcase-list-item-text"}>
                         <h2>{getLIName(element)}</h2>
-                        <p>{subtitle}</p>
+                        <p>{getLIDescription(element)}</p>
                     </div>
                 }
             </div>
@@ -589,42 +491,66 @@ const Profile = () => {
                                 <p style={{margin: '0', fontWeight: 'normal', textAlign: 'center'}}>{followers.length}</p>
                                 <p style={{margin: '0'}}>Followers</p>
                             </div>
-                            {isLoggedIn() && user_id !== 'me'?
+                            {isLoggedIn() && user_id !== 'me' ?
                                 following ?
                                     <button
                                         className={'std-button'}
                                         onClick={() => {
-                                            unfollowUser(window.localStorage.getItem('user_id'), currentUser.user_id);
-                                            setFollowing(false);
+                                            unfollowUser(window.localStorage.getItem('user_id'), currentUser.user_id).then(() => setFollowing(false));
                                         }}>
-                                        Unfollow</button>
+                                        Unfollow
+                                    </button>
                                     :
                                     <button
                                         className={'std-button'}
                                         onClick={() => {
-                                            followUser(window.localStorage.getItem('user_id'), currentUser.user_id);
-                                            setFollowing(true);
+                                            followUser(window.localStorage.getItem('user_id'), currentUser.user_id).then(() => setFollowing(true));
                                         }}>
-                                        Follow</button>
+                                        Follow
+                                    </button>
                                 :
                                 <></>
                             }
                         </div>
                     </div>
-                    <div className={'term-container'}>
-                        {terms.map(function(term){
-                            return (<button className={'std-button'} style={{textTransform: 'capitalize'}} onClick={() => setTerm(term)}>{translateTerm[term]}</button>)
-                        })
+                    <div className={'settings-container'}>
+                        <div>
+                            <h3>Time frame</h3>
+                            <p>of information capture</p>
+                            <div style={{display: 'flex', flexDirection: 'row', gap: '5px'}}>
+                                {terms.map(function(term){
+                                    return (<button className={'std-button'} style={{textTransform: 'capitalize'}} onClick={() => setTerm(term)}>{translateTerm[term]}</button>)
+                                })}
+                            </div>
+                        </div>
+                        {isLoggedIn() && user_id !== 'me' ?
+                            <div style={{textAlign: 'right'}}>
+                                <h3>Compare?</h3>
+                                <p>Why no!?!?</p>
+                                <button className={'std-button'}>Do it!</button>
+                            </div>
+                            :
+                            <></>
                         }
                     </div>
+
                     {simpleDatapoints.map(function(type){
                         return (
                             <>
                                 <div className='simple-container'>
-                                    <div className={'datapoint-title'}>
-                                        <p>{possessive}</p>
-                                        <h2>Top <span style={{color: '#22C55E'}}>{type}</span></h2>
-                                        <p style={{textAlign: 'right'}}>Of {term !== 'long_term' ? 'the last' : ''} {translateTerm[term]}</p>
+                                    <div className={'datapoint-header'}>
+                                        <div style={{maxWidth: '400px'}}>
+                                            <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
+                                            <p style={{margin: '0', textTransform: 'uppercase'}}>Of {term !== 'long_term' ? 'the last' : ''} {translateTerm[term]}</p>
+                                            <p>This is where the description of this datapoint in this time frame will go. It will talk about some stuff.</p>
+                                            <p>Little bit here too</p>
+                                        </div>
+                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
+                                            <p>Some friend / follower related stuff could be put here?</p>
+                                            <p>Relating artists / songs to those that you follow.</p>
+                                            <p>X person else also listens to your top artist / song!</p>
+                                        </div>
                                     </div>
                                     <ShowcaseList type={type} start={0} end={9}/>
                                     <div>

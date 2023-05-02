@@ -77,97 +77,6 @@ select.dropdown {
     margin: 0 auto;
 }
 
-.showcase-list-item-expanded {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    overflow: hidden;
-    height: 100%;
-    width: 90%;
-    margin: auto;
-    cursor: auto;
-}
-
-.showcase-list-item-expanded > div {
-    position: relative;
-    overflow: hidden;
-    max-width: 300px;
-    padding: 30px;
-    flex-grow: 1;
-    animation: fadeIn 0.5s ease;
-}
-.showcase-rec-button {
-    font-family: "Inter Tight", sans-serif;
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid white;
-    border-radius: 20px;
-    padding: 5px 30px 5px 30px;
-    cursor: pointer;
-}
-
-.showcase-exit-button {
-    position: absolute;
-    font-size: 20px;
-    top: 20px;
-    right: 20px;
-    color: white;
-    background: none;
-    padding: 5px;
-    border: none;
-    cursor: pointer;
-}
-
-.analysis{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    overflow: hidden;
-}
-
-.stat-block {
-    display: flex;
-    flex-direction: column;
-    justify-content: right;
-    height: max-content;
-}
-
-.stat-block > h3 {
-    font-size: 15px;
-    font-family: 'Lato', sans-serif;
-    text-transform: uppercase;
-    margin-top: 0;
-    margin-bottom: 5px;
-    color: white;
-}
-
-.stat-block > p {
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 10px;
-    margin: 5px 0 0 0;
-    opacity: 0.5;
-    color: white;
-}
-
-/*noinspection ALL*/
-.stat-bar {
-    position: relative;
-    height: 5px;
-    width: var(--val);
-
-    background-color: white;
-    border-radius: 10px;
-    transition: all 0.5s ease-out;
-
-    animation: expand 1s ease;
-}
-
-@keyframes expand {
-    from {width: 0}
-}
-
 
 .showcase-list-item{
     display: flex;
@@ -231,6 +140,122 @@ select.dropdown {
     transition: inherit;
 }
 
+.showcase-list-item-expanded {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+    width: 90%;
+    margin: auto;
+    cursor: auto;
+}
+
+.showcase-list-item-expanded > div {
+    position: relative;
+    overflow: hidden;
+    justify-content: center;
+    height: 200px;
+    max-width: 300px;
+    padding: 50px;
+    flex-grow: 1;
+    animation: fadeIn 0.5s ease;
+}
+
+.showcase-rec-button {
+    font-family: "Inter Tight", sans-serif;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    border-radius: 20px;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+}
+
+.showcase-exit-button {
+    position: absolute;
+    font-size: 20px;
+    top: 20px;
+    right: 20px;
+    color: white;
+    background: none;
+    padding: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.recommendations-wrapper{
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.recommendation {
+    margin-left: auto;
+    padding: 5px;
+    width: max-content;
+    font-family: "Inter Tight", sans-serif;
+    text-decoration: none;
+    text-align: right;
+    color: white;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.5s;
+}
+
+.recommendation:hover {
+    text-decoration: underline;
+}
+
+.analysis{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    overflow: hidden;
+}
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: right;
+    height: max-content;
+}
+
+.stat-block > h3 {
+    font-size: 15px;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.stat-block > p {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 10px;
+    margin: 5px 0 0 0;
+    opacity: 0.5;
+    color: white;
+}
+
+/*noinspection ALL*/
+.stat-bar {
+    position: relative;
+    height: 5px;
+    width: var(--val);
+
+    background-color: white;
+    border-radius: 10px;
+    transition: all 0.5s ease-out;
+
+    animation: expand 1s ease;
+}
+
+@keyframes expand {
+    from {width: 0}
+}
+
 .list-item {
     font-size: 27px;
     font-family: 'Inter Tight', sans-serif;
@@ -273,45 +298,21 @@ select.dropdown {
     color: #22c55e;
 }
 
-.datapoint-title {
+.datapoint-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
     height: max-content;
-    width: max-content;
-    margin: 0 auto 50px auto;
+    width: 80%;
+    margin: 0 auto;
+
     font-family: 'Inter Tight', sans-serif;
-    text-transform: uppercase;
-    font-weight: 800;
+
+    border-top: 1px solid #343434;
 }
 
-.datapoint-title > p {
-    margin: -5px 0 -5px 0;
-    text-align: left;
-    font-size: 20px;
-}
 
-.datapoint-title > h2 {
-    margin: 0;
-    font-size: 80px;
-}
-
-.datapoint-sub-title {
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 20px;
-    text-transform: uppercase;
-    width: max-content;
-    margin: -5px auto 0 auto;
-}
-
-.dropdown{
-    background-color: transparent;
-    border: none;
-    text-transform: uppercase;
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 800;
-    font-size: 1em;
-    text-align: center;
-    margin-right: 40px;
-    color: #22C55E;
-}
 
 @keyframes hover {
     from {
@@ -332,13 +333,7 @@ select.dropdown {
     justify-content: space-between;
     height: max-content;
     overflow: hidden;
-    border: 1px solid #343434;
     padding: 15px;
-}
-
-.user-container > img {
-    height: 175px;
-    aspect-ratio: 1;
 }
 
 .user-details {
@@ -346,7 +341,6 @@ select.dropdown {
     max-height: 175px;
     height: max-content;
     width: max-content;
-    padding: 0 15px;
 }
 
 .user-details > h2 {
@@ -372,24 +366,27 @@ select.dropdown {
     font-weight: bold;
 }
 
-.std-button {
-    font-family: "Inter Tight", sans-serif;
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid white;
-    border-radius: 20px;
-    padding: 5px 30px 5px 30px;
-    cursor: pointer;
-}
-
-.term-container {
+.settings-container {
     display: flex;
     flex-direction: row;
-    gap: 50px;
-    justify-content: center;
-    width: max-content;
-    margin: 10px auto 10px auto;
+    justify-content: space-between;
+    padding: 15px;
+    font-family: "Inter Tight", sans-serif;
 }
+
+.settings-container > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-container > div > h3 {
+    margin: 0;
+}
+
+.settings-container > div > p {
+    margin: 0 0 5px 0;
+}
+
 #history-message{
     margin: 0 auto 0 auto;
     display: flex;

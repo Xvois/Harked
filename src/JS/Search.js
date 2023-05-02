@@ -1,7 +1,7 @@
 import {ClickAwayListener, FormControl, Input, InputAdornment, TextField, ThemeProvider} from "@mui/material";
 import {useEffect, useState} from "react";
 import {createTheme} from "@mui/material/styles";
-import {retrieveAllUsers} from "./PDM";
+import {followsUser, isLoggedIn, retrieveAllUsers, retrieveFollowing, retrieveUser} from "./PDM";
 
 const searchTheme = createTheme({
     palette: {
@@ -16,6 +16,8 @@ const searchTheme = createTheme({
 const Search = () => {
     const [searchResults, setSearchResults] = useState(null);
     const [cachedUsers, setCachedUsers] = useState(null);
+    // If the user is logged in, this is an array of who they follow
+    const [loggedFollowing, setLoggedFollowing] = useState(null);
     const Levenshtein = (a, b) => {
         // First two conditions
         if (!a.length) return b.length;
@@ -67,6 +69,11 @@ const Search = () => {
     }
     useEffect(() => {
         retrieveAllUsers().then(res => setCachedUsers(res));
+        if(isLoggedIn()){
+            retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
+                setLoggedFollowing(following);
+            })
+        }
     }, [])
     return (
         <ClickAwayListener onClickAway={() => setSearchResults(null)}>
@@ -78,16 +85,25 @@ const Search = () => {
                             placeholder="Placeholder"
                             multiline
                             variant="standard"
+                            onChange={handleChange}
                         />
                     {!!searchResults ?
                         <div className={'results'}>
                             {searchResults.map(result => {
+                                let following = false;
+                                if(isLoggedIn() && following){
+                                    following = following.some(e => e.user_id === result.user_id);
+                                }
                                 return (
                                     <a className={'result'} href={`/profile#${result.user_id}`}>
                                         <img alt='' src={result.profile_picture}></img>
                                         <div className={'result-title'}>
                                             <h2>{result.username}</h2>
-                                            <p>Some information..</p>
+                                            {following ?
+                                                <p>Following</p>
+                                                :
+                                                <></>
+                                            }
                                         </div>
                                     </a>
                                 )
