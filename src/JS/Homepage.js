@@ -5,12 +5,11 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllUserIDs} from './PDM';
+import {isLoggedIn, retrieveAllUsers} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
 import {handleLogin} from "./Authentication";
-import {hashString} from "./API";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -28,7 +27,7 @@ function Homepage() {
 
     const handleCompare = async () => {
         const currUserID = window.localStorage.getItem('userID')
-        let IDs = await retrieveAllUserIDs();
+        const IDs = await retrieveAllUsers().map(e => e.user_id);
         let userID;
         do {
             do {
@@ -65,7 +64,7 @@ function Homepage() {
                     <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
-                    1.2.6pb</p>
+                    1.2.7pb</p>
             </div>
         </div>
     );

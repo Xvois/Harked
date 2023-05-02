@@ -52,7 +52,7 @@ export const getAllArtistAssociations = function() {
 }();
 // Update the focus message to be
 // relevant to the current focus
-export const getItemDescription = function (item, type, user, datapoint) {
+export const getItemAnalysis = function (item, type, user, datapoint) {
     // What do we use as our possessive?
     const artistAssociations = getAllArtistAssociations(datapoint);
     let topMessage = '';

@@ -20,4 +20,19 @@ code {
   monospace;
 }
 
+.std-button {
+  font-family: "Inter Tight", sans-serif;
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid white;
+  border-radius: 20px;
+  padding: 5px 30px 5px 30px;
+  cursor: pointer;
+  transition: all 0.1s ease-out;
+}
+
+.std-button:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
 

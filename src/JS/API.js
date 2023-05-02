@@ -79,24 +79,6 @@ export const getUser = async (user_id) => {
 }
 
 /**
- * Returns all the users in the database.
- * @returns {Promise<*>} An array of user objects.
- */
-export const getAllUsers = async () => {
-    console.info('Get users called!');
-    let users;
-    await pb.collection('users').getFullList()
-        .then(res => users = res)
-        .catch(
-            function (err) {
-                console.warn("Error getting all users: ")
-                console.warn(err);
-            }
-        );
-    return users;
-}
-
-/**
  * Will return all the user IDs in the database.
  * @returns {Promise<Array<Record>>} An array.
  */
@@ -432,19 +414,23 @@ export const enableAutoCancel = async () => {
 }
 
 export const getLocalData = async (collection, filter) => {
-    return (await pb.collection(collection).getList(1, 50, filter)).items;
+    return (await pb.collection(collection).getList(1, 50, filter).catch(handleFetchException)).items;
 }
 
-export const getLocalDataByID = async (collection, id, expand) => {
-    return await pb.collection(collection).getOne(id, {expand: expand})
+export const getLocalDataByID = async (collection, id, expand = '') => {
+    return await pb.collection(collection).getOne(id, {expand: expand}).catch(handleFetchException);
 }
 
-export const putLocalData = async (collection, data) => {
-    await pb.collection(collection).create(data);
+export const putLocalData = (collection, data) => {
+    pb.collection(collection).create(data).catch(handleCreationException);
 }
 
-export const updateLocalData = async (collection, data, id) => {
-    await pb.collection(collection).update(id, data);
+export const updateLocalData = (collection, data, id) => {
+    pb.collection(collection).update(id, data).catch(handleUpdateException);
+}
+
+export const getFullLocalData = async (collection, filter = '') => {
+    return await pb.collection(collection).getFullList(filter);
 }
 
 

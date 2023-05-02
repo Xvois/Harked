@@ -1,12 +1,11 @@
 import {
-    deleteData, disableAutoCancel, enableAutoCancel,
+    disableAutoCancel, enableAutoCancel,
     fetchData,
     getAllUserIDs, getAllUsers,
-    getDatapoint, getLocalData, getLocalDataByID, getPlaylists,
+    getDatapoint, getFullLocalData, getLocalData, getLocalDataByID, getPlaylists,
     getUser, hashString,
     postDatapoint, postMultiplePlaylists,
-    postUser,
-    putData, putLocalData, updateLocalData
+    postUser, updateLocalData
 } from "./API";
 
 /**
@@ -43,15 +42,6 @@ export const retrieveMedia = async function () {
     })
     return returnMedia;
 }
-
-export const retrieveAllUsers = async function () {
-    // BUG : MUST DISABLE AUTO CANCEL FOR SEARCH COMPONENT AS IT DOUBLE RENDERS
-    await disableAutoCancel();
-    const users = await getAllUsers();
-    await enableAutoCancel();
-    return users;
-}
-
 /**
  * Gets a user from the PRDB as well as updating the media attribute for the
  * current user, if that is the parameter.
@@ -87,6 +77,9 @@ export const retrieveUser = async function (user_id) {
  * @param targetUserID
  */
 export const followsUser = async function (primaryUserID, targetUserID) {
+    if(primaryUserID === targetUserID){
+        return false;
+    }
     let follows = false;
     const primaryUser = await getUser(primaryUserID);
     await getLocalData("user_followers", `user.user_id=${targetUserID}`)
@@ -96,7 +89,6 @@ export const followsUser = async function (primaryUserID, targetUserID) {
                 follows = true;
             }
     });
-    console.log(follows);
     return follows;
 }
 
@@ -107,17 +99,20 @@ export const followsUser = async function (primaryUserID, targetUserID) {
  * @param targetUserID
  */
 export const followUser = async function (primaryUserID, targetUserID) {
-    let [primaryUser, targetUser] = [await getUser(primaryUserID), await getUser(targetUserID)];
-    if(!primaryUser.following.some(e => e === targetUser.id)){
-        primaryUser.following.push(targetUser.id);
-        console.log(primaryUser);
-        await updateLocalData("users", primaryUser, primaryUser.id);
-        await getLocalData("user_followers", `user.user_id="${targetUserID}"`)
-            .then((res) => {
-                let item = res[0];
-                item.followers.push(primaryUser.id);
-                updateLocalData("user_followers", item, item.id);
-            })
+    // Get the record for who follows who for both the primary and target user
+    let [primaryObj, targetObj] = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
+
+    // Since this is a relational key, .user is simply the record id for tha user
+    if(!primaryObj.following.some(e => e === targetObj.user)){
+        primaryObj.following.push(targetObj.user);
+        // Update the primary user's data to show they are following the target user
+        await updateLocalData("user_following", primaryObj, primaryObj.id);
+        // Update the target user's data to show they are being followed by the primary user
+        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res) => {
+            let item = res;
+            item.followers.push(primaryObj.user);
+            updateLocalData("user_followers", item, item.id);
+        })
     }
 }
 /**
@@ -126,15 +121,21 @@ export const followUser = async function (primaryUserID, targetUserID) {
  * @param targetUserID
  */
 export const unfollowUser = async function (primaryUserID, targetUserID) {
-    let [primaryUser, targetUser] = [await getUser(primaryUserID), await getUser(targetUserID)];
-    primaryUser.following = primaryUser.following.filter(e => e !== targetUser.id);
-    await updateLocalData("users", primaryUser, primaryUser.id);
-    await getLocalData("user_followers", `user.user_id="${targetUserID}"`)
-        .then((res) => {
-            let item = res[0];
-            item.followers = item.followers.filter(e => e !== primaryUser.id);
+    // Get the record for who follows who for both the primary and target user
+    let [primaryObj, targetObj] = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
+
+    // Since this is a relational key, .user is simply the record id for tha user
+    if(primaryObj.following.some(e => e === targetObj.user)){
+        primaryObj.following = primaryObj.following.filter(e => e !== targetObj.user);
+        // Update the primary user's data to show they are not following the target user
+        await updateLocalData("user_following", primaryObj, primaryObj.id);
+        // Update the target user's data to show they are not being followed by the primary user
+        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res) => {
+            let item = res;
+            item.followers = item.followers.filter(e => e !== primaryObj.user);
             updateLocalData("user_followers", item, item.id);
         })
+    }
 }
 
 export const retrieveFollowers = async function(user_id) {
@@ -145,12 +146,24 @@ export const retrieveFollowers = async function(user_id) {
         return [];
     }
 }
+
+export const retrieveFollowing = async function(user_id) {
+    const res = await getLocalDataByID("user_following", hashString(user_id), "following");
+    if(res.following.length > 0){
+        return res.expand.following;
+    }else{
+        return [];
+    }
+}
 /**
  * Returns all the user_ids currently in the database.
- * @returns {Promise<[user_id: string]>}
+ * @returns {Promise<Array<Record>>}
  */
-export const retrieveAllUserIDs = async function () {
-    return await getAllUserIDs();
+export const retrieveAllUsers = async function () {
+    await disableAutoCancel();
+    const users = await getFullLocalData("users");
+    await enableAutoCancel();
+    return users;
 }
 /**
  * Returns an array of public non-collaborative playlists from a given user.
