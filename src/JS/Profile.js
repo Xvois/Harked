@@ -553,8 +553,19 @@ const Profile = () => {
                                         </div>
                                     </div>
                                     <ShowcaseList type={type} start={0} end={9}/>
-                                    <div>
-                                        <h3>Some cool {type.slice(0, type.length - 1)} stuff?</h3>
+                                    <div className={'datapoint-footer'}>
+                                        <div style={{maxWidth: '400px'}}>
+                                            <p>Some friend / follower related stuff could be put here?</p>
+                                            <p>Relating artists / songs to those that you follow.</p>
+                                            <p>X person else also listens to your top artist / song!</p>
+                                        </div>
+                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
+                                            <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
+                                            <p style={{margin: '0', textTransform: 'uppercase'}}>Of {term !== 'long_term' ? 'the last' : ''} {translateTerm[term]}</p>
+                                            <p>This is where the description of this datapoint in this time frame will go. It will talk about some stuff.</p>
+                                            <p>Little bit here too</p>
+                                        </div>
                                     </div>
                                 </div>
                             </>

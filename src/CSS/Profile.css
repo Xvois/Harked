@@ -305,11 +305,27 @@ select.dropdown {
 
     height: max-content;
     width: 80%;
+    max-width: 1000px;
     margin: 0 auto;
 
     font-family: 'Inter Tight', sans-serif;
 
     border-top: 1px solid #343434;
+}
+
+.datapoint-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    height: max-content;
+    width: 80%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    font-family: 'Inter Tight', sans-serif;
+
+    border-bottom: 1px solid #343434;
 }
 
 
