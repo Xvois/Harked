@@ -23,6 +23,15 @@ export const getItemIndexChange = function (item, index, type, comparisonDP) {
     return lastIndex - index;
 }
 
+export const getAllItemIndexChanges = function (type, dp1, dp2) {
+    let deltas = [];
+    dp1[`top_${type}`].forEach(function(element, index){
+        const lastIndex = type !== 'genres' ? dp2[`top_${type}`].findIndex((element) => element.name === element.name) : dp2[`top_${type}`].indexOf(element);
+        deltas.push({item: element, delta: lastIndex - index});
+    })
+    return deltas;
+}
+
 export const getAllArtistAssociations = function() {
     console.info('getAllArtistAssociations called!');
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];

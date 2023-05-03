@@ -28,7 +28,7 @@ import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {handleLogin} from "./Authentication";
-import {getItemAnalysis, getItemIndexChange, translateAnalytics} from "./Analysis";
+import {getAllItemIndexChanges, getItemAnalysis, getItemIndexChange, translateAnalytics} from "./Analysis";
 
 
 const Profile = () => {
@@ -516,6 +516,7 @@ const Profile = () => {
 
                     {simpleDatapoints.map(function(type){
                         let description = '';
+                        const deltas = prevDatapoint ? getAllItemIndexChanges(type, datapoint, prevDatapoint) : null;
                         switch (term){
                             case 'long_term':
                                 description = 'These are your staple artists, those that define your overarching taste in music.'
