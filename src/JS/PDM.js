@@ -214,7 +214,7 @@ export const isLoggedIn = function () {
  * @param delay
  * @returns {Promise<*>} A datapoint object.
  */
-export const retrieveDatapoint = async function (user_id, term, delay = 0) {
+export const retrieveDatapoint = async function (user_id, term) {
     let currDatapoint;
     let timeSensitive = false;
     let globalUser_id = user_id;
@@ -228,7 +228,7 @@ export const retrieveDatapoint = async function (user_id, term, delay = 0) {
         timeSensitive = true;
         globalUser_id = window.localStorage.getItem("user_id");
     }
-    await getDatapoint(globalUser_id, term, timeSensitive, delay).then(function (result) {
+    await getDatapoint(globalUser_id, term, timeSensitive).then(function (result) {
         currDatapoint = result;
     }).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
@@ -242,37 +242,56 @@ export const retrieveDatapoint = async function (user_id, term, delay = 0) {
             )
         );
     }
-    // Turn relation ids into the actual arrays / records themselves using
-    // pocketbase's expand property
-    currDatapoint.top_artists = currDatapoint.expand.top_artists;
-    currDatapoint.top_songs = currDatapoint.expand.top_songs;
-    currDatapoint.top_genres = currDatapoint.expand.top_genres.map(e => e.genre);
-    currDatapoint.top_artists.map(e => e.genres = e.expand.genres?.map(g => g.genre));
-    currDatapoint.top_songs.map(e => e.artists = e.expand.artists);
-    currDatapoint.top_songs.map(e => e.artists.map(a => a.genres = a.expand.genres?.map(g => g.genre)));
-    // Delete redundant expansions
-    delete currDatapoint.expand;
-    currDatapoint.top_artists.forEach(e => delete e.expand);
-    currDatapoint.top_songs.forEach(e => delete e.expand);
-    currDatapoint.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
 
+    currDatapoint = formatDatapoint(currDatapoint);
     return currDatapoint;
 }
-/**
- * Retrieves the last previous datapoint instead of the most recent one. False is returned if none exists.
- * @param user_id
- * @param term [short_term, medium_term, long_term]
- * @returns {Promise<*> || false} A datapoint object.
- */
-export const retrievePreviousDatapoint = async function (user_id, term) {
-    let result;
+
+export const retrievePrevDatapoint = async function (user_id, term) {
     let globalUser_id = user_id;
+    // Are we accessing the logged-in user?
+    // [Knowingly]
     if (globalUser_id === "me") {
         globalUser_id = window.localStorage.getItem("user_id");
     }
-    await getDelayedDatapoint(globalUser_id, term,  1).then(r => result = r);
-    return result;
+    const datapoint = await getDelayedDatapoint(globalUser_id, term, 1);
+    if(datapoint === undefined) {
+        return null
+    }else {
+        return datapoint;
+    }
 }
+
+
+const formatDatapoint = function (d) {
+    // Turn relation ids into the actual arrays / records themselves using
+    // pocketbase's expand property
+    d.top_artists = d.expand.top_artists;
+    d.top_songs = d.expand.top_songs;
+    d.top_genres = d.expand.top_genres.map(e => e.genre);
+    d.top_artists.map(e => e.genres = e.expand.genres?.map(g => g.genre));
+    d.top_songs.map(e => e.artists = e.expand.artists);
+    d.top_songs.map(e => e.artists.map(a => a.genres = a.expand.genres?.map(g => g.genre)));
+    // Delete redundant expansions
+    delete d.expand;
+    d.top_artists.forEach(e => delete e.expand);
+    d.top_songs.forEach(e => delete e.expand);
+    d.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
+    return d;
+}
+
+export const retrieveAllDatapoints =  async function (user_id) {
+    const terms = ["short_term", "medium_term", "long_term"];
+    const datapointsPromises = terms.map(term => retrieveDatapoint(user_id, term));
+    return await Promise.all(datapointsPromises);
+}
+
+export const retrievePrevAllDatapoints =  async function (user_id) {
+    const terms = ["short_term", "medium_term", "long_term"];
+    const datapointsPromises = terms.map(term => retrievePrevDatapoint(user_id, term));
+    return await Promise.all(datapointsPromises);
+}
+
 // noinspection JSUnusedGlobalSymbols
 /**
  * A testing function that will begin filling the database with faux users.
@@ -489,7 +508,13 @@ export const getSimilarArtists = async (artist) => {
 }
 
 export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tracks, limit = 20) => {
-    return (await fetchData(`recommendations?seed_artists=${seed_artists}&seed_genres=${seed_genres}&seed_tracks=${seed_tracks}&limit=${limit}`)).tracks;
+    let params = new URLSearchParams([
+        ["seed_artists", seed_artists],
+        ["seed_genres", seed_genres],
+        ["seed_tracks", seed_tracks],
+        ["limit", limit]
+    ]);
+    return (await fetchData(`recommendations?${params}`)).tracks;
 }
 
 /**

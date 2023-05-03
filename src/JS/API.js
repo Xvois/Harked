@@ -444,8 +444,7 @@ export const getDelayedDatapoint = async (user_id, term, delay) => {
 
 
 /**
- * getDatapoint makes a GET HTTP request to the PRDB to retrieve the most recent datapoint for a given user
- * in the database.
+ *
  * @param user_id A global user ID.
  * @param term [short_term, medium_term, long_term]
  * @param timeSens Whether or not the datapoint collection should be time sensitive.

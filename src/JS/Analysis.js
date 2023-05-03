@@ -14,7 +14,7 @@ export const translateAnalytics = {
 }
 
 export const getItemIndexChange = function (item, index, type, comparisonDP) {
-    const lastIndex = type !== 'genres' ? comparisonDP[`top_${type}`].findIndex((element) => element.name === item.name) : comparisonDP[`top_${type}`].indexOf(item);
+    const lastIndex = item.name ? comparisonDP[`top_${type}`].findIndex((element) => element.name === item.name) : comparisonDP[`top_${type}`].indexOf(item);
     if (lastIndex < 0) {
         return null
     }
@@ -26,8 +26,7 @@ export const getItemIndexChange = function (item, index, type, comparisonDP) {
 export const getAllItemIndexChanges = function (type, dp1, dp2) {
     let deltas = [];
     dp1[`top_${type}`].forEach(function(element, index){
-        const lastIndex = type !== 'genres' ? dp2[`top_${type}`].findIndex((element) => element.name === element.name) : dp2[`top_${type}`].indexOf(element);
-        deltas.push({item: element, delta: lastIndex - index});
+        deltas.push(getItemIndexChange(element, index, type, dp2));
     })
     return deltas;
 }

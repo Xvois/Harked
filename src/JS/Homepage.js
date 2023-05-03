@@ -64,7 +64,7 @@ function Homepage() {
                     <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
-                    1.2.8apb</p>
+                    1.2.9pb</p>
             </div>
         </div>
     );

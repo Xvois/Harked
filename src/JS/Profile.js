@@ -1,12 +1,6 @@
 // noinspection JSValidateTypes
 
-/**
- * The main component of the site. This combines many elements to show the user
- * information about their datapoints. It gives them the ability to focus each element,
- * view profiles, compare stats and change the term of their datapoints.
- */
-
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
@@ -14,15 +8,16 @@ import {
     followUser,
     retrievePlaylists,
     isLoggedIn,
-    retrieveDatapoint,
-    retrieveMedia,
     retrieveUser,
     unfollowUser,
-    retrievePreviousDatapoint,
     getAlbumsWithLikedSongs,
     getSimilarArtists,
     formatArtist,
-    getTrackRecommendations, formatSong, retrieveFollowers
+    getTrackRecommendations,
+    formatSong,
+    retrieveFollowers,
+    retrieveAllDatapoints,
+    retrievePrevAllDatapoints
 } from './PDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
@@ -32,35 +27,90 @@ import {getAllItemIndexChanges, getItemAnalysis, getItemIndexChange, translateAn
 
 
 const Profile = () => {
-    const [possessive, setPossessive] = useState('')
-    const [focusedPlaylist, setFocusedPlaylist] = useState();
-    const translateTerm = {short_term : '4 weeks', medium_term : '6 months', long_term: 'all time'}
-    const [user_id, setUser_id] = useState(window.location.hash.split("#")[1]);
-    const [loaded, setLoaded] = useState(false);
-    const [currentUser, setCurrentUser] = useState({
-        user_id: '',
-        username: '',
-        profile_picture: '',
-        media: {name: '', image: ''},
-    });
-    const [datapoint, setDatapoint] = useState({
-        user_id: '',
-        term: '',
-        top_songs: [],
-        top_artists: [],
-        top_genres: [],
-    });
-    const [prevDatapoint, setPrevDatapoint] = useState(null);
-    const [term, setTerm] = useState("long_term");
-    const terms = ["short_term", "medium_term", "long_term"];
-    // The datapoint we are currently on
-    const [playlists, setPlaylists] = useState([])
+
     const simpleDatapoints = ["artists", "songs", "genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
-    const [following, setFollowing] = useState(null);
+    const terms = ["short_term", "medium_term", "long_term"];
+    const translateTerm = {short_term : '4 weeks', medium_term : '6 months', long_term: 'all time'}
+    const pageHash = window.location.hash.split("#")[1];
+    const isOwnPage = isLoggedIn() ? ( pageHash === window.localStorage.getItem('user_id') || pageHash === 'me' ) : false
+
+    // The datapoint that is selected for viewing
+    const [selectedDatapoint, setSelectedDatapoint] = useState(null);
+    // The datapoint prior to the current that is selected for comparison
+    const [selectedPrevDatapoint, setSelectedPrevDatapoint] = useState(null);
+    // The currently selected playlist
+    const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+    // The currently selected term
+    const [termIndex, setTermIndex] = useState(2);
+    const [loaded, setLoaded] = useState(false);
+    const [isLoggedUserFollowing, setIsLoggedUserFollowing] = useState(null);
+
+    // Uninitialised variables
+    const [pageUser, setPageUser] = useState(null);
+    const [chipData, setChipData] = useState([]);
     const [followers, setFollowers] = useState([]);
-    const [selectionAnalysis, setSelectionAnalysis] = useState();
-    const [chipData, setChipData] = useState();
+    const [allDatapoints, setAllDatapoints] = useState([]);
+    const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
+    const [playlists, setPlaylists] = useState([]);
+    const [possessive, setPossessive] = useState('');
+
+
+
+    // Function that loads the page when necessary
+    const loadPage = () => {
+        // Promises that need to be made before the page can be laoded
+        let loadPromises = [
+            retrieveUser(pageHash).then(function(user){
+                setPageUser(user);
+                retrieveFollowers(user.user_id).then(f => setFollowers(f));
+                if (isOwnPage) { setPossessive(user.username + "'s") }
+                else { setPossessive("your") }
+                console.info("User retrieved!");
+            }),
+            retrieveAllDatapoints(pageHash).then(function (datapoints) {
+                setAllDatapoints(datapoints);
+                // Set it to the long term datapoint
+                setSelectedDatapoint(datapoints[termIndex]);
+                setChipData([datapoints[termIndex].top_artists[0], datapoints[termIndex].top_genres[0]]);
+                console.info("Datapoints retrieved!");
+            }),
+            retrievePrevAllDatapoints(pageHash, 1).then(function(datapoints){
+                setAllDatapoints(datapoints);
+                setSelectedPrevDatapoint(datapoints[termIndex]);
+                console.info("Previous datapoints retrieved!");
+            }),
+            retrievePlaylists(pageHash).then(function(p){
+               setPlaylists(p);
+                if (p.length > 0){
+                    setSelectedPlaylist(p[0]);
+                }
+                console.info("Playlists retrieved!");
+            }),
+        ]
+
+        // Behaviour for if the user is logged in
+        if(isLoggedIn()){
+            const loggedUserID = window.localStorage.getItem('user_id');
+            if (!isOwnPage) {
+                followsUser(loggedUserID, pageHash).then(f => setIsLoggedUserFollowing(f));
+            }
+        }
+
+
+        Promise.all(loadPromises).then(() => setLoaded(true));
+    }
+
+// Call the loadPage function once the component mounts
+    useEffect(() => {
+        loadPage();
+    }, []);
+
+    useEffect(() => {
+        setSelectedDatapoint(allDatapoints[termIndex]);
+        setSelectedPrevDatapoint(allPreviousDatapoints[termIndex]);
+    }, [termIndex])
+
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;
@@ -77,7 +127,7 @@ const Profile = () => {
         return result;
     }
 
-    const getLIDescription = function (data) {
+    const getLIDescription = function (data, maxLength = 40) {
         let result;
         if(data.hasOwnProperty('artist_id')){
             if(data.genres && data.genres.length > 0) {
@@ -86,41 +136,14 @@ const Profile = () => {
                 result = '';
             }
         }else if(data.hasOwnProperty('song_id')){
-            result = data.artists[0].name;
+            result = data.artists.map((e,i)  => i !== data.artists.length - 1 ? e.name + ', ' : e.name);
         }else{
             result = '';
         }
-        if (result.length > 40) {
-            result = result.substring(0, 40) + "..."
+        if (result.length > maxLength) {
+            result = result.substring(0, maxLength) + "..."
         }
         return result;
-    }
-
-    /**
-     * Stores the average song characteristics of all songs in the array.
-     * @param songs
-     */
-    const analyseSongs = function (songs) {
-        // Result
-        let res = {
-            acousticness: 0,
-            danceability: 0,
-            energy: 0,
-            instrumentalness: 0,
-            liveness: 0,
-            valence: 0,
-            tempo: 0
-        };
-        songs.forEach(function (song) {
-            analyticsMetrics.forEach((analyticKey) => {
-                if (analyticKey === 'tempo') {
-                    res[analyticKey] += (song.analytics[analyticKey] - 50) / (songs.length * 150);
-                } else {
-                    res[analyticKey] += (song.analytics[analyticKey]) / songs.length;
-                }
-            })
-        })
-        setSelectionAnalysis(res);
     }
 
     const ArtistAnalysis = (props) => {
@@ -140,7 +163,7 @@ const Profile = () => {
                 <div className={'analysis'}>
                     {orderedAlbums.length > 0 ?
                         orderedAlbums.map(function (album) {
-                            return <StatBlock name={album.name.length > 35 ? album.name.slice(0,35) + '...' : album.name} description={`${album.saved_songs.length} saved songs.`} value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
+                            return <StatBlock key={album.id} name={album.name.length > 35 ? album.name.slice(0,35) + '...' : album.name} description={`${album.saved_songs.length} saved songs.`} value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
                         })
                         :
                         <p style={{fontFamily: 'Inter Tight', textAlign: 'right'}}>There are no saved songs from this artist on {possessive} public profile.</p>
@@ -160,7 +183,7 @@ const Profile = () => {
                     {
                         Object.keys(translateAnalytics).map(function (key) {
                             if (excludedKeys.findIndex(e => e === key) === -1) {
-                                return <StatBlock name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={analytics ? (key === 'tempo' ? 100 * (analytics[key] - 50) / 150 : analytics[key] * 100) : analytics[key] * 100}/>
+                                return <StatBlock key={key} name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={analytics ? (key === 'tempo' ? 100 * (analytics[key] - 50) / 150 : analytics[key] * 100) : analytics[key] * 100}/>
                             }
                         })
                     }
@@ -196,10 +219,11 @@ const Profile = () => {
 
         return (
             <div className={'showcase-list-wrapper'}>
-                {datapoint[`top_${type}`].map(function(element, index){
+                {selectedDatapoint[`top_${type}`].map(function(element, index){
                     if(index >= start && index <= end){
                         return (
                             <div
+                                key={type === 'genres' ? element : element[`${type.slice(0, type.length-1)}_id`]}
                                 onMouseEnter={() => setHoverItem(index)}
                                 onMouseLeave={() => setHoverItem(-1)}
                                 tabIndex={0}
@@ -225,7 +249,7 @@ const Profile = () => {
         const [expanded, setExpanded] = useState(index === 0);
         const [recommendations, setRecommendations] = useState(null);
         const [seeRecommendations, setSeeRecommendations] = useState(false);
-        const indexChange = prevDatapoint ? getItemIndexChange(element, index, type, prevDatapoint) : null;
+        const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
 
         const handleRecommendations = () => {
             if(recommendations === null){
@@ -237,13 +261,18 @@ const Profile = () => {
                         });
                         break;
                     case 'songs':
-                        const seed_artists = element.artists.map(a => a.artist_id);
+                        const seed_artists = element.artists.map(a => a.artist_id).slice(0,2);
                         let seed_genres = [];
                         element.artists.forEach(artist => {
                             if(artist.genres){
-                                seed_genres.push(artist.genres)
+                               artist.genres.forEach(genre => {
+                                   if(!seed_genres.some(e => e === genre)){
+                                       seed_genres.push(genre);
+                                   }
+                               })
                             }
                         })
+                        seed_genres = seed_genres.slice(0,2);
                         const seed_track = element.song_id;
                         getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function(result) {
                             setRecommendations(result.map(t => formatSong(t)));
@@ -279,7 +308,7 @@ const Profile = () => {
                 style={{color: 'white', animation: 'equals-animation 0.5s ease-out'}}
                 fontSize={"small"}></ClearAllOutlinedIcon>
         }
-        const description = getItemAnalysis(element, type, currentUser, datapoint);
+        const description = getItemAnalysis(element, type, pageUser, selectedDatapoint);
         return (
             <div className={"showcase-list-item"}
                  tabIndex={1}
@@ -320,9 +349,9 @@ const Profile = () => {
                                         {recommendations.map(function(item, index){
                                             if(index < 3){
                                                 return (
-                                                    <a href={item.link} className={'recommendation'}>
+                                                    <a key={getLIName(item)} href={item.link} className={'recommendation'}>
                                                         <p style={{margin: '0', fontWeight: 'bold'}}>{getLIName(item)}</p>
-                                                        <p style={{margin: '0'}}>{getLIDescription(item)}</p>
+                                                        <p style={{margin: '0'}}>{getLIDescription(item, 20)}</p>
                                                     </a>
                                                 )
                                             }
@@ -335,7 +364,7 @@ const Profile = () => {
                                     <SongAnalysis song={element}/>
                                     :
                                     type === 'artists' ?
-                                        <ArtistAnalysis artist={element} user={currentUser} />
+                                        <ArtistAnalysis artist={element} user={pageUser} />
                                         :
                                         <></>
                             }
@@ -365,69 +394,6 @@ const Profile = () => {
         }
         return hash;
     }
-
-    // Function that loads the page when necessary
-    const loadPage = () => {
-        // If the page hasn't loaded then grab the user data
-        if (user_id === window.localStorage.getItem("user_id") || user_id === "me") {
-            window.location.hash = "me";
-            setUser_id("me")
-        } else {
-            setUser_id(window.location.hash.split("#")[1])
-            if (isLoggedIn()) {
-                followsUser(window.localStorage.getItem('user_id'), currentUser.user_id).then(following => setFollowing(following));
-            }
-        }
-
-        if (!loaded) {
-            // Get the user information
-            retrieveUser(user_id).then(function (result) {
-                console.log(result)
-                setCurrentUser(result);
-                retrieveFollowers(result.user_id).then((f) => setFollowers(f));
-                if (user_id === window.localStorage.getItem("user_id") || user_id === "me") {
-                    retrieveMedia().then(function (media) {
-                        setCurrentUser({
-                            ...result,
-                            media: media
-                        })
-                    })
-                    setPossessive('your')
-                }else{
-                    setPossessive(result.username + `'s`)
-                }
-                document.title = `Harked | ${result.username}`;
-            })
-        }
-        // Update the datapoint
-        retrieveDatapoint(user_id, term).then(function (dpResult) {
-            if(!dpResult){alert(`There is no datapoint found for ${currentUser.username} in this term. This is likely because they do not use Spotify enough.`);}
-            else{
-                console.log(dpResult)
-                setDatapoint(dpResult)
-                analyseSongs(dpResult.top_songs);
-                if (!chipData) {
-                    setChipData([dpResult.top_artists[0], dpResult.top_genres[0]])
-                }
-                retrievePreviousDatapoint(user_id, term).then(function (prevDpResult){
-                    setPrevDatapoint(prevDpResult);
-                })
-            }
-            setLoaded(true);
-        })
-        retrievePlaylists(user_id).then(function(p){
-            setPlaylists(p);
-            if(p.length > 0){
-                setFocusedPlaylist(p[0]);
-            }
-        });
-    }
-    useEffect(() => {
-        if (!isLoggedIn() && user_id === "me") {
-            handleLogin();
-        }
-        loadPage();
-    }, [term, user_id])
 
     return (
         <>
@@ -461,7 +427,7 @@ const Profile = () => {
                     <div className='user-container'>
                         <div className={'user-details'}>
                             <p>Profile for</p>
-                            <h2>{currentUser.username}</h2>
+                            <h2>{pageUser.username}</h2>
                             <p><span
                                 style={{color: '#22C55E'}}>{chipData[0].name}</span> fan · <span
                                 style={{color: '#22C55E'}}>{chipData[1]}</span> fan</p>
@@ -471,12 +437,12 @@ const Profile = () => {
                                 <p style={{margin: '0', fontWeight: 'normal', textAlign: 'right'}}>{followers.length}</p>
                                 <p style={{margin: '0', textAlign: 'right'}}>Followers</p>
                             </div>
-                            {isLoggedIn() && user_id !== 'me' ?
-                                following ?
+                            {isLoggedIn() && pageHash !== 'me' ?
+                                isLoggedUserFollowing ?
                                     <button
                                         className={'std-button'}
                                         onClick={() => {
-                                            unfollowUser(window.localStorage.getItem('user_id'), currentUser.user_id).then(() => setFollowing(false));
+                                            unfollowUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => setIsLoggedUserFollowing(false));
                                         }}>
                                         Unfollow
                                     </button>
@@ -484,7 +450,7 @@ const Profile = () => {
                                     <button
                                         className={'std-button'}
                                         onClick={() => {
-                                            followUser(window.localStorage.getItem('user_id'), currentUser.user_id).then(() => setFollowing(true));
+                                            followUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => setIsLoggedUserFollowing(true));
                                         }}>
                                         Follow
                                     </button>
@@ -498,16 +464,16 @@ const Profile = () => {
                             <h3>Time frame</h3>
                             <p>of information capture</p>
                             <div style={{display: 'flex', flexDirection: 'row', gap: '5px'}}>
-                                {terms.map(function(term){
-                                    return (<button className={'std-button'} style={{textTransform: 'capitalize'}} onClick={() => setTerm(term)}>{translateTerm[term]}</button>)
+                                {terms.map(function(term, i){
+                                    return (<button key={term} className={'std-button'} style={{textTransform: 'capitalize'}} onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
                                 })}
                             </div>
                         </div>
-                        {isLoggedIn() && user_id !== 'me' ?
+                        {!isOwnPage ?
                             <div style={{textAlign: 'right'}}>
-                                <h3>Compare?</h3>
-                                <p>Why no!?!?</p>
-                                <button className={'std-button'}>Do it!</button>
+                                <h3>Compare</h3>
+                                <p>See how your stats stack up against {pageUser.username}</p>
+                                <button className={'std-button'}>Compare</button>
                             </div>
                             :
                             <></>
@@ -516,51 +482,49 @@ const Profile = () => {
 
                     {simpleDatapoints.map(function(type){
                         let description = '';
-                        const deltas = prevDatapoint ? getAllItemIndexChanges(type, datapoint, prevDatapoint) : null;
-                        switch (term){
-                            case 'long_term':
-                                description = 'These are your staple artists, those that define your overarching taste in music.'
+                        const dpDeltas = selectedPrevDatapoint ? getAllItemIndexChanges(type, selectedDatapoint, selectedPrevDatapoint) : null;
+                        switch (termIndex){
+                            // Long term
+                            case 2:
+                                description = `These are your staple ${type}, those that define your overarching taste in music.`;
                                 break;
-                            case 'medium_term':
-                                description = 'TODO: SOME DELTA ANALYSIS';
+                            // Medium term
+                            case 1:
+                                description = `These are your most popular ${type} in the last 6 months.`;
                                 break;
-                            case 'short_term':
-                                description = 'TODO: SOME DELTA ANALYSIS';
+                            // Short term
+                            case 0:
+                                description = `These are your most popular ${type} in the last 4 weeks.`;
                                 break;
                         }
                         return (
-                            <>
-                                <div className='simple-container'>
-                                    <div className={'datapoint-header'}>
-                                        <div style={{maxWidth: '400px'}}>
-                                            <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
-                                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
-                                            <p style={{margin: '0', textTransform: 'uppercase'}}>Of {term !== 'long_term' ? 'the last' : ''} {translateTerm[term]}</p>
-                                            <p>{description}</p>
-                                        </div>
-                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
-                                            <p>Some friend / follower related stuff could be put here?</p>
-                                            <p>Relating artists / songs to those that you follow.</p>
-                                            <p>X person else also listens to your top artist / song!</p>
-                                        </div>
+                            <div key={type} className='simple-container'>
+                                <div className={'datapoint-header'}>
+                                    <div style={{maxWidth: '400px'}}>
+                                        <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                        <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
+                                        <p style={{margin: '0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                        <p>{description}</p>
                                     </div>
-                                    <ShowcaseList type={type} start={0} end={9}/>
-                                    <div className={'datapoint-footer'}>
-                                        <div style={{maxWidth: '400px'}}>
-                                            <p>Some friend / follower related stuff could be put here?</p>
-                                            <p>Relating artists / songs to those that you follow.</p>
-                                            <p>X person else also listens to your top artist / song!</p>
-                                        </div>
-                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
-                                            <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
-                                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
-                                            <p style={{margin: '0', textTransform: 'uppercase'}}>Of {term !== 'long_term' ? 'the last' : ''} {translateTerm[term]}</p>
-                                            <p>This is where the description of this datapoint in this time frame will go. It will talk about some stuff.</p>
-                                            <p>Little bit here too</p>
-                                        </div>
+                                    <div style={{maxWidth: '400px', textAlign: 'right'}}>
                                     </div>
                                 </div>
-                            </>
+                                <ShowcaseList type={type} start={0} end={9}/>
+                                <div className={'datapoint-footer'}>
+                                    <div style={{maxWidth: '400px'}}>
+                                        <p>Some friend / follower related stuff could be put here?</p>
+                                        <p>Relating artists / songs to those that you follow.</p>
+                                        <p>X person else also listens to your top artist / song!</p>
+                                    </div>
+                                    <div style={{maxWidth: '400px', textAlign: 'right'}}>
+                                        <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                        <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
+                                        <p style={{margin: '0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                        <p>This is where the description of this datapoint in this time frame will go. It will talk about some stuff.</p>
+                                        <p>Little bit here too</p>
+                                    </div>
+                                </div>
+                            </div>
                         )
                     })}
                     <h2 style={{
@@ -570,7 +534,7 @@ const Profile = () => {
                         margin: '50px auto auto auto',
                         textAlign: 'center',
                         textDecoration: 'underline 1px #343434'
-                    }}>{currentUser.username}'s playlists</h2>
+                    }}>{pageUser.username}'s playlists</h2>
                     <div className={"playlist-wrapper"}>
                         {playlists.length === 0 ?
                             <p>There's nothing here...</p>
@@ -579,7 +543,7 @@ const Profile = () => {
                                 <ol className={"list-item-ol"}>
                                     {
                                         playlists.map(function (playlist) {
-                                            return <li onClick={() => setFocusedPlaylist(playlist)}
+                                            return <li key={playlist.playlist_id} onClick={() => setSelectedPlaylist(playlist)}
                                                        className={"list-item"} style={{
                                                 fontSize: '20px',
                                                 fontFamily: 'Inter Tight'
@@ -589,11 +553,11 @@ const Profile = () => {
                                 </ol>
                                 <div className={"focused-playlist"}>
                                     <div className={"focused-playlist-text"}>
-                                        <h2>{focusedPlaylist.name}</h2>
-                                        <h3>{focusedPlaylist.description}</h3>
+                                        <h2>{selectedPlaylist.name}</h2>
+                                        <h3>{selectedPlaylist.description}</h3>
                                         <hr/>
                                         <div style={{display: 'flex', flexDirection: 'row'}}>
-                                            <a target="_blank" href={`https://open.spotify.com/playlist/${focusedPlaylist.playlist_id}`}
+                                            <a target="_blank" href={`https://open.spotify.com/playlist/${selectedPlaylist.playlist_id}`}
                                                style={{display: 'flex', gap: '10px', fontFamily: 'Inter Tight'}}
                                                className={"spotify-link"}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px"
@@ -604,11 +568,11 @@ const Profile = () => {
                                                 </svg>
                                                 Open in Spotify
                                             </a>
-                                            <p>{focusedPlaylist.tracks.length} songs</p>
+                                            <p>{selectedPlaylist.tracks.length} songs</p>
                                         </div>
                                     </div>
                                     <img alt={''} className={'playlist-art'}
-                                         src={focusedPlaylist.image}></img>
+                                         src={selectedPlaylist.image}></img>
                                 </div>
                             </>
                         }
