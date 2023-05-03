@@ -13,6 +13,16 @@ export const translateAnalytics = {
     tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
 }
 
+export const getItemIndexChange = function (item, index, type, comparisonDP) {
+    const lastIndex = type !== 'genres' ? comparisonDP[`top_${type}`].findIndex((element) => element.name === item.name) : comparisonDP[`top_${type}`].indexOf(item);
+    if (lastIndex < 0) {
+        return null
+    }
+    //console.log(`----${item.name || item}----`);
+    //console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
+    return lastIndex - index;
+}
+
 export const getAllArtistAssociations = function() {
     console.info('getAllArtistAssociations called!');
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];

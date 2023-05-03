@@ -28,7 +28,7 @@ import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {handleLogin} from "./Authentication";
-import {getItemAnalysis, getItemDescription, translateAnalytics} from "./Analysis";
+import {getItemAnalysis, getItemIndexChange, translateAnalytics} from "./Analysis";
 
 
 const Profile = () => {
@@ -45,20 +45,12 @@ const Profile = () => {
     });
     const [datapoint, setDatapoint] = useState({
         user_id: '',
-        collectionDate: '',
         term: '',
         top_songs: [],
         top_artists: [],
         top_genres: [],
     });
-    const [prevDatapoint, setPrevDatapoint] = useState({
-        user_id: '',
-        collectionDate: '',
-        term: '',
-        top_songs: [],
-        top_artists: [],
-        top_genres: [],
-    });
+    const [prevDatapoint, setPrevDatapoint] = useState(null);
     const [term, setTerm] = useState("long_term");
     const terms = ["short_term", "medium_term", "long_term"];
     // The datapoint we are currently on
@@ -104,18 +96,6 @@ const Profile = () => {
         return result;
     }
 
-    const getIndexChange = function (item, index, type) {
-        if (!prevDatapoint || prevDatapoint.term !== datapoint.term) {
-            return null
-        }
-        const lastIndex = item.name ? prevDatapoint[`top_${type}`].findIndex((element) => element.name === item.name) : prevDatapoint[`top_${type}`].indexOf(item);
-        if (lastIndex < 0) {
-            return null
-        }
-        //console.log(`----${item.name || item}----`);
-        //console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
-        return lastIndex - index;
-    }
     /**
      * Stores the average song characteristics of all songs in the array.
      * @param songs
@@ -245,7 +225,7 @@ const Profile = () => {
         const [expanded, setExpanded] = useState(index === 0);
         const [recommendations, setRecommendations] = useState(null);
         const [seeRecommendations, setSeeRecommendations] = useState(false);
-        const indexChange = getIndexChange(element, index, type);
+        const indexChange = prevDatapoint ? getItemIndexChange(element, index, type, prevDatapoint) : null;
 
         const handleRecommendations = () => {
             if(recommendations === null){
@@ -488,8 +468,8 @@ const Profile = () => {
                         </div>
                         <div className={'user-followers'}>
                             <div>
-                                <p style={{margin: '0', fontWeight: 'normal', textAlign: 'center'}}>{followers.length}</p>
-                                <p style={{margin: '0'}}>Followers</p>
+                                <p style={{margin: '0', fontWeight: 'normal', textAlign: 'right'}}>{followers.length}</p>
+                                <p style={{margin: '0', textAlign: 'right'}}>Followers</p>
                             </div>
                             {isLoggedIn() && user_id !== 'me' ?
                                 following ?
@@ -535,6 +515,18 @@ const Profile = () => {
                     </div>
 
                     {simpleDatapoints.map(function(type){
+                        let description = '';
+                        switch (term){
+                            case 'long_term':
+                                description = 'These are your staple artists, those that define your overarching taste in music.'
+                                break;
+                            case 'medium_term':
+                                description = 'TODO: SOME DELTA ANALYSIS';
+                                break;
+                            case 'short_term':
+                                description = 'TODO: SOME DELTA ANALYSIS';
+                                break;
+                        }
                         return (
                             <>
                                 <div className='simple-container'>
@@ -543,8 +535,7 @@ const Profile = () => {
                                             <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
                                             <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
                                             <p style={{margin: '0', textTransform: 'uppercase'}}>Of {term !== 'long_term' ? 'the last' : ''} {translateTerm[term]}</p>
-                                            <p>This is where the description of this datapoint in this time frame will go. It will talk about some stuff.</p>
-                                            <p>Little bit here too</p>
+                                            <p>{description}</p>
                                         </div>
                                         <div style={{maxWidth: '400px', textAlign: 'right'}}>
                                             <p>Some friend / follower related stuff could be put here?</p>

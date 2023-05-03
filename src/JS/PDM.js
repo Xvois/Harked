@@ -2,7 +2,7 @@ import {
     disableAutoCancel, enableAutoCancel,
     fetchData,
     getAllUserIDs, getAllUsers,
-    getDatapoint, getFullLocalData, getLocalData, getLocalDataByID, getPlaylists,
+    getDatapoint, getDelayedDatapoint, getFullLocalData, getLocalData, getLocalDataByID, getPlaylists,
     getUser, hashString,
     postDatapoint, postMultiplePlaylists,
     postUser, updateLocalData
@@ -270,7 +270,7 @@ export const retrievePreviousDatapoint = async function (user_id, term) {
     if (globalUser_id === "me") {
         globalUser_id = window.localStorage.getItem("user_id");
     }
-    await getDatapoint(globalUser_id, term, false, 1).then(r => result = r);
+    await getDelayedDatapoint(globalUser_id, term,  1).then(r => result = r);
     return result;
 }
 // noinspection JSUnusedGlobalSymbols

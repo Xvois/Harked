@@ -434,6 +434,14 @@ export const getFullLocalData = async (collection, filter = '') => {
 }
 
 
+export const getDelayedDatapoint = async (user_id, term, delay) => {
+    const dps = await pb.collection("datapoints").getFullList({
+        filter: `owner.user_id="${user_id}"&&term="${term}"`,
+        sort: '-created'
+    });
+    return dps[delay];
+}
+
 
 /**
  * getDatapoint makes a GET HTTP request to the PRDB to retrieve the most recent datapoint for a given user
@@ -441,18 +449,16 @@ export const getFullLocalData = async (collection, filter = '') => {
  * @param user_id A global user ID.
  * @param term [short_term, medium_term, long_term]
  * @param timeSens Whether or not the datapoint collection should be time sensitive.
- * @param delay If not time sensitive, enter the number of datapoints to skip. Default is
- * 0, and this behaviour will get the last known datapoint regardless of date.
  * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async (user_id, term, timeSens, delay = 0) => {
+export const getDatapoint = async (user_id, term, timeSens) => {
     const WEEK_IN_MILLISECONDS = 6.048e+8;
     // Calculate the start boundary time.
     const d1 = new Date();
-    d1.setMilliseconds(d1.getMilliseconds() - (delay + 1) * WEEK_IN_MILLISECONDS);
+    d1.setMilliseconds(d1.getMilliseconds() - WEEK_IN_MILLISECONDS);
     // Calculate the end boundary time.
     const d2 = new Date();
-    d1.setMilliseconds(d1.getMilliseconds() - delay * WEEK_IN_MILLISECONDS);
+    d2.setMilliseconds(d2.getMilliseconds());
 
     let filter;
     if(timeSens){
@@ -469,7 +475,7 @@ export const getDatapoint = async (user_id, term, timeSens, delay = 0) => {
          })
         .catch(err => {
             if(err.status === 404){
-                console.info(`No datapoints for ${user_id} found for within ${delay} weeks.`)
+                console.info(`No datapoints for ${user_id} found for within the last week.`)
             } else(console.warn(err));
         })
 }
