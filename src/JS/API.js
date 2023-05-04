@@ -1,7 +1,7 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {batchAnalytics, formatArtist, formatSong} from "./PDM";
-import {handleLogin} from "./Authentication";
+import {handleLogin, reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
 /**
@@ -21,7 +21,7 @@ export const fetchData = async (path) => {
             console.warn("[Error in Spotify API call] " + err);
         }
         else if (err.response.status === 401) {
-            console.warn('Unauthorized access!')
+            reAuthenticate();
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
         } else if (err.response.status === 503) {
@@ -279,6 +279,13 @@ const postArtist = async (artist) => {
     updateDatabaseCacheWithItems({artists: [artist]});
 }
 
+const updateArtist = async (artist) => {
+    artist.genres = await genresToRefIDs(artist.genres);
+    const id = hashString(artist.artist_id);
+    await pb.collection('artists').update(id, artist).catch(handleUpdateException);
+}
+
+
 const postGenre = async (genre) => {
     if(!genre.hasOwnProperty("id")){
         throw new Error("Genre must have database id before posting!");
@@ -301,10 +308,13 @@ const artistsToRefIDs = async (artists) => {
         ids.push(artist.id);
         if(newArtistIDs.includes(artist.artist_id)){
             await postArtist(artist);
+        } else {
+            await updateArtist(artist);
         }
     }
     return ids;
 }
+
 
 const genresToRefIDs = async (genres) => {
     let ids = [];

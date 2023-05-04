@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
@@ -10,20 +10,24 @@ import {
     isLoggedIn,
     retrieveUser,
     unfollowUser,
-    getAlbumsWithLikedSongs,
     getSimilarArtists,
     formatArtist,
     getTrackRecommendations,
     formatSong,
     retrieveFollowers,
     retrieveAllDatapoints,
-    retrievePrevAllDatapoints, retrieveSavedSongs, getAlbumsWithTracks
+    retrievePrevAllDatapoints, getAlbumsWithTracks
 } from './PDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
-import {handleLogin} from "./Authentication";
-import {getAllItemIndexChanges, getItemAnalysis, getItemIndexChange, translateAnalytics} from "./Analysis";
+import {
+    getAllItemIndexChanges, getAverageAnalytics,
+    getGenresRelatedArtists,
+    getItemAnalysis,
+    getItemIndexChange,
+    translateAnalytics
+} from "./Analysis";
 
 
 const Profile = () => {
@@ -72,8 +76,8 @@ const Profile = () => {
             retrieveAllDatapoints(pageHash).then(function (datapoints) {
                 setAllDatapoints(datapoints);
                 // Set it to the long term datapoint
-                setSelectedDatapoint(datapoints[termIndex]);
-                setChipData([datapoints[termIndex].top_artists[0], datapoints[termIndex].top_genres[0]]);
+                setSelectedDatapoint(datapoints[2]);
+                setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                 console.info("Datapoints retrieved!");
             }),
             retrievePrevAllDatapoints(pageHash, 1).then(function(datapoints){
@@ -148,7 +152,7 @@ const Profile = () => {
     }
 
     const ArtistAnalysis = (props) => {
-        const {artist, user} = props;
+        const {artist} = props;
 
         const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState([]);
 
@@ -185,13 +189,26 @@ const Profile = () => {
                     {
                         Object.keys(translateAnalytics).map(function (key) {
                             if (excludedKeys.findIndex(e => e === key) === -1) {
-                                return <StatBlock key={key} name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={analytics ? (key === 'tempo' ? 100 * (analytics[key] - 50) / 150 : analytics[key] * 100) : analytics[key] * 100}/>
+                                return <StatBlock key={key} name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={analytics[key] * 100}/>
                             }
                         })
                     }
                 </div>
             )
         }
+    }
+
+    const SongAnalysisAverage = (props) => {
+        const average = getAverageAnalytics(selectedDatapoint.top_songs);
+        return (
+            <div id={'song-analysis-avg-wrapper'}>
+                {Object.keys(translateAnalytics).map(function (key){
+                    if(key !== "loudness"){
+                        return <StatBlock key={key} name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={average ? (key === 'tempo' ? 100 * (average[key] - 50) / 150 : average[key] * 100) : average[key] * 100}/>
+                    }
+                })}
+            </div>
+        )
     }
 
     const StatBlock = (props) => {
@@ -217,7 +234,6 @@ const Profile = () => {
         const {type, start, end} = props;
 
         const [hoverItem, setHoverItem] = useState(-1);
-        const [selectedItem, setSelectedItem] = useState(-1);
 
         return (
             <div className={'showcase-list-wrapper'}>
@@ -311,15 +327,16 @@ const Profile = () => {
                 fontSize={"small"}></ClearAllOutlinedIcon>
         }
         const description = getItemAnalysis(element, type, pageUser, selectedDatapoint);
+
         return (
             <div className={"showcase-list-item"}
                  tabIndex={1}
-                 style={expanded ? {height: '300px'} : {}}
+                 style={expanded ? (window.innerWidth > 800 ? {height: '300px'} : {height: '350px'}) : {}}
                  onClick={() => {if(!expanded){setExpanded(true)}}}>
                 {type !== 'genres' ?
                     <img src={element.image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}} />
                     :
-                    <></>
+                    <img src={getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}} />
                 }
                 <h3>{index + 1} {changeMessage}</h3>
                 {expanded ?
@@ -344,7 +361,7 @@ const Profile = () => {
                                 }
                             </div>
                             {seeRecommendations ?
-                                <div style={{textAlign: 'right', fontFamily: 'Inter Tight'}}>
+                                <div className={'recommendations'} style={{textAlign: 'right', fontFamily: 'Inter Tight'}}>
                                     <h2 style={{margin: '0'}}>Recommendations</h2>
                                     <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(element)}</p>
                                     <div className={'recommendations-wrapper'}>
@@ -353,7 +370,7 @@ const Profile = () => {
                                                 return (
                                                     <a key={getLIName(item)} href={item.link} className={'recommendation'}>
                                                         <p style={{margin: '0', fontWeight: 'bold'}}>{getLIName(item)}</p>
-                                                        <p style={{margin: '0'}}>{getLIDescription(item, 20)}</p>
+                                                        <p style={{margin: '0'}}>{getLIDescription(item)}</p>
                                                     </a>
                                                 )
                                             }
@@ -481,54 +498,55 @@ const Profile = () => {
                             <></>
                         }
                     </div>
+                    <div className={'simple-wrapper'}>
+                        {simpleDatapoints.map(function(type){
+                            let description = '';
+                            const dpDeltas = selectedPrevDatapoint ? getAllItemIndexChanges(type, selectedDatapoint, selectedPrevDatapoint) : null;
+                            switch (termIndex){
+                                // Long term
+                                case 2:
+                                    description = `These are your staple ${type}, those that define your overarching taste in music.`;
+                                    break;
+                                // Medium term
+                                case 1:
+                                    description = `These are your most popular ${type} in the last 6 months.`;
+                                    break;
+                                // Short term
+                                case 0:
+                                    description = `These are your most popular ${type} in the last 4 weeks.`;
+                                    break;
+                            }
+                            return (
+                                <div key={type} className='simple-instance'>
+                                    <div className={'datapoint-header'}>
+                                        <div style={{maxWidth: '400px'}}>
+                                            <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
+                                            <p style={{margin: '0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                            <p>{description}</p>
+                                        </div>
+                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
+                                        </div>
+                                    </div>
+                                    <ShowcaseList type={type} start={0} end={9}/>
+                                    <div className={'datapoint-footer'}>
+                                        {type === 'songs' ?
+                                            <div style={{textAlign: 'left'}}>
+                                                <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                                <h2 style={{margin: '0', textTransform: 'uppercase'}}>average song stats</h2>
+                                                <p style={{margin: '0 0 16px 0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                                <p>All of your taste in music of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described in one place.</p>
+                                                <SongAnalysisAverage></SongAnalysisAverage>
+                                            </div>
+                                            :
+                                            <></>
+                                        }
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
 
-                    {simpleDatapoints.map(function(type){
-                        let description = '';
-                        const dpDeltas = selectedPrevDatapoint ? getAllItemIndexChanges(type, selectedDatapoint, selectedPrevDatapoint) : null;
-                        switch (termIndex){
-                            // Long term
-                            case 2:
-                                description = `These are your staple ${type}, those that define your overarching taste in music.`;
-                                break;
-                            // Medium term
-                            case 1:
-                                description = `These are your most popular ${type} in the last 6 months.`;
-                                break;
-                            // Short term
-                            case 0:
-                                description = `These are your most popular ${type} in the last 4 weeks.`;
-                                break;
-                        }
-                        return (
-                            <div key={type} className='simple-container'>
-                                <div className={'datapoint-header'}>
-                                    <div style={{maxWidth: '400px'}}>
-                                        <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
-                                        <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
-                                        <p style={{margin: '0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
-                                        <p>{description}</p>
-                                    </div>
-                                    <div style={{maxWidth: '400px', textAlign: 'right'}}>
-                                    </div>
-                                </div>
-                                <ShowcaseList type={type} start={0} end={9}/>
-                                <div className={'datapoint-footer'}>
-                                    <div style={{maxWidth: '400px'}}>
-                                        <p>Some friend / follower related stuff could be put here?</p>
-                                        <p>Relating artists / songs to those that you follow.</p>
-                                        <p>X person else also listens to your top artist / song!</p>
-                                    </div>
-                                    <div style={{maxWidth: '400px', textAlign: 'right'}}>
-                                        <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
-                                        <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
-                                        <p style={{margin: '0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
-                                        <p>This is where the description of this datapoint in this time frame will go. It will talk about some stuff.</p>
-                                        <p>Little bit here too</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })}
                     <h2 style={{
                         textTransform: `uppercase`,
                         fontFamily: 'Inter Tight, sans-serif',

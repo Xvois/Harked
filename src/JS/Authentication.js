@@ -6,9 +6,8 @@ import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import PocketBase from "pocketbase";
 import {formatUser} from "./PDM";
-import {fetchData, hashString, putLocalData} from "./API";
+import {hashString, putLocalData} from "./API";
 
-const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL;
 
 export async function authRefresh() {
     console.info("Refreshing auth token.")
@@ -20,11 +19,20 @@ export async function authRefresh() {
 }
 
 export function handleLogin() {
-    window.location = '/authentication';
+    window.location = `/authentication`;
+}
+
+export function reAuthenticate() {
+    const params = new URLSearchParams([
+        ["client_id", "a0b3f8d150d34dd79090608621999149"],
+        ["redirect_uri", "http://localhost:3000/authentication"],
+        ["response_type", "token"],
+        ["scope", ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']]
+    ])
+    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
 
 function Authentication() {
-    const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
     const navigate = useNavigate();
     const redirect = useCallback((path) => {
         console.warn("Redirecting...");
@@ -34,8 +42,7 @@ function Authentication() {
     useEffect(() => {
 
         const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
-
-
+        // Is the user not in authorised on the database yet?
         if(!pb.authStore.isValid) {
             pb.collection('users').authWithOAuth2({
                 provider: 'spotify',
@@ -56,6 +63,13 @@ function Authentication() {
                         });
                 })
             })
+        } else {
+            const hash = window.location.hash
+            const re = new RegExp('\\=(.*?)\\&')
+            let local_token = hash.match(re)[0]
+            local_token = local_token.substring(1, local_token.length - 1);
+            window.location.hash = ""
+            window.localStorage.setItem("access-token", local_token);
         }
         redirect('/profile#me');
     }, [redirect])

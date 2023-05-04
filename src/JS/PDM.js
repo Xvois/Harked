@@ -1,8 +1,7 @@
 import {
     disableAutoCancel, enableAutoCancel,
     fetchData,
-    getAllUserIDs, getAllUsers,
-    getDatapoint, getDelayedDatapoint, getFullLocalData, getLocalData, getLocalDataByID, getPlaylists,
+    getDatapoint, getDelayedDatapoint, getFullLocalData, getLocalData, getLocalDataByID,
     getUser, hashString,
     postDatapoint,
     postUser, updateLocalData
@@ -462,14 +461,12 @@ export const batchArtists = async (artist_ids) => {
 
 export const getAlbumsWithTracks = async function (artistID, tracks) {
     let albumsWithTracks = [];
-    console.log(tracks);
     if(!tracks){return [];}
 
     const albums = (await fetchData(`artists/${artistID}/albums`)).items;
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
     const albumTracks = await Promise.all(albumPromises);
 
-    console.log(albumTracks)
 
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
@@ -479,7 +476,6 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
             albumsWithTracks.push(album);
         }
     }
-    console.log(albumsWithTracks)
     return albumsWithTracks;
 }
 

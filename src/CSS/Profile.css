@@ -56,12 +56,20 @@ select.dropdown {
     box-shadow: 0 0 45px rgba(255, 255, 255, 0.81);
 }
 
-.simple-container {
+.simple-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.simple-instance {
     display: flex;
     flex-direction: column;
     position: relative;
     height: max-content;
-    padding: 50px 50px 0 50px;
+    width: 1000px;
+    flex-grow: 1;
+    padding: 25px 25px 0 25px;
 }
 
 .showcase-list-wrapper{
@@ -158,7 +166,7 @@ select.dropdown {
     justify-content: center;
     height: 200px;
     max-width: 300px;
-    padding: 50px;
+    padding: 25px;
     flex-grow: 1;
     animation: fadeIn 0.5s ease;
 }
@@ -215,11 +223,25 @@ select.dropdown {
     overflow: hidden;
 }
 
+#song-analysis-avg-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+#song-analysis-avg-wrapper > div {
+    flex-grow: 1;
+    border: 1px solid #343434;
+    padding: 15px;
+}
+
 .stat-block {
     display: flex;
     flex-direction: column;
     justify-content: right;
-    height: max-content;
+    text-align: left;
 }
 
 .stat-block > h3 {
@@ -321,11 +343,13 @@ select.dropdown {
     height: max-content;
     width: 80%;
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 15px auto;
+    padding: 0 0 16px 0;
 
     font-family: 'Inter Tight', sans-serif;
 
     border-bottom: 1px solid #343434;
+    border-top: 1px solid #343434;
 }
 
 
@@ -601,6 +625,35 @@ select.dropdown {
         font-size: 20px;
     }
 }
+
+
+@media screen and (max-width: 1000px) {
+    .simple-instance {
+        padding: 15px 0;
+    }
+    .showcase-list-item-expanded {
+        height: 300px;
+    }
+    .showcase-list-item-expanded > div {
+        padding: 15px;
+        left: 30px;
+    }
+    .recommendations {
+        display: none;
+        opacity: 0;
+    }
+
+    .analysis > p {
+        display: none;
+    }
+    .analysis > div {
+        display: none;
+    }
+    .showcase-rec-button {
+        display: none;
+    }
+}
+
 
 /* LOADING ANIM */
 .lds-grid {

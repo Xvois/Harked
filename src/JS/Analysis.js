@@ -13,6 +13,25 @@ export const translateAnalytics = {
     tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
 }
 
+export const getAverageAnalytics = function (songs) {
+    let avgAnalytics = {
+        acousticness: 0,
+        danceability: 0,
+        energy: 0,
+        instrumentalness: 0,
+        liveness: 0,
+        loudness: 0,
+        valence: 0,
+        tempo: 0
+    }
+    for (const song of songs) {
+        Object.keys(translateAnalytics).forEach(key => {
+            avgAnalytics[key] += song.analytics[key] / songs.length;
+        })
+    }
+    return avgAnalytics;
+}
+
 export const getItemIndexChange = function (item, index, type, comparisonDP) {
     const lastIndex = item.name ? comparisonDP[`top_${type}`].findIndex((element) => element.name === item.name) : comparisonDP[`top_${type}`].indexOf(item);
     if (lastIndex < 0) {
@@ -114,9 +133,18 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
                 secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
             }
             break;
-        //TODO: REWRITE THIS WHOLE AREA
         case "genres":
-
+            let relatedArtists = getGenresRelatedArtists(item, datapoint.top_artists);
+            if (relatedArtists.length < 0) {
+                topMessage = 'An error has occurred! There are no related artists for this genre.'
+            } else {
+                topMessage = `${possessive.slice(0,1).toUpperCase() + possessive.slice(1, possessive.length)} love for ${item} is best described by ${possessive} time listening to ${relatedArtists[0].name}.`
+                if (relatedArtists.length > 1){
+                    secondMessage = `It's also contributed to by ${possessive} time listening to${relatedArtists.slice(1, relatedArtists.length).map(e => ' ' + e.name)}.`
+                } else {
+                    secondMessage = ``
+                }
+            }
             break;
         default:
             console.warn("updateFocusMessage error: No focus type found.")
@@ -125,4 +153,8 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
         header: topMessage,
         subtitle: secondMessage
     }
+}
+
+export const getGenresRelatedArtists = (genre, artists) => {
+    return artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false)
 }
