@@ -14,14 +14,14 @@ export const fetchData = async (path) => {
     //console.log("External API call made to: " + path)
     const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
         headers: {
-            Authorization: `Bearer ${window.localStorage.getItem("access-token")}`
+            Authorization: `Bearer ${window.localStorage.getItem('access-token')}`
         },
     }).catch(function (err) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         }
         else if (err.response.status === 401) {
-            handleLogin(); //TODO : FIX THIS - SHOULD USE authRefresh BUT THAT DOES NOT WORK
+            console.warn('Unauthorized access!')
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
         } else if (err.response.status === 503) {
@@ -213,19 +213,6 @@ export const postMultiplePlaylists = async (playlists) => {
         await postPlaylist(playlist);
     }
 };
-
-/**
- * Retrieves all playlists for a given user from the local PocketBase database.
- * @param user_id The ID of the user to retrieve playlists for.
- * @param expandTracks
- * @returns {Promise<Array>} An array of playlist objects.
- */
-export const getPlaylists = async (user_id, expandTracks = false) => {
-    return await pb.collection('playlists').getFullList({
-        filter: `owner.user_id="${user_id}"`,
-        expand: expandTracks ? 'tracks' : ''
-    }).catch(handleFetchException);
-}
 
 let databaseCache = {
     artists: [],

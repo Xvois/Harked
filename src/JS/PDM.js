@@ -4,7 +4,7 @@ import {
     getAllUserIDs, getAllUsers,
     getDatapoint, getDelayedDatapoint, getFullLocalData, getLocalData, getLocalDataByID, getPlaylists,
     getUser, hashString,
-    postDatapoint, postMultiplePlaylists,
+    postDatapoint,
     postUser, updateLocalData
 } from "./API";
 
@@ -170,13 +170,22 @@ export const retrieveAllUsers = async function () {
  * @param user_id
  * @returns {Promise<Array>}
  */
-export const retrievePlaylists = async function (user_id) {
-    let globalUser_id = user_id;
-    if (globalUser_id === 'me') {globalUser_id = window.localStorage.getItem("user_id")}
-    let playlists = (await getPlaylists(globalUser_id, true));
-    playlists.forEach(p => p.tracks = p.expand.tracks);
+export const retrievePlaylists = async function(user_id) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    let playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
+    playlists = playlists.filter(p => !p.collaborative && p.public);
+    const playlistTrackPromises = playlists.map(playlist => fetchData(`playlists/${playlist.id}/tracks`).then(response => response.items.map(e => e.track)));
+    await Promise.all(playlistTrackPromises).then(tracksArrays => tracksArrays.forEach((tracks, index) => playlists[index].tracks = tracks.map(t => formatSong(t))));
     return playlists;
 }
+
+export const retrieveSavedSongs = async function(user_id) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const savedTracks = (await fetchData(`users/${globalUser_id}/tracks`)).items;
+    console.log(savedTracks);
+}
+
+
 
 /**
  * Creates / updates the logged-in user's record.
@@ -192,11 +201,6 @@ export const formatUser = async function (user) {
     }
 }
 
-export const postUsersPlaylists = async function () {
-    const globalUser_id = window.localStorage.getItem('user_id');
-    const playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
-    await postMultiplePlaylists(playlists);
-}
 /**
  * A boolean function for checking whether the session user is logged in or not.
  * @returns {boolean}
@@ -235,7 +239,6 @@ export const retrieveDatapoint = async function (user_id, term) {
         console.warn(err);
     })
     if (!currDatapoint && user_id === 'me') {
-        await postUsersPlaylists();
         await hydrateDatapoints().then(async () =>
             await getDatapoint(globalUser_id, term, timeSensitive).then(result =>
                 currDatapoint = result
@@ -280,16 +283,25 @@ const formatDatapoint = function (d) {
     return d;
 }
 
-export const retrieveAllDatapoints =  async function (user_id) {
+export const retrieveAllDatapoints = async function(user_id) {
     const terms = ["short_term", "medium_term", "long_term"];
-    const datapointsPromises = terms.map(term => retrieveDatapoint(user_id, term));
-    return await Promise.all(datapointsPromises);
+    const datapoints = [];
+    for (const term of terms) {
+        const datapoint = await retrieveDatapoint(user_id, term);
+        datapoints.push(datapoint);
+    }
+    return datapoints;
 }
+
 
 export const retrievePrevAllDatapoints =  async function (user_id) {
     const terms = ["short_term", "medium_term", "long_term"];
-    const datapointsPromises = terms.map(term => retrievePrevDatapoint(user_id, term));
-    return await Promise.all(datapointsPromises);
+    const datapoints = [];
+    for (const term of terms) {
+        const datapoint = await retrievePrevDatapoint(user_id, term);
+        datapoints.push(datapoint);
+    }
+    return datapoints;
 }
 
 // noinspection JSUnusedGlobalSymbols
@@ -448,29 +460,27 @@ export const batchArtists = async (artist_ids) => {
     return artists;
 };
 
-export const getAlbumsWithLikedSongs = async function (user_id, artistID) {
-    let albumsWithLikedSongs = [];
-    let globalUser_id = user_id;
-    if (globalUser_id === "me") {
-        globalUser_id = window.localStorage.getItem("user_id");
-    }
-
-    const tracks = (await getPlaylists(globalUser_id, true))?.flatMap(e => e.expand.tracks);
+export const getAlbumsWithTracks = async function (artistID, tracks) {
+    let albumsWithTracks = [];
+    console.log(tracks);
     if(!tracks){return [];}
 
     const albums = (await fetchData(`artists/${artistID}/albums`)).items;
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
     const albumTracks = await Promise.all(albumPromises);
 
+    console.log(albumTracks)
+
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
         const trackList = albumTracks[i].items;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
-        if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithLikedSongs.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
-            albumsWithLikedSongs.push(album);
+        if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
+            albumsWithTracks.push(album);
         }
     }
-    return albumsWithLikedSongs;
+    console.log(albumsWithTracks)
+    return albumsWithTracks;
 }
 
 export const formatArtist = (artist) => {

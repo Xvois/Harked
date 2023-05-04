@@ -6,21 +6,9 @@ import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import PocketBase from "pocketbase";
 import {formatUser} from "./PDM";
-import {hashString, putLocalData} from "./API";
+import {fetchData, hashString, putLocalData} from "./API";
 
 const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URL;
-
-export async function handleLogin(){
-    const SCOPES = "user-read-currently-playing user-read-playback-state user-top-read user-follow-modify user-follow-read"
-    const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
-    const authMethods = await pb.collection('users').listAuthMethods();
-    const provider = authMethods.authProviders[0];
-    const authURL = new URL(provider.authUrl + REDIRECT_URL);
-    authURL.searchParams.set('scope', SCOPES);
-    localStorage.setItem('provider', JSON.stringify(provider));
-
-    window.location = authURL;
-}
 
 export async function authRefresh() {
     console.info("Refreshing auth token.")
@@ -31,6 +19,9 @@ export async function authRefresh() {
     })
 }
 
+export function handleLogin() {
+    window.location = '/authentication';
+}
 
 function Authentication() {
     const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
@@ -42,40 +33,31 @@ function Authentication() {
 
     useEffect(() => {
 
-        // parse the query parameters from the redirected url
-        const params = (new URL(window.location)).searchParams;
+        const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
 
-        // load the previously stored provider's data
-        const provider = JSON.parse(localStorage.getItem('provider'))
 
-        // compare the redirect's state param and the stored provider's one
-        if (provider.state !== params.get('state')) {
-            throw "State parameters don't match.";
-        }
-
-        // authenticate
-        pb.collection('users').authWithOAuth2(
-            provider.name,
-            params.get('code'),
-            provider.codeVerifier,
-            REDIRECT_URL,
-        ).then(function(auth){
-            const user = auth.meta.rawUser;
-            window.localStorage.setItem("access-token", auth.meta.accessToken);
-            window.localStorage.setItem("refresh-token", auth.meta.refreshToken);
-            window.localStorage.setItem('user_id', user.id);
-            formatUser(user).then(function(fUser){
-                pb.collection('users').update(auth.record.id, fUser)
-                    .then(() => {
-                        const followers = {id: hashString(fUser.user_id), user: auth.record.id, followers: []}
-                        const following = {id: hashString(fUser.user_id), user: auth.record.id, following: []}
-                        putLocalData("user_followers", followers);
-                        putLocalData("user_following", following);
-                    });
-
+        if(!pb.authStore.isValid) {
+            pb.collection('users').authWithOAuth2({
+                provider: 'spotify',
+                scopes: ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']
+            }).then((authData) => {
+                // authenticate
+                const id = pb.authStore.model.id;
+                const user = authData.meta.rawUser;
+                window.localStorage.setItem('access-token', authData.meta.accessToken);
+                window.localStorage.setItem('user_id', user.id);
+                formatUser(user).then(function (fUser) {
+                    pb.collection('users').update(id, fUser)
+                        .then(() => {
+                            const followers = {id: hashString(fUser.user_id), user: id, followers: []}
+                            const following = {id: hashString(fUser.user_id), user: id, following: []}
+                            putLocalData("user_followers", followers);
+                            putLocalData("user_following", following);
+                        });
+                })
             })
-            redirect('/profile#me');
-        });
+        }
+        redirect('/profile#me');
     }, [redirect])
 
     return (

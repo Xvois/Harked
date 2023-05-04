@@ -17,7 +17,7 @@ import {
     formatSong,
     retrieveFollowers,
     retrieveAllDatapoints,
-    retrievePrevAllDatapoints
+    retrievePrevAllDatapoints, retrieveSavedSongs, getAlbumsWithTracks
 } from './PDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
@@ -53,6 +53,7 @@ const Profile = () => {
     const [allDatapoints, setAllDatapoints] = useState([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
     const [playlists, setPlaylists] = useState([]);
+    const [savedSongs, setSavedSongs] = useState([])
     const [possessive, setPossessive] = useState('');
 
 
@@ -64,7 +65,7 @@ const Profile = () => {
             retrieveUser(pageHash).then(function(user){
                 setPageUser(user);
                 retrieveFollowers(user.user_id).then(f => setFollowers(f));
-                if (isOwnPage) { setPossessive(user.username + "'s") }
+                if (!isOwnPage) { setPossessive(user.username + "'s") }
                 else { setPossessive("your") }
                 console.info("User retrieved!");
             }),
@@ -76,7 +77,7 @@ const Profile = () => {
                 console.info("Datapoints retrieved!");
             }),
             retrievePrevAllDatapoints(pageHash, 1).then(function(datapoints){
-                setAllDatapoints(datapoints);
+                setAllPreviousDatapoints(datapoints);
                 setSelectedPrevDatapoint(datapoints[termIndex]);
                 console.info("Previous datapoints retrieved!");
             }),
@@ -152,7 +153,8 @@ const Profile = () => {
         const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState([]);
 
         useEffect(() => {
-            getAlbumsWithLikedSongs(user.user_id, artist.artist_id).then(
+            const [tracks] = playlists.map(e => e.tracks);
+            getAlbumsWithTracks(artist.artist_id, tracks).then(
                 result => setArtistsAlbumsWithLikedSongs(result)
             );
         }, [])
