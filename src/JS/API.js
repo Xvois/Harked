@@ -3,7 +3,7 @@ import PocketBase from 'pocketbase';
 import {batchAnalytics, formatArtist, formatSong} from "./PDM";
 import {reAuthenticate} from "./Authentication";
 
-const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
+const pb = new PocketBase("https://harked.fly.dev/");
 /**
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.

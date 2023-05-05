@@ -11,7 +11,7 @@ import {hashString, putLocalData} from "./API";
 
 export async function authRefresh() {
     console.info("Refreshing auth token.")
-    const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
+    const pb = new PocketBase("https://harked.fly.dev/");
     await pb.collection('users').authRefresh().then(function (auth) {
         console.info(auth)
         window.localStorage.setItem("access-token", auth.token);
@@ -25,7 +25,7 @@ export function handleLogin() {
 export function reAuthenticate() {
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", "http://localhost:3000/authentication"],
+        ["redirect_uri", "https://harked.vercel.app/authentication"],
         ["response_type", "token"],
         ["scope", ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']]
     ])
@@ -41,7 +41,7 @@ function Authentication() {
 
     useEffect(() => {
 
-        const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
+        const pb = new PocketBase("https://harked.fly.dev/");
         // Is the user not in authorised on the database yet?
         console.log(pb.authStore.isValid);
         if (!pb.authStore.isValid) {
