@@ -6,23 +6,25 @@ import './../CSS/Graph.css'
 import {
     followsUser,
     followUser,
-    retrievePlaylists,
-    isLoggedIn,
-    retrieveUser,
-    unfollowUser,
-    getSimilarArtists,
     formatArtist,
-    getTrackRecommendations,
     formatSong,
-    retrieveFollowers,
+    getAlbumsWithTracks,
+    getSimilarArtists,
+    getTrackRecommendations,
+    isLoggedIn,
     retrieveAllDatapoints,
-    retrievePrevAllDatapoints, getAlbumsWithTracks
+    retrieveFollowers,
+    retrievePlaylists,
+    retrievePrevAllDatapoints,
+    retrieveUser,
+    unfollowUser
 } from './PDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {
-    getAllItemIndexChanges, getAverageAnalytics,
+    getAllItemIndexChanges,
+    getAverageAnalytics,
     getGenresRelatedArtists,
     getItemAnalysis,
     getItemIndexChange,
@@ -35,9 +37,9 @@ const Profile = () => {
     const simpleDatapoints = ["artists", "songs", "genres"]
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     const terms = ["short_term", "medium_term", "long_term"];
-    const translateTerm = {short_term : '4 weeks', medium_term : '6 months', long_term: 'all time'}
+    const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'all time'}
     const pageHash = window.location.hash.split("#")[1];
-    const isOwnPage = isLoggedIn() ? ( pageHash === window.localStorage.getItem('user_id') || pageHash === 'me' ) : false
+    const isOwnPage = isLoggedIn() ? (pageHash === window.localStorage.getItem('user_id') || pageHash === 'me') : false
 
     // The datapoint that is selected for viewing
     const [selectedDatapoint, setSelectedDatapoint] = useState(null);
@@ -61,16 +63,18 @@ const Profile = () => {
     const [possessive, setPossessive] = useState('');
 
 
-
     // Function that loads the page when necessary
     const loadPage = () => {
         // Promises that need to be made before the page can be laoded
         let loadPromises = [
-            retrieveUser(pageHash).then(function(user){
+            retrieveUser(pageHash).then(function (user) {
                 setPageUser(user);
                 retrieveFollowers(user.user_id).then(f => setFollowers(f));
-                if (!isOwnPage) { setPossessive(user.username + "'s") }
-                else { setPossessive("your") }
+                if (!isOwnPage) {
+                    setPossessive(user.username + "'s")
+                } else {
+                    setPossessive("your")
+                }
                 console.info("User retrieved!");
             }),
             retrieveAllDatapoints(pageHash).then(function (datapoints) {
@@ -80,14 +84,14 @@ const Profile = () => {
                 setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                 console.info("Datapoints retrieved!");
             }),
-            retrievePrevAllDatapoints(pageHash, 1).then(function(datapoints){
+            retrievePrevAllDatapoints(pageHash, 1).then(function (datapoints) {
                 setAllPreviousDatapoints(datapoints);
                 setSelectedPrevDatapoint(datapoints[termIndex]);
                 console.info("Previous datapoints retrieved!");
             }),
-            retrievePlaylists(pageHash).then(function(p){
-               setPlaylists(p);
-                if (p.length > 0){
+            retrievePlaylists(pageHash).then(function (p) {
+                setPlaylists(p);
+                if (p.length > 0) {
                     setSelectedPlaylist(p[0]);
                 }
                 console.info("Playlists retrieved!");
@@ -95,7 +99,7 @@ const Profile = () => {
         ]
 
         // Behaviour for if the user is logged in
-        if(isLoggedIn()){
+        if (isLoggedIn()) {
             const loggedUserID = window.localStorage.getItem('user_id');
             if (!isOwnPage) {
                 followsUser(loggedUserID, pageHash).then(f => setIsLoggedUserFollowing(f));
@@ -119,11 +123,11 @@ const Profile = () => {
     // Get the display name of the list item
     const getLIName = function (data) {
         let result;
-        if(data.hasOwnProperty('artist_id')){
+        if (data.hasOwnProperty('artist_id')) {
             result = data.name;
-        }else if(data.hasOwnProperty('song_id')){
+        } else if (data.hasOwnProperty('song_id')) {
             result = data.title;
-        }else{
+        } else {
             result = data;
         }
         if (result.length > 30) {
@@ -134,15 +138,15 @@ const Profile = () => {
 
     const getLIDescription = function (data, maxLength = 40) {
         let result;
-        if(data.hasOwnProperty('artist_id')){
-            if(data.genres && data.genres.length > 0) {
+        if (data.hasOwnProperty('artist_id')) {
+            if (data.genres && data.genres.length > 0) {
                 result = data.genres[0];
-            }else{
+            } else {
                 result = '';
             }
-        }else if(data.hasOwnProperty('song_id')){
-            result = data.artists.map((e,i)  => i !== data.artists.length - 1 ? e.name + ', ' : e.name);
-        }else{
+        } else if (data.hasOwnProperty('song_id')) {
+            result = data.artists.map((e, i) => i !== data.artists.length - 1 ? e.name + ', ' : e.name);
+        } else {
             result = '';
         }
         if (result.length > maxLength) {
@@ -163,16 +167,20 @@ const Profile = () => {
             );
         }, [])
 
-        if(artist.hasOwnProperty("artist_id")) {
+        if (artist.hasOwnProperty("artist_id")) {
             const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
             return (
                 <div className={'analysis'}>
                     {orderedAlbums.length > 0 ?
                         orderedAlbums.map(function (album) {
-                            return <StatBlock key={album.id} name={album.name.length > 35 ? album.name.slice(0,35) + '...' : album.name} description={`${album.saved_songs.length} saved songs.`} value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
+                            return <StatBlock key={album.id}
+                                              name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
+                                              description={`${album.saved_songs.length} saved songs.`}
+                                              value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
                         })
                         :
-                        <p style={{fontFamily: 'Inter Tight', textAlign: 'right'}}>There are no saved songs from this artist on {possessive} public profile.</p>
+                        <p style={{fontFamily: 'Inter Tight', textAlign: 'right'}}>There are no saved songs from this
+                            artist on {possessive} public profile.</p>
                     }
                 </div>
             )
@@ -182,14 +190,16 @@ const Profile = () => {
     const SongAnalysis = (props) => {
         const song = props.song;
         const excludedKeys = ['loudness', 'liveness', 'instrumentalness', 'tempo']
-        if(song.hasOwnProperty("song_id")){
+        if (song.hasOwnProperty("song_id")) {
             const analytics = song.analytics;
             return (
                 <div className={'analysis'}>
                     {
                         Object.keys(translateAnalytics).map(function (key) {
                             if (excludedKeys.findIndex(e => e === key) === -1) {
-                                return <StatBlock key={key} name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={analytics[key] * 100}/>
+                                return <StatBlock key={key} name={translateAnalytics[key].name}
+                                                  description={translateAnalytics[key].description}
+                                                  value={analytics[key] * 100}/>
                             }
                         })
                     }
@@ -198,13 +208,34 @@ const Profile = () => {
         }
     }
 
-    const SongAnalysisAverage = (props) => {
+    const SongAnalysisAverage = () => {
         const average = getAverageAnalytics(selectedDatapoint.top_songs);
         return (
-            <div id={'song-analysis-avg-wrapper'}>
-                {Object.keys(translateAnalytics).map(function (key){
-                    if(key !== "loudness"){
-                        return <StatBlock key={key} name={translateAnalytics[key].name} description={translateAnalytics[key].description} value={average ? (key === 'tempo' ? 100 * (average[key] - 50) / 150 : average[key] * 100) : average[key] * 100}/>
+            <div id={'block-wrapper'}>
+                {Object.keys(translateAnalytics).map(function (key) {
+                    if (key !== "loudness") {
+                        return <StatBlock key={key} name={translateAnalytics[key].name}
+                                          description={translateAnalytics[key].description}
+                                          value={average ? (key === 'tempo' ? 100 * (average[key] - 50) / 150 : average[key] * 100) : average[key] * 100}/>
+                    }
+                })}
+            </div>
+        )
+    }
+
+    const TopSongsOfArtists = (props) => {
+        const {number} = props;
+        return (
+            <div id={'block-wrapper'}>
+                {selectedDatapoint.top_artists.slice(0,number).map((artist, i) => {
+                    const topSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === artist.artist_id));
+                    if(topSongIndex > -1){
+                        return (
+                            <div className={'stat-block'} style={{padding: '15px', border: '1px solid #343434'}}>
+                                <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
+                                <p style={{margin: '0'}}>{artist.name}</p>
+                            </div>
+                        )
                     }
                 })}
             </div>
@@ -237,11 +268,11 @@ const Profile = () => {
 
         return (
             <div className={'showcase-list-wrapper'}>
-                {selectedDatapoint[`top_${type}`].map(function(element, index){
-                    if(index >= start && index <= end){
+                {selectedDatapoint[`top_${type}`].map(function (element, index) {
+                    if (index >= start && index <= end) {
                         return (
                             <div
-                                key={type === 'genres' ? element : element[`${type.slice(0, type.length-1)}_id`]}
+                                key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]}
                                 onMouseEnter={() => setHoverItem(index)}
                                 onMouseLeave={() => setHoverItem(-1)}
                                 tabIndex={0}
@@ -251,7 +282,7 @@ const Profile = () => {
                                         :
                                         {}
                                 }>
-                                <ShowcaseListItem element={element} index={index} type={type} />
+                                <ShowcaseListItem element={element} index={index} type={type}/>
                             </div>
                         )
                     }
@@ -270,34 +301,34 @@ const Profile = () => {
         const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
 
         const handleRecommendations = () => {
-            if(recommendations === null){
-                switch (type){
+            if (recommendations === null) {
+                switch (type) {
                     case 'artists':
-                        getSimilarArtists(element).then(function(result) {
+                        getSimilarArtists(element).then(function (result) {
                             setRecommendations(result.map(a => formatArtist(a)));
                             setSeeRecommendations(!seeRecommendations);
                         });
                         break;
                     case 'songs':
-                        const seed_artists = element.artists.map(a => a.artist_id).slice(0,2);
+                        const seed_artists = element.artists.map(a => a.artist_id).slice(0, 2);
                         let seed_genres = [];
                         element.artists.forEach(artist => {
-                            if(artist.genres){
-                               artist.genres.forEach(genre => {
-                                   if(!seed_genres.some(e => e === genre)){
-                                       seed_genres.push(genre);
-                                   }
-                               })
+                            if (artist.genres) {
+                                artist.genres.forEach(genre => {
+                                    if (!seed_genres.some(e => e === genre)) {
+                                        seed_genres.push(genre);
+                                    }
+                                })
                             }
                         })
-                        seed_genres = seed_genres.slice(0,2);
+                        seed_genres = seed_genres.slice(0, 2);
                         const seed_track = element.song_id;
-                        getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function(result) {
+                        getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function (result) {
                             setRecommendations(result.map(t => formatSong(t)));
                             setSeeRecommendations(!seeRecommendations);
                         });
                 }
-            }else{
+            } else {
                 setSeeRecommendations(!seeRecommendations);
             }
         }
@@ -332,11 +363,16 @@ const Profile = () => {
             <div className={"showcase-list-item"}
                  tabIndex={1}
                  style={expanded ? (window.innerWidth > 800 ? {height: '300px'} : {height: '350px'}) : {}}
-                 onClick={() => {if(!expanded){setExpanded(true)}}}>
+                 onClick={() => {
+                     if (!expanded) {
+                         setExpanded(true)
+                     }
+                 }}>
                 {type !== 'genres' ?
-                    <img src={element.image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}} />
+                    <img alt={getLIName(element)} src={element.image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
                     :
-                    <img src={getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}} />
+                    <img alt={element} src={getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].image}
+                         style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
                 }
                 <h3>{index + 1} {changeMessage}</h3>
                 {expanded ?
@@ -361,15 +397,20 @@ const Profile = () => {
                                 }
                             </div>
                             {seeRecommendations ?
-                                <div className={'recommendations'} style={{textAlign: 'right', fontFamily: 'Inter Tight'}}>
+                                <div className={'recommendations'}
+                                     style={{textAlign: 'right', fontFamily: 'Inter Tight'}}>
                                     <h2 style={{margin: '0'}}>Recommendations</h2>
                                     <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(element)}</p>
                                     <div className={'recommendations-wrapper'}>
-                                        {recommendations.map(function(item, index){
-                                            if(index < 3){
+                                        {recommendations.map(function (item, index) {
+                                            if (index < 3) {
                                                 return (
-                                                    <a key={getLIName(item)} href={item.link} className={'recommendation'}>
-                                                        <p style={{margin: '0', fontWeight: 'bold'}}>{getLIName(item)}</p>
+                                                    <a key={getLIName(item)} href={item.link} target="_blank"
+                                                       className={'recommendation'}>
+                                                        <p style={{
+                                                            margin: '0',
+                                                            fontWeight: 'bold'
+                                                        }}>{getLIName(item)}</p>
                                                         <p style={{margin: '0'}}>{getLIDescription(item)}</p>
                                                     </a>
                                                 )
@@ -383,12 +424,12 @@ const Profile = () => {
                                     <SongAnalysis song={element}/>
                                     :
                                     type === 'artists' ?
-                                        <ArtistAnalysis artist={element} user={pageUser} />
+                                        <ArtistAnalysis artist={element} user={pageUser}/>
                                         :
                                         <></>
                             }
                         </div>
-                        <button className={'showcase-exit-button'} onClick={() => setExpanded(false)} >x</button>
+                        <button className={'showcase-exit-button'} onClick={() => setExpanded(false)}>x</button>
                     </>
                     :
                     <div className={"showcase-list-item-text"}>
@@ -399,7 +440,6 @@ const Profile = () => {
             </div>
         )
     }
-
 
 
     String.prototype.hashCode = function () {
@@ -453,7 +493,11 @@ const Profile = () => {
                         </div>
                         <div className={'user-followers'}>
                             <div>
-                                <p style={{margin: '0', fontWeight: 'normal', textAlign: 'right'}}>{followers.length}</p>
+                                <p style={{
+                                    margin: '0',
+                                    fontWeight: 'normal',
+                                    textAlign: 'right'
+                                }}>{followers.length}</p>
                                 <p style={{margin: '0', textAlign: 'right'}}>Followers</p>
                             </div>
                             {isLoggedIn() && pageHash !== 'me' ?
@@ -483,8 +527,10 @@ const Profile = () => {
                             <h3>Time frame</h3>
                             <p>of information capture</p>
                             <div style={{display: 'flex', flexDirection: 'row', gap: '5px'}}>
-                                {terms.map(function(term, i){
-                                    return (<button key={term} className={'std-button'} style={{textTransform: 'capitalize'}} onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
+                                {terms.map(function (term, i) {
+                                    return (<button key={term} className={'std-button'}
+                                                    style={{textTransform: 'capitalize'}}
+                                                    onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
                                 })}
                             </div>
                         </div>
@@ -499,10 +545,10 @@ const Profile = () => {
                         }
                     </div>
                     <div className={'simple-wrapper'}>
-                        {simpleDatapoints.map(function(type){
+                        {simpleDatapoints.map(function (type) {
                             let description = '';
                             const dpDeltas = selectedPrevDatapoint ? getAllItemIndexChanges(type, selectedDatapoint, selectedPrevDatapoint) : null;
-                            switch (termIndex){
+                            switch (termIndex) {
                                 // Long term
                                 case 2:
                                     description = `These are your staple ${type}, those that define your overarching taste in music.`;
@@ -520,9 +566,15 @@ const Profile = () => {
                                 <div key={type} className='simple-instance'>
                                     <div className={'datapoint-header'}>
                                         <div style={{maxWidth: '400px'}}>
-                                            <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
+                                            <p style={{
+                                                margin: '16px 0 0 0',
+                                                textTransform: 'uppercase'
+                                            }}>{possessive}</p>
                                             <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top {type}</h2>
-                                            <p style={{margin: '0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                            <p style={{
+                                                margin: '0',
+                                                textTransform: 'uppercase'
+                                            }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
                                             <p>{description}</p>
                                         </div>
                                         <div style={{maxWidth: '400px', textAlign: 'right'}}>
@@ -532,14 +584,36 @@ const Profile = () => {
                                     <div className={'datapoint-footer'}>
                                         {type === 'songs' ?
                                             <div style={{textAlign: 'left'}}>
-                                                <p style={{margin: '16px 0 0 0', textTransform: 'uppercase'}}>{possessive}</p>
-                                                <h2 style={{margin: '0', textTransform: 'uppercase'}}>average song stats</h2>
-                                                <p style={{margin: '0 0 16px 0', textTransform: 'uppercase'}}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
-                                                <p>All of your taste in music of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described in one place.</p>
-                                                <SongAnalysisAverage></SongAnalysisAverage>
+                                                <p style={{
+                                                    margin: '16px 0 0 0',
+                                                    textTransform: 'uppercase'
+                                                }}>{possessive}</p>
+                                                <h2 style={{margin: '0', textTransform: 'uppercase'}}>average song
+                                                    stats</h2>
+                                                <p style={{
+                                                    margin: '0 0 16px 0',
+                                                    textTransform: 'uppercase'
+                                                }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                                <p>All of your taste in music
+                                                    of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described
+                                                    in one place.</p>
+                                                <SongAnalysisAverage />
                                             </div>
                                             :
-                                            <></>
+                                            type === 'artists' ?
+                                                <div style={{textAlign: 'left'}}>
+                                                    <p style={{
+                                                        margin: '16px 0 0 0',
+                                                        textTransform: 'uppercase'
+                                                    }}>{possessive}</p>
+                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top song for each artist</h2>
+                                                    <p>{possessive.slice(0,1).toUpperCase() + possessive.slice(1, possessive.length)} most listened to track
+                                                        by each of your top artists.</p>
+                                                    <TopSongsOfArtists number={10} />
+                                                </div>
+
+                                                :
+                                                <></>
                                         }
                                     </div>
                                 </div>
@@ -563,7 +637,8 @@ const Profile = () => {
                                 <ol className={"list-item-ol"}>
                                     {
                                         playlists.map(function (playlist) {
-                                            return <li key={playlist.playlist_id} onClick={() => setSelectedPlaylist(playlist)}
+                                            return <li key={playlist.playlist_id}
+                                                       onClick={() => setSelectedPlaylist(playlist)}
                                                        className={"list-item"} style={{
                                                 fontSize: '20px',
                                                 fontFamily: 'Inter Tight'
@@ -577,7 +652,8 @@ const Profile = () => {
                                         <h3>{selectedPlaylist.description}</h3>
                                         <hr/>
                                         <div style={{display: 'flex', flexDirection: 'row'}}>
-                                            <a target="_blank" href={`https://open.spotify.com/playlist/${selectedPlaylist.playlist_id}`}
+                                            <a target="_blank"
+                                               href={`https://open.spotify.com/playlist/${selectedPlaylist.playlist_id}`}
                                                style={{display: 'flex', gap: '10px', fontFamily: 'Inter Tight'}}
                                                className={"spotify-link"}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="25px"
@@ -592,7 +668,7 @@ const Profile = () => {
                                         </div>
                                     </div>
                                     <img alt={''} className={'playlist-art'}
-                                         src={selectedPlaylist.image}></img>
+                                         src={selectedPlaylist.images[0].url}></img>
                                 </div>
                             </>
                         }

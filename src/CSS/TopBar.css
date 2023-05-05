@@ -22,7 +22,7 @@
 }
 
 
-.element p{
+.element p {
     margin: 0;
     font-size: 12px;
     font-family: 'Inter Tight', sans-serif;
@@ -30,20 +30,19 @@
 }
 
 
-
-.element-container{
+.element-container {
     display: flex;
     justify-content: space-around;
     padding: 10px;
 }
 
-#menu{
+#menu {
     width: min-content;
     margin-left: auto;
     cursor: pointer;
 }
 
-#menu:hover{
+#menu:hover {
     cursor: pointer;
 }
 
@@ -82,7 +81,7 @@
 
 }
 
-.search-bar{
+.search-bar {
     margin: auto;
     width: 200px;
 }

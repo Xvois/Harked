@@ -13,7 +13,6 @@ import './../CSS/Profile.css';
 import './../CSS/Focus.css';
 
 import {retrieveDatapoint, retrieveUser} from "./PDM";
-import {createTheme} from "@mui/material/styles";
 
 const Comparison = () => {
     let re = /[^#&]+/g;

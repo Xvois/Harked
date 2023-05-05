@@ -8,6 +8,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Search from "./Search"
+
 const TopBar = () => {
     const [searchResults, setSearchResults] = useState(null)
     const [cachedUsers, setCachedUsers] = useState(null)
@@ -43,14 +44,15 @@ const TopBar = () => {
                 <div className='menu-element' id={"close-button"} onClick={() => setMenuExpanded(false)}><CloseIcon
                     fontSize="large"/><p>Close</p></div>
                 <ClickAwayListener onClickAway={() => setSideMenuSearchFocused(false)}>
-                    <div className='menu-element' onClick={() => setSideMenuSearchFocused(true)} >
+                    <div className='menu-element' onClick={() => setSideMenuSearchFocused(true)}>
                         <Search></Search>
                     </div>
                 </ClickAwayListener>
                 {!sideMenuSearchFocused ?
                     <>
                         <a className='menu-element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                        <a className='menu-element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
+                        <a className='menu-element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p>
+                        </a>
                     </>
                     :
                     <></>

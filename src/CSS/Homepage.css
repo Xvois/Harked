@@ -2,92 +2,96 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
 
 
-.main-text{
-  text-transform: uppercase;
-  font-family: 'Inter Tight', sans-serif;
-  font-weight: 900;
-  font-size: 5ex;
-  margin: 0;
+.main-text {
+    text-transform: uppercase;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 900;
+    font-size: 5ex;
+    margin: 0;
 }
 
-.button-wrapper{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+.button-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
 }
 
-.server-status-indicator{
-  padding: 5px;
-  /*noinspection CssUnresolvedCustomProperty*/
-  border: 1px solid var(--colour);
-  /*noinspection CssUnresolvedCustomProperty*/
-  background: var(--colour);
-  border-radius: 100%;
-  height: max-content;
-  animation: status-indicator 2s ease infinite;
+.server-status-indicator {
+    padding: 5px;
+    /*noinspection CssUnresolvedCustomProperty*/
+    border: 1px solid var(--colour);
+    /*noinspection CssUnresolvedCustomProperty*/
+    background: var(--colour);
+    border-radius: 100%;
+    height: max-content;
+    animation: status-indicator 2s ease infinite;
 }
 
-.server-status-text{
-  font-family: 'Inter Tight', sans-serif;
+.server-status-text {
+    font-family: 'Inter Tight', sans-serif;
 }
 
 @keyframes status-indicator {
-  0%{ /*noinspection CssUnresolvedCustomProperty*/
-    box-shadow: 0 0 10px var(--colour)}
-  50%{box-shadow: 0 0 20px rgba(255, 255, 255, 0)}
-  100%{ /*noinspection CssUnresolvedCustomProperty*/
-    box-shadow: 0 0 10px var(--colour)}
+    0% { /*noinspection CssUnresolvedCustomProperty*/
+        box-shadow: 0 0 10px var(--colour)
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0)
+    }
+    100% { /*noinspection CssUnresolvedCustomProperty*/
+        box-shadow: 0 0 10px var(--colour)
+    }
 }
 
-.server-status{
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  width: max-content;
+.server-status {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: max-content;
 }
 
-.top-container{
-  width: max-content;
-  padding: 50px;
+.top-container {
+    width: max-content;
+    padding: 50px;
 }
 
-.container{
-  margin: 50px;
+.container {
+    margin: 50px;
 }
 
-.auth-button{
-  text-decoration: none;
-  text-transform: uppercase;
-  text-align: center;
-  border-radius: 20px;
-  color: white;
-  width: max-content;
-  padding: 5px 30px 5px 30px;
-  transition: all 0.1s ease-out;
-  border: 1px solid grey;
-  background-color: #343434;
+.auth-button {
+    text-decoration: none;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 20px;
+    color: white;
+    width: max-content;
+    padding: 5px 30px 5px 30px;
+    transition: all 0.1s ease-out;
+    border: 1px solid grey;
+    background-color: #343434;
 }
 
-.auth-button:hover{
-  background-color: rgb(112, 112, 112);
-  cursor: pointer;
+.auth-button:hover {
+    background-color: rgb(112, 112, 112);
+    cursor: pointer;
 }
 
-.under-text{
-  font-family: 'Inter Tight', sans-serif;
-  font-size: 16px;
-  margin: 0;
+.under-text {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 16px;
+    margin: 0;
 }
 
-.error-message{
-  font-family: 'Inter Tight', sans-serif;
-  margin-left: 20px;
-  color: red;
-  text-decoration: underline;
+.error-message {
+    font-family: 'Inter Tight', sans-serif;
+    margin-left: 20px;
+    color: red;
+    text-decoration: underline;
 }
 
-.homepage-container{
-  display: flex;
-  flex-direction: column;
+.homepage-container {
+    display: flex;
+    flex-direction: column;
 }

@@ -38,7 +38,7 @@
     transform: translate(0, 20px);
 }
 
-#art-backdrop{
+#art-backdrop {
     filter: blur(50px) brightness(75%);
     position: absolute;
     z-index: -1;
@@ -72,21 +72,21 @@
     .focus-container {
         flex-direction: column;
     }
+
     .focus-message {
         width: 80%;
     }
 }
 
 
-
-.stats-title{
+.stats-title {
     font-family: 'Lato', sans-serif;
     font-weight: 900;
     text-align: center;
     text-transform: uppercase;
 }
 
-.item-analysis{
+.item-analysis {
     width: 400px;
     max-width: 400px;
     display: flex;
@@ -98,10 +98,10 @@
     border: 1px solid #343434;
     box-shadow: 0 0 5px 1px black;
     transition: all 0.25s ease-in;
-    background:  #1e1c1a;
+    background: #1e1c1a;
 }
 
-.top-albums{
+.top-albums {
     padding: 10px;
     margin: 5px 0 0 0;
     display: flex;
@@ -109,7 +109,7 @@
     gap: 10px
 }
 
-.artist-analysis-title{
+.artist-analysis-title {
     font-family: "Inter Tight", sans-serif;
     margin: 0 auto 0 auto;
 }

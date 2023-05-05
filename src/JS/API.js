@@ -1,7 +1,7 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {batchAnalytics, formatArtist, formatSong} from "./PDM";
-import {handleLogin, reAuthenticate} from "./Authentication";
+import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
 /**
@@ -19,8 +19,7 @@ export const fetchData = async (path) => {
     }).catch(function (err) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
-        }
-        else if (err.response.status === 401) {
+        } else if (err.response.status === 401) {
             reAuthenticate();
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
@@ -70,12 +69,12 @@ export const deleteData = (path) => {
 export const getUser = async (user_id) => {
     console.log('Getting: ' + user_id)
     return await pb.collection('users').getFirstListItem(`user_id="${user_id}"`)
-    .catch(
-        function (err) {
-            console.warn("Error getting user: ");
-            console.warn(err);
-        }
-    );
+        .catch(
+            function (err) {
+                console.warn("Error getting user: ");
+                console.warn(err);
+            }
+        );
 }
 
 /**
@@ -103,7 +102,7 @@ export const postUser = async (user) => {
 }
 
 const handleCreationException = (err) => {
-    switch (err.status){
+    switch (err.status) {
         case 400:
             console.warn(`Error making an entry in the database, likely a unique constraint failure.`);
             break;
@@ -113,7 +112,7 @@ const handleCreationException = (err) => {
     }
 }
 const handleUpdateException = (err) => {
-    switch (err.status){
+    switch (err.status) {
         default:
             console.error(`Error ${err.status} updating database record.`)
             console.error(err.data);
@@ -121,7 +120,7 @@ const handleUpdateException = (err) => {
 }
 
 const handleFetchException = (err) => {
-    switch (err.status){
+    switch (err.status) {
         default:
             console.error(`Error ${err.status} fetching database record.`)
             console.error(err.data);
@@ -156,8 +155,9 @@ export const postPlaylist = async (playlist) => {
     let newTracks = [];
     for (const track of transformedTracks) {
         const index = databaseCache.songs.findIndex(e => e.song_id === track.song_id);
-        if(index !== -1){track.analytics = databaseCache.songs[index].analytics}
-        else{
+        if (index !== -1) {
+            track.analytics = databaseCache.songs[index].analytics
+        } else {
             // Track not found, add to newTracks array
             newTracks.push(track);
             // Remove the track from the transformedTracks array
@@ -206,7 +206,6 @@ export const postPlaylist = async (playlist) => {
 };
 
 
-
 export const postMultiplePlaylists = async (playlists) => {
     await updateDatabaseCache();
     for (const playlist of playlists) {
@@ -233,18 +232,24 @@ const updateDatabaseCache = async () => {
     }
 }
 const updateDatabaseCacheWithItems = (items) => {
-    if(items.hasOwnProperty("artists")){databaseCache.artists = databaseCache.artists.concat(items.artists);}
-    if(items.hasOwnProperty("songs")){databaseCache.songs = databaseCache.songs.concat(items.songs);}
-    if(items.hasOwnProperty("genres")){databaseCache.genres = databaseCache.genres.concat(items.genres);}
+    if (items.hasOwnProperty("artists")) {
+        databaseCache.artists = databaseCache.artists.concat(items.artists);
+    }
+    if (items.hasOwnProperty("songs")) {
+        databaseCache.songs = databaseCache.songs.concat(items.songs);
+    }
+    if (items.hasOwnProperty("genres")) {
+        databaseCache.genres = databaseCache.genres.concat(items.genres);
+    }
 }
 
 
 const postSong = async (song) => {
-    if(!song.song_id || !song.id) {
+    if (!song.song_id || !song.id) {
         throw new Error("Song must have a database ID and be formatted before posting!");
     }
 
-    if(databaseCache.songs.some(s => s.id === song.id)) {
+    if (databaseCache.songs.some(s => s.id === song.id)) {
         console.info('Song attempting to be posted already cached.');
         return;
     }
@@ -252,7 +257,9 @@ const postSong = async (song) => {
     let artists = song.artists;
     const unresolvedArtists = song.artists.filter(a1 => !databaseCache.artists.some(a2 => a1.artist_id === a2.artist_id));
     const cachedArtists = databaseCache.artists.filter(a => artists.some(e => e.artist_id === a.artist_id));
-    if(unresolvedArtists.length > 0){ artists = cachedArtists.concat(await resolveNewArtists(unresolvedArtists)); }
+    if (unresolvedArtists.length > 0) {
+        artists = cachedArtists.concat(await resolveNewArtists(unresolvedArtists));
+    }
 
     song.artists = await artistsToRefIDs(artists);
     await pb.collection('songs').create(song);
@@ -268,10 +275,9 @@ async function resolveNewArtists(newArtists) {
 }
 
 const postArtist = async (artist) => {
-    if(artist.hasOwnProperty("artist_id") && !artist.hasOwnProperty("id")){
+    if (artist.hasOwnProperty("artist_id") && !artist.hasOwnProperty("id")) {
         throw new Error("Artist must have database id before posting!");
-    }
-    else if(!artist.hasOwnProperty("artist_id") && artist.hasOwnProperty("id")){
+    } else if (!artist.hasOwnProperty("artist_id") && artist.hasOwnProperty("id")) {
         throw new Error("Artist must be formatted before posting!");
     }
     artist.genres = await genresToRefIDs(artist.genres);
@@ -287,13 +293,12 @@ const updateArtist = async (artist) => {
 
 
 const postGenre = async (genre) => {
-    if(!genre.hasOwnProperty("id")){
+    if (!genre.hasOwnProperty("id")) {
         throw new Error("Genre must have database id before posting!");
     }
     await pb.collection('genres').create(genre);
     updateDatabaseCacheWithItems({genres: [genre]});
 }
-
 
 
 // Artists must be formatted
@@ -302,11 +307,11 @@ const artistsToRefIDs = async (artists) => {
     const artistIDs = artists.map(e => e.artist_id);
     const newArtistIDs = artistIDs.filter(id => !databaseCache.artists.some(a => a.artist_id === id));
 
-    for(let i = 0; i < artists.length; i++){
+    for (let i = 0; i < artists.length; i++) {
         let artist = artists[i];
         artist.id = hashString(artist.artist_id);
         ids.push(artist.id);
-        if(newArtistIDs.includes(artist.artist_id)){
+        if (newArtistIDs.includes(artist.artist_id)) {
             await postArtist(artist);
         } else {
             await updateArtist(artist);
@@ -321,11 +326,11 @@ const genresToRefIDs = async (genres) => {
     // Genres are added as an array of strings, but stored in cache as having their string and id
     const newGenres = genres.filter(g1 => !databaseCache.genres.some(g2 => g2.genre === g1));
 
-    for(let i = 0; i < genres.length; i++){
+    for (let i = 0; i < genres.length; i++) {
         let genre = genres[i];
         const id = hashString(genre);
         ids.push(id);
-        if(newGenres.includes(genre)){
+        if (newGenres.includes(genre)) {
             await postGenre({
                 id: id,
                 genre: genre
@@ -340,11 +345,11 @@ const songsToRefIDs = async (songs) => {
     const songIDs = songs.map(e => e.song_id);
     const newSongIDs = songIDs.filter(id => !databaseCache.songs.some(a => a.song_id === id));
 
-    for(let i = 0; i < songs.length; i++){
+    for (let i = 0; i < songs.length; i++) {
         let song = songs[i];
         song.id = hashString(song.song_id);
         ids.push(song.id);
-        if(newSongIDs.includes(song.song_id)){
+        if (newSongIDs.includes(song.song_id)) {
             await postSong(song);
         }
     }
@@ -457,21 +462,21 @@ export const getDatapoint = async (user_id, term, timeSens) => {
     d2.setMilliseconds(d2.getMilliseconds());
 
     let filter;
-    if(timeSens){
+    if (timeSens) {
         filter = `owner.user_id="${user_id}"&&term="${term}"&&created>="${d1.toISOString()}"&&created<="${d2.toISOString()}"`;
-    }else{
+    } else {
         filter = `owner.user_id="${user_id}"&&term="${term}"`;
     }
 
 
     return await pb.collection('datapoints').getFirstListItem(
-         filter, {
-             expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
+        filter, {
+            expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
             sort: '-created'
-         })
+        })
         .catch(err => {
-            if(err.status === 404){
+            if (err.status === 404) {
                 console.info(`No datapoints for ${user_id} found for within the last week.`)
-            } else(console.warn(err));
+            } else (console.warn(err));
         })
 }

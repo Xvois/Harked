@@ -1,10 +1,17 @@
 import {
-    disableAutoCancel, enableAutoCancel,
+    disableAutoCancel,
+    enableAutoCancel,
     fetchData,
-    getDatapoint, getDelayedDatapoint, getFullLocalData, getLocalData, getLocalDataByID,
-    getUser, hashString,
+    getDatapoint,
+    getDelayedDatapoint,
+    getFullLocalData,
+    getLocalData,
+    getLocalDataByID,
+    getUser,
+    hashString,
     postDatapoint,
-    postUser, updateLocalData
+    postUser,
+    updateLocalData
 } from "./API";
 
 /**
@@ -76,7 +83,7 @@ export const retrieveUser = async function (user_id) {
  * @param targetUserID
  */
 export const followsUser = async function (primaryUserID, targetUserID) {
-    if(primaryUserID === targetUserID){
+    if (primaryUserID === targetUserID) {
         return false;
     }
     let follows = false;
@@ -84,10 +91,10 @@ export const followsUser = async function (primaryUserID, targetUserID) {
     await getLocalData("user_followers", `user.user_id=${targetUserID}`)
         .then((res) => {
             const item = res[0];
-            if(item.followers.some(e => e === primaryUser.id)){
+            if (item.followers.some(e => e === primaryUser.id)) {
                 follows = true;
             }
-    });
+        });
     return follows;
 }
 
@@ -102,7 +109,7 @@ export const followUser = async function (primaryUserID, targetUserID) {
     let [primaryObj, targetObj] = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
 
     // Since this is a relational key, .user is simply the record id for tha user
-    if(!primaryObj.following.some(e => e === targetObj.user)){
+    if (!primaryObj.following.some(e => e === targetObj.user)) {
         primaryObj.following.push(targetObj.user);
         // Update the primary user's data to show they are following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
@@ -124,7 +131,7 @@ export const unfollowUser = async function (primaryUserID, targetUserID) {
     let [primaryObj, targetObj] = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
 
     // Since this is a relational key, .user is simply the record id for tha user
-    if(primaryObj.following.some(e => e === targetObj.user)){
+    if (primaryObj.following.some(e => e === targetObj.user)) {
         primaryObj.following = primaryObj.following.filter(e => e !== targetObj.user);
         // Update the primary user's data to show they are not following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
@@ -137,20 +144,20 @@ export const unfollowUser = async function (primaryUserID, targetUserID) {
     }
 }
 
-export const retrieveFollowers = async function(user_id) {
+export const retrieveFollowers = async function (user_id) {
     const res = await getLocalDataByID("user_followers", hashString(user_id), "followers");
-    if(res.followers.length > 0){
+    if (res.followers.length > 0) {
         return res.expand.followers;
-    }else{
+    } else {
         return [];
     }
 }
 
-export const retrieveFollowing = async function(user_id) {
+export const retrieveFollowing = async function (user_id) {
     const res = await getLocalDataByID("user_following", hashString(user_id), "following");
-    if(res.following.length > 0){
+    if (res.following.length > 0) {
         return res.expand.following;
-    }else{
+    } else {
         return [];
     }
 }
@@ -169,21 +176,21 @@ export const retrieveAllUsers = async function () {
  * @param user_id
  * @returns {Promise<Array>}
  */
-export const retrievePlaylists = async function(user_id) {
+export const retrievePlaylists = async function (user_id) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     let playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
     playlists = playlists.filter(p => !p.collaborative && p.public);
     const playlistTrackPromises = playlists.map(playlist => fetchData(`playlists/${playlist.id}/tracks`).then(response => response.items.map(e => e.track)));
     await Promise.all(playlistTrackPromises).then(tracksArrays => tracksArrays.forEach((tracks, index) => playlists[index].tracks = tracks.map(t => formatSong(t))));
+    console.log(playlists);
     return playlists;
 }
 
-export const retrieveSavedSongs = async function(user_id) {
+export const retrieveSavedSongs = async function (user_id) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     const savedTracks = (await fetchData(`users/${globalUser_id}/tracks`)).items;
     console.log(savedTracks);
 }
-
 
 
 /**
@@ -214,7 +221,6 @@ export const isLoggedIn = function () {
  * and return a valid one from that selection.
  * @param user_id
  * @param term [short_term, medium_term, long_term]
- * @param delay
  * @returns {Promise<*>} A datapoint object.
  */
 export const retrieveDatapoint = async function (user_id, term) {
@@ -257,9 +263,9 @@ export const retrievePrevDatapoint = async function (user_id, term) {
         globalUser_id = window.localStorage.getItem("user_id");
     }
     const datapoint = await getDelayedDatapoint(globalUser_id, term, 1);
-    if(datapoint === undefined) {
+    if (datapoint === undefined) {
         return null
-    }else {
+    } else {
         return datapoint;
     }
 }
@@ -282,7 +288,7 @@ const formatDatapoint = function (d) {
     return d;
 }
 
-export const retrieveAllDatapoints = async function(user_id) {
+export const retrieveAllDatapoints = async function (user_id) {
     const terms = ["short_term", "medium_term", "long_term"];
     const datapoints = [];
     for (const term of terms) {
@@ -293,7 +299,7 @@ export const retrieveAllDatapoints = async function(user_id) {
 }
 
 
-export const retrievePrevAllDatapoints =  async function (user_id) {
+export const retrievePrevAllDatapoints = async function (user_id) {
     const terms = ["short_term", "medium_term", "long_term"];
     const datapoints = [];
     for (const term of terms) {
@@ -444,9 +450,11 @@ export const batchArtists = async (artist_ids) => {
     for (const chunk of artistChunks) {
         const ids = chunk.join(',');
         const result = (await fetchData(`artists/?ids=${ids}`)).artists;
-        artists.push(...result.map(function(e){
+        artists.push(...result.map(function (e) {
             let image = null;
-            if(e.images.length > 0){image = e.images[1].url}
+            if (e.images.length > 0) {
+                image = e.images[1].url
+            }
             return {
                 artist_id: e.id,
                 name: e.name,
@@ -461,7 +469,9 @@ export const batchArtists = async (artist_ids) => {
 
 export const getAlbumsWithTracks = async function (artistID, tracks) {
     let albumsWithTracks = [];
-    if(!tracks){return [];}
+    if (!tracks) {
+        return [];
+    }
 
     const albums = (await fetchData(`artists/${artistID}/albums`)).items;
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
@@ -481,8 +491,8 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
 
 export const formatArtist = (artist) => {
     let image = null;
-    if(artist.hasOwnProperty("images")){
-        if(artist.images[1] !== undefined){
+    if (artist.hasOwnProperty("images")) {
+        if (artist.images[1] !== undefined) {
             image = artist.images[1].url
         }
     }
@@ -497,7 +507,9 @@ export const formatArtist = (artist) => {
 
 export const formatSong = (song) => {
     let image = null;
-    if(song.album.images !== undefined){image = song.album.images[1].url}
+    if (song.album.images !== undefined) {
+        image = song.album.images[1].url
+    }
     let artists = song.artists.map(a => formatArtist(a));
     return {
         song_id: song.id,
@@ -577,7 +589,6 @@ export const hydrateDatapoints = async function () {
     console.info("Hydration over.");
     console.timeEnd("Hydration.");
 }
-
 
 
 /**

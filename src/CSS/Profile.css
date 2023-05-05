@@ -37,7 +37,7 @@ select.dropdown {
 }
 
 
-.compare-button{
+.compare-button {
     background: none;
     text-decoration: none;
     text-transform: uppercase;
@@ -50,7 +50,7 @@ select.dropdown {
     transition: all 0.2s ease-out;
 }
 
-.compare-button:hover{
+.compare-button:hover {
     background-color: rgb(255, 255, 255);
     color: black;
     box-shadow: 0 0 45px rgba(255, 255, 255, 0.81);
@@ -72,7 +72,7 @@ select.dropdown {
     padding: 25px 25px 0 25px;
 }
 
-.showcase-list-wrapper{
+.showcase-list-wrapper {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -86,7 +86,7 @@ select.dropdown {
 }
 
 
-.showcase-list-item{
+.showcase-list-item {
     display: flex;
     flex-direction: row;
     height: 75px;
@@ -122,7 +122,7 @@ select.dropdown {
 }
 
 
-.showcase-list-item-text{
+.showcase-list-item-text {
     height: max-content;
     width: max-content;
     margin-left: auto;
@@ -193,7 +193,7 @@ select.dropdown {
     cursor: pointer;
 }
 
-.recommendations-wrapper{
+.recommendations-wrapper {
     display: flex;
     flex-direction: column;
     margin-top: 16px;
@@ -215,7 +215,7 @@ select.dropdown {
     text-decoration: underline;
 }
 
-.analysis{
+.analysis {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -223,7 +223,7 @@ select.dropdown {
     overflow: hidden;
 }
 
-#song-analysis-avg-wrapper {
+#block-wrapper {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -231,7 +231,7 @@ select.dropdown {
     gap: 20px;
 }
 
-#song-analysis-avg-wrapper > div {
+#block-wrapper > div {
     flex-grow: 1;
     border: 1px solid #343434;
     padding: 15px;
@@ -275,7 +275,9 @@ select.dropdown {
 }
 
 @keyframes expand {
-    from {width: 0}
+    from {
+        width: 0
+    }
 }
 
 .list-item {
@@ -315,7 +317,7 @@ select.dropdown {
     color: rgb(148, 148, 148);
 }
 
-.follow-button:hover{
+.follow-button:hover {
     cursor: pointer;
     color: #22c55e;
 }
@@ -351,7 +353,6 @@ select.dropdown {
     border-bottom: 1px solid #343434;
     border-top: 1px solid #343434;
 }
-
 
 
 @keyframes hover {
@@ -427,7 +428,7 @@ select.dropdown {
     margin: 0 0 5px 0;
 }
 
-#history-message{
+#history-message {
     margin: 0 auto 0 auto;
     display: flex;
     width: max-content;
@@ -438,14 +439,15 @@ select.dropdown {
 .playlist-wrapper {
     display: flex;
     gap: 20px;
-    
+
     justify-content: space-between;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     height: max-content;
 }
-.playlist-art{
+
+.playlist-art {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -461,7 +463,7 @@ select.dropdown {
     color: white;
 }
 
-.focused-playlist{
+.focused-playlist {
     display: flex;
     flex-direction: row;
     max-width: 60%;
@@ -507,7 +509,7 @@ select.dropdown {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    
+
     height: 300px;
     width: 500px;
 
@@ -547,19 +549,29 @@ select.dropdown {
 }
 
 
-.album-instance:hover{
+.album-instance:hover {
     animation-play-state: paused;
 }
 
 @keyframes float {
-    0% {padding: 0}
-    25% {padding: 0 7px 3px 2px}
-    50% {padding: 9px 1px 6px 5px}
-    75% {padding: 5px 2px 1px 7px}
-    100% {padding: 0}
+    0% {
+        padding: 0
+    }
+    25% {
+        padding: 0 7px 3px 2px
+    }
+    50% {
+        padding: 9px 1px 6px 5px
+    }
+    75% {
+        padding: 5px 2px 1px 7px
+    }
+    100% {
+        padding: 0
+    }
 }
 
-.album-text{
+.album-text {
     width: 125px;
     position: absolute;
     animation: fadeIn 0.5s ease-out;
@@ -577,7 +589,7 @@ select.dropdown {
     text-shadow: 0 0 10px black;
 }
 
-.album-image{
+.album-image {
     position: relative;
     width: 125px;
     height: 125px;
@@ -587,7 +599,7 @@ select.dropdown {
     animation: fadeIn 0.5s ease-out;
 }
 
-.album-image-backdrop{
+.album-image-backdrop {
     position: absolute;
     width: 125px;
     height: 125px;
@@ -599,45 +611,21 @@ select.dropdown {
     animation: fadeIn 0.5s ease-out;
 }
 
-@media screen and (max-width: 800px) {
-    .list-item-ol {
-        margin: 50px auto 50px auto;
-        padding: 0;
-        justify-content: center;
-        width: max-content;
-    }
-    .list-item {
-        margin: auto;
-        font-weight: 600;
-    }
-    .focus-container {
-        flex-direction: column;
-    }
-    .focus-message {
-        text-align: center;
-    }
-    .user-container {
-        flex-direction: column;
-        justify-content: center;
-    }
-    .datapoint-title {
-        width: max-content;
-        font-size: 20px;
-    }
-}
-
 
 @media screen and (max-width: 1000px) {
     .simple-instance {
         padding: 15px 0;
     }
+
     .showcase-list-item-expanded {
         height: 300px;
     }
+
     .showcase-list-item-expanded > div {
         padding: 15px;
         left: 30px;
     }
+
     .recommendations {
         display: none;
         opacity: 0;
@@ -646,9 +634,11 @@ select.dropdown {
     .analysis > p {
         display: none;
     }
+
     .analysis > div {
         display: none;
     }
+
     .showcase-rec-button {
         display: none;
     }
@@ -753,16 +743,34 @@ select.dropdown {
 }
 
 @keyframes equals-animation {
-    from {transform: translate(-20px, 0); opacity: 0}
-    to {transform: translate(0,0); opacity: 1}
+    from {
+        transform: translate(-20px, 0);
+        opacity: 0
+    }
+    to {
+        transform: translate(0, 0);
+        opacity: 1
+    }
 }
 
 @keyframes up-change-animation {
-    from {transform: translate(0, 10px); opacity: 0}
-    to {transform: translate(0,0); opacity: 1}
+    from {
+        transform: translate(0, 10px);
+        opacity: 0
+    }
+    to {
+        transform: translate(0, 0);
+        opacity: 1
+    }
 }
 
 @keyframes down-change-animation {
-    from {transform: translate(0, -10px); opacity: 0}
-    to {transform: translate(0,0); opacity: 1}
+    from {
+        transform: translate(0, -10px);
+        opacity: 0
+    }
+    to {
+        transform: translate(0, 0);
+        opacity: 1
+    }
 }

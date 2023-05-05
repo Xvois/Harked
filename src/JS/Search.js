@@ -1,7 +1,7 @@
-import {ClickAwayListener, FormControl, Input, InputAdornment, TextField, ThemeProvider} from "@mui/material";
+import {ClickAwayListener, TextField, ThemeProvider} from "@mui/material";
 import {useEffect, useState} from "react";
 import {createTheme} from "@mui/material/styles";
-import {followsUser, isLoggedIn, retrieveAllUsers, retrieveFollowing, retrieveUser} from "./PDM";
+import {isLoggedIn, retrieveAllUsers, retrieveFollowing} from "./PDM";
 
 const searchTheme = createTheme({
     palette: {
@@ -69,7 +69,7 @@ const Search = () => {
     }
     useEffect(() => {
         retrieveAllUsers().then(res => setCachedUsers(res));
-        if(isLoggedIn()){
+        if (isLoggedIn()) {
             retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
                 setLoggedFollowing(following);
             })
@@ -79,19 +79,19 @@ const Search = () => {
         <ClickAwayListener onClickAway={() => setSearchResults(null)}>
             <div className={'search-bar'}>
                 <ThemeProvider theme={searchTheme}>
-                        <TextField
-                            id="standard-textarea"
-                            label="Search"
-                            placeholder="Placeholder"
-                            multiline
-                            variant="standard"
-                            onChange={handleChange}
-                        />
+                    <TextField
+                        id="standard-textarea"
+                        label="Search"
+                        placeholder="Placeholder"
+                        multiline
+                        variant="standard"
+                        onChange={handleChange}
+                    />
                     {!!searchResults ?
                         <div className={'results'}>
                             {searchResults.map(result => {
                                 let following = false;
-                                if(isLoggedIn() && following){
+                                if (isLoggedIn() && following) {
                                     following = following.some(e => e.user_id === result.user_id);
                                 }
                                 return (

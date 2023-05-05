@@ -12,7 +12,7 @@ import {hashString, putLocalData} from "./API";
 export async function authRefresh() {
     console.info("Refreshing auth token.")
     const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
-    await pb.collection('users').authRefresh().then(function(auth) {
+    await pb.collection('users').authRefresh().then(function (auth) {
         console.info(auth)
         window.localStorage.setItem("access-token", auth.token);
     })
@@ -43,7 +43,7 @@ function Authentication() {
 
         const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
         // Is the user not in authorised on the database yet?
-        if(!pb.authStore.isValid) {
+        if (!pb.authStore.isValid) {
             pb.collection('users').authWithOAuth2({
                 provider: 'spotify',
                 scopes: ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']

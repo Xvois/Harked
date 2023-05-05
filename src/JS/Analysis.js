@@ -1,3 +1,4 @@
+// noinspection SpellCheckingInspection
 /**
  * Holds all the methods used to generate analysis for certain objects within the context of a datapoint.
  */
@@ -14,6 +15,7 @@ export const translateAnalytics = {
 }
 
 export const getAverageAnalytics = function (songs) {
+    // noinspection SpellCheckingInspection
     let avgAnalytics = {
         acousticness: 0,
         danceability: 0,
@@ -44,17 +46,18 @@ export const getItemIndexChange = function (item, index, type, comparisonDP) {
 
 export const getAllItemIndexChanges = function (type, dp1, dp2) {
     let deltas = [];
-    dp1[`top_${type}`].forEach(function(element, index){
+    dp1[`top_${type}`].forEach(function (element, index) {
         deltas.push(getItemIndexChange(element, index, type, dp2));
     })
     return deltas;
 }
 
-export const getAllArtistAssociations = function() {
+export const getAllArtistAssociations = function () {
     console.info('getAllArtistAssociations called!');
+    // noinspection SpellCheckingInspection
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     const memo = new Map();
-    return function(datapoint) {
+    return function (datapoint) {
         if (memo.has(datapoint)) {
             return memo.get(datapoint);
         }
@@ -94,7 +97,8 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
     const artistAssociations = getAllArtistAssociations(datapoint);
     let topMessage = '';
     let secondMessage = '';
-    const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ?  'your' : `${user.username}'s`;
+    const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'your' : `${user.username}'s`;
+    // noinspection SpellCheckingInspection
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     switch (type) {
         case "artists":
@@ -115,6 +119,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             }
             break;
         case "songs":
+            // noinspection SpellCheckingInspection
             let maxAnalytic = "acousticness";
             analyticsMetrics.forEach(analytic => {
                 let comparisonValue;
@@ -138,8 +143,8 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             if (relatedArtists.length < 0) {
                 topMessage = 'An error has occurred! There are no related artists for this genre.'
             } else {
-                topMessage = `${possessive.slice(0,1).toUpperCase() + possessive.slice(1, possessive.length)} love for ${item} is best described by ${possessive} time listening to ${relatedArtists[0].name}.`
-                if (relatedArtists.length > 1){
+                topMessage = `${possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} love for ${item} is best described by ${possessive} time listening to ${relatedArtists[0].name}.`
+                if (relatedArtists.length > 1) {
                     secondMessage = `It's also contributed to by ${possessive} time listening to${relatedArtists.slice(1, relatedArtists.length).map(e => ' ' + e.name)}.`
                 } else {
                     secondMessage = ``

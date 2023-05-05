@@ -57,7 +57,9 @@ function Homepage() {
                         </>
                         :
                         <>
-                            <button className="auth-button" onClick={() => window.location = '/profile#me'}>Explore your profile</button>
+                            <button className="auth-button" onClick={() => window.location = '/profile#me'}>Explore your
+                                profile
+                            </button>
                             <button className="auth-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
