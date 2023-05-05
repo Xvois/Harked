@@ -8,6 +8,8 @@ import PocketBase from "pocketbase";
 import {formatUser} from "./PDM";
 import {hashString, putLocalData} from "./API";
 
+// TODO: FIX ISSUE THAT STATES THAT USERNAME MUST BE IN VALID FORMAT
+// LIKELY AN ISSUE WITH USERNAMES WITH SPACES
 
 export async function authRefresh() {
     console.info("Refreshing auth token.")
@@ -56,6 +58,8 @@ function Authentication() {
                 window.localStorage.setItem('access-token', authData.meta.accessToken);
                 window.localStorage.setItem('user_id', user.id);
                 formatUser(user).then(function (fUser) {
+                    // TODO: TEMP FIX
+                    fUser.username = fUser.username.replace(' ', '-');
                     pb.collection('users').update(id, fUser)
                         .then(() => {
                             const followers = {id: hashString(fUser.user_id), user: id, followers: []}
