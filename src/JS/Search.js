@@ -1,9 +1,8 @@
-import {ClickAwayListener, FormControl, TextField} from "@mui/material";
-import React, {useEffect, useState} from "react";
-import {styled} from "@mui/material/styles";
-import "./../CSS/TopBar.css";
-import "./../CSS/Search.css"
-import {getAllUsers} from "./API";
+import {ClickAwayListener, styled, TextField, ThemeProvider} from "@mui/material";
+import {useEffect, useState} from "react";
+import {createTheme} from "@mui/material/styles";
+import {isLoggedIn, retrieveAllUsers, retrieveFollowing} from "./PDM";
+import {FormControl} from "@mui/base";
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -22,7 +21,7 @@ const SearchBar = styled(TextField)({
         '& fieldset': {
             borderColor: 'white',
             borderRadius: `0px`,
-            borderWidth: '2px',
+            borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
@@ -30,7 +29,7 @@ const SearchBar = styled(TextField)({
         },
         '&.Mui-focused fieldset': {
             borderColor: '#22C55E',
-            borderRadius: `5px`,
+            borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
     },
@@ -44,12 +43,11 @@ const SearchBar = styled(TextField)({
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
-
-export const Search = () => {
-    const [searchResults, setSearchResults] = useState(null)
-    const [cachedUsers, setCachedUsers] = useState(null)
-
-
+const Search = () => {
+    const [searchResults, setSearchResults] = useState(null);
+    const [cachedUsers, setCachedUsers] = useState(null);
+    // If the user is logged in, this is an array of who they follow
+    const [loggedFollowing, setLoggedFollowing] = useState(null);
     const Levenshtein = (a, b) => {
         // First two conditions
         if (!a.length) return b.length;
@@ -74,67 +72,78 @@ export const Search = () => {
         // Return the result
         return arr[b.length][a.length];
     }
-
-    const handleClickAway = () => {
-        setSearchResults(null);
-    }
-
     const handleChange = (event) => {
         // What the user has typed in so far.
         let searchParam = event.target.value;
         const usernames = cachedUsers.map(user => user.username);
         let results = [];
-        // Don't check if the user has only typed in a couple of characters
-        if (searchParam.length > 2) {
-            usernames.forEach(username => {
-                let weight = Levenshtein(searchParam, username)
-                if (weight < 10) {
-                    results.push({username: username, weight: weight})
-                }
-            })
-            // Order results by their relevance.
-            results.sort((a, b) => a.weight - b.weight)
-            // Match each username to their user record in the DB
-            results.forEach((user, i) => {
-                results[i] = cachedUsers[cachedUsers.findIndex(object => {
-                    return object.username === user.username
-                })]
-            })
-            setSearchResults(results);
-        } else {
-            setSearchResults(null)
-        }
+        usernames.forEach((username) => {
+            let weight = Levenshtein(searchParam, username);
+            if (username.length > searchParam.length) {
+                weight -= username.length - searchParam.length
+            }
+            if (weight < 10) {
+                results.push({username: username, weight: weight})
+            }
+        })
+        // Order results by their relevance.
+        results.sort((a, b) => a.weight - b.weight)
+        // Match each username to their user record in the DB
+        results.forEach((user, i) => {
+            results[i] = cachedUsers[cachedUsers.findIndex(object => {
+                return object.username === user.username
+            })]
+        })
+        results.splice(5, results.length - 5);
+        setSearchResults(results);
     }
 
-    const updateCachedUsers = () => {
-        getAllUsers().then(function (result) {
-            setCachedUsers(result);
-        })
+    const handleClickAway = () => {
+        setSearchResults(null);
     }
     useEffect(() => {
-        updateCachedUsers();
+        retrieveAllUsers().then(res => setCachedUsers(res));
+        if (isLoggedIn()) {
+            retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
+                setLoggedFollowing(following);
+            })
+        }
     }, [])
-
     return (
         <div className='search-bar-container'>
             <ClickAwayListener onClickAway={handleClickAway}>
                 <FormControl variant="outlined">
                     <SearchBar className='search-bar' inputProps={{className: `search-label`}}
+                               onClick={handleChange}
                                onChange={handleChange} label="Search"></SearchBar>
                 </FormControl>
             </ClickAwayListener>
-            {searchResults !== null ?
-                <div id="result" style={{top: '140px'}}>
-                    {searchResults.map(function (user) {
-                        return <a href={`profile#${user.user_id}`}><img
-                            alt={"profile picture"}
-                            src={user.picture_url}></img>{user.username.length > 14 ? user.username.slice(0, 14) + "..." : user.username}
-                        </a>
-                    })
-                    }</div>
+            {!!searchResults ?
+                <div className={'results'}>
+                    {searchResults.map(result => {
+                        let following = false;
+                        if (isLoggedIn() && following) {
+                            following = following.some(e => e.user_id === result.user_id);
+                        }
+                        return (
+                            <a className={'result'} href={`/profile#${result.user_id}`}>
+                                <img alt='' src={result.profile_picture}></img>
+                                <div className={'result-title'}>
+                                    <h2>{result.username}</h2>
+                                    {following ?
+                                        <p>Following</p>
+                                        :
+                                        <></>
+                                    }
+                                </div>
+                            </a>
+                        )
+                    })}
+                </div>
                 :
                 <></>
             }
+
 
         </div>
     )

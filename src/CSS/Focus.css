@@ -1,0 +1,115 @@
+.focus-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 50px auto;
+    width: 80%;
+    height: max-content;
+    gap: 50px
+}
+
+.play-wrapper {
+    display: flex;
+    position: relative;
+    text-decoration: none;
+    opacity: 1;
+    width: 450px;
+    max-width: 450px;
+    height: 450px;
+    margin: auto;
+    transition: all 0.2s ease-in-out;
+}
+
+.play-wrapper > p {
+    font-family: "Inter Tight", sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    text-transform: uppercase;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100px;
+    bottom: 100px;
+    margin: auto;
+    width: max-content;
+    height: max-content;
+    opacity: 0;
+    transition: all 0.25s ease-out;
+    transform: translate(0, 20px);
+}
+
+#art-backdrop {
+    filter: blur(50px) brightness(75%);
+    position: absolute;
+    z-index: -1;
+    transition: all 0.15s ease-out;
+}
+
+.art {
+    margin-left: auto;
+    margin-right: auto;
+    width: 450px;
+    height: 450px;
+    object-fit: cover;
+    box-shadow: 0 0 6px 5px rgba(0, 0, 0, 0.445), 0 2px 4px -2px rgb(0, 0, 0);
+    font-size: 100px;
+    transition: all 0.25s ease-out;
+}
+
+.focus-message {
+    padding: 20px;
+    width: 40%;
+    margin: auto 0 auto 0;
+
+    font-size: 20px;
+    font-weight: 600;
+    font-family: 'Inter Tight', sans-serif;
+
+    text-align: justify;
+}
+
+@media screen and (max-width: 800px) {
+    .focus-container {
+        flex-direction: column;
+    }
+
+    .focus-message {
+        width: 80%;
+    }
+}
+
+
+.stats-title {
+    font-family: 'Lato', sans-serif;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.item-analysis {
+    width: 400px;
+    max-width: 400px;
+    display: flex;
+    padding: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    color: white;
+    border: 1px solid #343434;
+    box-shadow: 0 0 5px 1px black;
+    transition: all 0.25s ease-in;
+    background: #1e1c1a;
+}
+
+.top-albums {
+    padding: 10px;
+    margin: 5px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+}
+
+.artist-analysis-title {
+    font-family: "Inter Tight", sans-serif;
+    margin: 0 auto 0 auto;
+}

@@ -1,22 +1,44 @@
 body {
-  margin: 0;
-  background-color: #0A0A0A;
-  color: white;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    margin: 0;
+    padding: 0 50px 50px 50px;
+    background-color: #14110F;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: #22C55E;
-  color: white;
+    background: #22C55E;
+    color: white;
 }
-
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.std-button {
+    font-family: "Inter Tight", sans-serif;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    border-radius: 20px;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
+}
+
+.std-button:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+@media screen and (max-width: 1000px) {
+    body {
+        padding: 0;
+    }
+}
+
 
