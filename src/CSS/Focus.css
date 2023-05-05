@@ -2,47 +2,43 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    margin: auto;
+    margin: 50px auto;
     width: 80%;
     height: max-content;
-    padding: 50px;
-    gap: 50px;
-}
-
-.art-container {
-    position: relative;
-    display: grid;
-    justify-content: center;
-    align-items: center;
-    word-break: break-word;
-    height: max-content;
-    margin-top: auto;
-    margin-bottom: auto;
+    gap: 50px
 }
 
 .play-wrapper {
     display: flex;
+    position: relative;
     text-decoration: none;
     opacity: 1;
-    width: auto;
+    width: 450px;
+    max-width: 450px;
     height: 450px;
-    border-radius: 10%;
-    transition: opacity 0.4s ease-in-out;
+    margin: auto;
+    transition: all 0.2s ease-in-out;
 }
 
-.play-wrapper:hover {
-    transform: scale(102.5%);
-}
-
-.play-wrapper:hover > #art-backdrop {
-    opacity: 0.5;
-}
-
-.play-wrapper:hover > #art-text-container {
+.play-wrapper > p {
+    font-family: "Inter Tight", sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    text-transform: uppercase;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100px;
+    bottom: 100px;
+    margin: auto;
+    width: max-content;
+    height: max-content;
     opacity: 0;
+    transition: all 0.25s ease-out;
+    transform: translate(0, 20px);
 }
 
-#art-backdrop{
+#art-backdrop {
     filter: blur(50px) brightness(75%);
     position: absolute;
     z-index: -1;
@@ -57,65 +53,13 @@
     object-fit: cover;
     box-shadow: 0 0 6px 5px rgba(0, 0, 0, 0.445), 0 2px 4px -2px rgb(0, 0, 0);
     font-size: 100px;
-}
-.art-text-container {
-    position: absolute;
-    align-self: flex-end;
-    height: max-content;
-    width: 450px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    transition: all 0.4s ease-out;
-}
-
-.art-name {
-    margin: 0;
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 30px;
-    font-weight: 900;
-    color: white;
-    text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(0, 0, 0, 0.43);
-}
-
-@keyframes swoopUpR {
-    from {
-        opacity: 0;
-        transform: translate(0, 20px)
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes swoopUpH {
-    from {
-        opacity: 1;
-        transform: translate(0px)
-    }
-    to {
-        opacity: 0;
-        transform: translate(0, -20px)
-    }
-}
-
-.art-desc {
-    margin: 0;
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    color: white;
-    text-transform: uppercase;
-    height: max-content;
-    text-shadow: 0 0 20px rgba(0, 0, 0, 0.43);
+    transition: all 0.25s ease-out;
 }
 
 .focus-message {
     padding: 20px;
     width: 40%;
-    margin: auto;
+    margin: auto 0 auto 0;
 
     font-size: 20px;
     font-weight: 600;
@@ -124,5 +68,48 @@
     text-align: justify;
 }
 
+@media screen and (max-width: 800px) {
+    .focus-container {
+        flex-direction: column;
+    }
+
+    .focus-message {
+        width: 80%;
+    }
+}
 
 
+.stats-title {
+    font-family: 'Lato', sans-serif;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.item-analysis {
+    width: 400px;
+    max-width: 400px;
+    display: flex;
+    padding: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    color: white;
+    border: 1px solid #343434;
+    box-shadow: 0 0 5px 1px black;
+    transition: all 0.25s ease-in;
+    background: #1e1c1a;
+}
+
+.top-albums {
+    padding: 10px;
+    margin: 5px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+}
+
+.artist-analysis-title {
+    font-family: "Inter Tight", sans-serif;
+    margin: 0 auto 0 auto;
+}

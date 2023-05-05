@@ -3,6 +3,15 @@
 /*noinspection CssUnknownTarget*/
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
+select:hover {
+    cursor: pointer;
+}
+
+select.dropdown {
+    width: max-content;
+    text-align: center;
+}
+
 .wrapper {
     display: flex;
     flex-direction: column;
@@ -27,13 +36,8 @@
     }
 }
 
-@media screen and (max-width: 1200px) {
-    .datapoint-title {
-        font-size: 20vw;
-    }
-}
 
-.compare-button{
+.compare-button {
     background: none;
     text-decoration: none;
     text-transform: uppercase;
@@ -46,44 +50,261 @@
     transition: all 0.2s ease-out;
 }
 
-.compare-button:hover{
+.compare-button:hover {
     background-color: rgb(255, 255, 255);
     color: black;
     box-shadow: 0 0 45px rgba(255, 255, 255, 0.81);
 }
 
-
-
-.simple-container {
+.simple-wrapper {
     display: flex;
     flex-direction: row;
-    height: max-content;
-
+    flex-wrap: wrap;
 }
 
-.arrow {
+.simple-instance {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: max-content;
+    width: 1000px;
+    flex-grow: 1;
+    padding: 25px 25px 0 25px;
+}
+
+.showcase-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.showcase-list-wrapper > div {
+    transition: all 0.5s;
+    width: 80%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+
+.showcase-list-item {
+    display: flex;
+    flex-direction: row;
+    height: 75px;
+    position: relative;
+    align-items: center;
+    align-content: center;
+    border: 1px solid #343434;
+    transition: all 0.5s;
+}
+
+.showcase-list-item > h3 {
+    position: absolute;
+    font-family: "Inter Tight", sans-serif;
+    font-size: 20px;
+    opacity: 0.5;
+    height: max-content;
+    top: 0;
+    bottom: 0;
     margin: auto;
-    transform: scale(20%);
-    border: 10px solid red;
-    padding: 10px;
+    padding-left: 15px;
+}
+
+.showcase-list-item > img {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    clip-path: inset(1px);
+    opacity: 0.5;
+    filter: blur(15px) brightness(60%);
+    z-index: -1;
+    transition: all 0.5s;
+}
+
+
+.showcase-list-item-text {
+    height: max-content;
+    width: max-content;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.26);
+    transition: all 0.5s;
+}
+
+.showcase-list-item-text > h2 {
+    font-family: "Inter Tight", sans-serif;
+    text-align: center;
+    width: 100%;
+    margin: 0;
+    transition: inherit;
+}
+
+.showcase-list-item-text > p {
+    font-family: "Inter Tight", sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    height: max-content;
+    margin: 0;
+    transition: inherit;
+}
+
+.showcase-list-item-expanded {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+    width: 90%;
+    margin: auto;
+    cursor: auto;
+}
+
+.showcase-list-item-expanded > div {
+    position: relative;
+    overflow: hidden;
+    justify-content: center;
+    height: 200px;
+    max-width: 300px;
+    padding: 25px;
+    flex-grow: 1;
+    animation: fadeIn 0.5s ease;
+}
+
+.showcase-rec-button {
+    font-family: "Inter Tight", sans-serif;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    border-radius: 20px;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+}
+
+.showcase-exit-button {
+    position: absolute;
+    font-size: 20px;
+    top: 20px;
+    right: 20px;
+    color: white;
+    background: none;
+    padding: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.recommendations-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.recommendation {
+    margin-left: auto;
+    padding: 5px;
+    width: max-content;
+    font-family: "Inter Tight", sans-serif;
+    text-decoration: none;
+    text-align: right;
+    color: white;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.5s;
+}
+
+.recommendation:hover {
+    text-decoration: underline;
+}
+
+.analysis {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    overflow: hidden;
+}
+
+.block-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.block-wrapper > div {
+    flex-grow: 1;
+    border: 1px solid #343434;
+    padding: 15px;
+}
+
+#genre-breakdown-instance {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    gap: 15px;
+}
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: right;
+    text-align: left;
+}
+
+.stat-block > h3 {
+    font-size: 15px;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.stat-block > p {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 10px;
+    margin: 5px 0 0 0;
+    opacity: 0.5;
+    color: white;
+}
+
+/*noinspection ALL*/
+.stat-bar {
+    position: relative;
+    height: 5px;
+    width: var(--val);
+
+    background-color: white;
+    border-radius: 10px;
+    transition: all 0.5s ease-out;
+
+    animation: expand 1s ease;
+}
+
+@keyframes expand {
+    from {
+        width: 0
+    }
 }
 
 .list-item {
-    font-size: 25px;
-    padding: 5px;
-    font-family: 'Lato', sans-serif;
+    font-size: 27px;
+    font-family: 'Inter Tight', sans-serif;
+    text-align: center;
+    margin: auto;
     font-weight: 900;
     counter-increment: item;
     width: max-content;
-    transition: all 0.1s ease-out;
+    padding: 10px 0 2px 0;
 }
 
 .list-item-ol {
-    margin: auto auto auto 0;
+    min-width: 400px;
+    margin: auto auto auto auto;
     list-style: none;
     counter-reset: item;
-    justify-content: space-evenly;
     height: max-content;
+    padding: 0;
 }
 
 .list-item:hover {
@@ -103,78 +324,43 @@
     color: rgb(148, 148, 148);
 }
 
-.follow-button:hover{
+.follow-button:hover {
     cursor: pointer;
     color: #22c55e;
 }
 
-.datapoint-title {
+.datapoint-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
     height: max-content;
-    margin: 0;
-    font-family: 'Ubuntu', sans-serif;
-    text-transform: uppercase;
-    text-align: center;
-    font-size: 50px;
-    font-weight: 800;
-}
-
-.stats-title{
-    font-family: 'Lato', sans-serif;
-    font-weight: 900;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-.simple-stats{
-    flex-grow: 1;
+    width: 80%;
     max-width: 1000px;
-    display: flex;
-    gap: 50px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-}
+    margin: 0 auto;
 
-.stat-block {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 75px;
-    width: 200px;
-    padding: 10px;
-    transition: all 0.1s;
-}
-
-.stat-block:hover {
-    cursor: pointer;
-}
-
-.stat-block > h3 {
-    font-family: 'Lato', sans-serif;
-    text-transform: uppercase;
-    margin-top: 0;
-    margin-bottom: 5px;
-}
-
-.stat-block > p {
     font-family: 'Inter Tight', sans-serif;
-    font-size: 10px;
-    margin: 5px 0 0 0;
-    color: rgba(100,100,100);
+
+    border-top: 1px solid #343434;
 }
 
-/*noinspection ALL*/
-.stat-bar {
-    position: relative;
-    height: 10px;
-    width: var(--val);
-    margin-right: auto;
+.datapoint-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 
-    background-color: #22C55E;
-    border-radius: 10px;
-    box-shadow: 0 0 2px #22C55E;
-    transition: all 0.5s ease-out;
+    height: max-content;
+    width: 80%;
+    max-width: 1000px;
+    margin: 15px auto;
+    padding: 0 0 16px 0;
+
+    font-family: 'Inter Tight', sans-serif;
+
+    border-bottom: 1px solid #343434;
+    border-top: 1px solid #343434;
 }
+
 
 @keyframes hover {
     from {
@@ -189,86 +375,67 @@
 
 .user-container {
     display: flex;
+    position: relative;
     flex-grow: 1;
-    padding: 50px;
     flex-direction: row;
+    justify-content: space-between;
     height: max-content;
     overflow: hidden;
-}
-
-.term-container {
-    display: flex;
-    flex-direction: row;
-    gap: 50px;
-    justify-content: center;
-    width: max-content;
-    margin: 10px auto 10px auto;
-}
-
-
-.term-container > button {
-    height: 30px;
-    width: 100px;
-    border-radius: 20px;
-    transition: all 0.1s linear;
-    border: 1px solid grey;
-    color: #343434;
-    text-transform: uppercase;
-    text-align: center;
-    white-space: nowrap;
+    padding: 15px;
 }
 
 .user-details {
-    padding: 20px 10px 20px 10px;
-    display: flex;
-    gap: 10px;
-    flex-direction: column;
-    text-align: right;
-}
-
-.user-details P {
-    font-family: 'Ubuntu', sans-serif;
-    color: rgb(255, 255, 255);
-}
-
-.spotify-link {
-    justify-content: space-evenly;
+    font-family: "Inter Tight", sans-serif;
+    max-height: 175px;
+    height: max-content;
     width: max-content;
-    height: min-content;
+}
+
+.user-details > h2 {
+    width: max-content;
+    font-size: 60px;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.user-details > p {
+    width: max-content;
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-followers {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
     align-items: center;
+    font-family: "Inter Tight", sans-serif;
+    font-weight: bold;
+}
+
+.settings-container {
     display: flex;
     flex-direction: row;
-    color: white;
-    text-decoration: none;
+    justify-content: space-between;
+    padding: 15px;
+    font-family: "Inter Tight", sans-serif;
 }
 
-.spotify-link p:hover {
-    color: #22C55E;
+.settings-container > div {
+    display: flex;
+    flex-direction: column;
 }
 
-.spotify-link p {
-    margin-left: 10px;
+.settings-container > div > h3 {
+    margin: 0;
 }
 
-.profile-picture {
-    align-self: center;
-    margin-right: 10px;
-    width: 175px;
-    height: 175px;
-    object-fit: cover;
+.settings-container > div > p {
+    margin: 0 0 5px 0;
 }
 
-.username {
-    font-family: 'Inter Tight', sans-serif;
-    font-size: 60px;
-    font-weight: 900;
-    color: rgb(255, 255, 255);
-    text-transform: uppercase;
-    position: relative;
-    height: max-content;
-}
-
-#history-message{
+#history-message {
     margin: 0 auto 0 auto;
     display: flex;
     width: max-content;
@@ -279,14 +446,15 @@
 .playlist-wrapper {
     display: flex;
     gap: 20px;
-    padding: 50px;
+
     justify-content: space-between;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     height: max-content;
 }
-.playlist-art{
+
+.playlist-art {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -302,7 +470,7 @@
     color: white;
 }
 
-.focused-playlist{
+.focused-playlist {
     display: flex;
     flex-direction: row;
     max-width: 60%;
@@ -348,7 +516,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 50px;
+
     height: 300px;
     width: 500px;
 
@@ -371,8 +539,6 @@
     bottom: var(--bottom-val);
     left: var(--left-val);
 
-    transform: scale(75%);
-
     border-radius: 10px;
 
     animation: float 7.5s ease-in-out infinite;
@@ -380,7 +546,7 @@
 
 /*noinspection ALL*/
 .circle {
-    padding: 5px;
+    padding: 1px;
     border: 1px solid #646464;
     border-radius: 100%;
     background: #ffffff;
@@ -390,52 +556,60 @@
 }
 
 
-.album-instance:hover{
+.album-instance:hover {
     animation-play-state: paused;
 }
 
 @keyframes float {
-    0% {padding: 0}
-    25% {padding: 0 7px 3px 2px}
-    50% {padding: 9px 1px 6px 5px}
-    75% {padding: 5px 2px 1px 7px}
-    100% {padding: 0}
+    0% {
+        padding: 0
+    }
+    25% {
+        padding: 0 7px 3px 2px
+    }
+    50% {
+        padding: 9px 1px 6px 5px
+    }
+    75% {
+        padding: 5px 2px 1px 7px
+    }
+    100% {
+        padding: 0
+    }
 }
 
-.album-text{
-    width: 210px;
+.album-text {
+    width: 125px;
     position: absolute;
-    transform: scale(90%);
     animation: fadeIn 0.5s ease-out;
 }
 
 .album-text > h2 {
     margin: 0;
-    font-size: 20px;
+    font-size: 12px;
     text-shadow: 0 0 40px black;
 }
 
 .album-text > p {
     margin: 0;
-    font-size: 15px;
+    font-size: 8px;
     text-shadow: 0 0 10px black;
 }
 
-.album-image{
+.album-image {
     position: relative;
-    width: 200px;
-    height: 200px;
+    width: 125px;
+    height: 125px;
     aspect-ratio: auto;
     object-fit: cover;
-    border: 5px solid white;
 
     animation: fadeIn 0.5s ease-out;
 }
 
-.album-image-backdrop{
+.album-image-backdrop {
     position: absolute;
-    width: 200px;
-    height: 200px;
+    width: 125px;
+    height: 125px;
     aspect-ratio: 1;
     margin: 0;
     transform: scale(100%);
@@ -444,20 +618,39 @@
     animation: fadeIn 0.5s ease-out;
 }
 
-@media screen and (max-width: 1160px) {
-    .list-item {
-        padding: 10px;
+
+@media screen and (max-width: 1000px) {
+    .simple-instance {
+        padding: 15px 0;
     }
-    .focus-container {
-        flex-direction: column;
+
+    .showcase-list-item-expanded {
+        height: 300px;
     }
-    .focus-message {
-        text-align: center;
+
+    .showcase-list-item-expanded > div {
+        padding: 15px;
+        left: 30px;
     }
-    .user-container {
-        justify-content: center;
+
+    .recommendations {
+        display: none;
+        opacity: 0;
+    }
+
+    .analysis > p {
+        display: none;
+    }
+
+    .analysis > div {
+        display: none;
+    }
+
+    .showcase-rec-button {
+        display: none;
     }
 }
+
 
 /* LOADING ANIM */
 .lds-grid {
@@ -557,16 +750,34 @@
 }
 
 @keyframes equals-animation {
-    from {transform: translate(-20px, 0); opacity: 0}
-    to {transform: translate(0,0); opacity: 1}
+    from {
+        transform: translate(-20px, 0);
+        opacity: 0
+    }
+    to {
+        transform: translate(0, 0);
+        opacity: 1
+    }
 }
 
 @keyframes up-change-animation {
-    from {transform: translate(0, 10px); opacity: 0}
-    to {transform: translate(0,0); opacity: 1}
+    from {
+        transform: translate(0, 10px);
+        opacity: 0
+    }
+    to {
+        transform: translate(0, 0);
+        opacity: 1
+    }
 }
 
 @keyframes down-change-animation {
-    from {transform: translate(0, -10px); opacity: 0}
-    to {transform: translate(0,0); opacity: 1}
+    from {
+        transform: translate(0, -10px);
+        opacity: 0
+    }
+    to {
+        transform: translate(0, 0);
+        opacity: 1
+    }
 }

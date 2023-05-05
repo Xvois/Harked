@@ -1,20 +1,20 @@
 /*noinspection CssUnknownTarget*/
 @import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;500&family=Ubuntu:wght@500;700&display=swap");
 
-.graph-container{
+.graph-container {
     display: flex;
     flex-direction: column;
     padding: 40px;
     margin-bottom: 50px;
 }
 
-.top{
+.top {
     display: flex;
     flex-direction: row;
     height: 300px;
 }
 
-.graph-title{
+.graph-title {
     font-family: 'Inter Tight', sans-serif;
     font-weight: 500;
     font-size: 1em;
@@ -23,7 +23,7 @@
     width: 100%;
 }
 
-.y-title{
+.y-title {
     height: min-content;
     text-align: center;
     text-transform: uppercase;
@@ -31,7 +31,7 @@
     width: min-content;
 }
 
-.point-container{
+.point-container {
     display: flex;
     float: right;
     width: 98%;
@@ -40,41 +40,30 @@
     background-image: radial-gradient(circle, #22c55e94 1px, rgba(0, 0, 0, 0) 1px);
 }
 
-.point{
+.point {
     --diameter: 5px;
     width: var(--diameter);
     height: var(--diameter);
     background-color: white;
     border: 1px solid black;
     border-radius: 20px;
-    margin: calc(-1*var(--diameter));
+    margin: calc(-1 * var(--diameter));
     position: relative;
     align-self: flex-end;
 }
-.point:hover{
+
+.point:hover {
     transform: scale(200%);
 }
 
-.x-title{
+.x-title {
     width: 100%;
     text-align: center;
     text-transform: uppercase;
 }
 
-.graph-dropdown{
-    background-color: transparent;
-    border: none;
-    text-transform: uppercase;
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 800;
-    font-size: 1em;
-    text-align: center;
-    margin-right: 40px;
-    color: #22C55E;
-}
-
 /*noinspection ALL*/
-.selection-peek{
+.selection-peek {
     position: fixed;
     top: var(--mouse-y);
     left: var(--mouse-x);

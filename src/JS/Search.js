@@ -1,15 +1,10 @@
-import {ClickAwayListener, FormControl, TextField} from "@mui/material";
-import React, {useEffect, useState} from "react";
-import {styled} from "@mui/material/styles";
-import "./../CSS/TopBar.css";
-import "./../CSS/Search.css"
-import {getAllUsers} from "./API";
+import {ClickAwayListener, styled, TextField, ThemeProvider} from "@mui/material";
+import {useEffect, useState} from "react";
+import {createTheme} from "@mui/material/styles";
+import {isLoggedIn, retrieveAllUsers, retrieveFollowing} from "./PDM";
+import {FormControl} from "@mui/base";
 
 const SearchBar = styled(TextField)({
-    "& .MuiInputBase-input": {
-        background: '#343434',
-        border: 'none',
-    },
     "& .MuiInputBase-root": {
         color: 'white'
     },
@@ -19,36 +14,40 @@ const SearchBar = styled(TextField)({
     '& .MuiFormLabel-root.Mui-disabled': {
         color: `white`,
     },
+    '& .MuiInput-underline:after': {
+        borderBottomColor: '#22C55E',
+    },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            border: '1px solid grey',
+            borderColor: 'white',
+            borderRadius: `0px`,
+            borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
-            border: '1px solid grey',
+            borderColor: 'white',
         },
         '&.Mui-focused fieldset': {
-            border: '1px solid grey',
+            borderColor: '#22C55E',
+            borderWidth: '1px',
+            transition: `all 0.1s ease-in`
         },
     },
     '& label.Mui-focused': {
         color: 'white',
-        border: 'none',
         fontFamily: 'Inter Tight, sans-serif',
     },
     '& .MuiFormLabel-root': {
         color: 'white',
         marginLeft: `5px`,
-        border: 'none',
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
-
-export const Search = () => {
-    const [searchResults, setSearchResults] = useState(null)
-    const [cachedUsers, setCachedUsers] = useState(null)
-
-
+const Search = () => {
+    const [searchResults, setSearchResults] = useState(null);
+    const [cachedUsers, setCachedUsers] = useState(null);
+    // If the user is logged in, this is an array of who they follow
+    const [loggedFollowing, setLoggedFollowing] = useState(null);
     const Levenshtein = (a, b) => {
         // First two conditions
         if (!a.length) return b.length;
@@ -73,11 +72,6 @@ export const Search = () => {
         // Return the result
         return arr[b.length][a.length];
     }
-
-    const handleClickAway = () => {
-        setSearchResults(null);
-    }
-
     const handleChange = (event) => {
         // What the user has typed in so far.
         let searchParam = event.target.value;
@@ -101,46 +95,55 @@ export const Search = () => {
             })]
         })
         results.splice(5, results.length - 5);
-        console.log(results);
         setSearchResults(results);
     }
 
-    const updateCachedUsers = () => {
-        getAllUsers().then(function (result) {
-            setCachedUsers(result);
-        })
+    const handleClickAway = () => {
+        setSearchResults(null);
     }
     useEffect(() => {
-        updateCachedUsers();
+        retrieveAllUsers().then(res => setCachedUsers(res));
+        if (isLoggedIn()) {
+            retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
+                setLoggedFollowing(following);
+            })
+        }
     }, [])
-
     return (
         <div className='search-bar-container'>
             <ClickAwayListener onClickAway={handleClickAway}>
                 <FormControl variant="outlined">
                     <SearchBar className='search-bar' inputProps={{className: `search-label`}}
+                               onClick={handleChange}
                                onChange={handleChange} label="Search"></SearchBar>
                 </FormControl>
             </ClickAwayListener>
-            {searchResults !== null ?
-                <div id="result" style={{top: '125px'}}>
-                    {searchResults.map(function (user, i) {
-                        return <>
-                            <a href={`profile#${user.user_id}`}>
-                                <img alt={"profile"} src={user.picture_url}></img>
-                                {user.username.length > 12 ? user.username.slice(0, 12) + "..." : user.username}
+            {!!searchResults ?
+                <div className={'results'}>
+                    {searchResults.map(result => {
+                        let following = false;
+                        if (isLoggedIn() && following) {
+                            following = following.some(e => e.user_id === result.user_id);
+                        }
+                        return (
+                            <a className={'result'} href={`/profile#${result.user_id}`}>
+                                <img alt='' src={result.profile_picture}></img>
+                                <div className={'result-title'}>
+                                    <h2>{result.username}</h2>
+                                    {following ?
+                                        <p>Following</p>
+                                        :
+                                        <></>
+                                    }
+                                </div>
                             </a>
-                            {i !== searchResults.length - 1 ?
-                                <hr style={{width: '200px'}}/>
-                                :
-                                <></>
-                            }
-                        </>
-                    })
-                    }</div>
+                        )
+                    })}
+                </div>
                 :
                 <></>
             }
+
 
         </div>
     )

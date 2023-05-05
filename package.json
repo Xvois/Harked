@@ -1,10 +1,11 @@
 {
-  "name": "photon",
+  "name": "harked",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@mui/base": "^5.0.0-alpha.125",
     "@mui/icons-material": "^5.10.14",
     "@mui/material": "^5.10.14",
     "axios": "^1.1.3",
@@ -14,8 +15,8 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "helmet": "^6.0.0",
-    "knex": "^2.3.0",
     "lru-cache": "^7.14.1",
+    "pocketbase": "^0.14.3",
     "rc-dropdown": "^4.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -43,7 +44,13 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "env": {
+      "es2020": true,
+      "browser": true,
+      "node": true,
+      "mocha": true
+    }
   },
   "browserslist": {
     "production": [

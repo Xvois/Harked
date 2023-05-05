@@ -5,22 +5,20 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {authURI} from './Authentication';
-import {retrieveAllUserIDs} from './PDM';
+import {isLoggedIn, retrieveAllUsers} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {isServerAlive} from "./API";
+import {handleLogin} from "./Authentication";
 
 function Homepage() {
     const [token, setToken] = useState("")
-    const [serverStatus, setServerStatus] = useState(true);
     const navigate = useNavigate();
     useEffect(() => {
         setToken(window.localStorage.getItem("token"))
-        isServerAlive().then(isAlive => setServerStatus(isAlive));
-        document.title = "Photon"
+        document.title = "Harked"
     }, [token])
+
 
     const handleLogOut = () => {
         window.localStorage.clear();
@@ -29,7 +27,7 @@ function Homepage() {
 
     const handleCompare = async () => {
         const currUserID = window.localStorage.getItem('userID')
-        let IDs = await retrieveAllUserIDs();
+        const IDs = (await retrieveAllUsers()).map(e => e.user_id);
         let userID;
         do {
             do {
@@ -45,44 +43,34 @@ function Homepage() {
     return (
         <div className='homepage-container'>
             <div className='top-container'>
-                {token && token !== "denied-scopes" ?
+                {isLoggedIn() ?
                     <h1 className="main-text">Welcome.</h1>
                     :
                     <h1 className="main-text">Get true insights on your <span
                         style={{color: '#22C55E'}}>Spotify</span> profile.</h1>
                 }
-                <p className='under-text'>{token ? exploreMessage : welcomeMessage}</p>
-                <div style={{display: 'flex', gap: '10px'}}>
-                    {!token || token === "denied-scopes" ?
-                        <a className="auth-button" href={authURI}>Log-in</a>
-                        :
+                <p className='under-text'>{isLoggedIn() ? exploreMessage : welcomeMessage}</p>
+                <div className={'button-wrapper'}>
+                    {!isLoggedIn() ?
                         <>
-                            <a className="auth-button" href='/profile#me'>Explore your profile</a>
-                            <a className="auth-button" onClick={handleCompare}>Compare to others</a>
-                            <a className="auth-button" onClick={handleLogOut}>Log out</a>
-                        </>
-                    }
-                </div>
-                <div className={"server-status"}>
-                    {serverStatus ?
-                        <>
-                            <div style={{'--colour': '#22C55E'}} className={"server-status-indicator"}></div>
-                            <p className={"server-status-text"}>Server is responding.</p>
+                            <button className="auth-button" onClick={handleLogin}>Login with Spotify</button>
                         </>
                         :
                         <>
-                            <div style={{'--colour': 'red'}} className={"server-status-indicator"}></div>
-                            <p className={"server-status-text"}>Server is not responding.</p>
+                            <button className="auth-button" onClick={() => window.location = '/profile#me'}>Explore your
+                                profile
+                            </button>
+                            <button className="auth-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
+                    {isLoggedIn() ?
+                        <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
+                        :
+                        <></>
+                    }
                 </div>
-                <p style={{marginLeft: '20px', fontFamily: 'Inter Tight', marginTop: '0', fontSize: '10px'}}>V
-                    1.1.4</p>
-                {token === "denied-scopes" ?
-                    <p className="error-message">You need to accept the Spotify scopes to log in.</p>
-                    :
-                    <></>
-                }
+                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
+                    v1.2.12 [15.2 pb]</p>
             </div>
         </div>
     );
