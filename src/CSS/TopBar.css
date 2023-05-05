@@ -81,9 +81,14 @@
 
 }
 
-.search-bar {
+.search-bar-container {
     margin: auto;
-    width: 200px;
+    width: 250px;
+    justify-content: center;
+}
+
+.MuiFormControl-root {
+    width: 100%;
 }
 
 .results {
@@ -98,12 +103,12 @@
     align-items: center;
     height: max-content;
     gap: 15px;
-    padding: 10px 10px 10px 10px;
     color: white;
     text-decoration: none;
 
     backdrop-filter: blur(10px);
-    width: 180px;
+    width: 238px;
+    padding: 5px;
     border-left: 1px solid #22C55E;
     border-bottom: 1px solid #22C55E;
     border-right: 1px solid #22C55E;

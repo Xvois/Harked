@@ -110,8 +110,10 @@ const Profile = () => {
         Promise.all(loadPromises).then(() => setLoaded(true));
     }
 
-// Call the loadPage function once the component mounts
     useEffect(() => {
+        // Redirect if attempting to load own page & not identified as such initially
+        if(window.localStorage.getItem('user_id') === pageHash){window.location = 'profile#me'}
+        // Load the page
         loadPage();
     }, []);
 
@@ -211,7 +213,7 @@ const Profile = () => {
     const SongAnalysisAverage = () => {
         const average = getAverageAnalytics(selectedDatapoint.top_songs);
         return (
-            <div id={'block-wrapper'}>
+            <div className={'block-wrapper'}>
                 {Object.keys(translateAnalytics).map(function (key) {
                     if (key !== "loudness") {
                         return <StatBlock key={key} name={translateAnalytics[key].name}
@@ -223,10 +225,32 @@ const Profile = () => {
         )
     }
 
+    const GenreBreakdown = (props) => {
+        const {number} = props;
+        return (
+            <div className={'block-wrapper'} style={{flexWrap: 'wrap-reverse'}}>
+                {selectedDatapoint.top_genres.slice(0,number).map((genre, genreIndex) => {
+                    const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false);
+                    const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
+                    const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
+                    return (
+                        <div id={'genre-breakdown-instance'}>
+                            <h3 style={{margin: '0'}}>{genre}</h3>
+                            {artists.map((a, artistIndex) => {
+                                const percentage = (artistWeights[artistIndex] / totalWeights) * 100;
+                                return <StatBlock key={a.artist_id} name={a.name} description={`${Math.round(percentage)}%`} value={percentage} />
+                            })}
+                        </div>
+                    )
+                })}
+            </div>
+        )
+    }
+
     const TopSongsOfArtists = (props) => {
         const {number} = props;
         return (
-            <div id={'block-wrapper'}>
+            <div className={'block-wrapper'}>
                 {selectedDatapoint.top_artists.slice(0,number).map((artist, i) => {
                     const topSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === artist.artist_id));
                     if(topSongIndex > -1){
@@ -479,7 +503,7 @@ const Profile = () => {
                         textAlign: 'center',
                         fontFamily: 'Inter Tight',
                         textTransform: 'uppercase'
-                    }}>Getting the profile ready...</p>
+                    }}>Getting the profile ready... (This may take longer than usual)</p>
                 </div>
                 :
                 <div className='wrapper'>
@@ -613,7 +637,19 @@ const Profile = () => {
                                                 </div>
 
                                                 :
-                                                <></>
+                                                <div style={{textAlign: 'left'}}>
+                                                    <p style={{
+                                                        margin: '16px 0 0 0',
+                                                        textTransform: 'uppercase'
+                                                    }}>{possessive}</p>
+                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top artists</h2>
+                                                    <p style={{
+                                                        margin: '0 0 16px 0',
+                                                        textTransform: 'uppercase'
+                                                    }}>for each genre</p>
+                                                    <p>The artists that contribute most to your listening time in each genre.</p>
+                                                    <GenreBreakdown number={5} />
+                                                </div>
                                         }
                                     </div>
                                 </div>

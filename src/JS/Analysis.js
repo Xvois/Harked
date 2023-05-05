@@ -140,7 +140,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             break;
         case "genres":
             let relatedArtists = getGenresRelatedArtists(item, datapoint.top_artists);
-            if (relatedArtists.length < 0) {
+            if (relatedArtists.length <= 0) {
                 topMessage = 'An error has occurred! There are no related artists for this genre.'
             } else {
                 topMessage = `${possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} love for ${item} is best described by ${possessive} time listening to ${relatedArtists[0].name}.`

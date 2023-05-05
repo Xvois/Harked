@@ -43,7 +43,9 @@ function Authentication() {
 
         const pb = new PocketBase(process.env.REACT_APP_PB_ROUTE);
         // Is the user not in authorised on the database yet?
+        console.log(pb.authStore.isValid);
         if (!pb.authStore.isValid) {
+            console.info('Attempting OAuth with Spotify.');
             pb.collection('users').authWithOAuth2({
                 provider: 'spotify',
                 scopes: ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']
@@ -60,6 +62,7 @@ function Authentication() {
                             const following = {id: hashString(fUser.user_id), user: id, following: []}
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);
+                            redirect('/profile#me');
                         });
                 })
             })
@@ -70,12 +73,12 @@ function Authentication() {
             local_token = local_token.substring(1, local_token.length - 1);
             window.location.hash = ""
             window.localStorage.setItem("access-token", local_token);
+            redirect('/profile#me');
         }
-        redirect('/profile#me');
     }, [redirect])
 
     return (
-        <div>Redirecting...</div>
+        <div>Redirecting... [If you are stuck on this page please enable pop-ups and reload]</div>
     )
 }
 

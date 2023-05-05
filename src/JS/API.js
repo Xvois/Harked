@@ -284,12 +284,7 @@ const postArtist = async (artist) => {
     await pb.collection('artists').create(artist);
     updateDatabaseCacheWithItems({artists: [artist]});
 }
-
-const updateArtist = async (artist) => {
-    artist.genres = await genresToRefIDs(artist.genres);
-    const id = hashString(artist.artist_id);
-    await pb.collection('artists').update(id, artist).catch(handleUpdateException);
-}
+// TODO: MAKE UPDATE METHODS FOR ARTISTS
 
 
 const postGenre = async (genre) => {
@@ -313,8 +308,6 @@ const artistsToRefIDs = async (artists) => {
         ids.push(artist.id);
         if (newArtistIDs.includes(artist.artist_id)) {
             await postArtist(artist);
-        } else {
-            await updateArtist(artist);
         }
     }
     return ids;
@@ -339,7 +332,7 @@ const genresToRefIDs = async (genres) => {
     }
     return ids;
 }
-
+// TODO: NEEDS MAJOR OPTIMISATION
 const songsToRefIDs = async (songs) => {
     let ids = [];
     const songIDs = songs.map(e => e.song_id);

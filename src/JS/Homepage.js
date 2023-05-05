@@ -27,7 +27,7 @@ function Homepage() {
 
     const handleCompare = async () => {
         const currUserID = window.localStorage.getItem('userID')
-        const IDs = await retrieveAllUsers().map(e => e.user_id);
+        const IDs = (await retrieveAllUsers()).map(e => e.user_id);
         let userID;
         do {
             do {
@@ -63,10 +63,14 @@ function Homepage() {
                             <button className="auth-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
-                    <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
+                    {isLoggedIn() ?
+                        <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
+                        :
+                        <></>
+                    }
                 </div>
-                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>V
-                    1.2.10pb</p>
+                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
+                    v1.2.12 [15.2 pb]</p>
             </div>
         </div>
     );

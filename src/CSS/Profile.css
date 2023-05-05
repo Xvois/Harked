@@ -223,7 +223,7 @@ select.dropdown {
     overflow: hidden;
 }
 
-#block-wrapper {
+.block-wrapper {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -231,10 +231,17 @@ select.dropdown {
     gap: 20px;
 }
 
-#block-wrapper > div {
+.block-wrapper > div {
     flex-grow: 1;
     border: 1px solid #343434;
     padding: 15px;
+}
+
+#genre-breakdown-instance {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    gap: 15px;
 }
 
 .stat-block {
