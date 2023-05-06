@@ -1,6 +1,6 @@
 # Harked
 
-Harked is a website that allows users to generate personalized profiles based on their Spotify listening habits. It uses OAuth2 to securely log in to a user's Spotify account and retrieve their top songs and artists, and then displays this data in a profile with descriptions of each category.
+Harked is a website that allows users to generate personalized profiles based on their Spotify listening habits.
 
 ## Getting Started
 
