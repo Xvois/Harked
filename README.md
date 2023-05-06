@@ -18,7 +18,4 @@ Social features: Harked allows you to follow and compare your profile with those
 
 ## Contributing
 
-If you'd like to contribute to Harked, feel free to fork this repository and submit a pull request with your changes. Please make sure to follow the existing code style and test your changes thoroughly.
-License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+If you'd like to contribute to Harked, feel free to fork this repository and submit a pull request with your changes.
