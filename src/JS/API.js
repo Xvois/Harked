@@ -361,7 +361,7 @@ export const postDatapoint = async (datapoint) => {
     d.setMilliseconds(d.getMilliseconds() - WEEK_IN_MILLISECONDS);
 
     // Check if a valid datapoint already exists in the database for the given term and within the past week.
-    const valid_exists = await pb.collection('datapoints').getFirstListItem(`created >= "${d.toISOString()}" && term="${datapoint.term}"`)
+    const valid_exists = await pb.collection('datapoints').getFirstListItem(`created >= "${d.toISOString()}" && term="${datapoint.term}" && owner.user_id = "${datapoint.user_id}"`)
         .catch(function (err) {
             if (err.status !== 404) {
                 console.warn(err);

@@ -70,7 +70,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.2.12 [15.2 pb] Vercel</p>
+                    v1.2.13 [15.2 pb] Vercel</p>
             </div>
         </div>
     );

@@ -94,11 +94,11 @@
 .results {
     display: flex;
     flex-direction: column;
-    position: relative;
+    position: absolute;
 }
 
 .result {
-    position: absolute;
+    position: relative;
     display: flex;
     align-items: center;
     height: max-content;
@@ -112,6 +112,7 @@
     border-left: 1px solid #22C55E;
     border-bottom: 1px solid #22C55E;
     border-right: 1px solid #22C55E;
+    z-index: 1;
 }
 
 .result-title > h2 {

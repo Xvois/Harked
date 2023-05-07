@@ -199,10 +199,15 @@ export const retrieveSavedSongs = async function (user_id) {
  */
 export const formatUser = async function (user) {
     // Get our global user_id
+    let pfp = null;
+    if(user.images.length > 0){
+        console.log(user);
+        pfp = user.images[0].url;
+    }
     return {
         user_id: user.id,
         username: user.display_name,
-        profile_picture: user.images[0].url ?? null,
+        profile_picture: pfp,
         media: null,
     }
 }

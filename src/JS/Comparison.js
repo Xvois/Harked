@@ -23,7 +23,7 @@ const Comparison = () => {
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence'];
 
     const calculateAverageAnalytics = (u) => {
-        const length = u.datapoint.topSongs.length;
+        const length = u.datapoint.top_songs.length;
         let averageAnalytics = {
             'acousticness': 0,
             'danceability': 0,
@@ -31,7 +31,7 @@ const Comparison = () => {
             'instrumentalness': 0,
             'valence': 0
         };
-        u.datapoint.topSongs.forEach(song => {
+        u.datapoint.top_songs.forEach(song => {
             analyticsMetrics.forEach(key => {
                 averageAnalytics[key] += song.analytics[key] / length;
             })
@@ -48,19 +48,19 @@ const Comparison = () => {
         let u0Metrics = calculateAverageAnalytics(u[0]);
         let u1Metrics = calculateAverageAnalytics(u[1]);
         let similarity;
-        user1Datapoint.topArtists.forEach(artist1 => {
-            if (user2Datapoint.topArtists.some(artist2 => artist2.name === artist1.name)) {
+        user1Datapoint.top_artists.forEach(artist1 => {
+            if (user2Datapoint.top_artists.some(artist2 => artist2.name === artist1.name)) {
                 artistsSimilarity++;
             }
         })
-        user1Datapoint.topGenres.forEach(genre => {
-            if (user2Datapoint.topGenres.includes(genre)) {
+        user1Datapoint.top_genres.forEach(genre => {
+            if (user2Datapoint.top_genres.includes(genre)) {
                 genresSimilarity++;
             }
         })
-        artistsSimilarity /= user1Datapoint.topArtists.length;
+        artistsSimilarity /= user1Datapoint.top_artists.length;
         // Takes discrete average of the two lengths.
-        genresSimilarity /= Math.floor((user1Datapoint.topGenres.length + user2Datapoint.topGenres.length) / 2);
+        genresSimilarity /= Math.floor((user1Datapoint.top_genres.length + user2Datapoint.top_genres.length) / 2);
         for (const key in u0Metrics) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
         }
@@ -115,7 +115,7 @@ const Comparison = () => {
     const quintessentialSong = (user, avgAnalytics) => {
         let bestGuess = {};
         let bestDelta = 100;
-        user.datapoint.topSongs.forEach(song => {
+        user.datapoint.top_songs.forEach(song => {
             let localDelta = 0;
             Object.keys(avgAnalytics).forEach(key => {
                 localDelta += Math.abs(song.analytics[key] - avgAnalytics[key]);
@@ -153,8 +153,8 @@ const Comparison = () => {
                         fontFamily: 'Inter Tight',
                         margin: '10px 0 0 0',
                         width: 'max-content'
-                    }}><span style={{color: '#22C55E'}}>{user.datapoint.topArtists[0].name}</span> fan · <span
-                        style={{color: '#22C55E'}}>{user.datapoint.topGenres[0]}</span> fan</p>
+                    }}><span style={{color: '#22C55E'}}>{user.datapoint.top_artists[0].name}</span> fan · <span
+                        style={{color: '#22C55E'}}>{user.datapoint.top_genres[0]}</span> fan</p>
                     <a target="_blank" href={`https://open.spotify.com/user/${user.userID}`} className='spotify-link'
                        style={{fontFamily: 'Inter Tight', gap: '5px', marginTop: '7px'}}>
                         <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" version="1.1"
@@ -216,14 +216,14 @@ const Comparison = () => {
                             <div className="card-header-l">
                                 <h1>Top artists.</h1>
                             </div>
-                            <Card item={users[0].datapoint.topArtists[0]} num="1"/>
-                            <Card item={users[0].datapoint.topArtists[1]} num="2"/>
-                            <Card item={users[0].datapoint.topArtists[2]} num="3"/>
+                            <Card item={users[0].datapoint.top_artists[0]} num="1"/>
+                            <Card item={users[0].datapoint.top_artists[1]} num="2"/>
+                            <Card item={users[0].datapoint.top_artists[2]} num="3"/>
                         </div>
                         <div className="card-container" style={{justifyContent: 'left'}}>
-                            <Card item={users[0].datapoint.topSongs[0]} num="1"/>
-                            <Card item={users[0].datapoint.topSongs[1]} num="2"/>
-                            <Card item={users[0].datapoint.topSongs[2]} num="3"/>
+                            <Card item={users[0].datapoint.top_songs[0]} num="1"/>
+                            <Card item={users[0].datapoint.top_songs[1]} num="2"/>
+                            <Card item={users[0].datapoint.top_songs[2]} num="3"/>
                             <div style={{
                                 flexGrow: '1',
                                 display: 'flex',
@@ -277,14 +277,14 @@ const Comparison = () => {
                             fontWeight: '900',
                             fontFamily: 'Inter Tight'
                         }}>Top genre: <span
-                            style={{color: '#22C55E'}}>{users[0].datapoint.topGenres[0]}</span></h2>
+                            style={{color: '#22C55E'}}>{users[0].datapoint.top_genres[0]}</span></h2>
                     </div>
                     <div className="right">
                         <UserContainer user={users[1]} justification={'left'}/>
                         <div className="card-container" style={{justifyContent: 'left'}}>
-                            <Card item={users[1].datapoint.topArtists[0]} num="1"/>
-                            <Card item={users[1].datapoint.topArtists[1]} num="2"/>
-                            <Card item={users[1].datapoint.topArtists[2]} num="3"/>
+                            <Card item={users[1].datapoint.top_artists[0]} num="1"/>
+                            <Card item={users[1].datapoint.top_artists[1]} num="2"/>
+                            <Card item={users[1].datapoint.top_artists[2]} num="3"/>
                             <div style={{
                                 color: '#22C55E',
                                 flexGrow: '1',
@@ -305,9 +305,9 @@ const Comparison = () => {
                             <div className="card-header-l" style={{color: '#22C55E'}}>
                                 <h1>Top songs.</h1>
                             </div>
-                            <Card item={users[1].datapoint.topSongs[0]} num="1"/>
-                            <Card item={users[1].datapoint.topSongs[1]} num="2"/>
-                            <Card item={users[1].datapoint.topSongs[2]} num="3"/>
+                            <Card item={users[1].datapoint.top_songs[0]} num="1"/>
+                            <Card item={users[1].datapoint.top_songs[1]} num="2"/>
+                            <Card item={users[1].datapoint.top_songs[2]} num="3"/>
                         </div>
                         <div className='art-container' style={{transform: 'scale(75%)'}}>
                             <a className={'play-wrapper'}
@@ -344,7 +344,7 @@ const Comparison = () => {
                                 fontWeight: '900',
                                 fontFamily: 'Inter Tight'
                             }}>Top genre: <span
-                                style={{color: '#22C55E'}}>{users[1].datapoint.topGenres[0]}</span></h2>
+                                style={{color: '#22C55E'}}>{users[1].datapoint.top_genres[0]}</span></h2>
                         </div>
                     </div>
                 </div>
