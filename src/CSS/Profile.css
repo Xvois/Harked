@@ -639,17 +639,22 @@ select.dropdown {
         opacity: 0;
     }
 
-    .analysis > p {
-        display: none;
-    }
-
-    .analysis > div {
-        display: none;
+    .analysis {
+        scale: 0;
     }
 
     .showcase-rec-button {
         display: none;
     }
+}
+
+.term-buttons {
+    font-family: "Inter Tight", sans-serif;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: white;
+    border: none;
+    background: none;
 }
 
 

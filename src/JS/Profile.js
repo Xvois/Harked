@@ -178,15 +178,21 @@ const Profile = () => {
             const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
             return (
                 <div className={'analysis'}>
-                    <h2 style={{margin: '0'}}>Artist analysis</h2>
-                    <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(artist)}</p>
+
                     {orderedAlbums.length > 0 ?
-                        orderedAlbums.map(function (album) {
-                            return <StatBlock key={album.id}
-                                              name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
-                                              description={`${album.saved_songs.length} saved songs.`}
-                                              value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
-                        })
+                        <>
+                            <h2 style={{margin: '0'}}>Artist analysis</h2>
+                            <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(artist)}</p>
+                            {
+                                orderedAlbums.map(function (album) {
+                                    return <StatBlock key={album.id}
+                                                      name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
+                                                      description={`${album.saved_songs.length} saved songs.`}
+                                                      value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
+                                })
+                            }
+                        </>
+
                         :
                         <p style={{marginBottom: 'auto'}}>There are no saved songs from this
                             artist on {possessive} public profile, so an analysis is not available.</p>
@@ -409,7 +415,7 @@ const Profile = () => {
                 {expanded ?
                     <>
                         <div className={"showcase-list-item-expanded"}>
-                            <div style={{fontFamily: 'Inter Tight'}}>
+                            <div style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
                                 <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
                                 <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
@@ -562,8 +568,9 @@ const Profile = () => {
                             <p>of information capture</p>
                             <div style={{display: 'flex', flexDirection: 'row', gap: '5px'}}>
                                 {terms.map(function (term, i) {
-                                    return (<button key={term} className={'std-button'}
-                                                    style={{textTransform: 'capitalize'}}
+                                    return (<button key={term}
+                                                    className={'term-buttons'}
+                                                    style={termIndex === i ? {textDecoration: 'underline #22C55E'} : {}}
                                                     onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
                                 })}
                             </div>
