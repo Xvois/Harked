@@ -53,7 +53,6 @@ export const getAllItemIndexChanges = function (type, dp1, dp2) {
 }
 
 export const getAllArtistAssociations = function () {
-    console.info('getAllArtistAssociations called!');
     // noinspection SpellCheckingInspection
     const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     const memo = new Map();

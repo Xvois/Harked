@@ -122,8 +122,8 @@ const Search = () => {
                 <div className={'results'}>
                     {searchResults.map(result => {
                         let following = false;
-                        if (isLoggedIn() && following) {
-                            following = following.some(e => e.user_id === result.user_id);
+                        if (isLoggedIn() && (loggedFollowing && loggedFollowing.length > 0)) {
+                            following = loggedFollowing.some(e => e.user_id === result.user_id);
                         }
                         return (
                             <a className={'result'} href={`/profile#${result.user_id}`}>

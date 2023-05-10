@@ -26,7 +26,7 @@ function Homepage() {
     }
 
     const handleCompare = async () => {
-        const currUserID = window.localStorage.getItem('userID')
+        const currUserID = window.localStorage.getItem('user_id')
         const IDs = (await retrieveAllUsers()).map(e => e.user_id);
         let userID;
         do {
@@ -39,15 +39,14 @@ function Homepage() {
     }
 
     let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
-    let welcomeMessage = "Just click log-in to get started exploring your profile. None of your log-in information is shared with us.";
+    let welcomeMessage = "Just click log-in to get started exploring your Spotify profile in a new light. None of your log-in information is shared with us.";
     return (
         <div className='homepage-container'>
             <div className='top-container'>
                 {isLoggedIn() ?
                     <h1 className="main-text">Welcome.</h1>
                     :
-                    <h1 className="main-text">Get true insights on your <span
-                        style={{color: '#22C55E'}}>Spotify</span> profile.</h1>
+                    <h1 className="main-text">Harked</h1>
                 }
                 <p className='under-text'>{isLoggedIn() ? exploreMessage : welcomeMessage}</p>
                 <div className={'button-wrapper'}>
@@ -70,7 +69,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.2.13 [15.2 pb] Vercel</p>
+                    v1.2.14</p>
             </div>
         </div>
     );

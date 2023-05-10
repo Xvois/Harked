@@ -8,6 +8,7 @@ import reportWebVitals from './JS/reportWebVitals';
 import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './JS/TopBar';
 import Profile from './JS/Profile';
+import { Analytics } from '@vercel/analytics/react';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -21,6 +22,7 @@ root.render(
                 <Route path="compare" element={<Comparison />}/>
             </Routes>
         </BrowserRouter>
+        <Analytics />
     </>
 );
 

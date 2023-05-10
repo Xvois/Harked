@@ -164,9 +164,9 @@ select.dropdown {
     position: relative;
     overflow: hidden;
     justify-content: center;
-    height: 200px;
-    max-width: 300px;
-    padding: 25px;
+
+    height: 250px;
+    max-width: 400px;
     flex-grow: 1;
     animation: fadeIn 0.5s ease;
 }
@@ -220,6 +220,8 @@ select.dropdown {
     flex-direction: column;
     justify-content: center;
     gap: 5px;
+    font-family: "Inter Tight", sans-serif;
+    text-align: right;
     overflow: hidden;
 }
 
@@ -407,11 +409,10 @@ select.dropdown {
 .user-followers {
     display: flex;
     flex-direction: column;
-    gap: 15px;
     justify-content: center;
     align-items: center;
     font-family: "Inter Tight", sans-serif;
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .settings-container {

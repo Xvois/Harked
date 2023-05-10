@@ -87,11 +87,11 @@ export const followsUser = async function (primaryUserID, targetUserID) {
         return false;
     }
     let follows = false;
-    const primaryUser = await getUser(primaryUserID);
-    await getLocalData("user_followers", `user.user_id=${targetUserID}`)
+    const targetUser = await getUser(targetUserID);
+    await getLocalData("user_following", `user.user_id=${primaryUserID}`)
         .then((res) => {
             const item = res[0];
-            if (item.followers.some(e => e === primaryUser.id)) {
+            if (item.following.some(e => e === targetUser.id)) {
                 follows = true;
             }
         });
@@ -182,7 +182,7 @@ export const retrievePlaylists = async function (user_id) {
     playlists = playlists.filter(p => !p.collaborative && p.public);
     const playlistTrackPromises = playlists.map(playlist => fetchData(`playlists/${playlist.id}/tracks`).then(response => response.items.map(e => e.track)));
     await Promise.all(playlistTrackPromises).then(tracksArrays => tracksArrays.forEach((tracks, index) => playlists[index].tracks = tracks.map(t => formatSong(t))));
-    console.log(playlists);
+    console.info('Playlists: ', playlists);
     return playlists;
 }
 

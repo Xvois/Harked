@@ -36,7 +36,6 @@ import {handleLogin} from "./Authentication";
 const Profile = () => {
 
     const simpleDatapoints = ["artists", "songs", "genres"]
-    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     const terms = ["short_term", "medium_term", "long_term"];
     const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'all time'}
     const pageHash = window.location.hash.split("#")[1];
@@ -60,13 +59,15 @@ const Profile = () => {
     const [allDatapoints, setAllDatapoints] = useState([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
     const [playlists, setPlaylists] = useState(null);
-    const [savedSongs, setSavedSongs] = useState([])
     const [possessive, setPossessive] = useState('');
+
+    // Reload when attempting to load a new page
+    window.addEventListener("hashchange", () => {window.location.reload()});
 
 
     // Function that loads the page when necessary
     const loadPage = () => {
-        // Promises that need to be made before the page can be laoded
+        // Promises that need to be made before the page can be loaded
         let loadPromises = [
             retrieveUser(pageHash).then(function (user) {
                 setPageUser(user);
@@ -96,6 +97,7 @@ const Profile = () => {
         if (isLoggedIn()) {
             const loggedUserID = window.localStorage.getItem('user_id');
             if (!isOwnPage) {
+                 console.info('Is not own page.');
                 followsUser(loggedUserID, pageHash).then(f => setIsLoggedUserFollowing(f));
             }
             loadPromises.push(
@@ -176,6 +178,8 @@ const Profile = () => {
             const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
             return (
                 <div className={'analysis'}>
+                    <h2 style={{margin: '0'}}>Artist analysis</h2>
+                    <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(artist)}</p>
                     {orderedAlbums.length > 0 ?
                         orderedAlbums.map(function (album) {
                             return <StatBlock key={album.id}
@@ -184,8 +188,8 @@ const Profile = () => {
                                               value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
                         })
                         :
-                        <p style={{fontFamily: 'Inter Tight', textAlign: 'right'}}>There are no saved songs from this
-                            artist on {possessive} public profile.</p>
+                        <p style={{marginBottom: 'auto'}}>There are no saved songs from this
+                            artist on {possessive} public profile, so an analysis is not available.</p>
                     }
                 </div>
             )
@@ -237,11 +241,11 @@ const Profile = () => {
                     const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
                     const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
                     return (
-                        <div id={'genre-breakdown-instance'}>
+                        <div key={genre} id={'genre-breakdown-instance'}>
                             <h3 style={{margin: '0'}}>{genre}</h3>
                             {artists.map((a, artistIndex) => {
                                 const percentage = (artistWeights[artistIndex] / totalWeights) * 100;
-                                return <StatBlock key={a.artist_id} name={a.name} description={`${Math.round(percentage)}%`} value={percentage} />
+                                return <StatBlock key={a.artist_id} key={a.artist_id} name={a.name} description={`${Math.round(percentage)}%`} value={percentage} />
                             })}
                         </div>
                     )
@@ -258,7 +262,7 @@ const Profile = () => {
                     const topSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === artist.artist_id));
                     if(topSongIndex > -1){
                         return (
-                            <div className={'stat-block'} style={{padding: '15px', border: '1px solid #343434'}}>
+                            <div key={artist.artist_id} className={'stat-block'} style={{padding: '15px', border: '1px solid #343434'}}>
                                 <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
                                 <p style={{margin: '0'}}>{artist.name}</p>
                             </div>
@@ -528,10 +532,7 @@ const Profile = () => {
                             <div>
                                 <p style={{
                                     margin: '0',
-                                    fontWeight: 'normal',
-                                    textAlign: 'right'
-                                }}>{followers.length}</p>
-                                <p style={{margin: '0', textAlign: 'right'}}>Followers</p>
+                                }}>{followers.length} follower{followers.length > 1 ? 's' : ''}</p>
                             </div>
                             {isLoggedIn() && pageHash !== 'me' ?
                                 isLoggedUserFollowing ?
