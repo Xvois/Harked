@@ -690,7 +690,7 @@ const Profile = () => {
                                 :
                                 playlists.length < 1 ?
                                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column', fontFamily: 'Inter Tight'}}>
-                                        <p>It looks like {possessive} doesn't have any public playlists yet.</p>
+                                        <p>It looks like there are no public playlists on {possessive} public profile.</p>
                                     </div>
                                     :
                                     <div style={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px', maxWidth: '1000px', width: '80%'}}>
