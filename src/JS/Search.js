@@ -43,7 +43,8 @@ const SearchBar = styled(TextField)({
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
-const Search = () => {
+const Search = (props) => {
+    const {showResults} = props;
     const [searchResults, setSearchResults] = useState(null);
     const [cachedUsers, setCachedUsers] = useState(null);
     // If the user is logged in, this is an array of who they follow
@@ -109,15 +110,20 @@ const Search = () => {
             })
         }
     }, [])
+
+    useEffect(() => {
+        if(!showResults){
+            setSearchResults(null);
+        }
+    }, [showResults])
+
     return (
         <div className='search-bar-container'>
-            <ClickAwayListener onClickAway={handleClickAway}>
                 <FormControl variant="outlined">
                     <SearchBar className='search-bar' inputProps={{className: `search-label`}}
                                onClick={handleChange}
                                onChange={handleChange} label="Search"></SearchBar>
                 </FormControl>
-            </ClickAwayListener>
             {!!searchResults ?
                 <div className={'results'}>
                     {searchResults.map(result => {

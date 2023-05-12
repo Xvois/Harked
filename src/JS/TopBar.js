@@ -10,8 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import Search from "./Search"
 
 const TopBar = () => {
-    const [searchResults, setSearchResults] = useState(null)
-    const [cachedUsers, setCachedUsers] = useState(null)
+    const [showSearchResults, setShowSearchResults] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [menuExpanded, setMenuExpanded] = useState(false);
     const [sideMenuSearchFocused, setSideMenuSearchFocused] = useState(false);
@@ -31,8 +30,11 @@ const TopBar = () => {
                 <div className="element-container">
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                     <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
-                    <div className='element'><Search></Search></div>
-
+                    <ClickAwayListener onClickAway={() => setShowSearchResults(false)}>
+                    <div className='element' onClick={() => setShowSearchResults(true)}>
+                            <Search showResults={showSearchResults}></Search>
+                    </div>
+                    </ClickAwayListener>
                 </div>
                 :
                 <div className={"element"} id={"menu"} onClick={() => setMenuExpanded(true)}>
@@ -40,12 +42,16 @@ const TopBar = () => {
                     <p>Menu</p>
                 </div>
             }
-            <div id="expanded-menu" style={menuExpanded ? {} : {opacity: '0', pointerEvents: 'none'}}>
+            <div id="expanded-menu" style={menuExpanded ? {} : {opacity: '0', pointerEvents: 'none', display: 'none'}}>
                 <div className='menu-element' id={"close-button"} onClick={() => setMenuExpanded(false)}><CloseIcon
                     fontSize="large"/><p>Close</p></div>
-                <ClickAwayListener onClickAway={() => setSideMenuSearchFocused(false)}>
-                    <div className='menu-element' onClick={() => setSideMenuSearchFocused(true)}>
-                        <Search></Search>
+                <ClickAwayListener onClickAway={function() {
+                    if(sideMenuSearchFocused){
+                        setSideMenuSearchFocused(false);
+                        setShowSearchResults(false);
+                    }}}>
+                    <div className='menu-element' onClick={() => {setSideMenuSearchFocused(true); setShowSearchResults(true)}}>
+                        <Search showResults={showSearchResults}></Search>
                     </div>
                 </ClickAwayListener>
                 {!sideMenuSearchFocused ?

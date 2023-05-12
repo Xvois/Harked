@@ -180,11 +180,37 @@ export const retrievePlaylists = async function (user_id) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     let playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
     playlists = playlists.filter(p => !p.collaborative && p.public);
-    const playlistTrackPromises = playlists.map(playlist => fetchData(`playlists/${playlist.id}/tracks`).then(response => response.items.map(e => e.track)));
-    await Promise.all(playlistTrackPromises).then(tracksArrays => tracksArrays.forEach((tracks, index) => playlists[index].tracks = tracks.map(t => formatSong(t))));
+
+    const playlistTrackPromises = playlists.map(playlist => {
+        const totalTracks = playlist.tracks.total;
+        const numCalls = Math.ceil(totalTracks / 50);
+        const promises = [];
+
+        for (let i = 0; i < numCalls; i++) {
+            const offset = i * 50;
+            const promise = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+                .then(response => response.items.map(e => e.track))
+                .catch(error => {
+                    console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
+                    return [];
+                });
+
+            promises.push(promise);
+        }
+
+        return Promise.all(promises).then(tracksArrays => tracksArrays.flat().map(t => formatSong(t)));
+    });
+
+    await Promise.all(playlistTrackPromises).then(tracksArrays => {
+        tracksArrays.forEach((tracks, index) => {
+            playlists[index].tracks = tracks;
+        });
+    });
+
     console.info('Playlists: ', playlists);
     return playlists;
 }
+
 
 export const retrieveSavedSongs = async function (user_id) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
@@ -200,7 +226,7 @@ export const retrieveSavedSongs = async function (user_id) {
 export const formatUser = async function (user) {
     // Get our global user_id
     let pfp = null;
-    if(user.images.length > 0){
+    if (user.images.length > 0) {
         console.log(user);
         pfp = user.images[0].url;
     }
@@ -474,6 +500,7 @@ export const batchArtists = async (artist_ids) => {
 
 export const getAlbumsWithTracks = async function (artistID, tracks) {
     let albumsWithTracks = [];
+
     if (!tracks) {
         return [];
     }
@@ -487,7 +514,7 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
         const album = albums[i];
         const trackList = albumTracks[i].items;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
-        if (album.album_type !== 'single' && album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
+        if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithTracks.push(album);
         }
     }
@@ -513,7 +540,11 @@ export const formatArtist = (artist) => {
 export const formatSong = (song) => {
     let image = null;
     if (song.album.images !== undefined) {
-        image = song.album.images[1].url
+        try {
+            image = song.album.images[1].url
+        }catch (e) {
+            console.warn("Error formatting song: Image not found for ", song);
+        }
     }
     let artists = song.artists.map(a => formatArtist(a));
     return {
