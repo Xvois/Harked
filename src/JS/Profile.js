@@ -688,7 +688,7 @@ const Profile = () => {
                                     <button className={'std-button'} onClick={handleLogin}>Log-in</button>
                                 </div>
                                 :
-                                playlists.length < 0 ?
+                                playlists.length < 1 ?
                                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column', fontFamily: 'Inter Tight'}}>
                                         <p>It looks like {possessive} doesn't have any public playlists yet.</p>
                                     </div>
