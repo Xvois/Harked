@@ -4,6 +4,7 @@ import React, {useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
+    changeSettings,
     followsUser,
     followUser,
     formatArtist,
@@ -15,7 +16,7 @@ import {
     retrieveAllDatapoints,
     retrieveFollowers,
     retrievePlaylists,
-    retrievePrevAllDatapoints,
+    retrievePrevAllDatapoints, retrieveSettings,
     retrieveUser,
     unfollowUser
 } from './PDM';
@@ -34,6 +35,7 @@ import {
     translateAnalytics
 } from "./Analysis";
 import {handleLogin} from "./Authentication";
+import LockIcon from '@mui/icons-material/Lock';
 
 
 const Profile = () => {
@@ -61,6 +63,8 @@ const Profile = () => {
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
     const [playlists, setPlaylists] = useState(null);
     const [possessive, setPossessive] = useState('');
+    const [settings, setSettings] = useState({});
+    const [locked, setLocked] = useState(false);
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
@@ -94,6 +98,13 @@ const Profile = () => {
                 setSelectedPrevDatapoint(datapoints[termIndex]);
                 console.info("Previous datapoints retrieved!");
             }),
+            retrieveSettings(pageHash).then(function (s){
+                setSettings(s);
+                if(!s.public && !isOwnPage) {
+                    console.info("LOCKED PAGE", settings)
+                    setLocked(true);
+                }
+            })
         ]
 
         // Behaviour for if the user is logged in
@@ -111,6 +122,8 @@ const Profile = () => {
                 })
             )
         }
+
+
 
 
         Promise.all(loadPromises).then(() => setLoaded(true));
@@ -481,20 +494,29 @@ const Profile = () => {
 
     return (
         <>
-            {!loaded ?
-                <div style={{top: '40%', left: '0', right: '0', position: 'absolute'}}>
-                    <div className="lds-grid">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
+            {!loaded || locked ?
+                !loaded ?
+                    <div style={{top: '40%', left: '0', right: '0', position: 'absolute'}}>
+                        <div className="lds-grid">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
                     </div>
-                </div>
+                    :
+                    <div style={{top: '50%', left: '0', right: '0', position: 'absolute'}}>
+                        <div className="centre" style={{textAlign:'center'}}>
+                            <LockIcon fontSize={'large'} />
+                            <h1>This page is private.</h1>
+                        </div>
+                    </div>
+
                 :
                 <div className='wrapper'>
                     <div className='user-container'>
@@ -555,7 +577,16 @@ const Profile = () => {
                                    href={`/compare#${window.localStorage.getItem('user_id')}&${pageHash}`}>Compare</a>
                             </div>
                             :
-                            <></>
+                            <div style={{textAlign: 'right'}}>
+                                <h3>Profile visibility</h3>
+                                <p>Change whether or not your profile is publicly displayed.</p>
+                                <button className={'std-button'} style={{marginLeft: 'auto'}}
+                                   onClick={() => {
+                                       const new_settings = {...settings, public: !settings.public };
+                                       setSettings(new_settings);
+                                       changeSettings(pageHash, new_settings);
+                                   }}>{settings.public ? 'Public' : 'Private'}</button>
+                            </div>
                         }
                     </div>
                     <div className={'simple-wrapper'}>

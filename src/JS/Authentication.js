@@ -62,10 +62,13 @@ function Authentication() {
                     fUser.username = fUser.username.replace(' ', '-');
                     pb.collection('users').update(id, fUser)
                         .then(() => {
-                            const followers = {id: hashString(fUser.user_id), user: id, followers: []}
-                            const following = {id: hashString(fUser.user_id), user: id, following: []}
+                            const hash = hashString(fUser.user_id);
+                            const followers = {id: hash, user: id, followers: []}
+                            const following = {id: hash, user: id, following: []}
+                            const settings = {id: hash, user: id, public: true}
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);
+                            putLocalData("settings", settings);
                             redirect('/profile#me');
                         });
                 })

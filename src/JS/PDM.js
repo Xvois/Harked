@@ -127,6 +127,21 @@ export const retrieveFollowing = async function (user_id) {
         return [];
     }
 }
+
+export const retrieveSettings = async function (user_id) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const id = hashString(globalUser_id);
+    const res = await getLocalDataByID("settings", id);
+    console.log(res);
+    return res;
+}
+
+export const changeSettings = function (user_id, new_settings) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const id = hashString(globalUser_id);
+    updateLocalData("settings", new_settings, id);
+}
+
 /**
  * Returns all the user_ids currently in the database.
  * @returns {Promise<Array<Record>>}
@@ -137,6 +152,16 @@ export const retrieveAllUsers = async function () {
     await enableAutoCancel();
     return users;
 }
+
+export const retrieveAllPublicUsers = async function () {
+    await disableAutoCancel();
+    let users = await getFullLocalData("users");
+    const settings = await getFullLocalData("settings");
+    users = users.filter(u => settings.some(s => s.user === u.id && s.public));
+    await enableAutoCancel();
+    return users;
+}
+
 /**
  * Returns an array of public non-collaborative playlists from a given user.
  * @param user_id

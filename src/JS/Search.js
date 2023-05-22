@@ -1,6 +1,6 @@
 import {styled, TextField} from "@mui/material";
 import {useEffect, useState} from "react";
-import {isLoggedIn, retrieveAllUsers, retrieveFollowing} from "./PDM";
+import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers, retrieveFollowing} from "./PDM";
 import {FormControl} from "@mui/base";
 
 const SearchBar = styled(TextField)({
@@ -102,7 +102,7 @@ const Search = (props) => {
         setSearchResults(null);
     }
     useEffect(() => {
-        retrieveAllUsers().then(res => setCachedUsers(res));
+        retrieveAllPublicUsers().then(res => setCachedUsers(res));
         if (isLoggedIn()) {
             retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
                 setLoggedFollowing(following);
