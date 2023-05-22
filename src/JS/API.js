@@ -431,6 +431,7 @@ export const getFullLocalData = async (collection, filter = '') => {
 
 export const getDelayedDatapoint = async (user_id, term, delay) => {
     const dps = await pb.collection("datapoints").getFullList({
+        expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
     });

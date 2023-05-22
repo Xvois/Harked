@@ -28,6 +28,9 @@ import {
     getGenresRelatedArtists,
     getItemAnalysis,
     getItemIndexChange,
+    getLIDescription,
+    getLIName,
+    StatBlock,
     translateAnalytics
 } from "./Analysis";
 import {handleLogin} from "./Authentication";
@@ -37,7 +40,7 @@ const Profile = () => {
 
     const simpleDatapoints = ["artists", "songs", "genres"]
     const terms = ["short_term", "medium_term", "long_term"];
-    const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'all time'}
+    const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
     const pageHash = window.location.hash.split("#")[1];
     const isOwnPage = isLoggedIn() ? (pageHash === window.localStorage.getItem('user_id') || pageHash === 'me') : false
 
@@ -60,7 +63,9 @@ const Profile = () => {
     const [possessive, setPossessive] = useState('');
 
     // Reload when attempting to load a new page
-    window.addEventListener("hashchange", () => {window.location.reload()});
+    window.addEventListener("hashchange", () => {
+        window.location.reload()
+    });
 
 
     // Function that loads the page when necessary
@@ -95,7 +100,7 @@ const Profile = () => {
         if (isLoggedIn()) {
             const loggedUserID = window.localStorage.getItem('user_id');
             if (!isOwnPage) {
-                 console.info('Is not own page.');
+                console.info('Is not own page.');
                 followsUser(loggedUserID, pageHash).then(f => setIsLoggedUserFollowing(f));
             }
             loadPromises.push(
@@ -113,7 +118,9 @@ const Profile = () => {
 
     useEffect(() => {
         // Redirect if attempting to load own page & not identified as such initially
-        if(window.localStorage.getItem('user_id') === pageHash){window.location = 'profile#me'}
+        if (window.localStorage.getItem('user_id') === pageHash) {
+            window.location = 'profile#me'
+        }
         // Load the page
         loadPage();
     }, []);
@@ -123,40 +130,6 @@ const Profile = () => {
         setSelectedPrevDatapoint(allPreviousDatapoints[termIndex]);
     }, [termIndex])
 
-    // Get the display name of the list item
-    const getLIName = function (data) {
-        let result;
-        if (data.hasOwnProperty('artist_id')) {
-            result = data.name;
-        } else if (data.hasOwnProperty('song_id')) {
-            result = data.title;
-        } else {
-            result = data;
-        }
-        if (result.length > 30) {
-            result = result.substring(0, 30) + "..."
-        }
-        return result;
-    }
-
-    const getLIDescription = function (data, maxLength = 40) {
-        let result;
-        if (data.hasOwnProperty('artist_id')) {
-            if (data.genres && data.genres.length > 0) {
-                result = data.genres[0];
-            } else {
-                result = '';
-            }
-        } else if (data.hasOwnProperty('song_id')) {
-            result = data.artists.map((e, i) => i !== data.artists.length - 1 ? e.name + ', ' : e.name);
-        } else {
-            result = '';
-        }
-        if (result.length > maxLength) {
-            result = result.substring(0, maxLength) + "..."
-        }
-        return result;
-    }
 
     const ArtistAnalysis = (props) => {
         const {artist} = props;
@@ -182,7 +155,8 @@ const Profile = () => {
                                     return <StatBlock key={album.id}
                                                       name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
                                                       description={`${album.saved_songs.length} saved songs.`}
-                                                      value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}/>
+                                                      value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
+                                                      alignment={'right'}/>
                                 })
                             }
                         </>
@@ -208,7 +182,7 @@ const Profile = () => {
                             if (excludedKeys.findIndex(e => e === key) === -1) {
                                 return <StatBlock key={key} name={translateAnalytics[key].name}
                                                   description={translateAnalytics[key].description}
-                                                  value={analytics[key] * 100}/>
+                                                  value={analytics[key] * 100} alignment={'right'}/>
                             }
                         })
                     }
@@ -236,16 +210,17 @@ const Profile = () => {
         const {number} = props;
         return (
             <div className={'block-wrapper'} style={{flexWrap: 'wrap-reverse'}}>
-                {selectedDatapoint.top_genres.slice(0,number).map((genre, genreIndex) => {
+                {selectedDatapoint.top_genres.slice(0, number).map((genre, genreIndex) => {
                     const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false);
                     const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
                     const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
                     return (
                         <div key={genre} id={'genre-breakdown-instance'}>
                             <h3 style={{margin: '0'}}>{genre}</h3>
-                            {artists.slice(0,5).map((a, artistIndex) => {
+                            {artists.slice(0, 5).map((a, artistIndex) => {
                                 const percentage = (artistWeights[artistIndex] / totalWeights) * 100;
-                                return <StatBlock key={a.artist_id} key={a.artist_id} name={a.name} description={`${Math.round(percentage)}%`} value={percentage} />
+                                return <StatBlock key={a.artist_id} name={a.name}
+                                                  description={`${Math.round(percentage)}%`} value={percentage}/>
                             })}
                         </div>
                     )
@@ -258,11 +233,12 @@ const Profile = () => {
         const {number} = props;
         return (
             <div className={'block-wrapper'}>
-                {selectedDatapoint.top_artists.slice(0,number).map((artist, i) => {
+                {selectedDatapoint.top_artists.slice(0, number).map((artist, i) => {
                     const topSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === artist.artist_id));
-                    if(topSongIndex > -1){
+                    if (topSongIndex > -1) {
                         return (
-                            <div key={artist.artist_id} className={'stat-block'} style={{padding: '15px', border: '1px solid #343434'}}>
+                            <div key={artist.artist_id} className={'stat-block'}
+                                 style={{padding: '15px', border: '1px solid #343434'}}>
                                 <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
                                 <p style={{margin: '0'}}>{artist.name}</p>
                             </div>
@@ -273,24 +249,6 @@ const Profile = () => {
         )
     }
 
-    const StatBlock = (props) => {
-        const {name, description, value} = props;
-        return (
-            <div className={'stat-block'}>
-                <h3>{name}</h3>
-                <div className={'stat-bar'} style={{
-                    '--val': `100%`,
-                    backgroundColor: 'black',
-                    opacity: '0.5',
-                    marginBottom: '-5px',
-                    animation: 'none'
-                }}></div>
-                <div className={'stat-bar'}
-                     style={{'--val': `${value}%`}}></div>
-                <p>{description}</p>
-            </div>
-        )
-    }
 
     const ShowcaseList = (props) => {
         const {type, start, end} = props;
@@ -400,16 +358,18 @@ const Profile = () => {
                      }
                  }}>
                 {type !== 'genres' ?
-                    <img alt={getLIName(element)} src={element.image} style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
+                    <img alt={getLIName(element)} src={element.image}
+                         style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
                     :
                     <img alt={element} src={getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].image}
                          style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
                 }
-                <h3>{index + 1} {changeMessage}</h3>
+                <h3>{index + 1} <span
+                    style={{transition: 'all 0.5s', opacity: `${expanded ? '0' : '1'}`}}>{changeMessage}</span></h3>
                 {expanded ?
                     <>
                         <div className={"showcase-list-item-expanded"}>
-                            <div style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
+                            <div className={'item-description'} style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
                                 <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
                                 <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
@@ -429,7 +389,7 @@ const Profile = () => {
                             </div>
                             {seeRecommendations ?
                                 <div
-                                     style={{textAlign: 'right', fontFamily: 'Inter Tight', height: 'max-content'}}>
+                                    style={{textAlign: 'right', fontFamily: 'Inter Tight', height: 'max-content'}}>
                                     <h2 style={{margin: '0'}}>Recommendations</h2>
                                     <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(element)}</p>
                                     <div className={'recommendations-wrapper'}>
@@ -460,7 +420,9 @@ const Profile = () => {
                                             :
                                             <div className={'analysis'} style={{textAlign: 'right', padding: '0px'}}>
                                                 <p>Log in to see {possessive} analysis for {getLIName(element)}</p>
-                                                <button style={{width: 'max-content', marginLeft: 'auto'}} className={'std-button'} onClick={handleLogin}>Log-in</button>
+                                                <button style={{width: 'max-content', marginLeft: 'auto'}}
+                                                        className={'std-button'} onClick={handleLogin}>Log-in
+                                                </button>
                                             </div>
                                         :
                                         <></>
@@ -482,13 +444,23 @@ const Profile = () => {
         const {playlist} = props;
 
         return (
-            <div style={{display: 'flex', flexDirection: 'row', flexGrow: '1', border: '1px solid #343434', padding:'10px', fontFamily: 'Inter Tight', width: 'max-content'}}>
-                <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'} src={playlist.images[0].url}></img>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexGrow: '1',
+                border: '1px solid #343434',
+                padding: '10px',
+                fontFamily: 'Inter Tight',
+                width: 'max-content'
+            }}>
+                <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'}
+                     src={playlist.images[0].url}></img>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <h3 style={{margin: '0 0 5px 0'}}>{playlist.name}</h3>
+                    <p style={{margin: '0 0 5px 0'}}>{playlist.name}</p>
                     <p style={{margin: '0 0 5px 0', borderBottom: '1px solid #343434'}}>{playlist.description}</p>
-                    <p style={{margin: '0'}}>{playlist.tracks.length} songs</p>
-                    <a style={{marginTop: 'auto', width: 'max-content', color: 'white'}} href={playlist.external_urls.spotify}>View</a>
+                    <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs</p>
+                    <a style={{width: 'max-content', color: 'white', opacity: '0.5', marginTop: 'auto'}}
+                       href={playlist.external_urls.spotify}>View</a>
                 </div>
             </div>
         )
@@ -533,33 +505,35 @@ const Profile = () => {
                                 style={{color: '#22C55E'}}>{chipData[0].name}</span> fan · <span
                                 style={{color: '#22C55E'}}>{chipData[1]}</span> fan</p>
                         </div>
-                        <div className={'user-followers'}>
-                            <div>
-                                <p style={{
-                                    margin: '0',
-                                }}>{followers.length} follower{followers.length > 1 ? 's' : ''}</p>
-                            </div>
-                            {isLoggedIn() && pageHash !== 'me' ?
-                                isLoggedUserFollowing ?
-                                    <button
-                                        className={'std-button'}
-                                        onClick={() => {
-                                            unfollowUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => setIsLoggedUserFollowing(false));
-                                        }}>
-                                        Unfollow
-                                    </button>
-                                    :
-                                    <button
-                                        className={'std-button'}
-                                        onClick={() => {
-                                            followUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => setIsLoggedUserFollowing(true));
-                                        }}>
-                                        Follow
-                                    </button>
+                    </div>
+                    <div className={'user-followers'}>
+                        <p style={{
+                            margin: '0',
+                        }}>{followers.length} follower{followers.length !== 1 ? 's' : ''}</p>
+                        {isLoggedIn() && pageHash !== 'me' ?
+                            isLoggedUserFollowing ?
+                                <button
+                                    className={'std-button'}
+                                    onClick={() => {
+                                        unfollowUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => {
+                                            setIsLoggedUserFollowing(false);
+                                        });
+                                    }}>
+                                    Unfollow
+                                </button>
                                 :
-                                <></>
-                            }
-                        </div>
+                                <button
+                                    className={'std-button'}
+                                    onClick={() => {
+                                        followUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => {
+                                            setIsLoggedUserFollowing(true);
+                                        });
+                                    }}>
+                                    Follow
+                                </button>
+                            :
+                            <></>
+                        }
                     </div>
                     <div className={'settings-container'}>
                         <div>
@@ -568,8 +542,7 @@ const Profile = () => {
                             <div style={{display: 'flex', flexDirection: 'row', gap: '5px'}}>
                                 {terms.map(function (term, i) {
                                     return (<button key={term}
-                                                    className={'term-buttons'}
-                                                    style={termIndex === i ? {textDecoration: 'underline #22C55E'} : {}}
+                                                    className={'std-button'}
                                                     onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
                                 })}
                             </div>
@@ -578,7 +551,8 @@ const Profile = () => {
                             <div style={{textAlign: 'right'}}>
                                 <h3>Compare</h3>
                                 <p>See how your stats stack up against {pageUser.username}</p>
-                                <a className={'std-button'} style={{marginLeft: 'auto'}} href={`/compare#${pageHash}&${window.localStorage.getItem('user_id')}`}>Compare</a>
+                                <a className={'std-button'} style={{marginLeft: 'auto'}}
+                                   href={`/compare#${window.localStorage.getItem('user_id')}&${pageHash}`}>Compare</a>
                             </div>
                             :
                             <></>
@@ -587,7 +561,6 @@ const Profile = () => {
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
                             let description = '';
-                            const dpDeltas = selectedPrevDatapoint ? getAllItemIndexChanges(type, selectedDatapoint, selectedPrevDatapoint) : null;
                             switch (termIndex) {
                                 // Long term
                                 case 2:
@@ -603,7 +576,7 @@ const Profile = () => {
                                     break;
                             }
                             return (
-                                <div key={type} className='simple-instance'>
+                                <div key={type} className='simple-instance' style={{minWidth: '0px'}}>
                                     <div className={'datapoint-header'}>
                                         <div style={{maxWidth: '400px'}}>
                                             <p style={{
@@ -637,7 +610,7 @@ const Profile = () => {
                                                 <p>All of your taste in music
                                                     of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described
                                                     in one place.</p>
-                                                <SongAnalysisAverage />
+                                                <SongAnalysisAverage/>
                                             </div>
                                             :
                                             type === 'artists' ?
@@ -646,10 +619,12 @@ const Profile = () => {
                                                         margin: '16px 0 0 0',
                                                         textTransform: 'uppercase'
                                                     }}>{possessive}</p>
-                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top song for each artist</h2>
-                                                    <p>{possessive.slice(0,1).toUpperCase() + possessive.slice(1, possessive.length)} most listened to track
+                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top song for
+                                                        each artist</h2>
+                                                    <p>{possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} most
+                                                        listened to track
                                                         by each of your top artists.</p>
-                                                    <TopSongsOfArtists number={10} />
+                                                    <TopSongsOfArtists number={10}/>
                                                 </div>
 
                                                 :
@@ -658,13 +633,15 @@ const Profile = () => {
                                                         margin: '16px 0 0 0',
                                                         textTransform: 'uppercase'
                                                     }}>{possessive}</p>
-                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top artists</h2>
+                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top
+                                                        artists</h2>
                                                     <p style={{
                                                         margin: '0 0 16px 0',
                                                         textTransform: 'uppercase'
                                                     }}>for each genre</p>
-                                                    <p>The artists that contribute most to {possessive} listening time in each of {possessive} top 5 genres.</p>
-                                                    <GenreBreakdown number={5} />
+                                                    <p>The artists that contribute most to {possessive} listening time
+                                                        in each of {possessive} top 5 genres.</p>
+                                                    <GenreBreakdown number={5}/>
                                                 </div>
                                         }
                                     </div>
@@ -683,20 +660,37 @@ const Profile = () => {
                                 </div>
                             </div>
                             {!isLoggedIn() ?
-                                <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column', fontFamily: 'Inter Tight'}}>
+                                <div style={{
+                                    alignItems: 'center',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    fontFamily: 'Inter Tight'
+                                }}>
                                     <p>Viewing someone's playlists requires being logged in.</p>
                                     <button className={'std-button'} onClick={handleLogin}>Log-in</button>
                                 </div>
                                 :
                                 playlists.length < 1 ?
-                                    <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column', fontFamily: 'Inter Tight'}}>
-                                        <p>It looks like there are no public playlists on {possessive} public profile.</p>
+                                    <div style={{
+                                        alignItems: 'center',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        fontFamily: 'Inter Tight'
+                                    }}>
+                                        <p>It looks like there are no public playlists on {possessive} profile.</p>
                                     </div>
                                     :
-                                    <div style={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px', maxWidth: '1000px', width: '80%'}}>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        gap: '10px',
+                                        maxWidth: '1000px',
+                                        width: '80%'
+                                    }}>
                                         {playlists.map(p => {
                                             return (
-                                                <PlaylistItem playlist={p} />
+                                                <PlaylistItem playlist={p}/>
                                             )
                                         })}
                                     </div>

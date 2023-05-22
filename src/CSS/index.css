@@ -24,6 +24,7 @@ code {
     font-family: "Inter Tight", sans-serif;
     font-size: 12px;
     text-decoration: none;
+    width: max-content;
     color: white;
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid white;

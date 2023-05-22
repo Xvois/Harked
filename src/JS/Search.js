@@ -1,6 +1,5 @@
-import {ClickAwayListener, styled, TextField, ThemeProvider} from "@mui/material";
+import {styled, TextField} from "@mui/material";
 import {useEffect, useState} from "react";
-import {createTheme} from "@mui/material/styles";
 import {isLoggedIn, retrieveAllUsers, retrieveFollowing} from "./PDM";
 import {FormControl} from "@mui/base";
 
@@ -112,18 +111,18 @@ const Search = (props) => {
     }, [])
 
     useEffect(() => {
-        if(!showResults){
+        if (!showResults) {
             setSearchResults(null);
         }
     }, [showResults])
 
     return (
         <div className='search-bar-container'>
-                <FormControl variant="outlined">
-                    <SearchBar className='search-bar' inputProps={{className: `search-label`}}
-                               onClick={handleChange}
-                               onChange={handleChange} label="Search"></SearchBar>
-                </FormControl>
+            <FormControl variant="outlined">
+                <SearchBar className='search-bar' inputProps={{className: `search-label`}}
+                           onClick={handleChange}
+                           onChange={handleChange} label="Search"></SearchBar>
+            </FormControl>
             {!!searchResults ?
                 <div className={'results'}>
                     {searchResults.map(result => {

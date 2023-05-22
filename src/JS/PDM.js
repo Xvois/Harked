@@ -10,44 +10,10 @@ import {
     getUser,
     hashString,
     postDatapoint,
-    postUser,
     updateLocalData
 } from "./API";
 
-/**
- * Creates a combined song name with the associated artists in the form
- * SONG - ARTIST_1, ARTIST_2, ...
- * from a song object.
- * @param song A song object.
- * @returns {string|null} A full song name.
- */
-export const parseSong = function (song) { //takes in the song item
-    if (!song) {
-        return null;
-    }
-    let tempSong = song.name + " -";
-    song.artists.forEach(function (element, i) { //add commas for songs with multiple artists
-        tempSong += " " + element.name;
-        if (i !== (song.artists).length - 1) {
-            tempSong += ",";
-        } //stop adding commas if we are one before the end
-    })
-    return tempSong;
-}
-/**
- * Returns a media object containing the content (if any) the logged-in user is listening to.
- * @returns {Promise<{name: string, image: string}>}
- */
-export const retrieveMedia = async function () {
-    let returnMedia;
-    await fetchData("me/player").then(function (result) {
-        if (result) {
-            // Update the user's media information with the current song and album image
-            returnMedia = {name: parseSong(result.item), image: result.item.album.images[0].url}
-        }
-    })
-    return returnMedia;
-}
+
 /**
  * Gets a user from the PRDB as well as updating the media attribute for the
  * current user, if that is the parameter.
@@ -207,17 +173,8 @@ export const retrievePlaylists = async function (user_id) {
         });
     });
 
-    console.info('Playlists: ', playlists);
     return playlists;
 }
-
-
-export const retrieveSavedSongs = async function (user_id) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const savedTracks = (await fetchData(`users/${globalUser_id}/tracks`)).items;
-    console.log(savedTracks);
-}
-
 
 /**
  * Creates / updates the logged-in user's record.
@@ -297,7 +254,7 @@ export const retrievePrevDatapoint = async function (user_id, term) {
     if (datapoint === undefined) {
         return null
     } else {
-        return datapoint;
+        return formatDatapoint(datapoint);
     }
 }
 
@@ -338,122 +295,6 @@ export const retrievePrevAllDatapoints = async function (user_id) {
         datapoints.push(datapoint);
     }
     return datapoints;
-}
-
-// noinspection JSUnusedGlobalSymbols
-/**
- * A testing function that will begin filling the database with faux users.
- * Unless stopped, the function will populate it with 1000 users.
- * @returns {Promise<void>}
- */
-export const fillDatabase = async function () {
-    let songs;
-    let analytics;
-    let analyticsIDs = "";
-    let artistIDs = "";
-    let artists;
-    await fetchData("recommendations?limit=100&seed_artists=1WgXqy2Dd70QQOU7Ay074N&seed_genres=pop&seed_tracks=6VE2tx7tI90I7F138f5cCR").then(result => {
-        songs = result.tracks
-    });
-    // Concatenate the strings, so they can be
-    // used in the analytics call
-    songs.forEach(function (song, i) {
-        analyticsIDs += song.id + ',';
-        if (i < 49) {
-            artistIDs += song.artists[0].id + ',';
-        }
-    })
-    await fetchData(`audio-features?ids=${analyticsIDs}`).then(function (result) {
-        analytics = result.audio_features
-    })
-    await fetchData(`artists?ids=2${artistIDs.slice(0, -1)}`).then(result => artists = result.artists);
-    // BUG WITH SPOTIFY GET ARTISTS
-    // THE FIRST VALUE IS ALWAYS NULL
-    // THIS FIXED IT ^^
-    await fetchData(`artists/${songs[0].artists[0].id}`).then(result => artists[0] = result);
-    for (let i = 0; i < 1000; i++) {
-        console.time("Creating user")
-        const data = createFauxUser(songs, analytics, artists);
-        await postUser(data.user);
-        for (const datapoint of data.datapoints) {
-            await postDatapoint(datapoint);
-        }
-        console.timeEnd("Creating user")
-    }
-}
-/**
- * Creates a faux user with their datapoints that will be added to the
- * @param songs
- * @param analytics
- * @param artists
- * @returns {{datapoints: *[], user: {profilePicture: string, media: null, user_id: string, username: string}}}
- */
-const createFauxUser = function (songs, analytics, artists) {
-    let user_id = '';
-    let username = '';
-    let datapoints = []
-    for (let i = 0; i < 20; i++) {
-        // Get capital letters
-        user_id += String.fromCharCode(Math.floor(Math.random() * 25) + 65);
-        username += String.fromCharCode(Math.floor(Math.random() * 25) + 65);
-    }
-    let user = {
-        user_id: user_id,
-        username: username,
-        // Twitter default profile picture
-        profilePicture: 'https://i0.wp.com/www.alphr.com/wp-content/uploads/2020/10/twitter.png?w=690&ssl=1',
-        media: null,
-    }
-    const terms = ['short_term', 'medium_term', 'long_term'];
-    terms.forEach(function (term) {
-        let datapoint = {
-            user_id: user_id,
-            collectionDate: Date.now(),
-            term: term,
-            topSongs: [],
-            topArtists: [],
-            topGenres: [],
-        }
-        let usedSongSeeds = [];
-        do {
-            let songSeed = Math.floor(Math.random() * songs.length);
-            if (!usedSongSeeds.includes(songSeed)) {
-                datapoint.topSongs.push({
-                    song_id: songs[songSeed].id,
-                    title: songs[songSeed].name,
-                    artist: songs[songSeed].artists[0].name,
-                    image: songs[songSeed].album.images[1].url,
-                    link: songs[songSeed].external_urls.spotify,
-                    analytics: analytics[songSeed]
-                })
-                usedSongSeeds.push(songSeed)
-            }
-        } while (usedSongSeeds.length < 50)
-        let usedArtistSeeds = [];
-        do {
-            let artistSeed = Math.floor(Math.random() * artists.length);
-            if (!usedArtistSeeds.includes(artistSeed)) {
-                try {
-                    datapoint.topArtists.push({
-                        artist_id: artists[artistSeed].id,
-                        name: artists[artistSeed].name,
-                        image: artists[artistSeed].images[1].url,
-                        link: `https://open.spotify.com/artist/${artists[artistSeed].id}`,
-                        genre: artists[artistSeed].genres[0]
-                    })
-                } catch (error) { //catch error when artist does not have PFP
-                    console.warn(error)
-                }
-                usedArtistSeeds.push(artistSeed)
-            }
-        } while (usedArtistSeeds.length < 20)
-        datapoint.topGenres = calculateTopGenres(artists);
-        datapoints.push(datapoint)
-    })
-    return {
-        user: user,
-        datapoints: datapoints
-    };
 }
 
 function chunks(array, size) {
@@ -542,7 +383,7 @@ export const formatSong = (song) => {
     if (song.album.images !== undefined) {
         try {
             image = song.album.images[1].url
-        }catch (e) {
+        } catch (e) {
             console.warn("Error formatting song: Image not found for ", song);
         }
     }

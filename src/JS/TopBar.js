@@ -31,9 +31,9 @@ const TopBar = () => {
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                     <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
                     <ClickAwayListener onClickAway={() => setShowSearchResults(false)}>
-                    <div className='element' onClick={() => setShowSearchResults(true)}>
+                        <div className='element' onClick={() => setShowSearchResults(true)}>
                             <Search showResults={showSearchResults}></Search>
-                    </div>
+                        </div>
                     </ClickAwayListener>
                 </div>
                 :
@@ -45,12 +45,16 @@ const TopBar = () => {
             <div id="expanded-menu" style={menuExpanded ? {} : {opacity: '0', pointerEvents: 'none', display: 'none'}}>
                 <div className='menu-element' id={"close-button"} onClick={() => setMenuExpanded(false)}><CloseIcon
                     fontSize="large"/><p>Close</p></div>
-                <ClickAwayListener onClickAway={function() {
-                    if(sideMenuSearchFocused){
+                <ClickAwayListener onClickAway={function () {
+                    if (sideMenuSearchFocused) {
                         setSideMenuSearchFocused(false);
                         setShowSearchResults(false);
-                    }}}>
-                    <div className='menu-element' onClick={() => {setSideMenuSearchFocused(true); setShowSearchResults(true)}}>
+                    }
+                }}>
+                    <div className='menu-element' onClick={() => {
+                        setSideMenuSearchFocused(true);
+                        setShowSearchResults(true)
+                    }}>
                         <Search showResults={showSearchResults}></Search>
                     </div>
                 </ClickAwayListener>

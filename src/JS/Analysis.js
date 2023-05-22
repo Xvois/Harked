@@ -1,4 +1,6 @@
 // noinspection SpellCheckingInspection
+import React from "react";
+
 /**
  * Holds all the methods used to generate analysis for certain objects within the context of a datapoint.
  */
@@ -12,6 +14,127 @@ export const translateAnalytics = {
     loudness: {name: 'loud', description: 'Music that is noisy.'},
     valence: {name: 'positive', description: 'Music that feels upbeat.'},
     tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
+}
+
+export const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
+
+// Get the display name of the list item
+export const getLIName = function (data) {
+    let result;
+    if (data.hasOwnProperty('artist_id')) {
+        result = data.name;
+    } else if (data.hasOwnProperty('song_id')) {
+        result = data.title;
+    } else {
+        result = data;
+    }
+    if (result.length > 30) {
+        result = result.substring(0, 30) + "..."
+    }
+    return result;
+}
+
+export const getLIDescription = function (data, maxLength = 40) {
+    let result;
+    if (data.hasOwnProperty('artist_id')) {
+        if (data.genres && data.genres.length > 0) {
+            result = data.genres[0];
+        } else {
+            result = '';
+        }
+    } else if (data.hasOwnProperty('song_id')) {
+        result = data.artists.map((e, i) => i !== data.artists.length - 1 ? e.name + ', ' : e.name);
+    } else {
+        result = '';
+    }
+    if (result.length > maxLength) {
+        result = result.substring(0, maxLength) + "..."
+    }
+    return result;
+}
+
+export const containsElement = function (e, dp, type) {
+    let contains = false;
+    switch (type) {
+        case "artists":
+            contains = dp[`top_${type}`].some((element) => element.artist_id === e.artist_id);
+            break;
+        case "songs":
+            contains = dp[`top_${type}`].some((element) => element.song_id === e.song_id);
+            break;
+        case "genres":
+            contains = dp[`top_${type}`].some(element => element === e);
+            break;
+    }
+    return contains;
+}
+
+export const calculateSimilarity = (dp1, dp2) => {
+    let artistsSimilarity = 0;
+    let genresSimilarity = 0;
+    let metricDelta = 0;
+    let u0Metrics = getAverageAnalytics(dp1.top_songs);
+    let u1Metrics = getAverageAnalytics(dp2.top_songs);
+    let similarity;
+    dp1.top_artists.forEach(artist1 => {
+        if (dp2.top_artists.some(artist2 => artist2.name === artist1.name)) {
+            artistsSimilarity++;
+        }
+    })
+    dp1.top_genres.forEach(genre => {
+        if (dp2.top_genres.includes(genre)) {
+            genresSimilarity++;
+        }
+    })
+    artistsSimilarity /= dp1.top_artists.length;
+    // Takes discrete average of the two lengths.
+    genresSimilarity /= Math.floor((dp1.top_genres.length + dp2.top_genres.length) / 2);
+    for (const key in u0Metrics) {
+        metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
+    }
+    similarity = (genresSimilarity + 3 * artistsSimilarity + 3 * (1 - metricDelta) / 3);
+    similarity = Math.round(100 * similarity)
+    console.log("---STAT BREAKDOWN---");
+    console.log("Genres: ", genresSimilarity);
+    console.log("Artists: ", artistsSimilarity);
+    console.log("Metrics: ", 1 - metricDelta);
+    if (similarity > 100) {
+        similarity = 100
+    } // Ensure not over 100%
+    return {
+        artists: artistsSimilarity,
+        genres: genresSimilarity,
+        metrics: (1 - metricDelta),
+        overall: similarity
+    };
+}
+
+export const StatBlock = (props) => {
+    const {name, description, value, alignment = 'left', shadow = null} = props;
+    return (
+        <div className={'stat-block'}>
+            <h3 style={{textAlign: `${alignment}`}}>{name}</h3>
+            <div className={'stat-bar'} style={
+                    {
+                        '--val': `100%`,
+                        backgroundColor: 'white',
+                        opacity: '0.1',
+                        marginBottom: '-5px',
+                        animation: 'none'
+                    }
+            }></div>
+            <div className={'stat-bar'}
+                 style={{'--val': `${value}%`, marginLeft: `${alignment === 'right' ? 'auto' : ''}`}}></div>
+            {shadow ?
+                <div className={'stat-bar'}
+                     style={{'--val': `${shadow}%`, marginLeft: `${alignment === 'right' ? 'auto' : ''}`, marginTop: '-5px', opacity: '0.25'}}></div>
+                :
+                <></>
+            }
+
+            <p style={{textAlign: `${alignment}`}}>{description}</p>
+        </div>
+    )
 }
 
 export const getAverageAnalytics = function (songs) {
@@ -35,7 +158,18 @@ export const getAverageAnalytics = function (songs) {
 }
 
 export const getItemIndexChange = function (item, index, type, comparisonDP) {
-    const lastIndex = item.name ? comparisonDP[`top_${type}`].findIndex((element) => element.name === item.name) : comparisonDP[`top_${type}`].indexOf(item);
+    let lastIndex = -1;
+    switch (type) {
+        case "artists":
+            lastIndex = comparisonDP[`top_${type}`].findIndex((element) => element.artist_id === item.artist_id);
+            break;
+        case "songs":
+            lastIndex = comparisonDP[`top_${type}`].findIndex((element) => element.song_id === item.song_id);
+            break;
+        case "genres":
+            lastIndex = comparisonDP[`top_${type}`].indexOf(item);
+            break;
+    }
     if (lastIndex < 0) {
         return null
     }
@@ -54,7 +188,6 @@ export const getAllItemIndexChanges = function (type, dp1, dp2) {
 
 export const getAllArtistAssociations = function () {
     // noinspection SpellCheckingInspection
-    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
     const memo = new Map();
     return function (datapoint) {
         if (memo.has(datapoint)) {
@@ -88,12 +221,11 @@ export const getAllArtistAssociations = function () {
         memo.set(datapoint, result);
         return result;
     }
-}();
-// Update the focus message to be
-// relevant to the current focus
+};
+
 export const getItemAnalysis = function (item, type, user, datapoint) {
-    // What do we use as our possessive?
-    const artistAssociations = getAllArtistAssociations(datapoint);
+    const memoFunc = getAllArtistAssociations(datapoint);
+    const artistAssociations = memoFunc(datapoint); // Call the artistAssociations function with the datapoint
     let topMessage = '';
     let secondMessage = '';
     const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'your' : `${user.username}'s`;
@@ -157,6 +289,27 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
         header: topMessage,
         subtitle: secondMessage
     }
+}
+
+export const compareItemBetweenUsers = (item, dp1, dp2, type) => {
+    let returnMessage;
+    switch (type) {
+        case 'artists':
+            const dp1Contains = containsElement(item, dp1, type);
+            const dp2Contains = containsElement(item, dp2, type);
+            if(dp1Contains && dp2Contains) {
+                returnMessage = `Both users have this artist in their datapoints.`
+            } else {
+                const genresShared = item.genres.filter(g => containsElement(g, dp1, 'genres') && containsElement(g, dp2, 'genres'));
+                if(genresShared.length > 0) {
+                    returnMessage = `${item.name} isn't a shared interest, but the following genre(s) are ${genresShared}.`
+                }else {
+                    returnMessage = `Not only is the artist not shared, but neither are any of the genres.`
+                }
+            }
+    }
+
+    return returnMessage;
 }
 
 export const getGenresRelatedArtists = (genre, artists) => {

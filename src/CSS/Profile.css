@@ -68,6 +68,7 @@ select.dropdown {
     position: relative;
     height: max-content;
     width: 1000px;
+    min-width: 0px;
     flex-grow: 1;
     padding: 25px 25px 0 25px;
 }
@@ -164,6 +165,7 @@ select.dropdown {
     position: relative;
     overflow: hidden;
     justify-content: center;
+    padding: 0 5px;
 
     height: 250px;
     max-width: 400px;
@@ -222,7 +224,6 @@ select.dropdown {
     gap: 5px;
     font-family: "Inter Tight", sans-serif;
     text-align: right;
-    padding-left: 30px;
     overflow: hidden;
 }
 
@@ -254,6 +255,7 @@ select.dropdown {
     text-align: left;
 }
 
+
 .stat-block > h3 {
     font-size: 15px;
     font-family: 'Lato', sans-serif;
@@ -283,6 +285,7 @@ select.dropdown {
 
     animation: expand 1s ease;
 }
+
 
 @keyframes expand {
     from {
@@ -325,11 +328,6 @@ select.dropdown {
     text-align: center;
     display: inline-block;
     color: rgb(148, 148, 148);
-}
-
-.follow-button:hover {
-    cursor: pointer;
-    color: #22c55e;
 }
 
 .datapoint-header {
@@ -383,6 +381,7 @@ select.dropdown {
     flex-direction: row;
     justify-content: space-between;
     height: max-content;
+    width: max-content;
     overflow: hidden;
     padding: 15px;
 }
@@ -410,10 +409,22 @@ select.dropdown {
 .user-followers {
     display: flex;
     flex-direction: column;
+    gap: 5px;
+    width: max-content;
     justify-content: center;
-    align-items: center;
     font-family: "Inter Tight", sans-serif;
     font-weight: normal;
+    padding-left: 15px;
+}
+
+.follow-button {
+    font-family: "Inter Tight", sans-serif;
+    color: white;
+    background: none;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 2px solid white;
+    cursor: pointer;
 }
 
 .settings-container {
@@ -439,17 +450,20 @@ select.dropdown {
 
 
 @media screen and (max-width: 1000px) {
+
     .simple-instance {
         padding: 15px 0;
     }
-
     .showcase-list-item-expanded {
         height: 300px;
     }
 
-    .showcase-list-item-expanded > div {
+    .item-description {
         padding: 15px;
         left: 30px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 240px;
     }
 
     .recommendations {
