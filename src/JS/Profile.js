@@ -561,23 +561,24 @@ const Profile = () => {
                         <div>
                             <h3>Time frame</h3>
                             <p>of information capture</p>
-                            <div style={{display: 'flex', flexDirection: 'row', gap: '5px'}}>
+                            <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
                                 {terms.map(function (term, i) {
                                     return (<button key={term}
                                                     className={'std-button'}
+                                                    style={termIndex === i ? {} : {opacity: '0.5'}}
                                                     onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
                                 })}
                             </div>
                         </div>
                         {!isOwnPage && isLoggedIn() ?
-                            <div style={{textAlign: 'right'}}>
+                            <div style={{textAlign: 'right', marginLeft: 'auto'}}>
                                 <h3>Compare</h3>
                                 <p>See how your stats stack up against {pageUser.username}</p>
                                 <a className={'std-button'} style={{marginLeft: 'auto'}}
                                    href={`/compare#${window.localStorage.getItem('user_id')}&${pageHash}`}>Compare</a>
                             </div>
                             :
-                            <div style={{textAlign: 'right'}}>
+                            <div style={{textAlign: 'right', marginLeft: 'auto'}}>
                                 <h3>Profile visibility</h3>
                                 <p>Change whether or not your profile is publicly displayed.</p>
                                 <button className={'std-button'} style={{marginLeft: 'auto'}}

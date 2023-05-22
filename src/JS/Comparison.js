@@ -168,13 +168,14 @@ const Comparison = () => {
         const diameter = 70;
         const padding = 5;
         const value = similarity.overall;
+
         return (
             <div style={{padding: '3px', border: `3px solid white`, borderRadius: '100%', height: 'max-content', width: 'max-content', margin: 'auto'}}>
                 <div style={{position: 'relative', height: `${diameter}px`, width: `${diameter}px`, padding: `${padding}px`, borderRadius: '100%', overflow: 'hidden'}}>
-                    <div style={{zIndex: '0', transform: `translate(0, ${(diameter + 2 * padding)-((value / 100) * (diameter + 2 * padding) )}px)` ,position: 'absolute', height: `${diameter + 2*padding}px`, width: `${diameter + 2*padding}px`, background: '#22C55E', top: '0', left: '0'}} />
+                    <div style={{zIndex: '0', transform: `translate(0, ${(diameter + 2 * padding)-((value / 100) * (diameter + 2 * padding) )}px)` ,position: 'absolute', height: `${diameter + 2*padding}px`, width: `${diameter + 2*padding}px`, background: '#22C55E', top: '0', left: '0', animation: 'rise 1s ease-out'}} />
                     <div style={{position: 'relative', width: '100%', height: '100%'}}>
                         <div className={'centre'}>
-                            <h2 style={{margin: '0', color: 'white'}}>{similarity.overall}%</h2>
+                            <h2 style={{margin: '0', color: 'white'}}>{value}%</h2>
                         </div>
                     </div>
                 </div>
@@ -191,7 +192,7 @@ const Comparison = () => {
                 justifyContent: 'space-between',
                 borderTop: '1px solid #343434'
             }}>
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '150px'}}>
+                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '150px', paddingTop: '15px'}}>
                     <UserContainer userIndex={0} alignment={'left'} />
                     <div className={'centre'}>
                         <SimilarityIndicator />

@@ -11,3 +11,8 @@
 
     margin: auto;
 }
+
+@keyframes rise {
+    0% {translate: 0 80px}
+    100% {translate: 0 0}
+}
