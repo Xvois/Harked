@@ -104,7 +104,7 @@ export const postUser = async (user) => {
 const handleCreationException = (err) => {
     switch (err.status) {
         case 400:
-            console.warn(`Error making an entry in the database, likely a unique constraint failure.`);
+            console.warn(`Error making an entry in the database, likely a unique constraint failure.`, err);
             break;
         default:
             console.error(`Error ${err.status} creating database record.`)
@@ -114,7 +114,7 @@ const handleCreationException = (err) => {
 const handleUpdateException = (err) => {
     switch (err.status) {
         default:
-            console.error(`Error ${err.status} updating database record.`)
+            console.error(`Error ${err.status} updating database record.`, err)
             console.error(err.data);
     }
 }
@@ -122,7 +122,7 @@ const handleUpdateException = (err) => {
 const handleFetchException = (err) => {
     switch (err.status) {
         default:
-            console.error(`Error ${err.status} fetching database record.`)
+            console.error(`Error ${err.status} fetching database record.`, err)
             console.error(err.data);
             break;
     }
@@ -205,20 +205,12 @@ export const postPlaylist = async (playlist) => {
     console.info(`PLAYLIST: '${playlist.name}' posted!`)
 };
 
-
-export const postMultiplePlaylists = async (playlists) => {
-    await updateDatabaseCache();
-    for (const playlist of playlists) {
-        await postPlaylist(playlist);
-    }
-};
-
 let databaseCache = {
     artists: [],
     songs: [],
     genres: []
 };
-
+// TODO: This could become very expensive with time
 const updateDatabaseCache = async () => {
     let p = [];
     p.push(await pb.collection('artists').getFullList());
@@ -262,7 +254,7 @@ const postSong = async (song) => {
     }
 
     song.artists = await artistsToRefIDs(artists);
-    await pb.collection('songs').create(song);
+    await pb.collection('songs').create(song).catch(handleCreationException);
     updateDatabaseCacheWithItems({songs: [song]});
 }
 
@@ -281,7 +273,7 @@ const postArtist = async (artist) => {
         throw new Error("Artist must be formatted before posting!");
     }
     artist.genres = await genresToRefIDs(artist.genres);
-    await pb.collection('artists').create(artist);
+    await pb.collection('artists').create(artist).catch(handleCreationException);
     updateDatabaseCacheWithItems({artists: [artist]});
 }
 // TODO: MAKE UPDATE METHODS FOR ARTISTS
@@ -291,7 +283,7 @@ const postGenre = async (genre) => {
     if (!genre.hasOwnProperty("id")) {
         throw new Error("Genre must have database id before posting!");
     }
-    await pb.collection('genres').create(genre);
+    await pb.collection('genres').create(genre).catch(handleCreationException);
     updateDatabaseCacheWithItems({genres: [genre]});
 }
 
@@ -425,7 +417,7 @@ export const updateLocalData = (collection, data, id) => {
 }
 
 export const getFullLocalData = async (collection, filter = '') => {
-    return await pb.collection(collection).getFullList(filter);
+    return await pb.collection(collection).getFullList(filter).catch(handleFetchException);
 }
 
 
@@ -434,7 +426,7 @@ export const getDelayedDatapoint = async (user_id, term, delay) => {
         expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
-    });
+    }).catch(handleFetchException);
     return dps[delay];
 }
 
