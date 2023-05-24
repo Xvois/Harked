@@ -573,21 +573,24 @@ const Profile = () => {
                         {!isOwnPage && isLoggedIn() ?
                             <div style={{textAlign: 'right', marginLeft: 'auto'}}>
                                 <h3>Compare</h3>
-                                <p>See how your stats stack up against {pageUser.username}</p>
+                                <p>See how {possessive} stats stack up against {pageUser.username}</p>
                                 <a className={'std-button'} style={{marginLeft: 'auto'}}
                                    href={`/compare#${window.localStorage.getItem('user_id')}&${pageHash}`}>Compare</a>
                             </div>
                             :
-                            <div style={{textAlign: 'right', marginLeft: 'auto'}}>
-                                <h3>Profile visibility</h3>
-                                <p>Change whether or not your profile is publicly displayed.</p>
-                                <button className={'std-button'} style={{marginLeft: 'auto'}}
-                                   onClick={() => {
-                                       const new_settings = {...settings, public: !settings.public };
-                                       setSettings(new_settings);
-                                       changeSettings(pageHash, new_settings);
-                                   }}>{settings.public ? 'Public' : 'Private'}</button>
-                            </div>
+                            isOwnPage && isLoggedIn() ?
+                                <div style={{textAlign: 'right', marginLeft: 'auto'}}>
+                                    <h3>Profile visibility</h3>
+                                    <p>Change whether or not {possessive} profile is publicly displayed.</p>
+                                    <button className={'std-button'} style={{marginLeft: 'auto'}}
+                                       onClick={() => {
+                                           const new_settings = {...settings, public: !settings.public };
+                                           setSettings(new_settings);
+                                           changeSettings(pageHash, new_settings);
+                                       }}>{settings.public ? 'Public' : 'Private'}</button>
+                                </div>
+                                :
+                                <></>
                         }
                     </div>
                     <div className={'simple-wrapper'}>
@@ -596,15 +599,15 @@ const Profile = () => {
                             switch (termIndex) {
                                 // Long term
                                 case 2:
-                                    description = `These are your staple ${type}, those that define your overarching taste in music.`;
+                                    description = `These are ${possessive} staple ${type}, those that define ${possessive} overarching taste in music.`;
                                     break;
                                 // Medium term
                                 case 1:
-                                    description = `These are your most popular ${type} in the last 6 months.`;
+                                    description = `These are ${possessive} most popular ${type} in the last 6 months.`;
                                     break;
                                 // Short term
                                 case 0:
-                                    description = `These are your most popular ${type} in the last 4 weeks.`;
+                                    description = `These are ${possessive} most popular ${type} in the last 4 weeks.`;
                                     break;
                             }
                             return (
@@ -639,7 +642,7 @@ const Profile = () => {
                                                     margin: '0 0 16px 0',
                                                     textTransform: 'uppercase'
                                                 }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
-                                                <p>All of your taste in music
+                                                <p>All of {possessive} taste in music
                                                     of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described
                                                     in one place.</p>
                                                 <SongAnalysisAverage/>
@@ -655,7 +658,7 @@ const Profile = () => {
                                                         each artist</h2>
                                                     <p>{possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} most
                                                         listened to track
-                                                        by each of your top artists.</p>
+                                                        by each of {possessive} top artists.</p>
                                                     <TopSongsOfArtists number={10}/>
                                                 </div>
 

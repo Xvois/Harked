@@ -248,6 +248,11 @@ select.dropdown {
     gap: 15px;
 }
 
+#genre-breakdown-instance > h3 {
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+}
+
 .stat-block {
     display: flex;
     flex-direction: column;
@@ -465,7 +470,15 @@ select.dropdown {
         left: 30px;
         flex-grow: 0;
         flex-shrink: 0;
-        width: 240px;
+        width: 80%;
+    }
+
+    .showcase-list-item-text > h2 {
+        font-size: 18px;
+    }
+
+    .showcase-list-item-text > p {
+        font-size: 12px;
     }
 
     .recommendations {
