@@ -387,7 +387,7 @@ const Profile = () => {
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
                                 {type !== 'genres' && isLoggedIn() ?
-                                    <button className={'showcase-rec-button'}
+                                    <button className={'std-button'}
                                             onClick={handleRecommendations}>
                                         {seeRecommendations ?
                                             "See analysis"
