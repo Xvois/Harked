@@ -174,15 +174,6 @@ select.dropdown {
     animation: fadeIn 0.5s ease;
 }
 
-.showcase-rec-button {
-    font-family: "Inter Tight", sans-serif;
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid white;
-    border-radius: 20px;
-    padding: 5px 30px 5px 30px;
-    cursor: pointer;
-}
 
 .showcase-exit-button {
     position: absolute;
@@ -493,7 +484,7 @@ select.dropdown {
         scale: 0;
     }
 
-    .showcase-rec-button {
+    #showcase-rec-button {
         display: none;
     }
 }
