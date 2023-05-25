@@ -63,7 +63,7 @@ function Homepage() {
                         </>
                     }
                     {isLoggedIn() ?
-                        <button className={"std-button-button"} onClick={handleLogOut}>Log-out.</button>
+                        <button className={"std-button"} onClick={handleLogOut}>Log-out.</button>
                         :
                         <></>
                     }
