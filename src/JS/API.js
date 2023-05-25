@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
-import {batchAnalytics, formatArtist, formatSong} from "./PDM";
+import {formatArtist} from "./PDM";
 import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
@@ -141,69 +141,6 @@ export function hashString(inputString) {
     const hex = hash.toString(16);
     return hex.padStart(15, '0').substring(0, 15);
 }
-
-export const postPlaylist = async (playlist) => {
-    // Fetch the tracks of the playlist from the Spotify API
-    const res = await fetchData(`playlists/${playlist.id}/tracks`);
-
-    // Extract the track objects from the response
-    const tracks = res.items.map(e => e.track);
-
-    // Transform the track objects into our desired format
-    const transformedTracks = tracks.map(track => formatSong(track));
-
-    let newTracks = [];
-    for (const track of transformedTracks) {
-        const index = databaseCache.songs.findIndex(e => e.song_id === track.song_id);
-        if (index !== -1) {
-            track.analytics = databaseCache.songs[index].analytics
-        } else {
-            // Track not found, add to newTracks array
-            newTracks.push(track);
-            // Remove the track from the transformedTracks array
-            transformedTracks.slice(transformedTracks.findIndex(t => t.song_id === track.song_id), 1);
-        }
-    }
-
-    // Add audio feature analytics to all songs
-    const analytics = await batchAnalytics(newTracks);
-    newTracks.forEach((track, i) => track.analytics = analytics[i]);
-    transformedTracks.push(...newTracks);
-
-    // Convert the transformed tracks into an array of IDs
-    const trackIds = await songsToRefIDs(transformedTracks);
-
-    // Get the playlist owner's ID from our database
-    const owner = await pb.collection('users').getFirstListItem(`user_id="${playlist.owner.id}"`);
-
-    const playlistId = hashString(playlist.id);
-
-    // Construct the playlist object with the extracted data
-    const playlistObj = {
-        id: playlistId,
-        playlist_id: playlist.id,
-        name: playlist.name,
-        description: playlist.description,
-        owner: owner.id,
-        tracks: trackIds,
-        image: playlist.images[0].url
-    };
-
-    try {
-        // Check if the playlist already exists in our database
-        await pb.collection('playlists').update(playlistId, playlistObj);
-    } catch (err) {
-        if (err.status === 404) {
-            // Playlist not found, create a new one in our database
-            await pb.collection('playlists').create(playlistObj).catch(handleCreationException);
-        } else {
-            console.error('Error finding/updating playlist.');
-            console.error(err);
-        }
-    }
-
-    console.info(`PLAYLIST: '${playlist.name}' posted!`)
-};
 
 let databaseCache = {
     artists: [],

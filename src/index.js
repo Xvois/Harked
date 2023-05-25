@@ -5,10 +5,10 @@ import Homepage from './JS/Homepage';
 import Authentication from './JS/Authentication';
 import Comparison from './JS/Comparison'
 import reportWebVitals from './JS/reportWebVitals';
-import { BrowserRouter, Route, Routes } from "react-router-dom"; // Functionality to redirect the user to different pages.
+import {BrowserRouter, Route, Routes} from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './JS/TopBar';
 import Profile from './JS/Profile';
-import { Analytics } from '@vercel/analytics/react';
+import {Analytics} from '@vercel/analytics/react';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -16,13 +16,13 @@ root.render(
         <TopBar></TopBar>
         <BrowserRouter>
             <Routes> (//Routes to pages)
-                <Route index element={<Homepage />} />
-                <Route path="authentication" element={<Authentication />}/>
-                <Route path="profile" element={<Profile />}/>
-                <Route path="compare" element={<Comparison />}/>
+                <Route index element={<Homepage/>}/>
+                <Route path="authentication" element={<Authentication/>}/>
+                <Route path="profile" element={<Profile/>}/>
+                <Route path="compare" element={<Comparison/>}/>
             </Routes>
         </BrowserRouter>
-        <Analytics />
+        <Analytics/>
     </>
 );
 

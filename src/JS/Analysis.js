@@ -69,9 +69,20 @@ export const containsElement = function (e, dp, type) {
     return contains;
 }
 
+
+export const getMatchingItems = (dp1, dp2, type) => {
+    let matches = [];
+    dp1[`top_${type}`].forEach(item => {
+        if (containsElement(item, dp2, type)) {
+            matches.push(item)
+        }
+    })
+    return matches;
+}
 export const calculateSimilarity = (dp1, dp2) => {
     let artistsSimilarity = 0;
     let genresSimilarity = 0;
+    const avgGenreListLength = Math.floor((dp1.top_genres.length + dp2.top_genres.length) / 2);
     let metricDelta = 0;
     let u0Metrics = getAverageAnalytics(dp1.top_songs);
     let u1Metrics = getAverageAnalytics(dp2.top_songs);
@@ -81,30 +92,29 @@ export const calculateSimilarity = (dp1, dp2) => {
             artistsSimilarity++;
         }
     })
-    dp1.top_genres.forEach(genre => {
-        if (dp2.top_genres.includes(genre)) {
-            genresSimilarity++;
+    dp1.top_genres.forEach((genre, i1) => {
+        const i2 = dp2.top_genres.findIndex(e => e === genre);
+        if (i2 !== -1) {
+            const diff = Math.abs(i1 - i2);
+            genresSimilarity += (avgGenreListLength - diff) / avgGenreListLength;
         }
+
     })
     artistsSimilarity /= dp1.top_artists.length;
-    // Takes discrete average of the two lengths.
-    genresSimilarity /= Math.floor((dp1.top_genres.length + dp2.top_genres.length) / 2);
+    genresSimilarity /= avgGenreListLength;
+    genresSimilarity = Math.sqrt(genresSimilarity);
     for (const key in u0Metrics) {
         metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
     }
-    similarity = (genresSimilarity + 3 * artistsSimilarity + 3 * (1 - metricDelta) / 3);
+    similarity = ((2 * genresSimilarity + artistsSimilarity + 3 * (1 - metricDelta)) / 4);
     similarity = Math.round(100 * similarity)
-    console.log("---STAT BREAKDOWN---");
-    console.log("Genres: ", genresSimilarity);
-    console.log("Artists: ", artistsSimilarity);
-    console.log("Metrics: ", 1 - metricDelta);
     if (similarity > 100) {
         similarity = 100
     } // Ensure not over 100%
     return {
-        artists: artistsSimilarity,
-        genres: genresSimilarity,
-        metrics: (1 - metricDelta),
+        artists: artistsSimilarity * 100,
+        genres: genresSimilarity * 100,
+        metrics: (1 - metricDelta) * 100,
         overall: similarity
     };
 }
@@ -115,19 +125,24 @@ export const StatBlock = (props) => {
         <div className={'stat-block'}>
             <h3 style={{textAlign: `${alignment}`}}>{name}</h3>
             <div className={'stat-bar'} style={
-                    {
-                        '--val': `100%`,
-                        backgroundColor: 'white',
-                        opacity: '0.1',
-                        marginBottom: '-5px',
-                        animation: 'none'
-                    }
+                {
+                    '--val': `100%`,
+                    backgroundColor: 'white',
+                    opacity: '0.1',
+                    marginBottom: '-5px',
+                    animation: 'none'
+                }
             }></div>
             <div className={'stat-bar'}
                  style={{'--val': `${value}%`, marginLeft: `${alignment === 'right' ? 'auto' : ''}`}}></div>
             {shadow ?
                 <div className={'stat-bar'}
-                     style={{'--val': `${shadow}%`, marginLeft: `${alignment === 'right' ? 'auto' : ''}`, marginTop: '-5px', opacity: '0.25'}}></div>
+                     style={{
+                         '--val': `${shadow}%`,
+                         marginLeft: `${alignment === 'right' ? 'auto' : ''}`,
+                         marginTop: '-5px',
+                         opacity: '0.25'
+                     }}></div>
                 :
                 <></>
             }
@@ -297,13 +312,13 @@ export const compareItemBetweenUsers = (item, dp1, dp2, type) => {
         case 'artists':
             const dp1Contains = containsElement(item, dp1, type);
             const dp2Contains = containsElement(item, dp2, type);
-            if(dp1Contains && dp2Contains) {
+            if (dp1Contains && dp2Contains) {
                 returnMessage = `Both users have this artist in their datapoints.`
             } else {
                 const genresShared = item.genres.filter(g => containsElement(g, dp1, 'genres') && containsElement(g, dp2, 'genres'));
-                if(genresShared.length > 0) {
+                if (genresShared.length > 0) {
                     returnMessage = `${item.name} isn't a shared interest, but the following genre(s) are ${genresShared}.`
-                }else {
+                } else {
                     returnMessage = `Not only is the artist not shared, but neither are any of the genres.`
                 }
             }

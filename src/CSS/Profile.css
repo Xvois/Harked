@@ -68,7 +68,7 @@ select.dropdown {
     position: relative;
     height: max-content;
     width: 1000px;
-    min-width: 0px;
+    min-width: 0;
     flex-grow: 1;
     padding: 25px 25px 0 25px;
 }
@@ -95,6 +95,7 @@ select.dropdown {
     align-items: center;
     align-content: center;
     border: 1px solid #343434;
+    will-change: height;
     transition: all 0.5s;
 }
 
@@ -251,6 +252,7 @@ select.dropdown {
 #genre-breakdown-instance > h3 {
     font-family: 'Lato', sans-serif;
     text-transform: uppercase;
+    font-size: 16px;
 }
 
 .stat-block {
@@ -461,6 +463,7 @@ select.dropdown {
     .simple-instance {
         padding: 15px 0;
     }
+
     .showcase-list-item-expanded {
         height: 300px;
     }

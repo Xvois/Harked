@@ -5,7 +5,7 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './PDM';
+import {isLoggedIn, retrieveAllPublicUsers} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -52,24 +52,24 @@ function Homepage() {
                 <div className={'button-wrapper'}>
                     {!isLoggedIn() ?
                         <>
-                            <button className="auth-button" onClick={handleLogin}>Login with Spotify</button>
+                            <button className="std-button" onClick={handleLogin}>Login with Spotify</button>
                         </>
                         :
                         <>
-                            <button className="auth-button" onClick={() => window.location = '/profile#me'}>Explore your
+                            <button className="std-button" onClick={() => window.location = '/profile#me'}>Explore your
                                 profile
                             </button>
-                            <button className="auth-button" onClick={handleCompare}>Compare to others</button>
+                            <button className="std-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
                     {isLoggedIn() ?
-                        <button className={"auth-button"} onClick={handleLogOut}>Log-out.</button>
+                        <button className={"std-button-button"} onClick={handleLogOut}>Log-out.</button>
                         :
                         <></>
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.2.18</p>
+                    v1.2.19</p>
             </div>
         </div>
     );

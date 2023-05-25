@@ -16,7 +16,8 @@ import {
     retrieveAllDatapoints,
     retrieveFollowers,
     retrievePlaylists,
-    retrievePrevAllDatapoints, retrieveSettings,
+    retrievePrevAllDatapoints,
+    retrieveSettings,
     retrieveUser,
     unfollowUser
 } from './PDM';
@@ -24,7 +25,6 @@ import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {
-    getAllItemIndexChanges,
     getAverageAnalytics,
     getGenresRelatedArtists,
     getItemAnalysis,
@@ -98,9 +98,9 @@ const Profile = () => {
                 setSelectedPrevDatapoint(datapoints[termIndex]);
                 console.info("Previous datapoints retrieved!");
             }),
-            retrieveSettings(pageHash).then(function (s){
+            retrieveSettings(pageHash).then(function (s) {
                 setSettings(s);
-                if(!s.public && !isOwnPage) {
+                if (!s.public && !isOwnPage) {
                     console.info("LOCKED PAGE", settings)
                     setLocked(true);
                 }
@@ -122,8 +122,6 @@ const Profile = () => {
                 })
             )
         }
-
-
 
 
         Promise.all(loadPromises).then(() => setLoaded(true));
@@ -223,7 +221,7 @@ const Profile = () => {
         const {number} = props;
         return (
             <div className={'block-wrapper'} style={{flexWrap: 'wrap-reverse'}}>
-                {selectedDatapoint.top_genres.slice(0, number).map((genre, genreIndex) => {
+                {selectedDatapoint.top_genres.slice(0, number).map((genre) => {
                     const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false);
                     const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
                     const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
@@ -246,7 +244,7 @@ const Profile = () => {
         const {number} = props;
         return (
             <div className={'block-wrapper'}>
-                {selectedDatapoint.top_artists.slice(0, number).map((artist, i) => {
+                {selectedDatapoint.top_artists.slice(0, number).map((artist) => {
                     const topSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === artist.artist_id));
                     if (topSongIndex > -1) {
                         return (
@@ -382,7 +380,8 @@ const Profile = () => {
                 {expanded ?
                     <>
                         <div className={"showcase-list-item-expanded"}>
-                            <div className={'item-description'} style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
+                            <div className={'item-description'}
+                                 style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
                                 <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
                                 <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
@@ -511,8 +510,8 @@ const Profile = () => {
                     </div>
                     :
                     <div style={{top: '50%', left: '0', right: '0', position: 'absolute'}}>
-                        <div className="centre" style={{textAlign:'center'}}>
-                            <LockIcon fontSize={'large'} />
+                        <div className="centre" style={{textAlign: 'center'}}>
+                            <LockIcon fontSize={'large'}/>
                             <h1>This page is private.</h1>
                         </div>
                     </div>
@@ -583,11 +582,11 @@ const Profile = () => {
                                     <h3>Profile visibility</h3>
                                     <p>Change whether or not {possessive} profile is publicly displayed.</p>
                                     <button className={'std-button'} style={{marginLeft: 'auto'}}
-                                       onClick={() => {
-                                           const new_settings = {...settings, public: !settings.public };
-                                           setSettings(new_settings);
-                                           changeSettings(pageHash, new_settings);
-                                       }}>{settings.public ? 'Public' : 'Private'}</button>
+                                            onClick={() => {
+                                                const new_settings = {...settings, public: !settings.public};
+                                                setSettings(new_settings);
+                                                changeSettings(pageHash, new_settings);
+                                            }}>{settings.public ? 'Public' : 'Private'}</button>
                                 </div>
                                 :
                                 <></>
@@ -699,7 +698,9 @@ const Profile = () => {
                                     alignItems: 'center',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    fontFamily: 'Inter Tight'
+                                    fontFamily: 'Inter Tight',
+                                    maxWidth: '1000px',
+                                    width: '80%'
                                 }}>
                                     <p>Viewing someone's playlists requires being logged in.</p>
                                     <button className={'std-button'} onClick={handleLogin}>Log-in</button>
@@ -710,7 +711,9 @@ const Profile = () => {
                                         alignItems: 'center',
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        fontFamily: 'Inter Tight'
+                                        fontFamily: 'Inter Tight',
+                                        maxWidth: '1000px',
+                                        width: '80%'
                                     }}>
                                         <p>It looks like there are no public playlists on {possessive} profile.</p>
                                     </div>

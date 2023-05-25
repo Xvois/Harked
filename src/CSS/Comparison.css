@@ -1,6 +1,6 @@
 .centre {
     position: absolute;
-    top:0;
+    top: 0;
     bottom: 0;
     left: 0;
     right: 0;
@@ -13,6 +13,10 @@
 }
 
 @keyframes rise {
-    0% {translate: 0 80px}
-    100% {translate: 0 0}
+    0% {
+        translate: 0 80px
+    }
+    100% {
+        translate: 0 0
+    }
 }

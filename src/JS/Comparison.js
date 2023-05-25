@@ -13,11 +13,12 @@ import './../CSS/Focus.css';
 import {retrieveDatapoint, retrieveUser} from "./PDM";
 import {
     analyticsMetrics,
-    calculateSimilarity, compareItemBetweenUsers,
-    containsElement,
+    calculateSimilarity,
     getAverageAnalytics,
+    getGenresRelatedArtists,
     getLIDescription,
     getLIName,
+    getMatchingItems,
     StatBlock,
     translateAnalytics
 } from "./Analysis";
@@ -59,7 +60,6 @@ const Comparison = () => {
 
     const AverageAnalytics = (props) => {
         const {userIndex, alignment, shadowUserIndex = null} = props;
-        const user = users[userIndex];
         const datapoint = datapoints[userIndex];
         const avgAnalytics = getAverageAnalytics(datapoint.top_songs);
         const shadowAvgAnalytics = getAverageAnalytics(datapoints[shadowUserIndex].top_songs);
@@ -77,7 +77,8 @@ const Comparison = () => {
                             }}>
                                 <StatBlock key={metric} name={translateAnalytics[metric].name}
                                            description={`${Math.round(avgAnalytics[metric] * 100)}%`}
-                                           value={avgAnalytics[metric] * 100} alignment={alignment} shadow={shadowAvgAnalytics[metric] * 100}/>
+                                           value={avgAnalytics[metric] * 100} alignment={alignment}
+                                           shadow={shadowAvgAnalytics[metric] * 100}/>
                             </div>
                         )
                     }
@@ -87,66 +88,6 @@ const Comparison = () => {
         )
     }
 
-    const ItemComparisonDisplay = (props) => {
-        const {item, type} = props;
-
-        return (
-            <div style={{position: 'relative', padding: '15px', border: '1px solid #343434', width: '40%'}}>
-                <img src={item.image} style={{objectFit: 'cover', position: 'absolute', width: '100%', height: '100%', top: '0', left: '0', filter: 'blur(10px) brightness(75%)', clipPath: 'inset(1px)', zIndex: '-1'}} />
-                <h3>{getLIName(item)}</h3>
-                <p>{compareItemBetweenUsers(item, datapoints[0], datapoints[1], type)}</p>
-            </div>
-        )
-    }
-
-    const ComparisonBlock = (props) => {
-        const {type} = props;
-
-        const [selection, setSelection] = useState({
-            item: null,
-            dpIndex: null
-        });
-
-        return (
-            <div>
-                <h2>Some text</h2>
-                <p>Click on an item to explore their links between {users[0].username} and {users[1].username}</p>
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
-                    <div style={{textAlign: 'left', width: '25%'}}>
-                        {datapoints[0][`top_${type}`].slice(0,5).map(e => {
-                            const highlighted = e === selection.item;
-                            return (
-                                <div style={{margin: '10px 0', cursor: 'pointer', opacity: `${selection.item ? (highlighted ? '1' : '0.25') : '1' }`, scale: `${selection.item ? (highlighted ? '1' : '0.95') : '1' }` , transition: 'all 0.5s'}}
-                                     onClick={() => setSelection({item: e, dpIndex: 0})}>
-                                    <p style={{fontSize: '20px', margin: '0', fontWeight: 'bold'}}>{getLIName(e)}</p>
-                                    <p style={{fontSize: '15px', margin: '0'}}>{getLIDescription(e)}</p>
-                                </div>
-                            )
-                        })
-                        }
-                    </div>
-                    {selection.item ?
-                        <ItemComparisonDisplay item={selection.item} type={type} />
-                        :
-                        <></>
-                    }
-                    <div style={{textAlign: 'right', width: '25%'}}>
-                        {datapoints[1][`top_${type}`].slice(0,5).map(e => {
-                            const highlighted = e === selection.item;
-                            return (
-                                <div style={{margin: '10px 0', cursor: 'pointer', opacity: `${selection.item ? (highlighted ? '1' : '0.25') : '1' }`, scale: `${selection.item ? (highlighted ? '1' : '0.95') : '1' }` , transition: 'all 0.5s'}}
-                                     onClick={() => setSelection({item: e, dpIndex: 0})}>
-                                    <p style={{fontSize: '20px', margin: '0', fontWeight: 'bold'}}>{getLIName(e)}</p>
-                                    <p style={{fontSize: '15px', margin: '0'}}>{getLIDescription(e)}</p>
-                                </div>
-                            )
-                        })
-                        }
-                    </div>
-                </div>
-            </div>
-        )
-    }
 
     function UserContainer(props) {
         const {userIndex, alignment} = props;
@@ -164,20 +105,79 @@ const Comparison = () => {
         )
     }
 
-    function SimilarityIndicator() {
-        const diameter = 70;
-        const padding = 5;
-        const value = similarity.overall;
+    function ValueIndicator(props) {
+        const {value, diameter = 70} = props;
+        const padding = 5 * (diameter / 70);
 
         return (
-            <div style={{padding: '3px', border: `3px solid white`, borderRadius: '100%', height: 'max-content', width: 'max-content', margin: 'auto'}}>
-                <div style={{position: 'relative', height: `${diameter}px`, width: `${diameter}px`, padding: `${padding}px`, borderRadius: '100%', overflow: 'hidden'}}>
-                    <div style={{zIndex: '0', transform: `translate(0, ${(diameter + 2 * padding)-((value / 100) * (diameter + 2 * padding) )}px)` ,position: 'absolute', height: `${diameter + 2*padding}px`, width: `${diameter + 2*padding}px`, background: '#22C55E', top: '0', left: '0', animation: 'rise 1s ease-out'}} />
+            <div style={{
+                padding: '3px',
+                border: `3px solid white`,
+                borderRadius: '100%',
+                height: 'max-content',
+                width: 'max-content',
+                margin: 'auto'
+            }}>
+                <div style={{
+                    position: 'relative',
+                    height: `${diameter}px`,
+                    width: `${diameter}px`,
+                    padding: `${padding}px`,
+                    borderRadius: '100%',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        zIndex: '0',
+                        transform: `translate(0, ${(diameter + 2 * padding) - ((value / 100) * (diameter + 2 * padding))}px)`,
+                        position: 'absolute',
+                        height: `${diameter + 2 * padding}px`,
+                        width: `${diameter + 2 * padding}px`,
+                        background: '#22C55E',
+                        top: '0',
+                        left: '0',
+                        animation: 'rise 1s ease-out'
+                    }}/>
                     <div style={{position: 'relative', width: '100%', height: '100%'}}>
                         <div className={'centre'}>
-                            <h2 style={{margin: '0', color: 'white'}}>{value}%</h2>
+                            <h2 style={{
+                                margin: '0',
+                                color: 'white',
+                                fontSize: `${(diameter / 70) * 24}px`
+                            }}>{Math.round(value)}%</h2>
                         </div>
                     </div>
+                </div>
+            </div>
+        )
+    }
+
+    function MatchingItems(props) {
+        const {type} = props;
+        const matches = getMatchingItems(datapoints[0], datapoints[1], type);
+        return (
+            <div style={{width: '100%'}}>
+                {matches.length > 0 ?
+                    <p style={{textTransform: 'uppercase', textAlign: 'center'}}>Common {type}</p>
+                    :
+                    <p>It looks like {users[0].username} and {users[1].username} don't have any {type} in common.</p>
+                }
+                <div className={'block-wrapper'}>
+                    {matches.map(item => {
+                        let description = getLIDescription(item);
+                        if (type === "genres") {
+                            const matchingArtists = getMatchingItems(datapoints[0], datapoints[1], "artists");
+                            const genreArtists = getGenresRelatedArtists(item, matchingArtists);
+                            if (genreArtists.length > 0) {
+                                description = genreArtists[0].name
+                            } else {
+                                description = 'No matching artists.'
+                            }
+                        }
+                        return (<div className={'stat-block'}>
+                            <h3>{getLIName(item)}</h3>
+                            <p>{description}</p>
+                        </div>)
+                    })}
                 </div>
             </div>
         )
@@ -192,27 +192,64 @@ const Comparison = () => {
                 justifyContent: 'space-between',
                 borderTop: '1px solid #343434'
             }}>
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '150px', paddingTop: '15px'}}>
-                    <UserContainer userIndex={0} alignment={'left'} />
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    position: 'relative',
+                    flexWrap: 'wrap',
+                    gap: '150px',
+                    paddingTop: '15px'
+                }}>
+                    <UserContainer userIndex={0} alignment={'left'}/>
                     <div className={'centre'}>
-                        <SimilarityIndicator />
+                        <ValueIndicator value={similarity.overall}/>
                     </div>
-                    <UserContainer userIndex={1} alignment={'right'} />
+                    <UserContainer userIndex={1} alignment={'right'}/>
                 </div>
-                <div style={{textAlign: 'center', margin: '50px 0 15px 0'}}>
+                <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
                     <p style={{
                         margin: '0',
                         textTransform: 'uppercase'
                     }}>A look at</p>
                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Average song analysis</h2>
                 </div>
+                <div style={{margin: '15px'}}>
+                    <ValueIndicator diameter={50} value={similarity.metrics}/>
+                </div>
                 <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
                     <div style={{flexGrow: '1'}}>
-                        <AverageAnalytics userIndex={0} shadowUserIndex={1} alignment={'left'} />
+                        <AverageAnalytics userIndex={0} shadowUserIndex={1} alignment={'left'}/>
                     </div>
                     <div style={{flexGrow: '1'}}>
-                        <AverageAnalytics userIndex={1} shadowUserIndex={0} alignment={'right'} />
+                        <AverageAnalytics userIndex={1} shadowUserIndex={0} alignment={'right'}/>
                     </div>
+                </div>
+                <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
+                    <p style={{
+                        margin: '0',
+                        textTransform: 'uppercase'
+                    }}>A look at</p>
+                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top Genres similarity</h2>
+                </div>
+                <div style={{margin: '15px'}}>
+                    <ValueIndicator diameter={50} value={similarity.genres}/>
+                </div>
+                <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                    <MatchingItems type={'genres'}/>
+                </div>
+                <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
+                    <p style={{
+                        margin: '0',
+                        textTransform: 'uppercase'
+                    }}>A look at</p>
+                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top Artists similarity</h2>
+                </div>
+                <div style={{margin: '15px'}}>
+                    <ValueIndicator diameter={50} value={similarity.artists}/>
+                </div>
+                <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                    <MatchingItems type={'artists'}/>
                 </div>
             </div>
             :
