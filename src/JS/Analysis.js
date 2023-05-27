@@ -104,10 +104,15 @@ export const calculateSimilarity = (dp1, dp2) => {
     artistsSimilarity /= dp1.top_artists.length;
     genresSimilarity /= avgGenreListLength;
     genresSimilarity = Math.sqrt(genresSimilarity);
+    const excludedKeys = ['tempo', 'loudness'];
     for (const key in u0Metrics) {
-        metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]) / Object.entries(u0Metrics).length;
+        if(!excludedKeys.some(e => e === key)){
+            metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]);
+        }
     }
-    similarity = ((2 * genresSimilarity + artistsSimilarity + 3 * (1 - metricDelta)) / 4);
+    metricDelta /= (Object.entries(u0Metrics).length - excludedKeys.length);
+    metricDelta = Math.sqrt(metricDelta);
+    similarity = ((2 * genresSimilarity + artistsSimilarity + 2 * (1 - metricDelta)) / 4);
     similarity = Math.round(100 * similarity)
     if (similarity > 100) {
         similarity = 100
