@@ -161,46 +161,6 @@ export const retrieveAllPublicUsers = async function () {
     await enableAutoCancel();
     return users;
 }
-
-/**
- * Returns an array of public non-collaborative playlists from a given user.
- * @param user_id
- * @returns {Promise<Array>}
- */
-export const retrievePlaylists = async function (user_id) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    let playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
-    playlists = playlists.filter(p => !p.collaborative && p.public);
-
-    const playlistTrackPromises = playlists.map(playlist => {
-        const totalTracks = playlist.tracks.total;
-        const numCalls = Math.ceil(totalTracks / 50);
-        const promises = [];
-
-        for (let i = 0; i < numCalls; i++) {
-            const offset = i * 50;
-            const promise = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
-                .then(response => response.items.map(e => e.track))
-                .catch(error => {
-                    console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
-                    return [];
-                });
-
-            promises.push(promise);
-        }
-
-        return Promise.all(promises).then(tracksArrays => tracksArrays.flat().map(t => formatSong(t)));
-    });
-
-    await Promise.all(playlistTrackPromises).then(tracksArrays => {
-        tracksArrays.forEach((tracks, index) => {
-            playlists[index].tracks = tracks;
-        });
-    });
-
-    return playlists;
-}
-
 /**
  * Creates / updates the logged-in user's record.
  * @returns {Promise<{user_id, profile_picture: null, media: null, username: *}>}
@@ -365,8 +325,6 @@ export const batchArtists = async (artist_ids) => {
 };
 
 export const getAlbumsWithTracks = async function (artistID, tracks) {
-    let albumsWithTracks = [];
-
     if (!tracks) {
         return [];
     }
@@ -375,17 +333,17 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
     const albumTracks = await Promise.all(albumPromises);
 
+    const albumsWithTracks = albums
+        .map((album, i) => {
+            const trackList = albumTracks[i].items;
+            const savedSongs = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
+            return { ...album, saved_songs: savedSongs };
+        })
+        .filter((album, index, self) => album.saved_songs.length > 0 && !self.some(item => item.saved_songs.length === album.saved_songs.length && item.name === album.name));
 
-    for (let i = 0; i < albums.length; i++) {
-        const album = albums[i];
-        const trackList = albumTracks[i].items;
-        album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
-        if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
-            albumsWithTracks.push(album);
-        }
-    }
     return albumsWithTracks;
 }
+
 
 export const formatArtist = (artist) => {
     let image = null;
@@ -442,22 +400,23 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
  * to the database using postDatapoint.
  */
 export const hydrateDatapoints = async function () {
-    console.time("Hydration.");
+    console.time("Hydration."); // Start a timer for performance measurement
     const terms = ['short_term', 'medium_term', 'long_term'];
 
     const datapointPromises = terms.map(async (term) => {
-        console.info("Hydrating: " + term)
+        console.info("Hydrating: " + term);
         let datapoint = {
             user_id: window.localStorage.getItem("user_id"),
             term: term,
             top_songs: [],
             top_artists: [],
             top_genres: [],
-        }
+        };
         let top_songs;
         let top_artists;
-        // Queue up promises
-        let result = await Promise.all([fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}`)]);
+
+        // Queue up promises for fetching top songs and top artists
+        let result = await Promise.all([fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}&limit=50`)]);
         top_songs = result[0].items;
         top_artists = result[1].items;
 
@@ -489,7 +448,7 @@ export const hydrateDatapoints = async function () {
     }
 
     console.info("Hydration over.");
-    console.timeEnd("Hydration.");
+    console.timeEnd("Hydration."); // End the timer and display the elapsed time
 }
 
 
@@ -499,25 +458,25 @@ export const hydrateDatapoints = async function () {
  * @returns {*[]}
  */
 const calculateTopGenres = function (artists) {
-    console.info('CALC TOP GENRES')
-    console.log(artists);
+
     let topGenres = [];
-    artists.forEach(function (artist, i) {
-        artist.genres.forEach(function (genre) {
-            if (topGenres.some(e => e.genre === genre)) { //is genre already in array?
-                let index = topGenres.map(function (e) {
-                    return e.genre
-                }).indexOf(genre); //get index
-                topGenres[index].weight += artists.length - i; //combine weights
+
+    artists.forEach((artist, i) => {
+        artist.genres.forEach((genre) => {
+            const existingGenre = topGenres.find((g) => g.genre === genre);
+
+            if (existingGenre) {
+                existingGenre.weight += artists.length - i;
             } else {
-                topGenres.push({genre: genre, weight: artists.length - i})
+                topGenres.push({ genre, weight: artists.length - i });
             }
-        })
-    })
-    topGenres.sort((a, b) => b.weight - a.weight) //sort based on weight diffs
-    // DECONSTRUCTS THE OBJECT OF A GENRE TO SIMPLY BE A STRING:
-    topGenres.forEach((genre, i) => topGenres[i] = genre.genre)
-    // LOOKS INSANE BUT A GENRE IN THIS FUNCTION IS AN OBJECT OF ITS NAME
-    // AND WEIGHT. THAT LINE SIMPLY TURNS IT FROM AN OBJECT INTO A STRING
-    return topGenres;
-}
+        });
+    });
+
+    topGenres.sort((a, b) => b.weight - a.weight);
+
+    // Extract the genre names as an array of strings
+    const topGenreNames = topGenres.map((genre) => genre.genre);
+
+    return topGenreNames;
+};

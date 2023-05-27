@@ -80,12 +80,15 @@ function Authentication() {
             local_token = local_token.substring(1, local_token.length - 1);
             window.location.hash = ""
             window.localStorage.setItem("access-token", local_token);
-            redirect('/profile#me');
+            //redirect('/profile#me');
         }
     }, [redirect])
 
     return (
-        <div>Redirecting... [If you are stuck on this page please enable pop-ups and reload]</div>
+        <div>
+            <h2>Redirecting...</h2>
+            <p>Stuck on this page? Ensure pop-ups are enabled.</p>
+        </div>
     )
 }
 

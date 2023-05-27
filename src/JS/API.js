@@ -261,22 +261,26 @@ const genresToRefIDs = async (genres) => {
     }
     return ids;
 }
-// TODO: NEEDS MAJOR OPTIMISATION
 const songsToRefIDs = async (songs) => {
-    let ids = [];
-    const songIDs = songs.map(e => e.song_id);
-    const newSongIDs = songIDs.filter(id => !databaseCache.songs.some(a => a.song_id === id));
+    const existingSongIDs = new Set(databaseCache.songs.map((song) => song.song_id));
+    const ids = [];
 
     for (let i = 0; i < songs.length; i++) {
-        let song = songs[i];
-        song.id = hashString(song.song_id);
-        ids.push(song.id);
-        if (newSongIDs.includes(song.song_id)) {
+        const song = songs[i];
+        const { song_id } = song;
+        const id = hashString(song_id);
+        song.id = id;
+        ids.push(id);
+
+        if (!existingSongIDs.has(song_id)) {
             await postSong(song);
         }
     }
+
     return ids;
-}
+};
+
+
 
 
 export const postDatapoint = async (datapoint) => {

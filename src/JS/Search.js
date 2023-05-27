@@ -1,7 +1,7 @@
-import {styled, TextField} from "@mui/material";
-import {useEffect, useState} from "react";
-import {isLoggedIn, retrieveAllPublicUsers, retrieveFollowing} from "./PDM";
-import {FormControl} from "@mui/base";
+import { styled, TextField } from "@mui/material";
+import { useEffect, useState } from "react";
+import { isLoggedIn, retrieveAllPublicUsers, retrieveFollowing } from "./PDM";
+import { FormControl } from "@mui/base";
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -42,118 +42,139 @@ const SearchBar = styled(TextField)({
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
+
 const Search = (props) => {
-    const {showResults} = props;
+    const { showResults } = props;
     const [searchResults, setSearchResults] = useState(null);
-    const [cachedUsers, setCachedUsers] = useState(null);
-    // If the user is logged in, this is an array of who they follow
-    const [loggedFollowing, setLoggedFollowing] = useState(null);
-    const Levenshtein = (a, b) => {
-        // First two conditions
-        if (!a.length) return b.length;
-        if (!b.length) return a.length;
-        const arr = [];
-        // Populate array with b
-        for (let i = 0; i <= b.length; i++) {
-            arr[i] = [i];
-            // Populate array with a and compare
-            for (let j = 1; j <= a.length; j++) {
-                arr[i][j] =
-                    i === 0 ?
-                        j
-                        :
-                        Math.min(
-                            arr[i - 1][j] + 1,
-                            arr[i][j - 1] + 1,
-                            arr[i - 1][j - 1] + (a[j - 1] === b[i - 1] ? 0 : 1)
-                        );
+    const [cachedUsersMap, setCachedUsersMap] = useState({});
+    const [loggedFollowing, setLoggedFollowing] = useState([]);
+
+    const Levenshtein = (source, target) => {
+        const m = source.length;
+        const n = target.length;
+
+        // Return early if either string is empty
+        if (m === 0) return n;
+        if (n === 0) return m;
+
+        // Initialize the matrix with correct dimensions
+        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+        for (let i = 0; i <= m; i++) {
+            dp[i][0] = i;
+        }
+
+        for (let j = 0; j <= n; j++) {
+            dp[0][j] = j;
+        }
+
+        for (let i = 1; i <= m; i++) {
+            const char1 = source[i - 1];
+
+            for (let j = 1; j <= n; j++) {
+                const char2 = target[j - 1];
+
+                if (char1 === char2) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(
+                        dp[i - 1][j] + 1, // Deletion
+                        dp[i][j - 1] + 1, // Insertion
+                        dp[i - 1][j - 1] + 1 // Substitution
+                    );
+                }
             }
         }
-        // Return the result
-        return arr[b.length][a.length];
-    }
-    const handleChange = (event) => {
-        // What the user has typed in so far.
-        let searchParam = event.target.value;
-        const usernames = cachedUsers.map(user => user.username);
-        let results = [];
-        usernames.forEach((username) => {
-            let weight = Levenshtein(searchParam, username);
-            if (username.length > searchParam.length) {
-                weight -= username.length - searchParam.length
-            }
-            if (weight < 10) {
-                results.push({username: username, weight: weight})
-            }
-        })
-        // Order results by their relevance.
-        results.sort((a, b) => a.weight - b.weight)
-        // Match each username to their user record in the DB
-        results.forEach((user, i) => {
-            results[i] = cachedUsers[cachedUsers.findIndex(object => {
-                return object.username === user.username
-            })]
-        })
-        results.splice(5, results.length - 5);
+
+        return dp[m][n];
+    };
+
+
+    // Function to handle the search logic
+    const handleSearch = (searchParam) => {
+        const minLength = searchParam.length - 5;
+        const results = Object.values(cachedUsersMap)
+            .filter(user => user.username.length >= minLength)
+            .map(user => ({
+                ...user,
+                weight: Levenshtein(searchParam, user.username)
+            }))
+            .filter(user => user.weight < 5)
+            .sort((a, b) => a.weight - b.weight)
+            .slice(0, 5);
+
         setSearchResults(results);
-    }
+    };
 
+    // Fetch initial data on component mount
     useEffect(() => {
-        retrieveAllPublicUsers().then(res => {
-            isLoggedIn() ?
-                setCachedUsers(res.filter(e => e.user_id !== window.localStorage.getItem('user_id')))
-                :
-                setCachedUsers(res)
-        }
-        );
-        if (isLoggedIn()) {
-            retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
-                setLoggedFollowing(following);
-            })
-        }
-    }, [])
+        const fetchData = async () => {
+            // Retrieve all public users
+            const users = await retrieveAllPublicUsers();
 
+            // Get the current user's ID
+            const currentUserID = window.localStorage.getItem('user_id');
+
+            // Filter the users based on the current user's ID
+            const filteredUsers = isLoggedIn()
+                ? users.filter(user => user.user_id !== currentUserID)
+                : users;
+
+            // Create a map of usernames to user objects for efficient lookup
+            const usersMap = {};
+            filteredUsers.forEach(user => {
+                usersMap[user.username] = user;
+            });
+
+            // Set the cachedUsersMap state with the created map
+            setCachedUsersMap(usersMap);
+
+            // If the user is logged in, retrieve their following data
+            if (isLoggedIn()) {
+                const following = await retrieveFollowing(currentUserID);
+                setLoggedFollowing(following);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Reset search results when showResults prop changes
     useEffect(() => {
         if (!showResults) {
             setSearchResults(null);
         }
-    }, [showResults])
+    }, [showResults]);
 
     return (
         <div className='search-bar-container'>
+            {/* SearchBar component */}
             <FormControl variant="outlined">
-                <SearchBar className='search-bar' inputProps={{className: `search-label`}}
-                           onClick={handleChange}
-                           onChange={handleChange} label="Search"></SearchBar>
+                <SearchBar
+                    className='search-bar'
+                    inputProps={{ className: `search-label` }}
+                    onChange={(event) => handleSearch(event.target.value)}
+                    label="Search"
+                />
             </FormControl>
-            {!!searchResults ?
-                <div className={'results'}>
+            {!!searchResults && (
+                <div className='results'>
+                    {/* Render search results */}
                     {searchResults.map(result => {
-                        let following = false;
-                        if (isLoggedIn() && (loggedFollowing && loggedFollowing.length > 0)) {
-                            following = loggedFollowing.some(e => e.user_id === result.user_id);
-                        }
+                        const following = isLoggedIn() && loggedFollowing.some(followedUser => followedUser.user_id === result.user_id);
                         return (
-                            <a className={'result'} href={`/profile#${result.user_id}`}>
-                                <div className={'result-title'}>
+                            <a className='result' href={`/profile#${result.user_id}`} key={result.user_id}>
+                                <div className='result-title'>
                                     <h2>{result.username}</h2>
-                                    {following ?
-                                        <p>(Following)</p>
-                                        :
-                                        <></>
-                                    }
+                                    {following && <p>(Following)</p>}
                                 </div>
                             </a>
-                        )
+                        );
                     })}
                 </div>
-                :
-                <></>
-            }
-
-
+            )}
         </div>
-    )
-}
+    );
+};
 
 export default Search;
