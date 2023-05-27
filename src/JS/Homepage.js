@@ -53,6 +53,7 @@ function Homepage() {
                     {!isLoggedIn() ?
                         <>
                             <button className="std-button" onClick={handleLogin}>Login with Spotify</button>
+                            <a className="std-button" href={'/profile#sonn-gb'}>View a sample profile</a>
                         </>
                         :
                         <>
@@ -69,7 +70,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.2</p>
+                    v1.3.2a</p>
             </div>
         </div>
     );

@@ -27,9 +27,9 @@ export function handleLogin() {
 export function reAuthenticate() {
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", "https://harked.vercel.app/authentication"],
+        ["redirect_uri", "http://localhost:3000/authentication"],
         ["response_type", "token"],
-        ["scope", ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']]
+        ["scope", ['user-top-read']]
     ])
     window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
@@ -50,7 +50,7 @@ function Authentication() {
             console.info('Attempting OAuth with Spotify.');
             pb.collection('users').authWithOAuth2({
                 provider: 'spotify',
-                scopes: ['user-follow-read', 'user-follow-modify', 'user-library-read', 'user-library-modify', 'user-read-recently-played', 'user-top-read', 'playlist-read-private']
+                scopes: ['user-top-read']
             }).then((authData) => {
                 // authenticate
                 const id = pb.authStore.model.id;
