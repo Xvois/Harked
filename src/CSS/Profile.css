@@ -15,7 +15,7 @@ select.dropdown {
 .wrapper {
     display: flex;
     flex-direction: column;
-    animation: fadeIn 0.5s ease-out;
+    padding-bottom: 200px;
 }
 
 @keyframes fadeIn {
@@ -94,7 +94,7 @@ select.dropdown {
     position: relative;
     align-items: center;
     align-content: center;
-    border: 1px solid #343434;
+    border: 1px solid var(--secondary-colour);
     will-change: height;
     transition: all 0.5s;
 }
@@ -103,24 +103,11 @@ select.dropdown {
     position: absolute;
     font-family: "Inter Tight", sans-serif;
     font-size: 20px;
-    opacity: 0.5;
     height: max-content;
     top: 0;
     bottom: 0;
     margin: auto;
     padding-left: 15px;
-}
-
-.showcase-list-item > img {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    clip-path: inset(1px);
-    opacity: 0.5;
-    filter: blur(15px) brightness(60%);
-    z-index: -1;
-    transition: all 0.5s;
 }
 
 
@@ -129,7 +116,6 @@ select.dropdown {
     width: max-content;
     margin-left: auto;
     margin-right: auto;
-    text-shadow: 0 0 20px rgba(0, 0, 0, 0.26);
     transition: all 0.5s;
 }
 
@@ -157,7 +143,7 @@ select.dropdown {
     align-items: center;
     overflow: hidden;
     height: 100%;
-    width: 90%;
+    width: 92%;
     margin: auto;
     cursor: auto;
 }
@@ -176,11 +162,11 @@ select.dropdown {
 
 
 .showcase-exit-button {
+    color: var(--primary-colour);
     position: absolute;
     font-size: 20px;
     top: 20px;
     right: 20px;
-    color: white;
     background: none;
     padding: 5px;
     border: none;
@@ -200,8 +186,8 @@ select.dropdown {
     font-family: "Inter Tight", sans-serif;
     text-decoration: none;
     text-align: right;
-    color: white;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--primary-colour);
+    border-top: 1px solid var(--secondary-colour);
     transition: all 0.5s;
 }
 
@@ -229,7 +215,7 @@ select.dropdown {
 
 .block-wrapper > div {
     flex-grow: 1;
-    border: 1px solid #343434;
+    border: 1px solid var(--secondary-colour);
     padding: 15px;
 }
 
@@ -260,15 +246,14 @@ select.dropdown {
     text-transform: uppercase;
     margin-top: 0;
     margin-bottom: 5px;
-    color: white;
+    color: var(--primary-colour);
 }
 
 .stat-block > p {
     font-family: 'Inter Tight', sans-serif;
     font-size: 10px;
     margin: 5px 0 0 0;
-    opacity: 0.5;
-    color: white;
+    color: var(--secondary-colour);
 }
 
 /*noinspection ALL*/
@@ -277,7 +262,7 @@ select.dropdown {
     height: 5px;
     width: var(--val);
 
-    background-color: white;
+    background-color: var(--primary-colour);
     border-radius: 10px;
     transition: all 0.5s ease-out;
 
@@ -340,7 +325,7 @@ select.dropdown {
 
     font-family: 'Inter Tight', sans-serif;
 
-    border-top: 1px solid #343434;
+    border-top: 1px solid var(--secondary-colour);
 }
 
 .datapoint-footer {
@@ -356,8 +341,8 @@ select.dropdown {
 
     font-family: 'Inter Tight', sans-serif;
 
-    border-bottom: 1px solid #343434;
-    border-top: 1px solid #343434;
+    border-bottom: 1px solid var(--secondary-colour);
+    border-top: 1px solid var(--secondary-colour);
 }
 
 
@@ -386,7 +371,6 @@ select.dropdown {
 
 .user-details {
     font-family: "Inter Tight", sans-serif;
-    max-height: 175px;
     height: max-content;
     width: max-content;
 }
@@ -417,11 +401,11 @@ select.dropdown {
 
 .follow-button {
     font-family: "Inter Tight", sans-serif;
-    color: white;
+    color: var(--primary-colour);
     background: none;
     padding: 0 10px;
     border-radius: 10px;
-    border: 2px solid white;
+    border: 2px solid var(--primary-colour);
     cursor: pointer;
 }
 
@@ -493,7 +477,7 @@ select.dropdown {
     font-family: "Inter Tight", sans-serif;
     text-transform: uppercase;
     cursor: pointer;
-    color: white;
+    color: var(--primary-colour);
     border: none;
     background: none;
 }
@@ -513,7 +497,7 @@ select.dropdown {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: rgb(255, 255, 255);
+    background: var(--primary-colour);
     animation: lds-grid 2.25s ease-in infinite;
 }
 

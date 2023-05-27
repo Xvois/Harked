@@ -72,8 +72,8 @@ const Comparison = () => {
                         return (
                             <div style={{
                                 padding: `15px ${alignment === 'left' ? '0px' : '15px'} 15px ${alignment === 'right' ? '0px' : '15px'}`,
-                                borderTop: '1px solid #343434',
-                                borderBottom: '1px solid #343434'
+                                borderTop: '1px solid var(--secondary-colour)',
+                                borderBottom: '1px solid var(--secondary-colour)'
                             }}>
                                 <StatBlock key={metric} name={translateAnalytics[metric].name}
                                            description={`${Math.round(avgAnalytics[metric] * 100)}%`}
@@ -99,8 +99,11 @@ const Comparison = () => {
                 <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>Comparison with</p>
                 <h2>{user.username}</h2>
                 <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}><span
-                    style={{color: '#22C55E'}}>{topArtist.name}</span> fan · <span
-                    style={{color: '#22C55E'}}>{topGenre}</span> fan</p>
+                    style={{color: 'var(--accent-colour)'}}>{topArtist.name}</span> fan · <span
+                    style={{color: 'var(--accent-colour)'}}>{topGenre}</span> fan</p>
+                <div style={alignment === 'right' ? {marginLeft: 'auto', marginTop: '15px', width: 'max-content'} : {marginTop: '15px', width: 'max-content'}}>
+                    <a className={'std-button'} href={`/profile#${user.user_id}`}>View profile</a>
+                </div>
             </div>
         )
     }
@@ -112,7 +115,7 @@ const Comparison = () => {
         return (
             <div style={{
                 padding: '3px',
-                border: `3px solid white`,
+                border: `3px solid var(--primary-colour)`,
                 borderRadius: '100%',
                 height: 'max-content',
                 width: 'max-content',
@@ -132,7 +135,7 @@ const Comparison = () => {
                         position: 'absolute',
                         height: `${diameter + 2 * padding}px`,
                         width: `${diameter + 2 * padding}px`,
-                        background: '#22C55E',
+                        background: 'var(--accent-colour)',
                         top: '0',
                         left: '0',
                         animation: 'rise 1s ease-out'
@@ -141,7 +144,7 @@ const Comparison = () => {
                         <div className={'centre'}>
                             <h2 style={{
                                 margin: '0',
-                                color: 'white',
+                                color: 'var(--primary-colour)',
                                 fontSize: `${(diameter / 70) * 24}px`
                             }}>{Math.round(value)}%</h2>
                         </div>
@@ -190,7 +193,7 @@ const Comparison = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                borderTop: '1px solid #343434'
+                borderTop: '1px solid var(--secondary-colour)'
             }}>
                 <div style={{
                     display: 'flex',

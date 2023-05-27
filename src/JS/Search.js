@@ -5,39 +5,39 @@ import {FormControl} from "@mui/base";
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
-        color: 'white'
+        color: 'var(--primary-colour)'
     },
     '& .MuiInput-underline': {
-        color: `white`,
+        color: `var(--primary-colour)`,
     },
     '& .MuiFormLabel-root.Mui-disabled': {
-        color: `white`,
+        color: `var(--primary-colour)`,
     },
     '& .MuiInput-underline:after': {
-        borderBottomColor: '#22C55E',
+        borderBottomColor: 'var(--accent-colour)',
     },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderColor: 'white',
+            borderColor: 'var(--primary-colour)',
             borderRadius: `0px`,
             borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
-            borderColor: 'white',
+            borderColor: 'var(--primary-colour)',
         },
         '&.Mui-focused fieldset': {
-            borderColor: '#22C55E',
+            borderColor: 'var(--primary-colour)',
             borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
     },
     '& label.Mui-focused': {
-        color: 'white',
+        color: 'var(--primary-colour)',
         fontFamily: 'Inter Tight, sans-serif',
     },
     '& .MuiFormLabel-root': {
-        color: 'white',
+        color: 'var(--primary-colour)',
         marginLeft: `5px`,
         fontFamily: 'Inter Tight, sans-serif',
     },
@@ -99,7 +99,13 @@ const Search = (props) => {
     }
 
     useEffect(() => {
-        retrieveAllPublicUsers().then(res => setCachedUsers(res));
+        retrieveAllPublicUsers().then(res => {
+            isLoggedIn() ?
+                setCachedUsers(res.filter(e => e.user_id !== window.localStorage.getItem('user_id')))
+                :
+                setCachedUsers(res)
+        }
+        );
         if (isLoggedIn()) {
             retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
                 setLoggedFollowing(following);
@@ -129,11 +135,10 @@ const Search = (props) => {
                         }
                         return (
                             <a className={'result'} href={`/profile#${result.user_id}`}>
-                                <img alt='' src={result.profile_picture}></img>
                                 <div className={'result-title'}>
                                     <h2>{result.username}</h2>
                                     {following ?
-                                        <p>Following</p>
+                                        <p>(Following)</p>
                                         :
                                         <></>
                                     }

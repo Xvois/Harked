@@ -1,6 +1,7 @@
 // noinspection SpellCheckingInspection
 import React from "react";
 
+
 /**
  * Holds all the methods used to generate analysis for certain objects within the context of a datapoint.
  */
@@ -127,7 +128,7 @@ export const StatBlock = (props) => {
             <div className={'stat-bar'} style={
                 {
                     '--val': `100%`,
-                    backgroundColor: 'white',
+                    backgroundColor: 'var(--primary-colour)',
                     opacity: '0.1',
                     marginBottom: '-5px',
                     animation: 'none'
@@ -149,6 +150,22 @@ export const StatBlock = (props) => {
 
             <p style={{textAlign: `${alignment}`}}>{description}</p>
         </div>
+    )
+}
+
+export const SpotifyLink = (props) => {
+    const {link, simple = false} = props;
+    const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return (
+        simple ?
+            <a href={link}>
+                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
+            </a>
+            :
+            <a className={'std-button'} style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '10.5px'}} href={link}>
+                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
+                <p style={{margin: '0'}}>Open in Spotify</p>
+            </a>
     )
 }
 

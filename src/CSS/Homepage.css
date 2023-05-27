@@ -64,7 +64,7 @@
     text-transform: uppercase;
     text-align: center;
     border-radius: 20px;
-    color: white;
+    color: var(--primary-colour);
     width: max-content;
     padding: 5px 30px 5px 30px;
     transition: all 0.1s ease-out;

@@ -1,17 +1,32 @@
 body {
+    position: relative;
     margin: 0;
-    padding: 0 50px 50px 50px;
-    background-color: #14110F;
-    color: white;
+    padding: 0 50px;
+    min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --bg-colour: #FFEDD4;
+    --primary-colour: #322E2D;
+    --secondary-colour: #83867E;
+    --accent-colour: #76625A;
+    color: var(--primary-colour);
+    background: var(--bg-colour);
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        --bg-colour: #171514;
+        --primary-colour: #FFEDD4;
+        --secondary-colour: #83867E;
+        --accent-colour: #a19485;
+    }
 }
 
 ::selection {
-    background: #22C55E;
+    background: var(--accent-colour);
     color: white;
 }
 
@@ -21,20 +36,22 @@ code {
 }
 
 .std-button {
+    align-content: center;
+    height: max-content;
     font-family: "Inter Tight", sans-serif;
     font-size: 12px;
     text-decoration: none;
     width: max-content;
-    color: white;
-    background: rgba(255, 255, 255, 0);
-    border: 1px solid white;
+    color: var(--primary-colour);
+    background: none;
+    border: 1px solid var(--primary-colour);
     padding: 5px 30px 5px 30px;
     cursor: pointer;
     transition: all 0.1s ease-out;
 }
 
 .std-button:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--accent-colour);
 }
 
 @media screen and (max-width: 1000px) {

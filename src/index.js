@@ -13,7 +13,7 @@ import {Analytics} from '@vercel/analytics/react';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <>
-        <TopBar></TopBar>
+        <TopBar />
         <BrowserRouter>
             <Routes> (//Routes to pages)
                 <Route index element={<Homepage/>}/>
@@ -23,6 +23,7 @@ root.render(
             </Routes>
         </BrowserRouter>
         <Analytics/>
+
     </>
 );
 

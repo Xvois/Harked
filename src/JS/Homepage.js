@@ -63,13 +63,13 @@ function Homepage() {
                         </>
                     }
                     {isLoggedIn() ?
-                        <button className={"std-button"} onClick={handleLogOut}>Log-out.</button>
+                        <button className={"std-button"} onClick={handleLogOut}>Log-out</button>
                         :
                         <></>
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.2.19</p>
+                    v1.3.0</p>
             </div>
         </div>
     );

@@ -3,7 +3,6 @@
     height: min-content;
     display: block;
     align-items: center;
-    margin: 25px 25px 25px 25px;
 }
 
 .element {
@@ -15,10 +14,8 @@
     min-width: max-content;
     width: 100px;
     font-size: 20px;
-    font-weight: 600;
-    color: rgb(255, 255, 255);
+    color: var(--primary-colour);
     text-decoration: none;
-    text-transform: uppercase;
     transition: color 0.2s ease-out;
 }
 
@@ -28,6 +25,7 @@
     font-size: 12px;
     font-family: 'Inter Tight', sans-serif;
     font-weight: 200;
+    text-transform: uppercase;
 }
 
 
@@ -57,20 +55,20 @@
     top: 0;
     right: 0;
     z-index: 1;
-    background: #14110F;
-    border-left: 1px solid white;
+    background: var(--bg-colour);
+    border-left: 1px solid var(--primary-colour);
 }
 
 #expanded-menu > hr {
     width: 200px;
-    border: 1px solid white;
-    background: white;
+    border: 1px solid var(--primary-colour);
+    background: var(--primary-colour);
     border-radius: 10px;
     margin: 0;
 }
 
 .menu-element {
-    color: white;
+    color: var(--primary-colour);
     text-decoration: none;
     display: flex;
     flex-direction: row;
@@ -78,6 +76,7 @@
     padding: 10px 20px 10px 20px;
     gap: 15px;
     font-family: 'Inter Tight', sans-serif;
+    text-transform: uppercase;
     cursor: pointer;
 
 }
@@ -102,25 +101,34 @@
     position: relative;
     display: flex;
     align-items: center;
-    height: max-content;
+    text-align: center;
     gap: 15px;
-    color: white;
+    color: var(--primary-colour);
     text-decoration: none;
+    text-transform: none;
 
     backdrop-filter: blur(10px);
-    width: 238px;
-    padding: 5px;
-    border-left: 1px solid #22C55E;
-    border-bottom: 1px solid #22C55E;
-    border-right: 1px solid #22C55E;
+    width: 218px;
+    padding: 15px;
+    border-left: 1px solid var(--primary-colour);
+    border-bottom: 1px solid var(--primary-colour);
+    border-right: 1px solid var(--primary-colour);
     z-index: 1;
+}
+
+.result-title {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
 }
 
 .result-title > h2 {
     font-size: 15px;
-    margin-top: -5px;
+    margin-top: 0;
     margin-bottom: 0;
     height: max-content;
+    font-weight: 800;
 }
 
 .result-title > p {

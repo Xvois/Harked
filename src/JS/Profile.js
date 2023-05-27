@@ -26,11 +26,10 @@ import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {
     getAverageAnalytics,
-    getGenresRelatedArtists,
     getItemAnalysis,
     getItemIndexChange,
     getLIDescription,
-    getLIName,
+    getLIName, SpotifyLink,
     StatBlock,
     translateAnalytics
 } from "./Analysis";
@@ -249,7 +248,7 @@ const Profile = () => {
                     if (topSongIndex > -1) {
                         return (
                             <div key={artist.artist_id} className={'stat-block'}
-                                 style={{padding: '15px', border: '1px solid #343434'}}>
+                                 style={{padding: '15px', border: '1px solid var(--secondary-colour)'}}>
                                 <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
                                 <p style={{margin: '0'}}>{artist.name}</p>
                             </div>
@@ -278,7 +277,7 @@ const Profile = () => {
                                 tabIndex={0}
                                 style={
                                     hoverItem !== -1 ?
-                                        hoverItem === index ? {cursor: 'pointer'} : {filter: 'brightness(60%)'}
+                                        hoverItem === index ? {cursor: 'pointer'} : {opacity: '0.5'}
                                         :
                                         {}
                                 }>
@@ -336,25 +335,25 @@ const Profile = () => {
         let changeMessage;
         if (indexChange < 0) {
             changeMessage = <><span style={{
-                color: 'grey',
+                color: 'var(--primary-colour)',
                 fontSize: '10px',
             }}>{indexChange}</span><ArrowCircleDownIcon style={{
-                color: 'grey',
+                color: 'var(--primary-colour)',
                 animation: 'down-change-animation 0.5s ease-out'
             }}
                                                         fontSize={"small"}></ArrowCircleDownIcon></>
         } else if (indexChange > 0) {
             changeMessage = <><span style={{
-                color: '#22C55E',
+                color: 'var(--primary-colour)',
                 fontSize: '10px'
             }}>{indexChange}</span><ArrowCircleUpIcon style={{
-                color: '#22C55E',
+                color: 'var(--primary-colour)',
                 animation: 'up-change-animation 0.5s ease-out'
             }}
                                                       fontSize={"small"}></ArrowCircleUpIcon></>
         } else if (indexChange === 0) {
             changeMessage = <ClearAllOutlinedIcon
-                style={{color: 'white', animation: 'equals-animation 0.5s ease-out'}}
+                style={{color: 'var(--primary-colour)', animation: 'equals-animation 0.5s ease-out'}}
                 fontSize={"small"}></ClearAllOutlinedIcon>
         }
         const description = getItemAnalysis(element, type, pageUser, selectedDatapoint);
@@ -368,13 +367,6 @@ const Profile = () => {
                          setExpanded(true)
                      }
                  }}>
-                {type !== 'genres' ?
-                    <img alt={getLIName(element)} src={element.image}
-                         style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
-                    :
-                    <img alt={element} src={getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].image}
-                         style={expanded ? {filter: 'blur(10px) brightness(75%)'} : {}}/>
-                }
                 <h3>{index + 1} <span
                     style={{transition: 'all 0.5s', opacity: `${expanded ? '0' : '1'}`}}>{changeMessage}</span></h3>
                 {expanded ?
@@ -382,8 +374,17 @@ const Profile = () => {
                         <div className={"showcase-list-item-expanded"}>
                             <div className={'item-description'}
                                  style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
-                                <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
-                                <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
+                                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '15px'}}>
+                                    <div>
+                                        <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
+                                        <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
+                                    </div>
+                                    {type !== 'genres' ?
+                                        <SpotifyLink link={element.link} simple/>
+                                        :
+                                        <></>
+                                    }
+                                </div>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
                                 <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
                                 {type !== 'genres' && isLoggedIn() ?
@@ -460,19 +461,20 @@ const Profile = () => {
                 display: 'flex',
                 flexDirection: 'row',
                 flexGrow: '1',
-                border: '1px solid #343434',
+                border: '1px solid var(--secondary-colour)',
                 padding: '10px',
                 fontFamily: 'Inter Tight',
                 width: 'max-content'
             }}>
                 <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'}
                      src={playlist.images[0].url}></img>
-                <div style={{display: 'flex', flexDirection: 'column'}}>
+                <div style={{display: 'flex', flexDirection: 'column', color: 'var(--primary-colour)', flexGrow: '1'}}>
                     <p style={{margin: '0 0 5px 0'}}>{playlist.name}</p>
-                    <p style={{margin: '0 0 5px 0', borderBottom: '1px solid #343434'}}>{playlist.description}</p>
+                    <p style={{margin: '0 0 5px 0', borderBottom: '1px solid var(--secondary-colour)'}}>{playlist.description}</p>
                     <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs</p>
-                    <a style={{width: 'max-content', color: 'white', opacity: '0.5', marginTop: 'auto'}}
-                       href={playlist.external_urls.spotify}>View</a>
+                    <div style={{marginTop: 'auto', marginLeft: 'auto'}}>
+                        <SpotifyLink link={playlist.external_urls.spotify} simple />
+                    </div>
                 </div>
             </div>
         )
@@ -523,8 +525,8 @@ const Profile = () => {
                             <p>Profile for</p>
                             <h2>{pageUser.username}</h2>
                             <p><span
-                                style={{color: '#22C55E'}}>{chipData[0].name}</span> fan · <span
-                                style={{color: '#22C55E'}}>{chipData[1]}</span> fan</p>
+                                style={{color: 'var(--accent-colour)'}}>{chipData[0].name}</span> fan · <span
+                                style={{color: 'var(--accent-colour)'}}>{chipData[1]}</span> fan</p>
                         </div>
                     </div>
                     <div className={'user-followers'}>
@@ -564,7 +566,7 @@ const Profile = () => {
                                 {terms.map(function (term, i) {
                                     return (<button key={term}
                                                     className={'std-button'}
-                                                    style={termIndex === i ? {} : {opacity: '0.5'}}
+                                                    style={termIndex === i ? {} : {color: 'var(--secondary-colour)', borderColor: 'var(--secondary-colour)'}}
                                                     onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
                                 })}
                             </div>
@@ -657,7 +659,7 @@ const Profile = () => {
                                                         each artist</h2>
                                                     <p>{possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} most
                                                         listened to track
-                                                        by each of {possessive} top artists.</p>
+                                                        by some of {possessive} top artists.</p>
                                                     <TopSongsOfArtists number={10}/>
                                                 </div>
 
