@@ -161,6 +161,46 @@ export const retrieveAllPublicUsers = async function () {
     await enableAutoCancel();
     return users;
 }
+
+/**
+ * Returns an array of public non-collaborative playlists from a given user.
+ * @param user_id
+ * @returns {Promise<Array>}
+ */
+export const retrievePlaylists = async function (user_id) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    let playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
+    playlists = playlists.filter(p => !p.collaborative && p.public);
+
+    const playlistTrackPromises = playlists.map(playlist => {
+        const totalTracks = playlist.tracks.total;
+        const numCalls = Math.ceil(totalTracks / 50);
+        const promises = [];
+
+        for (let i = 0; i < numCalls; i++) {
+            const offset = i * 50;
+            const promise = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+                .then(response => response.items.map(e => e.track))
+                .catch(error => {
+                    console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
+                    return [];
+                });
+
+            promises.push(promise);
+        }
+
+        return Promise.all(promises).then(tracksArrays => tracksArrays.flat().map(t => formatSong(t)));
+    });
+
+    await Promise.all(playlistTrackPromises).then(tracksArrays => {
+        tracksArrays.forEach((tracks, index) => {
+            playlists[index].tracks = tracks;
+        });
+    });
+
+    return playlists;
+}
+
 /**
  * Creates / updates the logged-in user's record.
  * @returns {Promise<{user_id, profile_picture: null, media: null, username: *}>}
