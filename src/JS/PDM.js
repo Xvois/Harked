@@ -165,6 +165,7 @@ export const retrieveProfileData = async function (user_id) {
 }
 export const submitComment = async function (user_id, target_user_id, contents, parent = null){
     const user = await retrieveUser(user_id);
+    target_user_id = target_user_id === 'me' ? window.localStorage.getItem('user_id') : target_user_id;
     // THIS IS VERY BAD
     const id = hashString(target_user_id + user_id + contents);
     const comment = {id: id, user: user.id, parent: parent, contents: contents};

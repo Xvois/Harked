@@ -114,9 +114,12 @@ const Profile = () => {
         });
 
         const valueRef = useRef('') //creating a reference for TextField Component
+        const charLimit = 500;
         const [comments, setComments] = useState(profileData.comments);
 
+        const handleChange = () => {
 
+        }
         const sendValue = () => {
             submitComment(window.localStorage.getItem("user_id"), pageHash, valueRef.current.value)
                 .then((c) => {
@@ -128,27 +131,30 @@ const Profile = () => {
                 });
         }
 
-
         return (
             <>
-                <div className={'comment-submit-field'}>
-                    <form noValidate autoComplete='off'>
-                        <div>
-                            <CommentField
-                                id='outlined-textarea'
-                                label='Comment'
-                                placeholder='Write your thoughts'
-                                multiline
-                                variant='outlined'
-                                rows={2}
-                                inputRef={valueRef}   //connecting inputRef property of TextField to the valueRef
-                            />
+                {isLoggedIn() &&
+                    <div className={'comment-submit-field'}>
+                        <form noValidate autoComplete='off'>
+                            <div>
+                                <CommentField
+                                    id='outlined-textarea'
+                                    label='Comment'
+                                    placeholder='Write your thoughts'
+                                    multiline
+                                    variant='outlined'
+                                    rows={2}
+                                    onChange={() => handleChange()}
+                                    inputRef={valueRef}
+                                    inputProps={{ maxLength: charLimit }}
+                                />
+                            </div>
+                        </form>
+                        <div style={{margin: '16px 0 0 auto', width: 'max-content'}}>
+                            <button className={'std-button'} onClick={sendValue}>Submit</button>
                         </div>
-                    </form>
-                    <div style={{margin: '16px 0 0 auto', width: 'max-content'}}>
-                        <button className={'std-button'} onClick={sendValue}>Submit</button>
                     </div>
-                </div>
+                }
                 <div className={'comments-wrapper'}>
                     {comments.map(c => {
                        return <Comment item={c} />
@@ -163,7 +169,7 @@ const Profile = () => {
         const user = item.user;
         return (
             <div className={'comment'}>
-                <a href={`/profile#${user.user_id}`} style={{color: 'var(--primary-colour)', textDecoration: 'none', fontWeight: 'bold'}}>{user.username}</a>
+                <a href={`/profile#${user.user_id}`}>{user.username}</a>
                 <p>{item.contents}</p>
             </div>
         )
@@ -844,6 +850,8 @@ const Profile = () => {
                                         })}
                                     </div>
                             }
+                        </div>
+                        <div className={'simple-instance'}>
                             <div className={'section-header'}>
                                 <div style={{maxWidth: '400px'}}>
                                     <p style={{
