@@ -163,6 +163,8 @@ export const retrieveProfileData = async function (user_id) {
     delete data.expand;
     return data;
 }
+// TODO: MOVE COMMENTS TO A SEPARATE TABLE THAT IS RELATED TO THE PROFILE DATA
+// TODO: COMMENTS SHOULD HAVE CHILDREN, NOT PARENTS
 export const submitComment = async function (user_id, target_user_id, contents, parent = null){
     const user = await retrieveUser(user_id);
     target_user_id = target_user_id === 'me' ? window.localStorage.getItem('user_id') : target_user_id;
