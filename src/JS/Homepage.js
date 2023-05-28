@@ -70,7 +70,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.4b</p>
+                    v1.3.4c</p>
             </div>
         </div>
     );

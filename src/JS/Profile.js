@@ -157,7 +157,7 @@ const Profile = () => {
                 }
                 <div className={'comments-wrapper'}>
                     {comments.map(c => {
-                       return <Comment item={c} />
+                        return <Comment item={c} />
                     })}
                 </div>
             </>
@@ -167,9 +167,12 @@ const Profile = () => {
     function Comment(props) {
         const {item} = props;
         const user = item.user;
+        const date = new Date(item.created);
+
         return (
             <div className={'comment'}>
                 <a href={`/profile#${user.user_id}`}>{user.username}</a>
+                <p style={{fontSize: '12px', color: 'var(--accent-colour)', paddingBottom: '5px'}}>{date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}</p>
                 <p>{item.contents}</p>
             </div>
         )
