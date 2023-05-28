@@ -54,7 +54,7 @@ export const followsUser = async function (primaryUserID, targetUserID) {
     }
     let follows = false;
     const targetUser = await getUser(targetUserID);
-    await getLocalData("user_following", `user.user_id=${primaryUserID}`)
+    await getLocalData("user_following", `user.user_id="${primaryUserID}"`)
         .then((res) => {
             const item = res[0];
             if (item.following.some(e => e === targetUser.id)) {
