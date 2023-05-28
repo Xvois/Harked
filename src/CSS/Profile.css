@@ -313,7 +313,7 @@ select.dropdown {
     color: rgb(148, 148, 148);
 }
 
-.datapoint-header {
+.section-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -328,7 +328,7 @@ select.dropdown {
     border-top: 1px solid var(--secondary-colour);
 }
 
-.datapoint-footer {
+.section-footer {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -480,6 +480,27 @@ select.dropdown {
     color: var(--primary-colour);
     border: none;
     background: none;
+}
+
+.comment-submit-field {
+    width: 100%;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--secondary-colour);
+}
+
+.comments-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.comment {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border: 1px solid var(--secondary-colour);
 }
 
 

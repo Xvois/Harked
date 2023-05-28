@@ -27,12 +27,12 @@ export function handleLogin() {
 export function reAuthenticate() {
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", `https://harked.vercel.app/authentication`],
+        ["redirect_uri", `http://localhost:3000/authentication`],
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])
-    const currPath = (new URL(window.location)).pathname;
-    window.localStorage.setItem("redirect", currPath);
+    const url = new URL(window.location);
+    window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
     window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
 
@@ -68,9 +68,11 @@ function Authentication() {
                             const followers = {id: hash, user: id, followers: []}
                             const following = {id: hash, user: id, following: []}
                             const settings = {id: hash, user: id, public: true}
+                            const profile_data = {id: hash, user: id, command: []}
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);
                             putLocalData("settings", settings);
+                            putLocalData("profile_data", profile_data);
                             const redirectPath = window.localStorage.getItem("redirect");
                             if(redirectPath){
                                 window.localStorage.removeItem("redirect");

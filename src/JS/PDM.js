@@ -9,7 +9,7 @@ import {
     getLocalDataByID,
     getUser,
     hashString,
-    postDatapoint,
+    postDatapoint, putLocalData,
     updateLocalData
 } from "./API";
 
@@ -147,6 +147,32 @@ export const changeSettings = function (user_id, new_settings) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     const id = hashString(globalUser_id);
     updateLocalData("settings", new_settings, id);
+}
+
+export const retrieveProfileData = async function (user_id) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const id = hashString(globalUser_id);
+    let data = await getLocalDataByID("profile_data", id, "comments, comments.user");
+    data.comments = data.expand.comments;
+    if(data.comments !== undefined){
+        data.comments.map(c => c.user = c.expand.user);
+        data.comments.forEach(c => delete c.expand);
+    } else {
+        data.comments = [];
+    }
+    delete data.expand;
+    return data;
+}
+export const submitComment = async function (user_id, target_user_id, contents, parent = null){
+    const user = await retrieveUser(user_id);
+    // THIS IS VERY BAD
+    const id = hashString(target_user_id + user_id + contents);
+    const comment = {id: id, user: user.id, parent: parent, contents: contents};
+    await putLocalData("posts", comment);
+    let profile_data = await getLocalDataByID("profile_data", hashString(target_user_id));
+    profile_data.comments.push(id);
+    await updateLocalData("profile_data", profile_data, profile_data.id);
+    return {...comment, user: user};
 }
 
 /**

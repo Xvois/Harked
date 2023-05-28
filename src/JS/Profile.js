@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
@@ -16,9 +16,9 @@ import {
     retrieveAllDatapoints,
     retrieveFollowers,
     retrievePlaylists,
-    retrievePrevAllDatapoints,
+    retrievePrevAllDatapoints, retrieveProfileData,
     retrieveSettings,
-    retrieveUser,
+    retrieveUser, submitComment,
     unfollowUser
 } from './PDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
@@ -35,7 +35,8 @@ import {
 } from "./Analysis";
 import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
-
+import {FormControl} from "@mui/base";
+import {styled, TextField} from "@mui/material";
 
 const Profile = () => {
 
@@ -63,12 +64,110 @@ const Profile = () => {
     const [playlists, setPlaylists] = useState(null);
     const [possessive, setPossessive] = useState('');
     const [settings, setSettings] = useState({});
+    const [profileData, setProfileData] = useState({});
     const [locked, setLocked] = useState(false);
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
         window.location.reload()
     });
+
+    function CommentSection() {
+        const CommentField = styled(TextField)({
+            "& .MuiInputBase-root": {
+                color: 'var(--primary-colour)'
+            },
+            '& .MuiInput-underline': {
+                color: `var(--secondary-colour)`,
+            },
+            '& .MuiFormLabel-root.Mui-disabled': {
+                color: `var(--secondary-colour)`,
+            },
+            '& .MuiInput-underline:after': {
+                borderBottomColor: 'var(--accent-colour)',
+            },
+            '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                    borderColor: 'var(--secondary-colour)',
+                    borderRadius: `0px`,
+                    borderWidth: '1px',
+                    transition: `all 0.1s ease-in`
+                },
+                '&:hover fieldset': {
+                    borderColor: 'var(--secondary-colour)',
+                },
+                '&.Mui-focused fieldset': {
+                    borderColor: 'var(--secondary-colour)',
+                    borderWidth: '1px',
+                    transition: `all 0.1s ease-in`
+                },
+            },
+            '& label.Mui-focused': {
+                color: 'var(--primary-colour)',
+                fontFamily: 'Inter Tight, sans-serif',
+            },
+            '& .MuiFormLabel-root': {
+                color: 'var(--primary-colour)',
+                marginLeft: `5px`,
+                fontFamily: 'Inter Tight, sans-serif',
+            },
+        });
+
+        const valueRef = useRef('') //creating a reference for TextField Component
+        const [comments, setComments] = useState(profileData.comments);
+
+
+        const sendValue = () => {
+            submitComment(window.localStorage.getItem("user_id"), pageHash, valueRef.current.value)
+                .then((c) => {
+                    const newComments = comments.concat([c]);
+                    setComments(newComments);
+            })
+                .catch((err) => {
+                    alert(err);
+                });
+        }
+
+
+        return (
+            <>
+                <div className={'comment-submit-field'}>
+                    <form noValidate autoComplete='off'>
+                        <div>
+                            <CommentField
+                                id='outlined-textarea'
+                                label='Comment'
+                                placeholder='Write your thoughts'
+                                multiline
+                                variant='outlined'
+                                rows={2}
+                                inputRef={valueRef}   //connecting inputRef property of TextField to the valueRef
+                            />
+                        </div>
+                    </form>
+                    <div style={{margin: '16px 0 0 auto', width: 'max-content'}}>
+                        <button className={'std-button'} onClick={sendValue}>Submit</button>
+                    </div>
+                </div>
+                <div className={'comments-wrapper'}>
+                    {comments.map(c => {
+                       return <Comment item={c} />
+                    })}
+                </div>
+            </>
+        );
+    }
+
+    function Comment(props) {
+        const {item} = props;
+        const user = item.user;
+        return (
+            <div className={'comment'}>
+                <a href={`/profile#${user.user_id}`} style={{color: 'var(--primary-colour)', textDecoration: 'none', fontWeight: 'bold'}}>{user.username}</a>
+                <p>{item.contents}</p>
+            </div>
+        )
+    }
 
 
     // Function that loads the page when necessary
@@ -103,6 +202,9 @@ const Profile = () => {
                     console.info("LOCKED PAGE", settings)
                     setLocked(true);
                 }
+            }),
+            retrieveProfileData(pageHash).then(function (d) {
+                setProfileData(d);
             })
         ]
 
@@ -620,7 +722,7 @@ const Profile = () => {
                             }
                             return (
                                 <div key={type} className='simple-instance' style={{minWidth: '0px'}}>
-                                    <div className={'datapoint-header'}>
+                                    <div className={'section-header'}>
                                         <div style={{maxWidth: '400px'}}>
                                             <p style={{
                                                 margin: '16px 0 0 0',
@@ -637,7 +739,7 @@ const Profile = () => {
                                         </div>
                                     </div>
                                     <ShowcaseList type={type} start={0} end={9}/>
-                                    <div className={'datapoint-footer'}>
+                                    <div className={'section-footer'}>
                                         {type === 'songs' ?
                                             <div style={{textAlign: 'left'}}>
                                                 <p style={{
@@ -692,7 +794,7 @@ const Profile = () => {
                             )
                         })}
                         <div className={'simple-instance'} style={{alignItems: 'center'}}>
-                            <div className={'datapoint-header'}>
+                            <div className={'section-header'}>
                                 <div style={{maxWidth: '400px'}}>
                                     <p style={{
                                         margin: '16px 0 0 0',
@@ -742,6 +844,26 @@ const Profile = () => {
                                         })}
                                     </div>
                             }
+                            <div className={'section-header'}>
+                                <div style={{maxWidth: '400px'}}>
+                                    <p style={{
+                                        margin: '16px 0 0 0',
+                                        textTransform: 'uppercase'
+                                    }}>{possessive}</p>
+                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Profile comments</h2>
+                                    <p>See what other users have to say about {possessive} profile.</p>
+                                </div>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                                gap: '10px',
+                                maxWidth: '1000px',
+                                width: '80%'
+                            }}>
+                                <CommentSection />
+                            </div>
                         </div>
                     </div>
 
