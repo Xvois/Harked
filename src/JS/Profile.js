@@ -331,7 +331,7 @@ const Profile = () => {
     const GenreBreakdown = (props) => {
         const {number} = props;
         return (
-            <div className={'block-wrapper'} style={{flexWrap: 'wrap-reverse'}}>
+            <div className={'block-wrapper'} style={{flexWrap: 'wrap'}}>
                 {selectedDatapoint.top_genres.slice(0, number).map((genre) => {
                     const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false);
                     const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
