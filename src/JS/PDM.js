@@ -60,8 +60,14 @@ export const followsUser = async function (primaryUserID, targetUserID) {
             if (item.following.some(e => e === targetUser.id)) {
                 follows = true;
             }
+            console.info(`followsUser dump`,
+                {
+                    targetUser: targetUser,
+                    res: res,
+                    follows: follows
+                }
+                )
         });
-    console.info(`Check for if ${primaryUserID} follows ${targetUserID} solved with: `, follows);
     return follows;
 }
 

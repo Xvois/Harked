@@ -541,7 +541,7 @@ const Profile = () => {
                                 <button
                                     className={'std-button'}
                                     onClick={() => {
-                                        unfollowUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => {
+                                        unfollowUser(window.localStorage.getItem('user_id'), pageHash).then(() => {
                                             setIsLoggedUserFollowing(false);
                                         });
                                     }}>
@@ -551,7 +551,7 @@ const Profile = () => {
                                 <button
                                     className={'std-button'}
                                     onClick={() => {
-                                        followUser(window.localStorage.getItem('user_id'), pageUser.user_id).then(() => {
+                                        followUser(window.localStorage.getItem('user_id'), pageHash).then(() => {
                                             setIsLoggedUserFollowing(true);
                                         });
                                     }}>
