@@ -61,6 +61,7 @@ export const followsUser = async function (primaryUserID, targetUserID) {
                 follows = true;
             }
         });
+    console.info(`Check for if ${primaryUserID} follows ${targetUserID} solved with: `, follows);
     return follows;
 }
 
@@ -364,7 +365,10 @@ export const batchArtists = async (artist_ids) => {
     return artists;
 };
 
+
 export const getAlbumsWithTracks = async function (artistID, tracks) {
+    let albumsWithTracks = [];
+
     if (!tracks) {
         return [];
     }
@@ -373,14 +377,15 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
     const albumTracks = await Promise.all(albumPromises);
 
-    const albumsWithTracks = albums
-        .map((album, i) => {
-            const trackList = albumTracks[i].items;
-            const savedSongs = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
-            return { ...album, saved_songs: savedSongs };
-        })
-        .filter((album, index, self) => album.saved_songs.length > 0 && !self.some(item => item.saved_songs.length === album.saved_songs.length && item.name === album.name));
 
+    for (let i = 0; i < albums.length; i++) {
+        const album = albums[i];
+        const trackList = albumTracks[i].items;
+        album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
+        if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
+            albumsWithTracks.push(album);
+        }
+    }
     return albumsWithTracks;
 }
 

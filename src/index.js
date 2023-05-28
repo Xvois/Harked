@@ -9,6 +9,8 @@ import {BrowserRouter, Route, Routes} from "react-router-dom"; // Functionality 
 import TopBar from './JS/TopBar';
 import Profile from './JS/Profile';
 import {Analytics} from '@vercel/analytics/react';
+import Followers from "./JS/Followers";
+import FollowersPage from "./JS/Followers";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -20,6 +22,7 @@ root.render(
                 <Route path="authentication" element={<Authentication/>}/>
                 <Route path="profile" element={<Profile/>}/>
                 <Route path="compare" element={<Comparison/>}/>
+                <Route path="followers" element={<Followers />}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>

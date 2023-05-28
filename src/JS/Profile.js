@@ -118,6 +118,7 @@ const Profile = () => {
                     p.sort((a, b) => b.tracks.length - a.tracks.length)
                     setPlaylists(p);
                     console.info("Playlists retrieved!");
+                    console.log('Playlists: ', p);
                 })
             )
         }
@@ -517,7 +518,6 @@ const Profile = () => {
                             <h1>This page is private.</h1>
                         </div>
                     </div>
-
                 :
                 <div className='wrapper'>
                     <div className='user-container'>
@@ -530,9 +530,12 @@ const Profile = () => {
                         </div>
                     </div>
                     <div className={'user-followers'}>
-                        <p style={{
+                        <a href={`/followers#${pageHash}`} style={{
                             margin: '0',
-                        }}>{followers.length} follower{followers.length !== 1 ? 's' : ''}</p>
+                            textDecoration: 'none',
+                            color: 'var(--primary-colour)',
+                            fontWeight: '800'
+                        }}>{followers.length} follower{followers.length !== 1 ? 's' : ''}</a>
                         {isLoggedIn() && pageHash !== 'me' ?
                             isLoggedUserFollowing ?
                                 <button
@@ -582,7 +585,7 @@ const Profile = () => {
                             isOwnPage && isLoggedIn() ?
                                 <div style={{textAlign: 'right', marginLeft: 'auto'}}>
                                     <h3>Profile visibility</h3>
-                                    <p>Change whether or not {possessive} profile is publicly displayed.</p>
+                                    <p>Change whether or not your profile is publicly displayed.</p>
                                     <button className={'std-button'} style={{marginLeft: 'auto'}}
                                             onClick={() => {
                                                 const new_settings = {...settings, public: !settings.public};

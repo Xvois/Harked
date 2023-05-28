@@ -128,15 +128,14 @@ const Search = (props) => {
 
             // Set the cachedUsersMap state with the created map
             setCachedUsersMap(usersMap);
-
-            // If the user is logged in, retrieve their following data
-            if (isLoggedIn()) {
-                const following = await retrieveFollowing(currentUserID);
-                setLoggedFollowing(following);
-            }
         };
 
         fetchData();
+        if (isLoggedIn()) {
+            retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
+                setLoggedFollowing(following);
+            })
+        }
     }, []);
 
     // Reset search results when showResults prop changes
