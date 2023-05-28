@@ -27,7 +27,7 @@ export function handleLogin() {
 export function reAuthenticate() {
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", `http://localhost:3000/authentication`],
+        ["redirect_uri", `https://harked.vercel.app/authentication`],
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])
