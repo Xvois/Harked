@@ -188,10 +188,6 @@ const Comparison = () => {
 
     return (
         <>
-            <meta
-                name="description"
-                content={`${users[0].username} and ${users[1].username} are a ${Math.round(similarity.overall)}% match on Harked. Click the link to explore in more detail.`}
-            />
             {
                 users.length > 0 && datapoints.length > 0 ?
                     <div className='wrapper' style={{
@@ -201,6 +197,10 @@ const Comparison = () => {
                         justifyContent: 'space-between',
                         borderTop: '1px solid var(--secondary-colour)'
                     }}>
+                        <meta
+                            name="description"
+                            content={`${users[0].username} and ${users[1].username} are a ${Math.round(similarity.overall)}% match on Harked. Click the link to explore in more detail.`}
+                        />
                         <div style={{
                             display: 'flex',
                             flexDirection: 'row',
