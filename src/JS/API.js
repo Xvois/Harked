@@ -342,7 +342,7 @@ export const enableAutoCancel = async () => {
 }
 
 export const getLocalData = async (collection, filter) => {
-    return (await pb.collection(collection).getList(1, 50, filter).catch(handleFetchException)).items;
+    return (await pb.collection(collection).getList(1, 50, {filter: filter}).catch(handleFetchException)).items;
 }
 
 export const getLocalDataByID = async (collection, id, expand = '') => {
