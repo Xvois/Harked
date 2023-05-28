@@ -97,7 +97,7 @@ const Comparison = () => {
         return (
             <div className={'user-details'} style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>
                 <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>Comparison with</p>
-                <h2>{user.username}</h2>
+                <h2 style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>{user.username}</h2>
                 <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}><span
                     style={{color: 'var(--accent-colour)'}}>{topArtist.name}</span> fan · <span
                     style={{color: 'var(--accent-colour)'}}>{topGenre}</span> fan</p>
@@ -187,76 +187,85 @@ const Comparison = () => {
     }
 
     return (
-        users.length > 0 && datapoints.length > 0 ?
-            <div className='wrapper' style={{
-                fontFamily: 'Inter Tight',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                borderTop: '1px solid var(--secondary-colour)'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    position: 'relative',
-                    flexWrap: 'wrap',
-                    gap: '150px',
-                    paddingTop: '15px'
-                }}>
-                    <UserContainer userIndex={0} alignment={'left'}/>
-                    <div className={'centre'}>
-                        <ValueIndicator value={similarity.overall}/>
+        <>
+            <meta
+                name="description"
+                content={`${users[0].username} and ${users[1].username} are a ${Math.round(similarity.overall)}% match on Harked. Click the link to explore in more detail.`}
+            />
+            {
+                users.length > 0 && datapoints.length > 0 ?
+                    <div className='wrapper' style={{
+                        fontFamily: 'Inter Tight',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        borderTop: '1px solid var(--secondary-colour)'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            position: 'relative',
+                            flexWrap: 'wrap',
+                            gap: '150px',
+                            paddingTop: '15px'
+                        }}>
+                            <UserContainer userIndex={0} alignment={'left'}/>
+                            <div className={'centre'}>
+                                <ValueIndicator value={similarity.overall}/>
+                            </div>
+                            <UserContainer userIndex={1} alignment={'right'}/>
+                        </div>
+                        <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
+                            <p style={{
+                                margin: '0',
+                                textTransform: 'uppercase'
+                            }}>A look at</p>
+                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Average song analysis</h2>
+                        </div>
+                        <div style={{margin: '15px'}}>
+                            <ValueIndicator diameter={50} value={similarity.metrics}/>
+                        </div>
+                        <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                            <div style={{flexGrow: '1'}}>
+                                <AverageAnalytics userIndex={0} shadowUserIndex={1} alignment={'left'}/>
+                            </div>
+                            <div style={{flexGrow: '1'}}>
+                                <AverageAnalytics userIndex={1} shadowUserIndex={0} alignment={'right'}/>
+                            </div>
+                        </div>
+                        <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
+                            <p style={{
+                                margin: '0',
+                                textTransform: 'uppercase'
+                            }}>A look at</p>
+                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top Genres similarity</h2>
+                        </div>
+                        <div style={{margin: '15px'}}>
+                            <ValueIndicator diameter={50} value={similarity.genres}/>
+                        </div>
+                        <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                            <MatchingItems type={'genres'}/>
+                        </div>
+                        <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
+                            <p style={{
+                                margin: '0',
+                                textTransform: 'uppercase'
+                            }}>A look at</p>
+                            <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top Artists similarity</h2>
+                        </div>
+                        <div style={{margin: '15px'}}>
+                            <ValueIndicator diameter={50} value={similarity.artists}/>
+                        </div>
+                        <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                            <MatchingItems type={'artists'}/>
+                        </div>
                     </div>
-                    <UserContainer userIndex={1} alignment={'right'}/>
-                </div>
-                <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
-                    <p style={{
-                        margin: '0',
-                        textTransform: 'uppercase'
-                    }}>A look at</p>
-                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Average song analysis</h2>
-                </div>
-                <div style={{margin: '15px'}}>
-                    <ValueIndicator diameter={50} value={similarity.metrics}/>
-                </div>
-                <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                    <div style={{flexGrow: '1'}}>
-                        <AverageAnalytics userIndex={0} shadowUserIndex={1} alignment={'left'}/>
-                    </div>
-                    <div style={{flexGrow: '1'}}>
-                        <AverageAnalytics userIndex={1} shadowUserIndex={0} alignment={'right'}/>
-                    </div>
-                </div>
-                <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
-                    <p style={{
-                        margin: '0',
-                        textTransform: 'uppercase'
-                    }}>A look at</p>
-                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top Genres similarity</h2>
-                </div>
-                <div style={{margin: '15px'}}>
-                    <ValueIndicator diameter={50} value={similarity.genres}/>
-                </div>
-                <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                    <MatchingItems type={'genres'}/>
-                </div>
-                <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
-                    <p style={{
-                        margin: '0',
-                        textTransform: 'uppercase'
-                    }}>A look at</p>
-                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Top Artists similarity</h2>
-                </div>
-                <div style={{margin: '15px'}}>
-                    <ValueIndicator diameter={50} value={similarity.artists}/>
-                </div>
-                <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                    <MatchingItems type={'artists'}/>
-                </div>
-            </div>
-            :
-            <></>
+                    :
+                    <></>
+            }
+        </>
+
     )
 }
 

@@ -2,6 +2,7 @@ import { styled, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { isLoggedIn, retrieveAllPublicUsers, retrieveFollowing } from "./PDM";
 import { FormControl } from "@mui/base";
+import Fuse from 'fuse.js';
 
 const SearchBar = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -49,62 +50,19 @@ const Search = (props) => {
     const [cachedUsersMap, setCachedUsersMap] = useState({});
     const [loggedFollowing, setLoggedFollowing] = useState([]);
 
-    const Levenshtein = (source, target) => {
-        const m = source.length;
-        const n = target.length;
-
-        // Return early if either string is empty
-        if (m === 0) return n;
-        if (n === 0) return m;
-
-        // Initialize the matrix with correct dimensions
-        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
-        for (let i = 0; i <= m; i++) {
-            dp[i][0] = i;
-        }
-
-        for (let j = 0; j <= n; j++) {
-            dp[0][j] = j;
-        }
-
-        for (let i = 1; i <= m; i++) {
-            const char1 = source[i - 1];
-
-            for (let j = 1; j <= n; j++) {
-                const char2 = target[j - 1];
-
-                if (char1 === char2) {
-                    dp[i][j] = dp[i - 1][j - 1];
-                } else {
-                    dp[i][j] = Math.min(
-                        dp[i - 1][j] + 1, // Deletion
-                        dp[i][j - 1] + 1, // Insertion
-                        dp[i - 1][j - 1] + 1 // Substitution
-                    );
-                }
-            }
-        }
-
-        return dp[m][n];
-    };
-
-
-    // Function to handle the search logic
+// Function to handle the search logic
     const handleSearch = (searchParam) => {
-        const minLength = searchParam.length - 5;
-        const results = Object.values(cachedUsersMap)
-            .filter(user => user.username.length >= minLength)
-            .map(user => ({
-                ...user,
-                weight: Levenshtein(searchParam, user.username)
-            }))
-            .filter(user => user.weight < 5)
-            .sort((a, b) => a.weight - b.weight)
-            .slice(0, 5);
+        const options = {
+            keys: ['username'],
+            threshold: 0.3, // Adjust the threshold as needed
+        };
+
+        const fuse = new Fuse(Object.values(cachedUsersMap), options);
+        const results = fuse.search(searchParam).map((result) => result.item).sort((a, b) => a.refIndex - b.refIndex);
 
         setSearchResults(results);
     };
+
 
     // Fetch initial data on component mount
     useEffect(() => {
@@ -134,7 +92,7 @@ const Search = (props) => {
         if (isLoggedIn()) {
             retrieveFollowing(window.localStorage.getItem('user_id')).then(following => {
                 setLoggedFollowing(following);
-            })
+            });
         }
     }, []);
 

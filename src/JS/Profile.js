@@ -496,7 +496,7 @@ const Profile = () => {
 
     return (
         <>
-            {!loaded || locked ?
+            {!loaded || locked ? // Locked and loaded B)
                 !loaded ?
                     <div style={{top: '40%', left: '0', right: '0', position: 'absolute'}}>
                         <div className="lds-grid">
@@ -520,6 +520,10 @@ const Profile = () => {
                     </div>
                 :
                 <div className='wrapper'>
+                    <meta
+                        name="description"
+                        content={`Explore ${pageUser.username}'s profile on Harked.`}
+                    />
                     <div className='user-container'>
                         <div className={'user-details'}>
                             <p>Profile for</p>

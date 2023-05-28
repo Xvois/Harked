@@ -27,10 +27,12 @@ export function handleLogin() {
 export function reAuthenticate() {
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", "https://harked.vercel.app/authentication"],
+        ["redirect_uri", `http://localhost:3000/authentication`],
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])
+    const currPath = (new URL(window.location)).pathname;
+    window.localStorage.setItem("redirect", currPath);
     window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
 
@@ -69,18 +71,32 @@ function Authentication() {
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);
                             putLocalData("settings", settings);
-                            redirect('/profile#me');
+                            const redirectPath = window.localStorage.getItem("redirect");
+                            if(redirectPath){
+                                window.localStorage.removeItem("redirect");
+                                redirect(redirectPath);
+                            }else{
+                                redirect('/profile#me');
+                            }
                         });
                 })
             })
         } else {
-            const hash = window.location.hash
+            const url = new URL(window.location);
+            console.log(url);
+            const hash = url.hash;
             const re = new RegExp('\\=(.*?)\\&')
             let local_token = hash.match(re)[0]
             local_token = local_token.substring(1, local_token.length - 1);
             window.location.hash = ""
             window.localStorage.setItem("access-token", local_token);
-            redirect('/profile#me');
+            const redirectPath = window.localStorage.getItem("redirect");
+            if(redirectPath){
+                window.localStorage.removeItem("redirect");
+                redirect(redirectPath);
+            }else{
+                redirect('/profile#me');
+            }
         }
     }, [redirect])
 

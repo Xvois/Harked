@@ -9,7 +9,7 @@ import {isLoggedIn, retrieveAllPublicUsers} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {handleLogin} from "./Authentication";
+import {handleLogin, reAuthenticate} from "./Authentication";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -70,7 +70,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.2e</p>
+                    v1.3.3</p>
             </div>
         </div>
     );

@@ -13,9 +13,7 @@ const FollowersComponent = () => {
             let targetUserID = window.location.hash.substr(1);
             if (targetUserID === 'me') {
                 targetUserID = window.localStorage.getItem('user_id');
-                window.location.hash = targetUserID;
-                window.location.reload();
-                return;
+                window.location.replace(`/followers#${targetUserID}`)
             }
 
             const user = await retrieveUser(targetUserID);
