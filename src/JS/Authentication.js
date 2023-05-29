@@ -68,7 +68,7 @@ function Authentication() {
                             const followers = {id: hash, user: id, followers: []}
                             const following = {id: hash, user: id, following: []}
                             const settings = {id: hash, user: id, public: true}
-                            const profile_data = {id: hash, user: id, command: []}
+                            const profile_data = {id: hash, user: id, profile_comments: []}
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);
                             putLocalData("settings", settings);

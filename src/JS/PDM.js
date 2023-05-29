@@ -1,4 +1,5 @@
 import {
+    deleteLocalData,
     disableAutoCancel,
     enableAutoCancel,
     fetchData,
@@ -9,7 +10,8 @@ import {
     getLocalDataByID,
     getUser,
     hashString,
-    postDatapoint, putLocalData,
+    postDatapoint,
+    putLocalData,
     updateLocalData
 } from "./API";
 
@@ -152,30 +154,49 @@ export const changeSettings = function (user_id, new_settings) {
 export const retrieveProfileData = async function (user_id) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     const id = hashString(globalUser_id);
-    let data = await getLocalDataByID("profile_data", id, "comments, comments.user");
-    data.comments = data.expand.comments;
-    if(data.comments !== undefined){
-        data.comments.map(c => c.user = c.expand.user);
-        data.comments.forEach(c => delete c.expand);
-    } else {
-        data.comments = [];
-    }
-    delete data.expand;
-    return data;
+    return await getLocalDataByID("profile_data", id, "profile_comments, profile_comments.comments, profile_comments.comments.user");
 }
-// TODO: MOVE COMMENTS TO A SEPARATE TABLE THAT IS RELATED TO THE PROFILE DATA
-// TODO: COMMENTS SHOULD HAVE CHILDREN, NOT PARENTS
-export const submitComment = async function (user_id, target_user_id, contents, parent = null){
+
+export const retrieveProfileComments = async function (profile_comments_id) {
+    const profile_comments = await getLocalDataByID("profile_comments", profile_comments_id, "comments, comments.user");
+    let comments = profile_comments.expand.comments;
+    comments.map(c => c.user = c.expand.user);
+    comments.map(c => delete c.expand);
+    return comments;
+}
+
+export const submitComment = async function (user_id, target_user_id, content, parent = null){
     const user = await retrieveUser(user_id);
     target_user_id = target_user_id === 'me' ? window.localStorage.getItem('user_id') : target_user_id;
-    // THIS IS VERY BAD
-    const id = hashString(target_user_id + user_id + contents);
-    const comment = {id: id, user: user.id, parent: parent, contents: contents};
-    await putLocalData("posts", comment);
-    let profile_data = await getLocalDataByID("profile_data", hashString(target_user_id));
-    profile_data.comments.push(id);
-    await updateLocalData("profile_data", profile_data, profile_data.id);
+    // Just a random, valid and unique ID.
+    const commentID = hashString(target_user_id + user_id + content);
+    const comment = {id: commentID, user: user.id, parent: parent, content: content};
+    await putLocalData("comments", comment);
+    let profile_data = await getLocalDataByID("profile_data", hashString(target_user_id), "profile_comments, profile_comments.comments, profile_comments.comments.user");
+    console.log(profile_data);
+    if(profile_data.profile_comments_id === ""){
+        // Just a random, valid and unique ID.
+        let profile_comments_id = hashString(profile_data.id + user.id);
+        await putLocalData("profile_comments", {id: profile_comments_id, comments: [commentID]});
+        profile_data.profile_comments_id = profile_comments_id;
+        console.log(`SENDING OFF THIS PROFILE DATA`, profile_data)
+        await updateLocalData("profile_data", profile_data, profile_data.id);
+    }else {
+        let profile_comments = await getLocalDataByID("profile_comments", profile_data.profile_comments_id);
+        profile_comments.comments.push(commentID);
+        await updateLocalData("profile_comments", profile_comments, profile_comments.id);
+    }
     return {...comment, user: user};
+}
+
+export const deleteComment = async function (comment, profile_comments_id) {
+    await deleteLocalData("comments", comment.id);
+    // If that was the last comment of the profile, delete the comments
+    // instance of that profile
+    const profile_comments = await getLocalDataByID("profile_comments", profile_comments_id);
+    if(profile_comments.comments.length === 0){
+        await deleteLocalData("profile_comments", profile_comments_id);
+    }
 }
 
 /**
@@ -556,7 +577,5 @@ const calculateTopGenres = function (artists) {
     topGenres.sort((a, b) => b.weight - a.weight);
 
     // Extract the genre names as an array of strings
-    const topGenreNames = topGenres.map((genre) => genre.genre);
-
-    return topGenreNames;
+    return topGenres.map((genre) => genre.genre);
 };

@@ -4,7 +4,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
-    changeSettings,
+    changeSettings, deleteComment,
     followsUser,
     followUser,
     formatArtist,
@@ -16,7 +16,7 @@ import {
     retrieveAllDatapoints,
     retrieveFollowers,
     retrievePlaylists,
-    retrievePrevAllDatapoints, retrieveProfileData,
+    retrievePrevAllDatapoints, retrieveProfileComments, retrieveProfileData,
     retrieveSettings,
     retrieveUser, submitComment,
     unfollowUser
@@ -35,7 +35,7 @@ import {
 } from "./Analysis";
 import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
-import {FormControl} from "@mui/base";
+import DeleteIcon from '@mui/icons-material/Delete';
 import {styled, TextField} from "@mui/material";
 
 const Profile = () => {
@@ -65,6 +65,7 @@ const Profile = () => {
     const [possessive, setPossessive] = useState('');
     const [settings, setSettings] = useState({});
     const [profileData, setProfileData] = useState({});
+    const [comments, setComments] = useState([]);
     const [locked, setLocked] = useState(false);
 
     // Reload when attempting to load a new page
@@ -115,21 +116,18 @@ const Profile = () => {
 
         const valueRef = useRef('') //creating a reference for TextField Component
         const charLimit = 500;
-        const [comments, setComments] = useState(profileData.comments);
 
-        const handleChange = () => {
-
-        }
-        const sendValue = () => {
+        const handleSubmit = () => {
             submitComment(window.localStorage.getItem("user_id"), pageHash, valueRef.current.value)
                 .then((c) => {
                     const newComments = comments.concat([c]);
                     setComments(newComments);
             })
                 .catch((err) => {
-                    alert(err);
+                    console.error(err);
                 });
         }
+
 
         return (
             <>
@@ -144,14 +142,13 @@ const Profile = () => {
                                     multiline
                                     variant='outlined'
                                     rows={2}
-                                    onChange={() => handleChange()}
                                     inputRef={valueRef}
                                     inputProps={{ maxLength: charLimit }}
                                 />
                             </div>
                         </form>
                         <div style={{margin: '16px 0 0 auto', width: 'max-content'}}>
-                            <button className={'std-button'} onClick={sendValue}>Submit</button>
+                            <button className={'std-button'} onClick={handleSubmit}>Submit</button>
                         </div>
                     </div>
                 }
@@ -169,11 +166,28 @@ const Profile = () => {
         const user = item.user;
         const date = new Date(item.created);
 
+        const handleDelete = async () => {
+            await deleteComment(item, profileData.profile_comments_id);
+            const newComments = comments.filter(c => c.id !== item.id);
+            setComments(newComments);
+        }
+
         return (
             <div className={'comment'}>
                 <a href={`/profile#${user.user_id}`}>{user.username}</a>
-                <p style={{fontSize: '12px', color: 'var(--accent-colour)', paddingBottom: '5px'}}>{date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}</p>
-                <p>{item.contents}</p>
+                {item.created && (
+                    <p style={{fontSize: '12px', color: 'var(--accent-colour)', paddingBottom: '5px'}}>{date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}</p>
+                )}
+                <p>{item.content}</p>
+                {isLoggedIn() ?
+                    window.localStorage.getItem("user_id") === user.user_id && (
+                        <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}} onClick={handleDelete}>
+                            <DeleteIcon />
+                        </button>
+                    )
+                    :
+                    <></>
+                }
             </div>
         )
     }
@@ -214,6 +228,11 @@ const Profile = () => {
             }),
             retrieveProfileData(pageHash).then(function (d) {
                 setProfileData(d);
+                if(d.profile_comments_id !== ""){
+                    retrieveProfileComments(d.profile_comments_id).then(c => {
+                        setComments(c);
+                    })
+                }
             })
         ]
 

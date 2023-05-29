@@ -236,7 +236,7 @@ export const getAllArtistAssociations = function () {
         let result = {};
         analyticsMetrics.forEach(metric => {
             let max = {artist: '', value: 0};
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < songs.length; i++) {
                 if (songs[i].analytics[metric] > max.value) {
                     max.artist = songs[i].artists[0].name;
                     max.value = songs[i].analytics[metric];

@@ -341,6 +341,10 @@ export const enableAutoCancel = async () => {
     await pb.autoCancellation(true);
 }
 
+export const deleteLocalData = async (collection, id) => {
+    await pb.collection(collection).delete(id);
+}
+
 export const getLocalData = async (collection, filter) => {
     return (await pb.collection(collection).getList(1, 50, {filter: filter}).catch(handleFetchException)).items;
 }
@@ -349,8 +353,8 @@ export const getLocalDataByID = async (collection, id, expand = '') => {
     return await pb.collection(collection).getOne(id, {expand: expand}).catch(handleFetchException);
 }
 
-export const putLocalData = (collection, data) => {
-    pb.collection(collection).create(data).catch(handleCreationException);
+export const putLocalData = async (collection, data) => {
+    await pb.collection(collection).create(data).catch(handleCreationException);
 }
 
 export const updateLocalData = (collection, data, id) => {
