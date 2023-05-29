@@ -68,11 +68,13 @@ function Authentication() {
                             const followers = {id: hash, user: id, followers: []}
                             const following = {id: hash, user: id, following: []}
                             const settings = {id: hash, user: id, public: true}
-                            const profile_data = {id: hash, user: id, profile_comments: []}
+                            const profile_data = {id: hash, user: id}
+                            const profile_comments = {id: hash, user: id, comments: []}
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);
                             putLocalData("settings", settings);
                             putLocalData("profile_data", profile_data);
+                            putLocalData("profile_comments", profile_comments);
                             const redirectPath = window.localStorage.getItem("redirect");
                             if(redirectPath){
                                 window.localStorage.removeItem("redirect");

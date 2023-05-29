@@ -167,7 +167,7 @@ const Profile = () => {
         const date = new Date(item.created);
 
         const handleDelete = async () => {
-            await deleteComment(item, profileData.profile_comments_id);
+            await deleteComment(item);
             const newComments = comments.filter(c => c.id !== item.id);
             setComments(newComments);
         }
@@ -228,11 +228,9 @@ const Profile = () => {
             }),
             retrieveProfileData(pageHash).then(function (d) {
                 setProfileData(d);
-                if(d.profile_comments_id !== ""){
-                    retrieveProfileComments(d.profile_comments_id).then(c => {
-                        setComments(c);
-                    })
-                }
+            }),
+            retrieveProfileComments(pageHash).then(function(c) {
+                setComments(c);
             })
         ]
 

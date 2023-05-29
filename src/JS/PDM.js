@@ -154,12 +154,15 @@ export const changeSettings = function (user_id, new_settings) {
 export const retrieveProfileData = async function (user_id) {
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     const id = hashString(globalUser_id);
-    return await getLocalDataByID("profile_data", id, "profile_comments, profile_comments.comments, profile_comments.comments.user");
+    return await getLocalDataByID("profile_data", id);
 }
 
-export const retrieveProfileComments = async function (profile_comments_id) {
-    const profile_comments = await getLocalDataByID("profile_comments", profile_comments_id, "comments, comments.user");
-    let comments = profile_comments.expand.comments;
+export const retrieveProfileComments = async function (user_id) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const id = hashString(globalUser_id);
+    const profile_comments = await getLocalDataByID("profile_comments", id, "comments, comments.user");
+    console.log(profile_comments);
+    let comments = profile_comments.expand.comments ?? [];
     comments.map(c => c.user = c.expand.user);
     comments.map(c => delete c.expand);
     return comments;
@@ -172,31 +175,14 @@ export const submitComment = async function (user_id, target_user_id, content, p
     const commentID = hashString(target_user_id + user_id + content);
     const comment = {id: commentID, user: user.id, parent: parent, content: content};
     await putLocalData("comments", comment);
-    let profile_data = await getLocalDataByID("profile_data", hashString(target_user_id), "profile_comments, profile_comments.comments, profile_comments.comments.user");
-    console.log(profile_data);
-    if(profile_data.profile_comments_id === ""){
-        // Just a random, valid and unique ID.
-        let profile_comments_id = hashString(profile_data.id + user.id);
-        await putLocalData("profile_comments", {id: profile_comments_id, comments: [commentID]});
-        profile_data.profile_comments_id = profile_comments_id;
-        console.log(`SENDING OFF THIS PROFILE DATA`, profile_data)
-        await updateLocalData("profile_data", profile_data, profile_data.id);
-    }else {
-        let profile_comments = await getLocalDataByID("profile_comments", profile_data.profile_comments_id);
-        profile_comments.comments.push(commentID);
-        await updateLocalData("profile_comments", profile_comments, profile_comments.id);
-    }
+    let profileComments = await getLocalDataByID("profile_comments", hashString(target_user_id));
+    profileComments.comments.push(commentID);
+    await updateLocalData("profile_comments", profileComments, profileComments.id);
     return {...comment, user: user};
 }
 
-export const deleteComment = async function (comment, profile_comments_id) {
+export const deleteComment = async function (comment) {
     await deleteLocalData("comments", comment.id);
-    // If that was the last comment of the profile, delete the comments
-    // instance of that profile
-    const profile_comments = await getLocalDataByID("profile_comments", profile_comments_id);
-    if(profile_comments.comments.length === 0){
-        await deleteLocalData("profile_comments", profile_comments_id);
-    }
 }
 
 /**

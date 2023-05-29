@@ -5,11 +5,12 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllPublicUsers} from './PDM';
+import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './PDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
 import {handleLogin} from "./Authentication";
+import {hashString, putLocalData} from "./API";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -40,6 +41,7 @@ function Homepage() {
 
     let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
     let welcomeMessage = "Just click log-in to get started exploring your Spotify profile in a new light. None of your log-in information is shared with us.";
+
     return (
         <div className='homepage-container'>
             <div className='top-container'>
@@ -70,7 +72,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.4d</p>
+                    v1.3.4e</p>
             </div>
         </div>
     );
