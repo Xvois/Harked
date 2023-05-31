@@ -584,7 +584,6 @@ const Profile = () => {
 
     const PlaylistItem = function (props) {
         const {playlist} = props;
-
         return (
             <div style={{
                 display: 'flex',
@@ -595,8 +594,10 @@ const Profile = () => {
                 fontFamily: 'Inter Tight',
                 width: 'max-content'
             }}>
-                <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'}
-                     src={playlist.images[0].url}></img>
+                {playlist.images.length > 0 && (
+                    <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'}
+                         src={playlist.images[0].url}></img>
+                )}
                 <div style={{display: 'flex', flexDirection: 'column', color: 'var(--primary-colour)', flexGrow: '1'}}>
                     <p style={{margin: '0 0 5px 0'}}>{playlist.name}</p>
                     <p style={{margin: '0 0 5px 0', borderBottom: '1px solid var(--secondary-colour)'}}>{playlist.description}</p>
