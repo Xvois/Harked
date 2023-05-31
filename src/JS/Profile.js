@@ -710,7 +710,7 @@ const Profile = () => {
                         {!isOwnPage && isLoggedIn() ?
                             <div style={{textAlign: 'right', marginLeft: 'auto'}}>
                                 <h3>Compare</h3>
-                                <p>See how {possessive} stats stack up against {pageUser.username}</p>
+                                <p>See how your stats stack up against {pageUser.username}</p>
                                 <a className={'std-button'} style={{marginLeft: 'auto'}}
                                    href={`/compare#${window.localStorage.getItem('user_id')}&${pageHash}`}>Compare</a>
                             </div>
