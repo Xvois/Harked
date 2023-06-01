@@ -194,7 +194,6 @@ export const submitRecommendation = async function (user_id, item, type, descrip
     if(currRecommendations.recommendations === null){
         currRecommendations.recommendations = [];
     }
-    console.log(currRecommendations);
     switch (type){
         case 'artists':
             const [artistRefID] = await artistsToRefIDs([item]);
@@ -214,6 +213,7 @@ export const submitRecommendation = async function (user_id, item, type, descrip
             await updateLocalData("profile_recommendations", newRecs_s, currRecommendations.id);
             break;
     }
+
 }
 
 export const deleteRecommendation = async function (rec_id) {
@@ -252,6 +252,9 @@ export const retrieveProfileRecommendations = async function (user_id)  {
         if(e.item.type === "artists"){
             e.item = await getLocalDataByID("artists", e.item.id, "genres");
             e.item.genres = e.item.expand.genres;
+            if(e.item.genres !== undefined){
+                e.item.genres = e.item.genres.map(e => e.genre);
+            }
         }else if(e.item.type === "songs"){
             e.item = await getLocalDataByID("songs", e.item.id, "artists");
             e.item.artists = e.item.expand.artists;
@@ -262,17 +265,38 @@ export const retrieveProfileRecommendations = async function (user_id)  {
     return recs;
 }
 // Only returns songs and artists
-export const retrieveSearchResults = async function (query) {
+export const retrieveSearchResults = async function (query, type) {
+    let typeParam;
+    switch (type) {
+        case 'artists':
+            typeParam = 'artist';
+            break;
+        case 'songs':
+            typeParam = 'track';
+            break;
+        case 'albums':
+            typeParam = 'album';
+            break;
+        default:
+            typeParam = null;
+    }
     let params = new URLSearchParams([
         ["q", query],
-        ["type", ['artist', 'track']],
+        ["type", typeParam],
         ["limit", 5]
     ]);
+
     let data = await fetchData(`search?${params}`);
-    data.artists = data.artists.items;
-    data.tracks = data.tracks.items;
-    data.artists = data.artists.map(a => formatArtist(a));
-    data.tracks = data.tracks.map(t => formatSong(t, true));
+
+    if(type === 'artists'){
+        data.artists = data.artists.items;
+        data.artists = data.artists.map(a => formatArtist(a));
+    }else if(type === 'songs'){
+        data.tracks = data.tracks.items;
+        data.tracks = data.tracks.map(t => formatSong(t));
+    }else {
+        console.warn('No type identified for', data);
+    }
     return data;
 }
 

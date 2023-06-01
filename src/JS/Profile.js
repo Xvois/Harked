@@ -158,7 +158,7 @@ const Profile = () => {
                                 />
                             </div>
                         </form>
-                        <div style={{margin: '16px 0 0 auto', width: 'max-content'}}>
+                        <div style={{margin: '0 0 0 auto', width: 'max-content'}}>
                             <button className={'std-button'} onClick={handleSubmit}>Submit</button>
                         </div>
                     </div>
@@ -284,7 +284,7 @@ const Profile = () => {
     const ProfileRecommendations = () => {
         // Only songs and artists at the moment
         const [recs, setRecs] = useState([]);
-        const [showDialog, setShowDialog] = useState(false);
+        const [showSelection, setShowSelection] = useState(false);
 
 
         useEffect(() => {
@@ -297,16 +297,21 @@ const Profile = () => {
             });
         }
 
-        const SelectionDialog = (props) => {
+        const Selection = (props) => {
 
-            const {show} = props;
             const [searchResults, setSearchResults] = useState(null);
             const [selectedItem, setSelectedItem] = useState(null);
             const searchRef = useRef('') //creating a reference for TextField Component
             const descriptionRef = useRef('');
+            const [type, setType] = useState('songs');
+            const typeChoices = ['songs', 'artists']
 
             const handleSearch = () => {
-                retrieveSearchResults(searchRef.current.value).then(res => setSearchResults(formatSearchResults(res)));
+                console.log('handleSearch called', searchRef.current)
+                if(searchRef.current !== null && searchRef.current !== undefined && searchRef.current.value !== ''){
+                    console.log('ran with', searchRef.current.value)
+                    retrieveSearchResults(searchRef.current.value, type).then(res => setSearchResults(formatSearchResults(res)));
+                }
             }
 
             const handleSubmit = async () => {
@@ -316,105 +321,118 @@ const Profile = () => {
                     submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
                 }
                 console.log(submissionItem)
-                await submitRecommendation(pageHash, submissionItem, type, descriptionRef.current.value).then(() => {
+                await submitRecommendation(pageHash, submissionItem, type, descriptionRef.current.value).then((res) => {
                     setSelectedItem(null);
-                    setShowDialog(false);
+                    setShowSelection(false);
                     retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
                 });
             }
 
             const formatSearchResults = (results) => {
                 const query = searchRef.current.value;
-                // Artists
-                const artistOptions = {
-                    keys: ['name'],
-                    threshold: 0.3, // Adjust the threshold as needed
-                };
 
-                const artistFuse = new Fuse(results.artists, artistOptions);
-
-                const songOptions = {
-                    keys: ['title'],
-                    threshold: 0.3, // Adjust the threshold as needed
-                };
-
-                const songFuse = new Fuse(results.tracks, songOptions);
-
-                const artistRes = artistFuse.search(query);
-                const songRes = songFuse.search(query);
-                return artistRes.concat(songRes).sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
+                switch (type){
+                    case 'artists':
+                        const artistOptions = {
+                            keys: ['name'],
+                            threshold: 0.3, // Adjust the threshold as needed
+                        };
+                        const artistFuse = new Fuse(results.artists, artistOptions);
+                        const artistRes = artistFuse.search(query);
+                        return artistRes.sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
+                    case 'songs':
+                        const songOptions = {
+                            keys: ['title'],
+                            threshold: 0.3, // Adjust the threshold as needed
+                        };
+                        const songFuse = new Fuse(results.tracks, songOptions);
+                        const songRes = songFuse.search(query);
+                        return songRes.sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
+                    default:
+                        return null;
+                }
             }
 
-            return (
-                <dialog className={'recommendation-dialog'} style={selectedItem ? {width: '700px', height: '300px'} : {}} open={showDialog}>
-                    {!selectedItem ?
-                        <>
-                            <div style={{margin: '0 0 0 auto', width: 'max-content'}}>
-                                <button className={'showcase-exit-button'} onClick={() => setShowDialog(false)}>X</button>
-                            </div>
-                            <p>Search for songs or artists</p>
-                            <StyledField
-                                label='Search'
-                                variant='outlined'
-                                inputRef={searchRef}
-                            />
-                            <div style={{margin: '15px 0 0 auto', width: 'max-content'}}>
-                                <button className={'std-button'} onClick={handleSearch}>Submit</button>
-                            </div>
-                            {searchResults && (
-                                <div style={{display: 'flex', flexDirection: 'column', marginTop: '15px', gap: '10px'}}>
-                                    {
-                                        searchResults.slice(0,5).map(e => {
-                                            return (
-                                                <button className={'std-button'} style={{width: '100%', height: '50px', borderLeft: 'none', borderRight: 'none', borderColor: 'var(--secondary-colour)'}} onClick={() => setSelectedItem(e)}>
-                                                    <h4 style={{margin: '0'}}>{getLIName(e)}</h4>
-                                                    <p style={{margin: '0'}}>{getLIDescription(e)}</p>
-                                                </button>)
-                                        })
-                                    }
-                                </div>
-
-                            )}
-                        </>
-                        :
-                        <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                           <img className={'supplemental-image'} alt={`${getLIName(selectedItem)}`} style={{aspectRatio: '1', objectFit: 'cover', height: '300px'}} src={selectedItem.image} />
-                            <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
-                                <h3 style={{margin: '0'}}>{getLIName(selectedItem)}</h3>
-                                <p style={{margin: '0'}}>{getLIDescription(selectedItem)}</p>
-                                <div style={{marginTop: '15px'}}>
-                                    <StyledField
-                                        label='Description'
-                                        placeholder='Why are you recommending this?'
-                                        variant='outlined'
-                                        multiline
-                                        rows={7}
-                                        inputRef={descriptionRef}
-                                    />
-                                </div>
-                                <div style={{marginTop: 'auto', display: "flex", flexDirection: 'row', justifyContent: 'space-between'}}>
-                                    <button className={'std-button'} onClick={() => {setSelectedItem(null); setSearchResults(null)}}>Back</button>
-                                    <button className={'std-button'} onClick={handleSubmit}>Submit</button>
+            return showSelection && (
+                <div>
+                    {selectedItem === null && (
+                            <div style={{marginBottom: '16px'}}>
+                                <StyledField
+                                    label='Search'
+                                    placeholder={`Search for ${type}`}
+                                    multiline
+                                    variant='outlined'
+                                    rows={1}
+                                    inputRef={searchRef}
+                                    inputProps={{ maxLength: 100 }}
+                                />
+                                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                                    <div>
+                                        {typeChoices.map(e => {
+                                            return <button key={e} className={'std-button'} style={type !== e ? {color: 'var(--secondary-colour)', borderColor: 'var(--secondary-colour)', textTransform: 'capitalize'} : {textTransform: 'capitalize'}} onClick={() => setType(e)}>{e}</button>
+                                        })}
+                                    </div>
+                                    <button className={'std-button'} onClick={handleSearch}>Search</button>
                                 </div>
                             </div>
-                        </div>
+                        )
                     }
 
-                </dialog>
+                    <div style={{display: 'flex', flexDirection: 'column'}}>
+                        {searchResults !== null && selectedItem === null ?
+                            (
+                                searchResults.slice(0,5).map((e,i) => {
+                                    return (
+                                        <button className={'std-button'} style={i === searchResults.slice(0,5).length - 1 ? {border: 'none', width: '100%'} : {borderTop: 'none', borderLeft: 'none', borderRight: 'none', width: '100%'}} key={e.link} onClick={() => setSelectedItem(e)}>
+                                            <h3>{getLIName(e)}</h3>
+                                            <p>{getLIDescription(e)}</p>
+                                        </button>
+                                    )
+                                })
+                            )
+                            :
+                            <></>
+                        }
+                    </div>
+                    <div>
+                        {selectedItem !== null && (
+                           <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
+                               <img alt={`${getLIName(selectedItem)}`} className={'supplemental-image'} style={{aspectRatio: '1', objectFit: 'cover'}} src={selectedItem.image}  />
+                               <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
+                                   <h2 style={{margin: '0'}}>{getLIName(selectedItem)}</h2>
+                                   <p>{getLIDescription(selectedItem)}</p>
+                                   <StyledField
+                                       id='outlined-textarea'
+                                       label='Description'
+                                       placeholder='Why are you recommending this?'
+                                       multiline
+                                       variant='outlined'
+                                       rows={6}
+                                       inputRef={descriptionRef}
+                                       inputProps={{ maxLength: 400 }}
+                                   />
+                                   <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 'auto'}}>
+                                       <button className={'std-button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                       <button className={'std-button'} onClick={handleSubmit}>Submit</button>
+                                   </div>
+                               </div>
+                           </div>
+                        )
+                        }
+                    </div>
+                </div>
             )
         }
 
         return (
             <div style={{width: '100%'}}>
-                <SelectionDialog show={showDialog} />
                 <div style={{display: 'flex', flexDirection: 'row', gap: '15px', flexWrap: 'wrap', margin: '16px 0', position: 'relative'}}>
                     {recs.map(e => {
-                        console.log(e);
                         const type = getItemType(e.item);
                         return (
                             <div key={e.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
                                 <img alt={`${getLIName(e.item)}`} className={'supplemental-image'} src={e.item.image} style={{aspectRatio: '1', objectFit: 'cover', width: '150px'}} />
-                                <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
+                                <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
                                     <p style={{margin: '0', textTransform: 'capitalize', color: 'var(--accent-colour)'}}>{type.slice(0, type.length - 1)}</p>
                                     <h2 style={{margin: '0'}}>
                                         {getLIName(e.item)}
@@ -441,11 +459,17 @@ const Profile = () => {
                             )
                     })}
                 </div>
-                {isLoggedIn() && isOwnPage && (
+                {isLoggedIn() && isOwnPage && !showSelection && (
                     <div style={{margin: '0 auto', width: 'max-content'}}>
-                        <button className={'std-button'} onClick={() => setShowDialog(true)}>+</button>
+                        <button className={'std-button'} onClick={() => setShowSelection(true)}>+</button>
                     </div>
                 )}
+                {isLoggedIn() && isOwnPage && showSelection && (
+                    <div style={{margin: '0 auto 16px auto', width: 'max-content'}}>
+                        <button className={'std-button'} onClick={() => setShowSelection(false)}>-</button>
+                    </div>
+                )}
+                <Selection show={showSelection} />
             </div>
         )
     }

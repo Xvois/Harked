@@ -365,8 +365,8 @@ export const putLocalData = async (collection, data) => {
     await pb.collection(collection).create(data).catch(handleCreationException);
 }
 
-export const updateLocalData = (collection, data, id) => {
-    pb.collection(collection).update(id, data).catch(handleUpdateException);
+export const updateLocalData = async (collection, data, id) => {
+    await pb.collection(collection).update(id, data).catch(handleUpdateException);
 }
 
 export const getFullLocalData = async (collection, filter = '') => {
