@@ -437,6 +437,10 @@ select.dropdown {
 
 @media screen and (max-width: 1000px) {
 
+    .supplemental-image {
+        display: none;
+    }
+
     .simple-instance {
         padding: 15px 0;
     }
@@ -515,6 +519,22 @@ select.dropdown {
 }
 .comment > p {
     margin: 0;
+}
+
+.recommendation-dialog {
+    position: fixed;
+    width: 300px;
+    max-width: 80%;
+    height: 500px;
+    max-height: 80%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    background: var(--bg-colour);
+    color: var(--primary-colour);
+    z-index: 2;
 }
 
 

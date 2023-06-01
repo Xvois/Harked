@@ -1,4 +1,5 @@
 import {
+    artistsToRefIDs,
     deleteLocalData,
     disableAutoCancel,
     enableAutoCancel,
@@ -11,9 +12,10 @@ import {
     getUser,
     hashString,
     postDatapoint,
-    putLocalData,
+    putLocalData, songsToRefIDs,
     updateLocalData
 } from "./API";
+import {getLIName} from "./Analysis";
 
 
 /**
@@ -185,6 +187,39 @@ export const deleteComment = async function (comment) {
     await deleteLocalData("comments", comment.id);
 }
 
+export const submitRecommendation = async function (user_id, item, type, description) {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const id = hashString(getLIName(item) + description + globalUser_id);
+    let currRecommendations = await getLocalDataByID("profile_recommendations", hashString(globalUser_id));
+    if(currRecommendations.recommendations === null){
+        currRecommendations.recommendations = [];
+    }
+    console.log(currRecommendations);
+    switch (type){
+        case 'artists':
+            const [artistRefID] = await artistsToRefIDs([item]);
+            const artistItemObj = {type: type, id: artistRefID}
+            const artistRecommendation = {id: id, item: artistItemObj, description: description};
+            await putLocalData("recommendations", artistRecommendation);
+            const newRecs_a = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
+            console.log(newRecs_a);
+            await updateLocalData("profile_recommendations", newRecs_a, currRecommendations.id);
+            break;
+        case 'songs':
+            const [songRefID] = await songsToRefIDs([item]);
+            const songItemObj = {type: type, id: songRefID}
+            const songRecommendation = {id: id, item: songItemObj, description: description};
+            await putLocalData("recommendations", songRecommendation);
+            const newRecs_s = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
+            await updateLocalData("profile_recommendations", newRecs_s, currRecommendations.id);
+            break;
+    }
+}
+
+export const deleteRecommendation = async function (rec_id) {
+    await deleteLocalData("recommendations", rec_id);
+}
+
 /**
  * Returns all the user_ids currently in the database.
  * @returns {Promise<Array<Record>>}
@@ -203,6 +238,42 @@ export const retrieveAllPublicUsers = async function () {
     users = users.filter(u => settings.some(s => s.user === u.id && s.public));
     await enableAutoCancel();
     return users;
+}
+
+export const retrieveProfileRecommendations = async function (user_id)  {
+    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
+    const data = await getLocalDataByID("profile_recommendations", hashString(globalUser_id), "recommendations");
+    let recs = data.expand.recommendations;
+    if(recs === undefined){
+        return [];
+    }
+    for (let i = 0; i < recs.length; i++){
+        let e = recs[i];
+        if(e.item.type === "artists"){
+            e.item = await getLocalDataByID("artists", e.item.id, "genres");
+            e.item.genres = e.item.expand.genres;
+        }else if(e.item.type === "songs"){
+            e.item = await getLocalDataByID("songs", e.item.id, "artists");
+            e.item.artists = e.item.expand.artists;
+        }else{
+            throw new Error("Unknown type fetched from profile recommendations.");
+        }
+    }
+    return recs;
+}
+// Only returns songs and artists
+export const retrieveSearchResults = async function (query) {
+    let params = new URLSearchParams([
+        ["q", query],
+        ["type", ['artist', 'track']],
+        ["limit", 5]
+    ]);
+    let data = await fetchData(`search?${params}`);
+    data.artists = data.artists.items;
+    data.tracks = data.tracks.items;
+    data.artists = data.artists.map(a => formatArtist(a));
+    data.tracks = data.tracks.map(t => formatSong(t, true));
+    return data;
 }
 
 /**
@@ -371,6 +442,11 @@ function chunks(array, size) {
         result.push(array.slice(i, i + size));
     }
     return result;
+}
+
+export const retrieveSongAnalytics = async (song_id) => {
+    const data = await fetchData(`audio-features?id=${song_id}`)
+    return data.audio_features;
 }
 
 export const batchAnalytics = async (songs) => {

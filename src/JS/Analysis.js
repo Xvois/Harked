@@ -163,11 +163,11 @@ export const SpotifyLink = (props) => {
     const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return (
         simple ?
-            <a href={link}>
+            <a href={link} style={{height: 'max-content', alignItems: 'center'}}>
                 <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
             </a>
             :
-            <a className={'std-button'} style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '10.5px'}} href={link}>
+            <a className={'std-button'} style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '10.5px', height: 'max-content'}} href={link}>
                 <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
                 <p style={{margin: '0'}}>Open in Spotify</p>
             </a>
@@ -347,6 +347,18 @@ export const compareItemBetweenUsers = (item, dp1, dp2, type) => {
     }
 
     return returnMessage;
+}
+
+export const getItemType = (item) => {
+    if(item.hasOwnProperty('artist_id')){
+        return 'artists'
+    }else if(item.hasOwnProperty('song_id')){
+        return 'songs'
+    }else if(typeof item !== "object"){
+        return 'genres'
+    }else {
+        throw new Error('Unknown item submitted to getItemType.');
+    }
 }
 
 export const getGenresRelatedArtists = (genre, artists) => {

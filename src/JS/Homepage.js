@@ -21,6 +21,13 @@ function Homepage() {
     }, [token])
 
 
+    const fillRecs = async () => {
+        const users = await retrieveAllUsers();
+        for (const user of users) {
+            await putLocalData("profile_recommendations", {id: hashString(user.user_id), user: user.id});
+        }
+    }
+
     const handleLogOut = () => {
         window.localStorage.clear();
         setToken("");
@@ -71,8 +78,9 @@ function Homepage() {
                         <></>
                     }
                 </div>
+                <button onClick={fillRecs}>Fill recs</button>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.4f</p>
+                    v1.3.5</p>
             </div>
         </div>
     );

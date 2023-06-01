@@ -4,7 +4,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
-    changeSettings, deleteComment,
+    batchAnalytics,
+    changeSettings,
+    deleteComment, deleteRecommendation,
     followsUser,
     followUser,
     formatArtist,
@@ -16,9 +18,14 @@ import {
     retrieveAllDatapoints,
     retrieveFollowers,
     retrievePlaylists,
-    retrievePrevAllDatapoints, retrieveProfileComments, retrieveProfileData,
-    retrieveSettings,
-    retrieveUser, submitComment,
+    retrievePrevAllDatapoints,
+    retrieveProfileComments,
+    retrieveProfileData,
+    retrieveProfileRecommendations,
+    retrieveSearchResults,
+    retrieveSettings, retrieveSongAnalytics,
+    retrieveUser,
+    submitComment, submitRecommendation,
     unfollowUser
 } from './PDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
@@ -27,9 +34,10 @@ import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import {
     getAverageAnalytics,
     getItemAnalysis,
-    getItemIndexChange,
+    getItemIndexChange, getItemType,
     getLIDescription,
-    getLIName, SpotifyLink,
+    getLIName,
+    SpotifyLink,
     StatBlock,
     translateAnalytics
 } from "./Analysis";
@@ -37,6 +45,48 @@ import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {styled, TextField} from "@mui/material";
+import Fuse from "fuse.js";
+import {Delete} from "@mui/icons-material";
+
+const StyledField = styled(TextField)({
+    "& .MuiInputBase-root": {
+        color: 'var(--primary-colour)'
+    },
+    '& .MuiInput-underline': {
+        color: `var(--secondary-colour)`,
+    },
+    '& .MuiFormLabel-root.Mui-disabled': {
+        color: `var(--secondary-colour)`,
+    },
+    '& .MuiInput-underline:after': {
+        borderBottomColor: 'var(--accent-colour)',
+    },
+    '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+            borderColor: 'var(--secondary-colour)',
+            borderRadius: `0px`,
+            borderWidth: '1px',
+            transition: `all 0.1s ease-in`
+        },
+        '&:hover fieldset': {
+            borderColor: 'var(--secondary-colour)',
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: 'var(--secondary-colour)',
+            borderWidth: '1px',
+            transition: `all 0.1s ease-in`
+        },
+    },
+    '& label.Mui-focused': {
+        color: 'var(--primary-colour)',
+        fontFamily: 'Inter Tight, sans-serif',
+    },
+    '& .MuiFormLabel-root': {
+        color: 'var(--primary-colour)',
+        marginLeft: `5px`,
+        fontFamily: 'Inter Tight, sans-serif',
+    },
+});
 
 const Profile = () => {
 
@@ -74,45 +124,6 @@ const Profile = () => {
     });
 
     function CommentSection() {
-        const CommentField = styled(TextField)({
-            "& .MuiInputBase-root": {
-                color: 'var(--primary-colour)'
-            },
-            '& .MuiInput-underline': {
-                color: `var(--secondary-colour)`,
-            },
-            '& .MuiFormLabel-root.Mui-disabled': {
-                color: `var(--secondary-colour)`,
-            },
-            '& .MuiInput-underline:after': {
-                borderBottomColor: 'var(--accent-colour)',
-            },
-            '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'var(--secondary-colour)',
-                    borderRadius: `0px`,
-                    borderWidth: '1px',
-                    transition: `all 0.1s ease-in`
-                },
-                '&:hover fieldset': {
-                    borderColor: 'var(--secondary-colour)',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'var(--secondary-colour)',
-                    borderWidth: '1px',
-                    transition: `all 0.1s ease-in`
-                },
-            },
-            '& label.Mui-focused': {
-                color: 'var(--primary-colour)',
-                fontFamily: 'Inter Tight, sans-serif',
-            },
-            '& .MuiFormLabel-root': {
-                color: 'var(--primary-colour)',
-                marginLeft: `5px`,
-                fontFamily: 'Inter Tight, sans-serif',
-            },
-        });
 
         const valueRef = useRef('') //creating a reference for TextField Component
         const charLimit = 500;
@@ -135,7 +146,7 @@ const Profile = () => {
                     <div className={'comment-submit-field'}>
                         <form noValidate autoComplete='off'>
                             <div>
-                                <CommentField
+                                <StyledField
                                     id='outlined-textarea'
                                     label='Comment'
                                     placeholder='Write your thoughts'
@@ -154,7 +165,7 @@ const Profile = () => {
                 }
                 <div className={'comments-wrapper'}>
                     {comments.map(c => {
-                        return <Comment item={c} />
+                        return <Comment key={c.id} item={c} />
                     })}
                 </div>
             </>
@@ -270,6 +281,175 @@ const Profile = () => {
     }, [termIndex])
 
 
+    const ProfileRecommendations = () => {
+        // Only songs and artists at the moment
+        const [recs, setRecs] = useState([]);
+        const [showDialog, setShowDialog] = useState(false);
+
+
+        useEffect(() => {
+            retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
+        }, [])
+
+        const handleDelete = (id) => {
+            deleteRecommendation(id).then(() => {
+                retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
+            });
+        }
+
+        const SelectionDialog = (props) => {
+
+            const {show} = props;
+            const [searchResults, setSearchResults] = useState(null);
+            const [selectedItem, setSelectedItem] = useState(null);
+            const searchRef = useRef('') //creating a reference for TextField Component
+            const descriptionRef = useRef('');
+
+            const handleSearch = () => {
+                retrieveSearchResults(searchRef.current.value).then(res => setSearchResults(formatSearchResults(res)));
+            }
+
+            const handleSubmit = async () => {
+                let type = getItemType(selectedItem);
+                let submissionItem = selectedItem;
+                if(type === 'songs'){
+                    submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
+                }
+                console.log(submissionItem)
+                await submitRecommendation(pageHash, submissionItem, type, descriptionRef.current.value).then(() => {
+                    setSelectedItem(null);
+                    setShowDialog(false);
+                    retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
+                });
+            }
+
+            const formatSearchResults = (results) => {
+                const query = searchRef.current.value;
+                // Artists
+                const artistOptions = {
+                    keys: ['name'],
+                    threshold: 0.3, // Adjust the threshold as needed
+                };
+
+                const artistFuse = new Fuse(results.artists, artistOptions);
+
+                const songOptions = {
+                    keys: ['title'],
+                    threshold: 0.3, // Adjust the threshold as needed
+                };
+
+                const songFuse = new Fuse(results.tracks, songOptions);
+
+                const artistRes = artistFuse.search(query);
+                const songRes = songFuse.search(query);
+                return artistRes.concat(songRes).sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
+            }
+
+            return (
+                <dialog className={'recommendation-dialog'} style={selectedItem ? {width: '700px', height: '300px'} : {}} open={showDialog}>
+                    {!selectedItem ?
+                        <>
+                            <div style={{margin: '0 0 0 auto', width: 'max-content'}}>
+                                <button className={'showcase-exit-button'} onClick={() => setShowDialog(false)}>X</button>
+                            </div>
+                            <p>Search for songs or artists</p>
+                            <StyledField
+                                label='Search'
+                                variant='outlined'
+                                inputRef={searchRef}
+                            />
+                            <div style={{margin: '15px 0 0 auto', width: 'max-content'}}>
+                                <button className={'std-button'} onClick={handleSearch}>Submit</button>
+                            </div>
+                            {searchResults && (
+                                <div style={{display: 'flex', flexDirection: 'column', marginTop: '15px', gap: '10px'}}>
+                                    {
+                                        searchResults.slice(0,5).map(e => {
+                                            return (
+                                                <button className={'std-button'} style={{width: '100%', height: '50px', borderLeft: 'none', borderRight: 'none', borderColor: 'var(--secondary-colour)'}} onClick={() => setSelectedItem(e)}>
+                                                    <h4 style={{margin: '0'}}>{getLIName(e)}</h4>
+                                                    <p style={{margin: '0'}}>{getLIDescription(e)}</p>
+                                                </button>)
+                                        })
+                                    }
+                                </div>
+
+                            )}
+                        </>
+                        :
+                        <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
+                           <img className={'supplemental-image'} alt={`${getLIName(selectedItem)}`} style={{aspectRatio: '1', objectFit: 'cover', height: '300px'}} src={selectedItem.image} />
+                            <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
+                                <h3 style={{margin: '0'}}>{getLIName(selectedItem)}</h3>
+                                <p style={{margin: '0'}}>{getLIDescription(selectedItem)}</p>
+                                <div style={{marginTop: '15px'}}>
+                                    <StyledField
+                                        label='Description'
+                                        placeholder='Why are you recommending this?'
+                                        variant='outlined'
+                                        multiline
+                                        rows={7}
+                                        inputRef={descriptionRef}
+                                    />
+                                </div>
+                                <div style={{marginTop: 'auto', display: "flex", flexDirection: 'row', justifyContent: 'space-between'}}>
+                                    <button className={'std-button'} onClick={() => {setSelectedItem(null); setSearchResults(null)}}>Back</button>
+                                    <button className={'std-button'} onClick={handleSubmit}>Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </dialog>
+            )
+        }
+
+        return (
+            <div style={{width: '100%'}}>
+                <SelectionDialog show={showDialog} />
+                <div style={{display: 'flex', flexDirection: 'row', gap: '15px', flexWrap: 'wrap', margin: '16px 0', position: 'relative'}}>
+                    {recs.map(e => {
+                        console.log(e);
+                        const type = getItemType(e.item);
+                        return (
+                            <div key={e.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
+                                <img alt={`${getLIName(e.item)}`} className={'supplemental-image'} src={e.item.image} style={{aspectRatio: '1', objectFit: 'cover', width: '150px'}} />
+                                <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
+                                    <p style={{margin: '0', textTransform: 'capitalize', color: 'var(--accent-colour)'}}>{type.slice(0, type.length - 1)}</p>
+                                    <h2 style={{margin: '0'}}>
+                                        {getLIName(e.item)}
+                                        <span style={{margin: '5px 0 0 10px'}}>
+                                            <SpotifyLink simple link={e.item.link} />
+                                        </span>
+                                    </h2>
+                                    <p style={{margin: '0'}}>{getLIDescription(e.item)}</p>
+                                    <p>
+                                        <em>
+                                        <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                                        {e.description}
+                                        <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                                        </em>
+                                    </p>
+                                    <div style={{margin: 'auto 0 0 auto'}}>
+                                        <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}}
+                                                onClick={() => handleDelete(e.id)}>
+                                            <DeleteIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            )
+                    })}
+                </div>
+                {isLoggedIn() && isOwnPage && (
+                    <div style={{margin: '0 auto', width: 'max-content'}}>
+                        <button className={'std-button'} onClick={() => setShowDialog(true)}>+</button>
+                    </div>
+                )}
+            </div>
+        )
+    }
+
     const ArtistAnalysis = (props) => {
         const {artist} = props;
 
@@ -314,19 +494,21 @@ const Profile = () => {
         const excludedKeys = ['loudness', 'liveness', 'instrumentalness', 'tempo']
         if (song.hasOwnProperty("song_id")) {
             const analytics = song.analytics;
-            return (
-                <div className={'analysis'}>
-                    {
-                        Object.keys(translateAnalytics).map(function (key) {
-                            if (excludedKeys.findIndex(e => e === key) === -1) {
-                                return <StatBlock key={key} name={translateAnalytics[key].name}
-                                                  description={translateAnalytics[key].description}
-                                                  value={analytics[key] * 100} alignment={'right'}/>
-                            }
-                        })
-                    }
-                </div>
-            )
+            if(analytics !== undefined && analytics !== null){
+                return (
+                    <div className={'analysis'}>
+                        {
+                            Object.keys(translateAnalytics).map(function (key) {
+                                if (excludedKeys.findIndex(e => e === key) === -1) {
+                                    return <StatBlock key={key} name={translateAnalytics[key].name}
+                                                      description={translateAnalytics[key].description}
+                                                      value={analytics[key] * 100} alignment={'right'}/>
+                                }
+                            })
+                        }
+                    </div>
+                )
+            }
         }
     }
 
@@ -598,7 +780,7 @@ const Profile = () => {
                     <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'}
                          src={playlist.images[0].url}></img>
                 )}
-                <div style={{display: 'flex', flexDirection: 'column', color: 'var(--primary-colour)', flexGrow: '1'}}>
+                <div style={{display: 'flex', flexDirection: 'column', color: 'var(--primary-colour)', flexGrow: '1', wordBreak: 'break-all'}}>
                     <p style={{margin: '0 0 5px 0'}}>{playlist.name}</p>
                     <p style={{margin: '0 0 5px 0', borderBottom: '1px solid var(--secondary-colour)'}}>{playlist.description}</p>
                     <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs</p>
@@ -866,11 +1048,33 @@ const Profile = () => {
                                     }}>
                                         {playlists.map(p => {
                                             return (
-                                                <PlaylistItem playlist={p}/>
+                                                <PlaylistItem key={p.id} playlist={p}/>
                                             )
                                         })}
                                     </div>
                             }
+                        </div>
+                        <div className={'simple-instance'}>
+                            <div className={'section-header'}>
+                                <div style={{maxWidth: '400px'}}>
+                                    <p style={{
+                                        margin: '16px 0 0 0',
+                                        textTransform: 'uppercase'
+                                    }}>{possessive}</p>
+                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>Recommendations</h2>
+                                    <p><span style={{textTransform: 'capitalize'}}>{possessive}</span> artists and songs that are recommended to others.</p>
+                                </div>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                                gap: '10px',
+                                maxWidth: '1000px',
+                                width: '80%'
+                            }}>
+                                <ProfileRecommendations />
+                            </div>
                         </div>
                         <div className={'simple-instance'}>
                             <div className={'section-header'}>

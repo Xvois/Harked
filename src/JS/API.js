@@ -225,8 +225,10 @@ const postGenre = async (genre) => {
 }
 
 
-// Artists must be formatted
-const artistsToRefIDs = async (artists) => {
+export const artistsToRefIDs = async (artists) => {
+    if(databaseCache.artists.length === 0){
+        await updateDatabaseCache();
+    }
     let ids = [];
     const artistIDs = artists.map(e => e.artist_id);
     const newArtistIDs = artistIDs.filter(id => !databaseCache.artists.some(a => a.artist_id === id));
@@ -243,7 +245,10 @@ const artistsToRefIDs = async (artists) => {
 }
 
 
-const genresToRefIDs = async (genres) => {
+export const genresToRefIDs = async (genres) => {
+    if(databaseCache.genres.length === 0){
+        await updateDatabaseCache();
+    }
     let ids = [];
     // Genres are added as an array of strings, but stored in cache as having their string and id
     const newGenres = genres.filter(g1 => !databaseCache.genres.some(g2 => g2.genre === g1));
@@ -261,7 +266,10 @@ const genresToRefIDs = async (genres) => {
     }
     return ids;
 }
-const songsToRefIDs = async (songs) => {
+export const songsToRefIDs = async (songs) => {
+    if(databaseCache.songs.length === 0){
+        await updateDatabaseCache();
+    }
     const existingSongIDs = new Set(databaseCache.songs.map((song) => song.song_id));
     const ids = [];
 
