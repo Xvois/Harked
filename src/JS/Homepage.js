@@ -58,9 +58,7 @@ function Homepage() {
                         </>
                         :
                         <>
-                            <button className="std-button" onClick={() => window.location = '/profile#me'}>Explore your
-                                profile
-                            </button>
+                            <a className="std-button" href={`profile#me`}>Explore your profile</a>
                             <button className="std-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
@@ -71,7 +69,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.5a</p>
+                    v1.3.5b</p>
             </div>
         </div>
     );

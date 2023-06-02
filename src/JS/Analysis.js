@@ -97,9 +97,8 @@ export const calculateSimilarity = (dp1, dp2) => {
         const i2 = dp2.top_genres.findIndex(e => e === genre);
         if (i2 !== -1) {
             const diff = Math.abs(i1 - i2);
-            genresSimilarity += (avgGenreListLength - diff) / avgGenreListLength;
+            genresSimilarity += Math.abs(avgGenreListLength - diff) / avgGenreListLength;
         }
-
     })
     artistsSimilarity /= dp1.top_artists.length;
     genresSimilarity /= avgGenreListLength;

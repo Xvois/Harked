@@ -398,12 +398,23 @@ export const retrieveDatapoint = async function (user_id, term) {
         await hydrateDatapoints().then(async () =>
             await getDatapoint(globalUser_id, term, timeSensitive).then(result =>
                 currDatapoint = result
-            )
+            ).catch(function (err) {
+                console.warn("Error retrieving datapoint: ");
+                console.warn(err);
+            })
         );
     }
 
     currDatapoint = formatDatapoint(currDatapoint);
     return currDatapoint;
+}
+
+export function getAllIndexes(arr, val) {
+    let indexes = [], i;
+    for(i = 0; i < arr.length; i++)
+        if (arr[i] === val)
+            indexes.push(i);
+    return indexes;
 }
 
 export const retrievePrevDatapoint = async function (user_id, term) {
@@ -423,6 +434,9 @@ export const retrievePrevDatapoint = async function (user_id, term) {
 
 
 const formatDatapoint = function (d) {
+    if(d === null || d === undefined){
+        return null;
+    }
     // Turn relation ids into the actual arrays / records themselves using
     // pocketbase's expand property
     d.top_artists = d.expand.top_artists;

@@ -11,7 +11,7 @@ import {
     followUser,
     formatArtist,
     formatSong,
-    getAlbumsWithTracks,
+    getAlbumsWithTracks, getAllIndexes,
     getSimilarArtists,
     getTrackRecommendations,
     isLoggedIn,
@@ -91,11 +91,11 @@ const StyledField = styled(TextField)({
 const Profile = () => {
 
     const simpleDatapoints = ["artists", "songs", "genres"]
-    const terms = ["short_term", "medium_term", "long_term"];
     const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
     const pageHash = window.location.hash.split("#")[1];
     const isOwnPage = isLoggedIn() ? (pageHash === window.localStorage.getItem('user_id') || pageHash === 'me') : false
 
+    const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
     // The datapoint that is selected for viewing
     const [selectedDatapoint, setSelectedDatapoint] = useState(null);
     // The datapoint prior to the current that is selected for comparison
@@ -219,6 +219,16 @@ const Profile = () => {
                 console.info("User retrieved!");
             }),
             retrieveAllDatapoints(pageHash).then(function (datapoints) {
+                // Is there an invalid / nonexistent datapoint in the array?
+                if(datapoints.some(d => d === null)){
+                    const indexes = getAllIndexes(datapoints, null);
+                    if(indexes.length === 3){
+                        console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.")
+                    }
+                    let termsCopy = terms;
+                    indexes.forEach(i => termsCopy[i] = null);
+                    setTerms(termsCopy);
+                }
                 setAllDatapoints(datapoints);
                 // Set it to the long term datapoint
                 setSelectedDatapoint(datapoints[2]);
@@ -906,10 +916,12 @@ const Profile = () => {
                             <p>of information capture</p>
                             <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
                                 {terms.map(function (term, i) {
-                                    return (<button key={term}
-                                                    className={'std-button'}
-                                                    style={termIndex === i ? {} : {color: 'var(--secondary-colour)', borderColor: 'var(--secondary-colour)'}}
-                                                    onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
+                                    if(term !== null){
+                                        return (<button key={term}
+                                                        className={'std-button'}
+                                                        style={termIndex === i ? {} : {color: 'var(--secondary-colour)', borderColor: 'var(--secondary-colour)'}}
+                                                        onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
+                                    }
                                 })}
                             </div>
                         </div>
