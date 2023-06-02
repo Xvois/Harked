@@ -163,9 +163,13 @@ const Profile = () => {
                     </div>
                 }
                 <div className={'comments-wrapper'}>
-                    {comments.map(c => {
+                    {comments.length > 0 ?
+                        comments.map(c => {
                         return <Comment key={c.id} item={c} />
-                    })}
+                    })
+                        :
+                        <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any comments yet.</p>
+                    }
                 </div>
             </>
         );
@@ -436,7 +440,8 @@ const Profile = () => {
         return (
             <div style={{width: '100%'}}>
                 <div style={{display: 'flex', flexDirection: 'row', gap: '15px', flexWrap: 'wrap', margin: '16px 0', position: 'relative'}}>
-                    {recs.map(e => {
+                    {recs.length > 0 ?
+                        recs.map(e => {
                         const type = getItemType(e.item);
                         return (
                             <div key={e.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
@@ -468,7 +473,10 @@ const Profile = () => {
                                 </div>
                             </div>
                             )
-                    })}
+                    })
+                        :
+                        <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
+                    }
                 </div>
                 {isOwnPage && !showSelection && (
                     <div style={{margin: '0 auto', width: 'max-content'}}>
@@ -1052,13 +1060,12 @@ const Profile = () => {
                             </div>
                             {!isLoggedIn() ?
                                 <div style={{
-                                    alignItems: 'center',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    fontFamily: 'Inter Tight',
-                                    maxWidth: '1000px',
-                                    width: '80%'
-                                }}>
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        fontFamily: 'Inter Tight',
+                                        maxWidth: '1000px',
+                                        width: '80%'
+                                    }}>
                                     <p>Viewing someone's playlists requires being logged in.</p>
                                     <button className={'std-button'} onClick={handleLogin}>Log-in</button>
                                 </div>

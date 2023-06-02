@@ -35,7 +35,7 @@ export const getLIName = function (data) {
     return result;
 }
 
-export const getLIDescription = function (data, maxLength = 40) {
+export const getLIDescription = function (data, maxLength = 80) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
         if (data.genres && data.genres.length > 0) {
@@ -44,10 +44,11 @@ export const getLIDescription = function (data, maxLength = 40) {
             result = '';
         }
     } else if (data.hasOwnProperty('song_id')) {
-        result = data.artists.map((e, i) => i !== data.artists.length - 1 ? e.name + ', ' : e.name);
+        result = data.artists.map(e => e.name).join(', ');
     } else {
         result = '';
     }
+    console.log(result.length, result);
     if (result.length > maxLength) {
         result = result.substring(0, maxLength) + "..."
     }
