@@ -4,7 +4,6 @@ import React, {useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
-    batchAnalytics,
     changeSettings,
     deleteComment, deleteRecommendation,
     followsUser,
@@ -191,7 +190,7 @@ const Profile = () => {
                 )}
                 <p>{item.content}</p>
                 {isLoggedIn() ?
-                    window.localStorage.getItem("user_id") === user.user_id && (
+                    (window.localStorage.getItem("user_id") === user.user_id || isOwnPage) && (
                         <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}} onClick={handleDelete}>
                             <DeleteIcon />
                         </button>
@@ -458,23 +457,25 @@ const Profile = () => {
                                         <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
                                         </em>
                                     </p>
-                                    <div style={{margin: 'auto 0 0 auto'}}>
-                                        <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}}
-                                                onClick={() => handleDelete(e.id)}>
-                                            <DeleteIcon />
-                                        </button>
-                                    </div>
+                                    {isOwnPage && (
+                                        <div style={{margin: 'auto 0 0 auto'}}>
+                                            <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}}
+                                                    onClick={() => handleDelete(e.id)}>
+                                                <DeleteIcon />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             )
                     })}
                 </div>
-                {isLoggedIn() && isOwnPage && !showSelection && (
+                {isOwnPage && !showSelection && (
                     <div style={{margin: '0 auto', width: 'max-content'}}>
                         <button className={'std-button'} onClick={() => setShowSelection(true)}>+</button>
                     </div>
                 )}
-                {isLoggedIn() && isOwnPage && showSelection && (
+                {isOwnPage && showSelection && (
                     <div style={{margin: '0 auto 16px auto', width: 'max-content'}}>
                         <button className={'std-button'} onClick={() => setShowSelection(false)}>-</button>
                     </div>
