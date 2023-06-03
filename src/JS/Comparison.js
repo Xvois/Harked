@@ -70,7 +70,7 @@ const Comparison = () => {
                 {analyticsMetrics.map(metric => {
                     if (excludedKeys.findIndex(e => e === metric) === -1) {
                         return (
-                            <div style={{
+                            <div key={metric} style={{
                                 padding: `15px ${alignment === 'left' ? '0px' : '15px'} 15px ${alignment === 'right' ? '0px' : '15px'}`,
                                 borderTop: '1px solid var(--secondary-colour)',
                                 borderBottom: '1px solid var(--secondary-colour)'
@@ -176,7 +176,7 @@ const Comparison = () => {
                                 description = 'No matching artists.'
                             }
                         }
-                        return (<div className={'stat-block'}>
+                        return (<div key={item.id ?? item} className={'stat-block'}>
                             <h3>{getLIName(item)}</h3>
                             <p>{description}</p>
                         </div>)

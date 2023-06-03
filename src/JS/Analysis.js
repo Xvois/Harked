@@ -48,7 +48,6 @@ export const getLIDescription = function (data, maxLength = 80) {
     } else {
         result = '';
     }
-    console.log(result.length, result);
     if (result.length > maxLength) {
         result = result.substring(0, maxLength) + "..."
     }
