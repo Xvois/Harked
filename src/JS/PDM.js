@@ -170,18 +170,29 @@ export const retrieveProfileComments = async function (user_id) {
     return comments;
 }
 
-export const submitComment = async function (user_id, target_user_id, content, parent = null){
-    const user = await retrieveUser(user_id);
-    target_user_id = target_user_id === 'me' ? window.localStorage.getItem('user_id') : target_user_id;
-    // Just a random, valid and unique ID.
-    const commentID = hashString(target_user_id + user_id + content);
-    const comment = {id: commentID, user: user.id, parent: parent, content: content};
-    await putLocalData("comments", comment);
-    let profileComments = await getLocalDataByID("profile_comments", hashString(target_user_id));
-    profileComments.comments.push(commentID);
-    await updateLocalData("profile_comments", profileComments, profileComments.id);
-    return {...comment, user: user};
-}
+export const submitComment = async function (user_id, target_user_id, content, parent = null) {
+    try {
+        const user = await retrieveUser(user_id);
+        target_user_id = target_user_id === 'me' ? window.localStorage.getItem('user_id') : target_user_id;
+
+        // Just a random, valid, and unique ID.
+        const commentID = hashString(target_user_id + user_id + content);
+        const comment = { id: commentID, user: user.id, parent: parent, content: content };
+
+        await putLocalData("comments", comment);
+
+        let profileComments = await getLocalDataByID("profile_comments", hashString(target_user_id));
+        profileComments.comments.push(commentID);
+
+        await updateLocalData("profile_comments", profileComments, profileComments.id);
+
+        return { ...comment, user: user };
+    } catch (error) {
+        console.error("Error submitting comment:", error);
+        throw error;
+    }
+};
+
 
 export const deleteComment = async function (comment) {
     await deleteLocalData("comments", comment.id);

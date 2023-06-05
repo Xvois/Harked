@@ -114,7 +114,6 @@ const Profile = () => {
     const [possessive, setPossessive] = useState('');
     const [settings, setSettings] = useState({});
     const [profileData, setProfileData] = useState({});
-    const [comments, setComments] = useState([]);
     const [locked, setLocked] = useState(false);
 
     // Reload when attempting to load a new page
@@ -123,87 +122,99 @@ const Profile = () => {
     });
 
     function CommentSection() {
-
-        const valueRef = useRef('') //creating a reference for TextField Component
+        const [comments, setComments] = useState([]);
+        const valueRef = useRef(""); // Creating a reference for TextField Component
         const charLimit = 500;
+
+        useEffect(() => {
+            retrieveProfileComments(pageHash).then(function(c) {
+                setComments(c);
+            })
+        }, [])
 
         const handleSubmit = () => {
             submitComment(window.localStorage.getItem("user_id"), pageHash, valueRef.current.value)
                 .then((c) => {
                     const newComments = comments.concat([c]);
                     setComments(newComments);
-            })
+                })
                 .catch((err) => {
                     console.error(err);
                 });
-        }
+        };
 
+        const handleDelete = async (comment) => {
+            await deleteComment(comment);
+            const newComments = comments.filter((c) => c.id !== comment.id);
+            setComments(newComments);
+        };
 
         return (
             <>
-                {isLoggedIn() &&
-                    <div className={'comment-submit-field'}>
-                        <form noValidate autoComplete='off'>
+                {isLoggedIn() && (
+                    <div className="comment-submit-field">
+                        <form noValidate autoComplete="off">
                             <div>
                                 <StyledField
-                                    id='outlined-textarea'
-                                    label='Comment'
-                                    placeholder='Write your thoughts'
+                                    id="outlined-textarea"
+                                    label="Comment"
+                                    placeholder="Write your thoughts"
                                     multiline
-                                    variant='outlined'
+                                    variant="outlined"
                                     rows={2}
                                     inputRef={valueRef}
                                     inputProps={{ maxLength: charLimit }}
                                 />
                             </div>
                         </form>
-                        <div style={{margin: '0 0 0 auto', width: 'max-content'}}>
-                            <button className={'std-button'} onClick={handleSubmit}>Submit</button>
+                        <div style={{ margin: "0 0 0 auto", width: "max-content" }}>
+                            <button className="std-button" onClick={handleSubmit}>
+                                Submit
+                            </button>
                         </div>
                     </div>
-                }
-                <div className={'comments-wrapper'}>
-                    {comments.length > 0 ?
-                        comments.map(c => {
-                        return <Comment key={c.id} item={c} />
-                    })
-                        :
-                        <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any comments yet.</p>
-                    }
+                )}
+                <div className="comments-wrapper">
+                    {comments.length > 0 ? (
+                        comments.map((c) => {
+                            return <Comment key={c.id} item={c} onDelete={handleDelete} />;
+                        })
+                    ) : (
+                        <p style={{ color: "var(--secondary-colour)" }}>Looks like there aren't any comments yet.</p>
+                    )}
                 </div>
             </>
         );
     }
 
     function Comment(props) {
-        const {item} = props;
+        const { item, onDelete } = props;
         const user = item.user;
         const date = new Date(item.created);
 
         const handleDelete = async () => {
-            await deleteComment(item);
-            const newComments = comments.filter(c => c.id !== item.id);
-            setComments(newComments);
-        }
+            await onDelete(item);
+        };
 
         return (
-            <div className={'comment'}>
+            <div className="comment">
                 <a href={`/profile#${user.user_id}`}>{user.username}</a>
                 {item.created && (
-                    <p style={{fontSize: '12px', color: 'var(--accent-colour)', paddingBottom: '5px'}}>{date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}</p>
+                    <p style={{ fontSize: "12px", color: "var(--accent-colour)", paddingBottom: "5px" }}>
+                        {date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}
+                    </p>
                 )}
                 <p>{item.content}</p>
-                {isLoggedIn() ?
-                    (window.localStorage.getItem("user_id") === user.user_id || isOwnPage) && (
-                        <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}} onClick={handleDelete}>
-                            <DeleteIcon />
-                        </button>
-                    )
-                    :
-                    <></>
-                }
+                {isLoggedIn() && (window.localStorage.getItem("user_id") === user.user_id || isOwnPage) && (
+                    <button
+                        style={{ background: "none", border: "none", color: "var(--accent-colour)", width: "max-content", cursor: "pointer", marginLeft: "auto" }}
+                        onClick={handleDelete}
+                    >
+                        <DeleteIcon />
+                    </button>
+                )}
             </div>
-        )
+        );
     }
 
 
@@ -252,9 +263,6 @@ const Profile = () => {
             }),
             retrieveProfileData(pageHash).then(function (d) {
                 setProfileData(d);
-            }),
-            retrieveProfileComments(pageHash).then(function(c) {
-                setComments(c);
             })
         ]
 
@@ -410,7 +418,7 @@ const Profile = () => {
                     <div>
                         {selectedItem !== null && (
                            <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                               <img alt={`${getLIName(selectedItem)}`} className={'supplemental-image'} style={{aspectRatio: '1', objectFit: 'cover'}} src={selectedItem.image}  />
+                               <img alt={`${getLIName(selectedItem)}`} className={'supplemental-image'} style={{aspectRatio: '1', objectFit: 'cover', width: '300px', height: '300px'}} src={selectedItem.image}  />
                                <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
                                    <h2 style={{margin: '0'}}>{getLIName(selectedItem)}</h2>
                                    <p>{getLIDescription(selectedItem)}</p>
