@@ -124,54 +124,6 @@ export const calculateSimilarity = (dp1, dp2) => {
     };
 }
 
-export const StatBlock = (props) => {
-    const {name, description, value, alignment = 'left', shadow = null} = props;
-    return (
-        <div className={'stat-block'}>
-            <h3 style={{textAlign: `${alignment}`}}>{name}</h3>
-            <div className={'stat-bar'} style={
-                {
-                    '--val': `100%`,
-                    backgroundColor: 'var(--primary-colour)',
-                    opacity: '0.1',
-                    marginBottom: '-5px',
-                    animation: 'none'
-                }
-            }></div>
-            <div className={'stat-bar'}
-                 style={{'--val': `${value}%`, marginLeft: `${alignment === 'right' ? 'auto' : ''}`}}></div>
-            {shadow ?
-                <div className={'stat-bar'}
-                     style={{
-                         '--val': `${shadow}%`,
-                         marginLeft: `${alignment === 'right' ? 'auto' : ''}`,
-                         marginTop: '-5px',
-                         opacity: '0.25'
-                     }}></div>
-                :
-                <></>
-            }
-
-            <p style={{textAlign: `${alignment}`}}>{description}</p>
-        </div>
-    )
-}
-
-export const SpotifyLink = (props) => {
-    const {link, simple = false} = props;
-    const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return (
-        simple ?
-            <a href={link} style={{height: 'max-content', alignItems: 'center'}}>
-                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
-            </a>
-            :
-            <a className={'std-button'} style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '10.5px', height: 'max-content'}} href={link}>
-                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
-                <p style={{margin: '0'}}>Open in Spotify</p>
-            </a>
-    )
-}
 
 export const getAverageAnalytics = function (songs) {
     // noinspection SpellCheckingInspection

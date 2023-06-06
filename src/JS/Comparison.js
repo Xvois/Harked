@@ -19,9 +19,9 @@ import {
     getLIDescription,
     getLIName,
     getMatchingItems,
-    StatBlock,
     translateAnalytics
 } from "./Analysis";
+import {StatBlock} from "./SharedComponents.tsx";
 
 const Comparison = () => {
     let re = /[^#&]+/g;

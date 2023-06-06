@@ -36,8 +36,6 @@ import {
     getItemIndexChange, getItemType,
     getLIDescription,
     getLIName,
-    SpotifyLink,
-    StatBlock,
     translateAnalytics
 } from "./Analysis";
 import {handleLogin} from "./Authentication";
@@ -45,7 +43,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {styled, TextField} from "@mui/material";
 import Fuse from "fuse.js";
-import {Delete} from "@mui/icons-material";
+import { SpotifyLink, StatBlock, PageError } from "./SharedComponents.tsx";
 
 const StyledField = styled(TextField)({
     "& .MuiInputBase-root": {
@@ -114,7 +112,16 @@ const Profile = () => {
     const [possessive, setPossessive] = useState('');
     const [settings, setSettings] = useState({});
     const [profileData, setProfileData] = useState({});
-    const [locked, setLocked] = useState(false);
+
+    // If something happens that doesn't allow a user to load the page
+    // then an error is passed. These states are passed in to the PageError object
+    // and then shown on the page.
+    // The icon should be a MUI icon component.
+    const [isError, setIsError] = useState(false);
+    const [errorDetails, setErrorDetails] = useState({icon: null, description: null});
+
+
+
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
@@ -237,7 +244,9 @@ const Profile = () => {
                 if(datapoints.some(d => d === null)){
                     const indexes = getAllIndexes(datapoints, null);
                     if(indexes.length === 3){
-                        console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.")
+                        console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.");
+                        setIsError(true);
+                        setErrorDetails({icon: <LockIcon fontSize={'large'}/>, description: 'We do not have enough information about this user to generate a profile for them.'});
                     }
                     let termsCopy = terms;
                     indexes.forEach(i => termsCopy[i] = null);
@@ -245,7 +254,7 @@ const Profile = () => {
                 }
                 setAllDatapoints(datapoints);
                 // Set it to the long term datapoint
-                setSelectedDatapoint(datapoints[2]);
+                setSelectedDatapoint(datapoints[termIndex]);
                 setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                 console.info("Datapoints retrieved!");
             }),
@@ -258,7 +267,8 @@ const Profile = () => {
                 setSettings(s);
                 if (!s.public && !isOwnPage) {
                     console.info("LOCKED PAGE", settings)
-                    setLocked(true);
+                    setIsError(true);
+                    setErrorDetails({icon: <LockIcon fontSize={'large'}/>, description: 'This profile is private.'});
                 }
             }),
             retrieveProfileData(pageHash).then(function (d) {
@@ -318,7 +328,7 @@ const Profile = () => {
             });
         }
 
-        const Selection = (props) => {
+        const Selection = () => {
 
             const [searchResults, setSearchResults] = useState(null);
             const [selectedItem, setSelectedItem] = useState(null);
@@ -342,7 +352,7 @@ const Profile = () => {
                     submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
                 }
                 console.log(submissionItem)
-                await submitRecommendation(pageHash, submissionItem, type, descriptionRef.current.value).then((res) => {
+                await submitRecommendation(pageHash, submissionItem, type, descriptionRef.current.value).then(() => {
                     setSelectedItem(null);
                     setShowSelection(false);
                     retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
@@ -858,7 +868,7 @@ const Profile = () => {
 
     return (
         <>
-            {!loaded || locked ? // Locked and loaded B)
+            {!loaded || isError ? // Locked and loaded B)
                 !loaded ?
                     <div style={{top: '40%', left: '0', right: '0', position: 'absolute'}}>
                         <div className="lds-grid">
@@ -874,12 +884,7 @@ const Profile = () => {
                         </div>
                     </div>
                     :
-                    <div style={{top: '50%', left: '0', right: '0', position: 'absolute'}}>
-                        <div className="centre" style={{textAlign: 'center'}}>
-                            <LockIcon fontSize={'large'}/>
-                            <h1>This page is private.</h1>
-                        </div>
-                    </div>
+                    <PageError icon={errorDetails.icon} description={errorDetails.description} />
                 :
                 <div className='wrapper'>
                     <meta
