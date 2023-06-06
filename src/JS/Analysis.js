@@ -137,9 +137,10 @@ export const getAverageAnalytics = function (songs) {
         valence: 0,
         tempo: 0
     }
-    for (const song of songs) {
+    const validSongs = songs.filter(s => s.analytics.length !== 0);
+    for (const song of validSongs) {
         Object.keys(translateAnalytics).forEach(key => {
-            avgAnalytics[key] += song.analytics[key] / songs.length;
+            avgAnalytics[key] += song.analytics[key] / validSongs.length;
         })
     }
     return avgAnalytics;
@@ -238,23 +239,15 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             }
             break;
         case "songs":
-            // noinspection SpellCheckingInspection
-            let maxAnalytic = "acousticness";
-            analyticsMetrics.forEach(analytic => {
-                let comparisonValue;
-                if (analytic === "tempo") {
-                    comparisonValue = (item.analytics[analytic] - 50) / 150
-                } else {
-                    comparisonValue = item.analytics[analytic]
+            try {
+                let maxAnalytic = Object.keys(item.analytics).reduce((a,b) => item.analytics[a] > item.analytics[b] ? a : b);
+                topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
+                if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
+                    const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
+                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
                 }
-                if (comparisonValue > item.analytics[maxAnalytic]) {
-                    maxAnalytic = analytic;
-                }
-            })
-            topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
-            if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
-                const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
-                secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
+            } catch (e) {
+                topMessage += "This song hasn't been analysed yet. Look back at another time to see this song's characteristics."
             }
             break;
         case "genres":

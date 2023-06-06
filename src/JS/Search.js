@@ -1,48 +1,9 @@
 import { styled, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
-import { isLoggedIn, retrieveAllPublicUsers, retrieveFollowing } from "./PDM";
+import { isLoggedIn, retrieveAllPublicUsers, retrieveFollowing } from "./HDM";
 import { FormControl } from "@mui/base";
 import Fuse from 'fuse.js';
-
-const SearchBar = styled(TextField)({
-    "& .MuiInputBase-root": {
-        color: 'var(--primary-colour)'
-    },
-    '& .MuiInput-underline': {
-        color: `var(--primary-colour)`,
-    },
-    '& .MuiFormLabel-root.Mui-disabled': {
-        color: `var(--primary-colour)`,
-    },
-    '& .MuiInput-underline:after': {
-        borderBottomColor: 'var(--accent-colour)',
-    },
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            borderColor: 'var(--primary-colour)',
-            borderRadius: `0px`,
-            borderWidth: '1px',
-            transition: `all 0.1s ease-in`
-        },
-        '&:hover fieldset': {
-            borderColor: 'var(--primary-colour)',
-        },
-        '&.Mui-focused fieldset': {
-            borderColor: 'var(--primary-colour)',
-            borderWidth: '1px',
-            transition: `all 0.1s ease-in`
-        },
-    },
-    '& label.Mui-focused': {
-        color: 'var(--primary-colour)',
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-    '& .MuiFormLabel-root': {
-        color: 'var(--primary-colour)',
-        marginLeft: `5px`,
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-});
+import {StyledField} from "./SharedComponents.tsx";
 
 const Search = (props) => {
     const { showResults } = props;
@@ -107,7 +68,7 @@ const Search = (props) => {
         <div className='search-bar-container'>
             {/* SearchBar component */}
             <FormControl variant="outlined">
-                <SearchBar
+                <StyledField
                     className='search-bar'
                     inputProps={{ className: `search-label` }}
                     onChange={(event) => handleSearch(event.target.value)}

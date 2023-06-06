@@ -5,7 +5,7 @@
 import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import PocketBase from "pocketbase";
-import {formatUser} from "./PDM";
+import {formatUser} from "./HDM";
 import {hashString, putLocalData} from "./API";
 
 // TODO: FIX ISSUE THAT STATES THAT USERNAME MUST BE IN VALID FORMAT
@@ -27,7 +27,7 @@ export function handleLogin() {
 export function reAuthenticate() {
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", `https://harked.vercel.app/authentication`],
+        ["redirect_uri", `http://localhost:3000/authentication`],
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])

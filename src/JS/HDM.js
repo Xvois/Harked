@@ -17,6 +17,8 @@ import {
 } from "./API";
 import {getLIName} from "./Analysis";
 
+// TODO : MAJOR REWORK OF HOW PAGE HASHES / USER IDS ARE HANDLED SO THEY ARE CONSISTENT
+// SANITIZATION SHOULD NOT BE REQUIRED AS A PART OF EVERY METHOD IN THE HDM
 
 /**
  * Gets a user from the PRDB as well as updating the media attribute for the
@@ -160,6 +162,7 @@ export const retrieveProfileData = async function (user_id) {
 }
 
 export const retrieveProfileComments = async function (user_id) {
+    console.info('retrieveProfileComments called!')
     const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
     const id = hashString(globalUser_id);
     const profile_comments = await getLocalDataByID("profile_comments", id, "comments, comments.user");
@@ -169,6 +172,7 @@ export const retrieveProfileComments = async function (user_id) {
     comments.map(c => delete c.expand);
     return comments;
 }
+
 
 export const submitComment = async function (user_id, target_user_id, content, parent = null) {
     try {

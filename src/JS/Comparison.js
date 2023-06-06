@@ -10,7 +10,7 @@ import './../CSS/Comparison.css';
 import './../CSS/Profile.css';
 import './../CSS/Focus.css';
 
-import {retrieveDatapoint, retrieveUser} from "./PDM";
+import {retrieveDatapoint, retrieveUser} from "./HDM";
 import {
     analyticsMetrics,
     calculateSimilarity,

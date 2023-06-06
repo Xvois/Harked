@@ -5,7 +5,7 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './PDM';
+import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './HDM';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -69,7 +69,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.6</p>
+                    v1.3.7 Refactor branch</p>
             </div>
         </div>
     );

@@ -26,7 +26,7 @@ import {
     retrieveUser,
     submitComment, submitRecommendation,
     unfollowUser
-} from './PDM';
+} from './HDM';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
@@ -41,49 +41,8 @@ import {
 import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {styled, TextField} from "@mui/material";
 import Fuse from "fuse.js";
-import { SpotifyLink, StatBlock, PageError } from "./SharedComponents.tsx";
-
-const StyledField = styled(TextField)({
-    "& .MuiInputBase-root": {
-        color: 'var(--primary-colour)'
-    },
-    '& .MuiInput-underline': {
-        color: `var(--secondary-colour)`,
-    },
-    '& .MuiFormLabel-root.Mui-disabled': {
-        color: `var(--secondary-colour)`,
-    },
-    '& .MuiInput-underline:after': {
-        borderBottomColor: 'var(--accent-colour)',
-    },
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            borderColor: 'var(--secondary-colour)',
-            borderRadius: `0px`,
-            borderWidth: '1px',
-            transition: `all 0.1s ease-in`
-        },
-        '&:hover fieldset': {
-            borderColor: 'var(--secondary-colour)',
-        },
-        '&.Mui-focused fieldset': {
-            borderColor: 'var(--secondary-colour)',
-            borderWidth: '1px',
-            transition: `all 0.1s ease-in`
-        },
-    },
-    '& label.Mui-focused': {
-        color: 'var(--primary-colour)',
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-    '& .MuiFormLabel-root': {
-        color: 'var(--primary-colour)',
-        marginLeft: `5px`,
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-});
+import { SpotifyLink, StatBlock, PageError, StyledField, CommentSection } from "./SharedComponents.tsx";
 
 const Profile = () => {
 
@@ -120,109 +79,10 @@ const Profile = () => {
     const [isError, setIsError] = useState(false);
     const [errorDetails, setErrorDetails] = useState({icon: null, description: null});
 
-
-
-
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
         window.location.reload()
     });
-
-    function CommentSection() {
-        const [comments, setComments] = useState([]);
-        const valueRef = useRef(""); // Creating a reference for TextField Component
-        const charLimit = 500;
-
-        useEffect(() => {
-            retrieveProfileComments(pageHash).then(function(c) {
-                setComments(c);
-            })
-        }, [])
-
-        const handleSubmit = () => {
-            submitComment(window.localStorage.getItem("user_id"), pageHash, valueRef.current.value)
-                .then((c) => {
-                    const newComments = comments.concat([c]);
-                    setComments(newComments);
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
-        };
-
-        const handleDelete = async (comment) => {
-            await deleteComment(comment);
-            const newComments = comments.filter((c) => c.id !== comment.id);
-            setComments(newComments);
-        };
-
-        return (
-            <>
-                {isLoggedIn() && (
-                    <div className="comment-submit-field">
-                        <form noValidate autoComplete="off">
-                            <div>
-                                <StyledField
-                                    id="outlined-textarea"
-                                    label="Comment"
-                                    placeholder="Write your thoughts"
-                                    multiline
-                                    variant="outlined"
-                                    rows={2}
-                                    inputRef={valueRef}
-                                    inputProps={{ maxLength: charLimit }}
-                                />
-                            </div>
-                        </form>
-                        <div style={{ margin: "0 0 0 auto", width: "max-content" }}>
-                            <button className="std-button" onClick={handleSubmit}>
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                )}
-                <div className="comments-wrapper">
-                    {comments.length > 0 ? (
-                        comments.map((c) => {
-                            return <Comment key={c.id} item={c} onDelete={handleDelete} />;
-                        })
-                    ) : (
-                        <p style={{ color: "var(--secondary-colour)" }}>Looks like there aren't any comments yet.</p>
-                    )}
-                </div>
-            </>
-        );
-    }
-
-    function Comment(props) {
-        const { item, onDelete } = props;
-        const user = item.user;
-        const date = new Date(item.created);
-
-        const handleDelete = async () => {
-            await onDelete(item);
-        };
-
-        return (
-            <div className="comment">
-                <a href={`/profile#${user.user_id}`}>{user.username}</a>
-                {item.created && (
-                    <p style={{ fontSize: "12px", color: "var(--accent-colour)", paddingBottom: "5px" }}>
-                        {date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}
-                    </p>
-                )}
-                <p>{item.content}</p>
-                {isLoggedIn() && (window.localStorage.getItem("user_id") === user.user_id || isOwnPage) && (
-                    <button
-                        style={{ background: "none", border: "none", color: "var(--accent-colour)", width: "max-content", cursor: "pointer", marginLeft: "auto" }}
-                        onClick={handleDelete}
-                    >
-                        <DeleteIcon />
-                    </button>
-                )}
-            </div>
-        );
-    }
 
 
     // Function that loads the page when necessary
@@ -304,9 +164,11 @@ const Profile = () => {
         }
         // Load the page
         loadPage();
+        console.info('Global profile useEffect called!')
     }, []);
 
     useEffect(() => {
+        console.info('termIndex initiated useEffect called!')
         setSelectedDatapoint(allDatapoints[termIndex]);
         setSelectedPrevDatapoint(allPreviousDatapoints[termIndex]);
     }, [termIndex])
@@ -1152,7 +1014,7 @@ const Profile = () => {
                                 maxWidth: '1000px',
                                 width: '80%'
                             }}>
-                                <CommentSection />
+                                <CommentSection pageHash={pageHash} isAdmin={isOwnPage} />
                             </div>
                         </div>
                     </div>

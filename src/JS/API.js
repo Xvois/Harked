@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
-import {formatArtist} from "./PDM";
+import {formatArtist} from "./HDM";
 import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
