@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
@@ -8,8 +8,6 @@ import {
     deleteComment, deleteRecommendation,
     followsUser,
     followUser,
-    formatArtist,
-    formatSong,
     getAlbumsWithTracks, getAllIndexes,
     getSimilarArtists,
     getTrackRecommendations,
@@ -18,13 +16,12 @@ import {
     retrieveFollowers,
     retrievePlaylists,
     retrievePrevAllDatapoints,
-    retrieveComments,
     retrieveProfileData,
     retrieveProfileRecommendations,
     retrieveSearchResults,
     retrieveSettings, retrieveSongAnalytics,
     retrieveUser,
-    submitComment, submitRecommendation,
+    submitRecommendation,
     unfollowUser, hashString
 } from './HDM.ts';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
@@ -86,35 +83,31 @@ const Profile = () => {
     });
 
 
-    // Function that loads the page when necessary
-    const loadPage = () => {
-        // Promises that need to be made before the page can be loaded
-        let loadPromises = [
+    const loadPage = useCallback(() => {
+        const loadPromises = [
             retrieveUser(pageGlobalUserID).then(function (user) {
                 setPageUser(user);
                 retrieveFollowers(user.user_id).then(f => setFollowers(f));
                 if (!isOwnPage) {
-                    setPossessive(user.username + "'s")
+                    setPossessive(user.username + "'s");
                 } else {
-                    setPossessive("your")
+                    setPossessive("your");
                 }
                 console.info("User retrieved!");
             }),
             retrieveAllDatapoints(pageGlobalUserID).then(function (datapoints) {
-                // Is there an invalid / nonexistent datapoint in the array?
-                if(datapoints.some(d => d === null)){
+                if (datapoints.some(d => d === null)) {
                     const indexes = getAllIndexes(datapoints, null);
-                    if(indexes.length === 3){
+                    if (indexes.length === 3) {
                         console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.");
                         setIsError(true);
-                        setErrorDetails({icon: <LockIcon fontSize={'large'}/>, description: 'We do not have enough information about this user to generate a profile for them.'});
+                        setErrorDetails({ icon: <LockIcon fontSize={'large'} />, description: 'We do not have enough information about this user to generate a profile for them.' });
                     }
                     let termsCopy = terms;
                     indexes.forEach(i => termsCopy[i] = null);
                     setTerms(termsCopy);
                 }
                 setAllDatapoints(datapoints);
-                // Set it to the long term datapoint
                 setSelectedDatapoint(datapoints[termIndex]);
                 setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                 console.info("Datapoints retrieved!");
@@ -127,17 +120,17 @@ const Profile = () => {
             retrieveSettings(pageGlobalUserID).then(function (s) {
                 setSettings(s);
                 if (!s.public && !isOwnPage) {
-                    console.info("LOCKED PAGE", settings)
+                    console.info("LOCKED PAGE", settings);
                     setIsError(true);
-                    setErrorDetails({icon: <LockIcon fontSize={'large'}/>, description: 'This profile is private.'});
+                    setErrorDetails({ icon: <LockIcon fontSize={'large'} />, description: 'This profile is private.' });
                 }
             }),
             retrieveProfileData(pageGlobalUserID).then(function (d) {
                 setProfileData(d);
-            })
-        ]
+            }),
+        ];
 
-        // Behaviour for if the user is logged in
+        // Behavior for if the user is logged in
         if (isLoggedIn()) {
             const loggedUserID = window.localStorage.getItem('user_id');
             if (!isOwnPage) {
@@ -146,26 +139,30 @@ const Profile = () => {
             }
             loadPromises.push(
                 retrievePlaylists(pageGlobalUserID).then(function (p) {
-                    p.sort((a, b) => b.tracks.length - a.tracks.length)
+                    p.sort((a, b) => b.tracks.length - a.tracks.length);
                     setPlaylists(p);
                     console.info("Playlists retrieved!");
                     console.log('Playlists: ', p);
-                })
-            )
+                }),
+            );
         }
 
-
-        Promise.all(loadPromises).then(() => setLoaded(true));
-    }
+        Promise.all(loadPromises)
+            .then(() => setLoaded(true))
+            .catch((error) => {
+                console.error("Error loading page:", error);
+                // Handle errors appropriately
+            });
+    }, []);
 
     useEffect(() => {
         // Redirect if attempting to load own page & not identified as such initially
         if (window.localStorage.getItem('user_id') === pageHash) {
-            window.location = 'profile#me'
+            window.location = 'profile#me';
         }
         // Load the page
         loadPage();
-    }, []);
+    }, [loadPage]);
 
     useEffect(() => {
         setSelectedDatapoint(allDatapoints[termIndex]);
@@ -541,8 +538,8 @@ const Profile = () => {
             if (recommendations === null) {
                 switch (type) {
                     case 'artists':
-                        getSimilarArtists(element).then(function (result) {
-                            setRecommendations(result.map(a => formatArtist(a)));
+                        getSimilarArtists(element.artist_id).then(function (result) {
+                            setRecommendations(result);
                             setSeeRecommendations(!seeRecommendations);
                         });
                         break;
@@ -561,7 +558,7 @@ const Profile = () => {
                         seed_genres = seed_genres.slice(0, 2);
                         const seed_track = element.song_id;
                         getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function (result) {
-                            setRecommendations(result.map(t => formatSong(t)));
+                            setRecommendations(result);
                             setSeeRecommendations(!seeRecommendations);
                         });
                 }

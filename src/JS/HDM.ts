@@ -59,7 +59,7 @@ interface Settings extends Record {
 }
 
 interface Recommendation extends Record {
-    item : {id : string, type: "songs" | "artists"},
+    item : {id : string, type: "songs" | "artists"} | Artist | Song,
     description : string
 }
 
@@ -72,7 +72,7 @@ interface Artist extends Record {
     name : string,
     image : string,
     link : string,
-    genres : Array<string>
+    genres : Array<string> | Array<Genre>
 }
 
 interface Song extends Record {
@@ -108,6 +108,13 @@ type Analytics = {
 interface ProfileRecommendations extends Record {
     user : User,
     recommendations : Array<Recommendation> | Array<string>
+}
+
+interface Datapoint extends Record {
+    owner: User,
+    top_songs: Array<Song> | Array<string>,
+    top_artists: Array<Artist> | Array<string>,
+    top_genres: Array<Genre> | Array<string>
 }
 
 
@@ -377,31 +384,43 @@ export const retrieveAllPublicUsers = async function () {
     return users;
 }
 
-export const retrieveProfileRecommendations = async function (user_id)  {
+/**
+ * Returns all the profile recommendations from the target user.
+ * @param user_id
+ */
+export const retrieveProfileRecommendations = async function (user_id : string)  {
     const data = await getLocalDataByID("profile_recommendations", hashString(user_id), "recommendations");
-    let recs = data.expand.recommendations;
+    let recs : Array<Recommendation> = data.expand.recommendations;
     if(recs === undefined){
         return [];
     }
+    // Resolve all the items in the recommendations
     for (let i = 0; i < recs.length; i++){
         let e = recs[i];
         if(e.item.type === "artists"){
-            e.item = await getLocalDataByID("artists", e.item.id, "genres");
-            e.item.genres = e.item.expand.genres;
-            if(e.item.genres !== undefined){
-                e.item.genres = e.item.genres.map(e => e.genre);
+            let artist : Artist = await getLocalDataByID("artists", e.item.id, "genres");
+            artist.genres = artist.expand.genres;
+            if(artist.genres !== undefined){
+                artist.genres = artist.genres.map(e  => e.genre);
             }
+            e.item = artist;
         }else if(e.item.type === "songs"){
-            e.item = await getLocalDataByID("songs", e.item.id, "artists");
-            e.item.artists = e.item.expand.artists;
+            let song : Song = await getLocalDataByID("songs", e.item.id, "artists");
+            song.artists = song.expand.artists;
+            e.item = song;
         }else{
             throw new Error("Unknown type fetched from profile recommendations.");
         }
     }
     return recs;
 }
-// Only returns songs and artists
-export const retrieveSearchResults = async function (query, type) {
+/**
+ * Returns the results of a query of a certain type.
+ * @param query
+ * @param type
+ * @returns Artist | Song
+ */
+export const retrieveSearchResults = async function (query : string, type : "artists" | "songs") {
     let typeParam;
     switch (type) {
         case 'artists':
@@ -409,9 +428,6 @@ export const retrieveSearchResults = async function (query, type) {
             break;
         case 'songs':
             typeParam = 'track';
-            break;
-        case 'albums':
-            typeParam = 'album';
             break;
         default:
             typeParam = null;
@@ -441,19 +457,22 @@ export const retrieveSearchResults = async function (query, type) {
  * @param user_id
  * @returns {Promise<Array>}
  */
-export const retrievePlaylists = async function (user_id) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    let playlists = (await fetchData(`users/${globalUser_id}/playlists`)).items;
+export const retrievePlaylists = async function (user_id : string) {
+    // Fetch all playlists
+    let playlists = (await fetchData(`users/${user_id}/playlists`)).items;
+    // Filter by those that are not collaborative and are public
     playlists = playlists.filter(p => !p.collaborative && p.public);
 
+    // Resolve all songs in each playlist
     const playlistTrackPromises = playlists.map(playlist => {
         const totalTracks = playlist.tracks.total;
         const numCalls = Math.ceil(totalTracks / 50);
         const promises = [];
 
+        // Max of 50 songs per call, so they must be batched
         for (let i = 0; i < numCalls; i++) {
             const offset = i * 50;
-            const promise = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+            const promise : Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
                 .then(response => response.items.map(e => e.track))
                 .catch(error => {
                     console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
@@ -476,8 +495,8 @@ export const retrievePlaylists = async function (user_id) {
 }
 
 /**
- * Creates / updates the logged-in user's record.
- * @returns {Promise<{user_id, profile_picture: null, media: null, username: *}>}
+ * Formats a user object from spotify in to a formatted user object.
+ * @returns User
  */
 export const formatUser = async function (user) {
     // Get our global user_id
@@ -510,31 +529,20 @@ export const isLoggedIn = function () {
  * @param term [short_term, medium_term, long_term]
  * @returns {Promise<*>} A datapoint object.
  */
-export const retrieveDatapoint = async function (user_id, term) {
-    let currDatapoint;
+export const retrieveDatapoint = async function (user_id : string, term : "short_term" | "medium_term" | "long_term") {
     let timeSensitive = false;
-    let globalUser_id = user_id;
     // Are we accessing the logged-in user?
     // [Unknowingly]
-    if (globalUser_id === window.localStorage.getItem("user_id")) {
+    if (user_id === window.localStorage.getItem("user_id")) {
         timeSensitive = true
     }
-    // [Knowingly]
-    else if (globalUser_id === "me") {
-        timeSensitive = true;
-        globalUser_id = window.localStorage.getItem("user_id");
-    }
-    await getDatapoint(globalUser_id, term, timeSensitive).then(function (result) {
-        currDatapoint = result;
-    }).catch(function (err) {
+    let currDatapoint : Datapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
-    if (!currDatapoint && user_id === 'me') {
+    if (!currDatapoint && timeSensitive) {
         await hydrateDatapoints().then(async () =>
-            await getDatapoint(globalUser_id, term, timeSensitive).then(result =>
-                currDatapoint = result
-            ).catch(function (err) {
+            currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
                 console.warn("Error retrieving datapoint: ");
                 console.warn(err);
             })
@@ -553,14 +561,8 @@ export function getAllIndexes(arr, val) {
     return indexes;
 }
 
-export const retrievePrevDatapoint = async function (user_id, term) {
-    let globalUser_id = user_id;
-    // Are we accessing the logged-in user?
-    // [Knowingly]
-    if (globalUser_id === "me") {
-        globalUser_id = window.localStorage.getItem("user_id");
-    }
-    const datapoint = await getDelayedDatapoint(globalUser_id, term, 1);
+export const retrievePrevDatapoint = async function (user_id : string, term : "short_term" | "medium_term" | "long_term") {
+    const datapoint : Datapoint = await getDelayedDatapoint(user_id, term, 1);
     if (datapoint === undefined) {
         return null
     } else {
@@ -569,7 +571,7 @@ export const retrievePrevDatapoint = async function (user_id, term) {
 }
 
 
-const formatDatapoint = function (d) {
+const formatDatapoint = function (d : Datapoint) {
     if(d === null || d === undefined){
         return null;
     }
@@ -590,7 +592,7 @@ const formatDatapoint = function (d) {
 }
 
 export const retrieveAllDatapoints = async function (user_id) {
-    const terms = ["short_term", "medium_term", "long_term"];
+    const terms : Array<"short_term" | "medium_term" | "long_term">  = ["short_term", "medium_term", "long_term"];
     const datapoints = [];
     for (const term of terms) {
         const datapoint = await retrieveDatapoint(user_id, term);
@@ -601,7 +603,7 @@ export const retrieveAllDatapoints = async function (user_id) {
 
 
 export const retrievePrevAllDatapoints = async function (user_id) {
-    const terms = ["short_term", "medium_term", "long_term"];
+    const terms : Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
     const datapoints = [];
     for (const term of terms) {
         const datapoint = await retrievePrevDatapoint(user_id, term);
@@ -618,12 +620,21 @@ function chunks(array, size) {
     return result;
 }
 
-export const retrieveSongAnalytics = async (song_id) => {
+/**
+ * Returns the analytics for the song with a given id.
+ * @param song_id
+ * @returns Analytics
+ */
+export const retrieveSongAnalytics = async (song_id : string) => {
     const data = await fetchData(`audio-features?id=${song_id}`)
     return data.audio_features;
 }
-
-export const batchAnalytics = async (songs) => {
+/**
+ * Returns an array of the analytics of the songs in the array
+ * @param songs
+ * @returns Array<Analytics>
+ */
+export const batchAnalytics = async (songs : Array<{song_id : string}>) => {
     const songChunks = chunks(songs, 50);
     const analytics = [];
     for (const chunk of songChunks) {
@@ -633,8 +644,12 @@ export const batchAnalytics = async (songs) => {
     }
     return analytics;
 };
-
-export const batchArtists = async (artist_ids) => {
+/**
+ * Returns the artist objects from an array of artist ids.
+ * @param artist_ids
+ * @returns Array<Artist>
+ */
+export const batchArtists = async (artist_ids : Array<string>) => {
     const artistChunks = chunks(artist_ids, 50);
     const artists = [];
     for (const chunk of artistChunks) {
@@ -645,20 +660,18 @@ export const batchArtists = async (artist_ids) => {
             if (e.images.length > 0) {
                 image = e.images[1].url
             }
-            return {
-                artist_id: e.id,
-                name: e.name,
-                image: image,
-                link: `https://open.spotify.com/artist/${e.id}`,
-                genres: e.genres
-            }
+            return formatArtist(e);
         }));
     }
     return artists;
 };
 
-
-export const getAlbumsWithTracks = async function (artistID, tracks) {
+/**
+ * Returns any albums from a given that contain the tracks given.
+ * @param artistID
+ * @param tracks
+ */
+export const getAlbumsWithTracks = async function (artistID : string, tracks : Array<Song>) {
     let albumsWithTracks = [];
 
     if (!tracks) {
@@ -672,7 +685,7 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
 
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
-        const trackList = albumTracks[i].items;
+        const trackList : Array<Song> = albumTracks[i].items;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
         if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithTracks.push(album);
@@ -681,7 +694,11 @@ export const getAlbumsWithTracks = async function (artistID, tracks) {
     return albumsWithTracks;
 }
 
-
+/**
+ * Formats a spotify artist in to an artist object.
+ * @param artist
+ * @returns Artist
+ */
 export const formatArtist = (artist) => {
     let image = null;
     if (artist.hasOwnProperty("images")) {
@@ -697,7 +714,11 @@ export const formatArtist = (artist) => {
         genres: artist.genres
     }
 }
-
+/**
+ * Formats a spotify song in to a song object.
+ * @param song
+ * @returns Song
+ */
 export const formatSong = (song) => {
     let image = null;
     if (song.album.images !== undefined) {
@@ -707,7 +728,7 @@ export const formatSong = (song) => {
             console.warn("Error formatting song: Image not found for ", song);
         }
     }
-    let artists = song.artists.map(a => formatArtist(a));
+    let artists : Array<Artist> = song.artists.map(a => formatArtist(a));
     return {
         song_id: song.id,
         title: song.name,
@@ -717,11 +738,22 @@ export const formatSong = (song) => {
         analytics: {}
     }
 }
-
-export const getSimilarArtists = async (artist) => {
-    return (await fetchData(`artists/${artist.artist_id}/related-artists`)).artists;
+/**
+ * Returns similar artists to the artist id passed in.
+ * @param id
+ * @returns Array<Artist>
+ */
+export const getSimilarArtists = async (id : string) => {
+    return (await fetchData(`artists/${id}/related-artists`)).artists.map(a => formatArtist(a));
 }
 
+/**
+ * Takes in the ids of artists, genres and tracks and returns any song recommendations.
+ * @param seed_artists
+ * @param seed_genres
+ * @param seed_tracks
+ * @param limit
+ */
 export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tracks, limit = 20) => {
     let params = new URLSearchParams([
         ["seed_artists", seed_artists],
@@ -729,7 +761,7 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
         ["seed_tracks", seed_tracks],
         ["limit", limit]
     ]);
-    return (await fetchData(`recommendations?${params}`)).tracks;
+    return (await fetchData(`recommendations?${params}`)).tracks.map(t => formatSong(t));
 }
 
 /**
@@ -738,7 +770,7 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
  */
 export const hydrateDatapoints = async function () {
     console.time("Hydration."); // Start a timer for performance measurement
-    const terms = ['short_term', 'medium_term', 'long_term'];
+    const terms : Array<"short_term" | "medium_term" | "long_term"> = ['short_term', 'medium_term', 'long_term'];
 
     const datapointPromises = terms.map(async (term) => {
         console.info("Hydrating: " + term);
@@ -760,7 +792,7 @@ export const hydrateDatapoints = async function () {
         // Add all the songs
         datapoint.top_songs = top_songs.map(s => formatSong(s));
         await batchAnalytics(datapoint.top_songs).then(res =>
-            datapoint.top_songs.map((e, i) =>
+            datapoint.top_songs.map((e: Song, i) =>
                 e.analytics = res[i]
             )
         );
@@ -794,7 +826,7 @@ export const hydrateDatapoints = async function () {
  * @param artists
  * @returns {*[]}
  */
-const calculateTopGenres = function (artists) {
+const calculateTopGenres = function (artists : Array<Artist>) {
 
     let topGenres = [];
 
