@@ -11,6 +11,7 @@ import Profile from './JS/Profile';
 import {Analytics} from '@vercel/analytics/react';
 import Followers from "./JS/Followers";
 import FollowersPage from "./JS/Followers";
+import BottomBar from "./JS/BottomBar";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

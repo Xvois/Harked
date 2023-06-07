@@ -10,43 +10,125 @@ import {
     getLocalData,
     getLocalDataByID,
     getUser,
-    hashString,
     postDatapoint,
     putLocalData, songsToRefIDs,
     updateLocalData
-} from "./API";
+} from "./API.ts";
 import {getLIName} from "./Analysis";
 
-// TODO : MAJOR REWORK OF HOW PAGE HASHES / USER IDS ARE HANDLED SO THEY ARE CONSISTENT
-// SANITIZATION SHOULD NOT BE REQUIRED AS A PART OF EVERY METHOD IN THE HDM
+
+export interface Record {
+    id : string,
+    created : string,
+    modified : string,
+    expand? : any
+}
+
+export interface User extends Record {
+    username: string,
+    email: string,
+    user_id: string,
+    profile_picture: string,
+}
+
+export interface Comment extends Record {
+    user : User,
+    parent : Comment,
+    content : string,
+}
+export interface FollowingRecord extends Record {
+    user : User | string,
+    /** Following can be an array of the user objects or of their record ids **/
+    following : Array<User> | Array<string>
+}
+export interface FollowersRecord extends Record {
+    user : User | string,
+    /** Followers can be an array of the user objects or of their record ids **/
+    followers : Array<User> | Array<string>
+}
+/**
+ * Stores information pertaining to the customisation of a
+ * user's profile.
+ */
+interface ProfileData extends Record {
+    user : User | string
+}
+interface Settings extends Record {
+    user : User | string,
+    public : boolean
+}
+
+interface Recommendation extends Record {
+    item : {id : string, type: "songs" | "artists"},
+    description : string
+}
+
+interface Genre extends Record {
+    genre : string
+}
+
+interface Artist extends Record {
+    artist_id : string,
+    name : string,
+    image : string,
+    link : string,
+    genres : Array<string>
+}
+
+interface Song extends Record {
+    song_id : string,
+    title : string,
+    artists : Array<Artist> | Array<string>,
+    link : string,
+    image : string,
+    analytics : Analytics
+}
+
+type Analytics = {
+    acousticness: number,
+    analysis_url: string,
+    danceability: number,
+    duration_ms: number,
+    energy: number,
+    id: string,
+    instrumentalness: number,
+    key: number,
+    liveness: number,
+    loudness: number,
+    mode: number,
+    speechiness: number,
+    tempo: number,
+    time_signature: number,
+    track_href: string,
+    type: string,
+    uri: string,
+    valence: number
+}
+
+interface ProfileRecommendations extends Record {
+    user : User,
+    recommendations : Array<Recommendation> | Array<string>
+}
+
+
+export function hashString(inputString) {
+    let hash = 0n; // Use BigInt to support larger values
+    if (inputString.length === 0) {
+        return '0000000000000000';
+    }
+    for (let i = 0; i < inputString.length; i++) {
+        const char = BigInt(inputString.charCodeAt(i));
+        hash = ((hash << 5n) - hash) + char;
+        hash &= hash; // Convert to 64-bit integer
+    }
+    const hex = hash.toString(16);
+    return hex.padStart(15, '0').substring(0, 15);
+}
 
 /**
- * Gets a user from the PRDB as well as updating the media attribute for the
- * current user, if that is the parameter.
- * @param user_id A local user_id.
- * @returns {Promise<{profilePicture: string, media: {image: string, name: string}, user_id: string, username: string}>} A user object.
+ * A mapping of the getUser method.
  */
-export const retrieveUser = async function (user_id) {
-    let user = {
-        user_id: '',
-        username: '',
-        profile_picture: '',
-        media: {name: '', image: ''},
-    }
-    // Check if we are retrieving the current user
-    if (user_id === 'me') {
-        // Get the global user ID from local storage
-        let globalUser_id = window.localStorage.getItem("user_id");
-        user.user_id = globalUser_id;
-        // Get the user's profile information from the local database
-        await getUser(globalUser_id).then(result => user = result);
-    } else {
-        // Get the user's profile information from the local database
-        await getUser(user_id).then(result => user = result);
-    }
-    console.log(user);
-    return user;
-}
+export const retrieveUser = getUser;
 
 /**
  * A boolean function that returns true if the currently logged-in user follows the target and false if not.
@@ -54,46 +136,45 @@ export const retrieveUser = async function (user_id) {
  * @param primaryUserID
  * @param targetUserID
  */
-export const followsUser = async function (primaryUserID, targetUserID) {
+export const followsUser = async function (primaryUserID : string, targetUserID : string) {
+    // If both are the same we can simply return false as a user cannot follow themself.
     if (primaryUserID === targetUserID) {
         return false;
     }
     let follows = false;
-    const targetUser = await getUser(targetUserID);
+    const targetUser : User = await getUser(targetUserID);
+    // Get who the primary user follows
     await getLocalData("user_following", `user.user_id="${primaryUserID}"`)
-        .then((res) => {
+        .then((res : FollowingRecord) => {
             const item = res[0];
-            if (item.following.some(e => e === targetUser.id)) {
+            // Check if the record id of the target user is held in the array of
+            // the primary user's following array
+            if (item.following.some((e : string) => e === targetUser.id)) {
                 follows = true;
             }
-            console.info(`followsUser dump`,
-                {
-                    targetUser: targetUser,
-                    res: res,
-                    follows: follows
-                }
-                )
         });
     return follows;
 }
 
-
 /**
- *
+ * Will make the primary user follow the target user.
  * @param primaryUserID
  * @param targetUserID
  */
-export const followUser = async function (primaryUserID, targetUserID) {
+export const followUser = async function (primaryUserID : string, targetUserID : string) {
+    if(await followsUser(primaryUserID, targetUserID)){
+        return;
+    }
     // Get the record for who follows who for both the primary and target user
-    let [primaryObj, targetObj] = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
+    let [primaryObj , targetObj] : Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
 
-    // Since this is a relational key, .user is simply the record id for tha user
+    // Since this is a relational key, .user is simply the record id for that user
     if (!primaryObj.following.some(e => e === targetObj.user)) {
         primaryObj.following.push(targetObj.user);
         // Update the primary user's data to show they are following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
         // Update the target user's data to show they are being followed by the primary user
-        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res) => {
+        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res : FollowersInterface) => {
             let item = res;
             item.followers.push(primaryObj.user);
             updateLocalData("user_followers", item, item.id);
@@ -101,13 +182,13 @@ export const followUser = async function (primaryUserID, targetUserID) {
     }
 }
 /**
- *
+ * Will make the primary user unfollow the target user.
  * @param primaryUserID
  * @param targetUserID
  */
-export const unfollowUser = async function (primaryUserID, targetUserID) {
+export const unfollowUser = async function (primaryUserID : string, targetUserID : string) {
     // Get the record for who follows who for both the primary and target user
-    let [primaryObj, targetObj] = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
+    let [primaryObj, targetObj] : Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
 
     // Since this is a relational key, .user is simply the record id for tha user
     if (primaryObj.following.some(e => e === targetObj.user)) {
@@ -115,16 +196,20 @@ export const unfollowUser = async function (primaryUserID, targetUserID) {
         // Update the primary user's data to show they are not following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
         // Update the target user's data to show they are not being followed by the primary user
-        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res) => {
+        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res : FollowersRecord) => {
             let item = res;
             item.followers = item.followers.filter(e => e !== primaryObj.user);
             updateLocalData("user_followers", item, item.id);
         })
     }
 }
-
-export const retrieveFollowers = async function (user_id) {
-    const res = await getLocalDataByID("user_followers", hashString(user_id), "followers");
+/**
+ * Returns the user records of the followers of the target.
+ * @param user_id
+ * @returns {Array<User>}
+ */
+export const retrieveFollowers = async function (user_id : string) {
+    const res : FollowersRecord = await getLocalDataByID("user_followers", hashString(user_id), "followers");
     if (res.followers.length > 0) {
         return res.expand.followers;
     } else {
@@ -132,8 +217,13 @@ export const retrieveFollowers = async function (user_id) {
     }
 }
 
-export const retrieveFollowing = async function (user_id) {
-    const res = await getLocalDataByID("user_following", hashString(user_id), "following");
+/**
+ * Returns the user records who the target is following.
+ * @param user_id
+ * @returns {Array<User>}
+ */
+export const retrieveFollowing = async function (user_id : string) {
+    const res : FollowingRecord = await getLocalDataByID("user_following", hashString(user_id), "following");
     if (res.following.length > 0) {
         return res.expand.following;
     } else {
@@ -141,54 +231,73 @@ export const retrieveFollowing = async function (user_id) {
     }
 }
 
-export const retrieveSettings = async function (user_id) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const id = hashString(globalUser_id);
-    const res = await getLocalDataByID("settings", id);
-    console.log(res);
+
+/**
+ * Returns the settings of the target user.
+ * @param user_id
+ * @returns {Settings}
+ */
+export const retrieveSettings = async function (user_id : string) {
+    const id : string = hashString(user_id);
+    const res : Settings = await getLocalDataByID("settings", id);
     return res;
 }
 
-export const changeSettings = function (user_id, new_settings) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const id = hashString(globalUser_id);
-    updateLocalData("settings", new_settings, id);
+/**
+ * Modifies the settings of the target user.
+ * @param user_id
+ * @param new_settings : Settings
+ */
+export const changeSettings = async function (user_id : string, new_settings : Settings) {
+    const id = hashString(user_id);
+    await updateLocalData("settings", new_settings, id);
 }
 
-export const retrieveProfileData = async function (user_id) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const id = hashString(globalUser_id);
+/**
+ * Returns the profile data of the target user.
+ * @param user_id
+ * @returns ProfileData
+ */
+export const retrieveProfileData = async function (user_id : string) {
+    const id = hashString(user_id);
     return await getLocalDataByID("profile_data", id);
 }
-
-export const retrieveProfileComments = async function (user_id) {
-    console.info('retrieveProfileComments called!')
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const id = hashString(globalUser_id);
-    const profile_comments = await getLocalDataByID("profile_comments", id, "comments, comments.user");
-    console.log(profile_comments);
-    let comments = profile_comments.expand.comments ?? [];
+/**
+ * Returns the comments from a given comment section.
+ * **Special case if it is a profile comment section, the ID will be
+ * the hash of the userID.**
+ * @param section_id
+ */
+export const retrieveComments = async function (section_id : string) {
+    const comment_section = await getLocalDataByID("comment_section", section_id, "comments, comments.user");
+    let comments = comment_section.expand.comments ?? [];
     comments.map(c => c.user = c.expand.user);
     comments.map(c => delete c.expand);
     return comments;
 }
 
-
-export const submitComment = async function (user_id, target_user_id, content, parent = null) {
+/**
+ * Submits a comment to a given comment section, then returns that comment record.
+ * @param user_id
+ * @param section_id
+ * @param content
+ * @param parent
+ * @returns Comment }
+ */
+export const submitComment = async function (user_id : string, section_id : string, content : string, parent : Comment = null) {
     try {
-        const user = await retrieveUser(user_id);
-        target_user_id = target_user_id === 'me' ? window.localStorage.getItem('user_id') : target_user_id;
-
+        const user : User = await retrieveUser(user_id);
         // Just a random, valid, and unique ID.
-        const commentID = hashString(target_user_id + user_id + content);
-        const comment = { id: commentID, user: user.id, parent: parent, content: content };
-
+        const commentID = hashString(section_id + user_id + content);
+        const date = new Date();
+        const comment : { user: string; parent: Comment; id: string; content: string } = { id: commentID, user: user.id, parent: parent, content: content };
+        console.log(comment)
         await putLocalData("comments", comment);
 
-        let profileComments = await getLocalDataByID("profile_comments", hashString(target_user_id));
+        let profileComments = await getLocalDataByID("comment_section", section_id);
         profileComments.comments.push(commentID);
 
-        await updateLocalData("profile_comments", profileComments, profileComments.id);
+        await updateLocalData("comment_section", profileComments, profileComments.id);
 
         return { ...comment, user: user };
     } catch (error) {
@@ -197,30 +306,37 @@ export const submitComment = async function (user_id, target_user_id, content, p
     }
 };
 
-
-export const deleteComment = async function (comment) {
-    await deleteLocalData("comments", comment.id);
+/**
+ * Deletes a comment.
+ * @param comment_id
+ */
+export const deleteComment = async function (comment_id : string) {
+    await deleteLocalData("comments", comment_id);
 }
-
-export const submitRecommendation = async function (user_id, item, type, description) {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const id = hashString(getLIName(item) + description + globalUser_id);
-    let currRecommendations = await getLocalDataByID("profile_recommendations", hashString(globalUser_id));
+/**
+ * Creates a recommendation for the target user on their page.
+ * @param user_id
+ * @param item
+ * @param type
+ * @param description
+ */
+export const submitRecommendation = async function (user_id : string, item : Song | Artist, type : "songs" | "artists", description : string) {
+    const id = hashString(getLIName(item) + description + user_id);
+    let currRecommendations : ProfileRecommendations = await getLocalDataByID("profile_recommendations", hashString(user_id));
     if(currRecommendations.recommendations === null){
         currRecommendations.recommendations = [];
     }
     switch (type){
         case 'artists':
-            const [artistRefID] = await artistsToRefIDs([item]);
+            const [artistRefID] : Array<string> = await artistsToRefIDs([item]);
             const artistItemObj = {type: type, id: artistRefID}
             const artistRecommendation = {id: id, item: artistItemObj, description: description};
             await putLocalData("recommendations", artistRecommendation);
-            const newRecs_a = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
-            console.log(newRecs_a);
+            const newRecs_a : ProfileRecommendations = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
             await updateLocalData("profile_recommendations", newRecs_a, currRecommendations.id);
             break;
         case 'songs':
-            const [songRefID] = await songsToRefIDs([item]);
+            const [songRefID] : Array<string> = await songsToRefIDs([item]);
             const songItemObj = {type: type, id: songRefID}
             const songRecommendation = {id: id, item: songItemObj, description: description};
             await putLocalData("recommendations", songRecommendation);
@@ -230,14 +346,17 @@ export const submitRecommendation = async function (user_id, item, type, descrip
     }
 
 }
-
-export const deleteRecommendation = async function (rec_id) {
+/**
+ * Deletes a profile recommendation.
+ * @param rec_id
+ */
+export const deleteRecommendation = async function (rec_id : string) {
     await deleteLocalData("recommendations", rec_id);
 }
 
 /**
- * Returns all the user_ids currently in the database.
- * @returns {Promise<Array<Record>>}
+ * Returns all the users currently in the database.
+ * @returns {Promise<Array<User>>}
  */
 export const retrieveAllUsers = async function () {
     await disableAutoCancel();
@@ -245,19 +364,21 @@ export const retrieveAllUsers = async function () {
     await enableAutoCancel();
     return users;
 }
-
+/**
+ * Returns all the users that have public profiles currently in the database.
+ * @returns {Promise<Array<User>>}
+ */
 export const retrieveAllPublicUsers = async function () {
     await disableAutoCancel();
-    let users = await getFullLocalData("users");
-    const settings = await getFullLocalData("settings");
+    let users : Array<User> = await getFullLocalData("users");
+    const settings : Array<Settings> = await getFullLocalData("settings");
     users = users.filter(u => settings.some(s => s.user === u.id && s.public));
     await enableAutoCancel();
     return users;
 }
 
 export const retrieveProfileRecommendations = async function (user_id)  {
-    const globalUser_id = user_id === 'me' ? window.localStorage.getItem('user_id') : user_id;
-    const data = await getLocalDataByID("profile_recommendations", hashString(globalUser_id), "recommendations");
+    const data = await getLocalDataByID("profile_recommendations", hashString(user_id), "recommendations");
     let recs = data.expand.recommendations;
     if(recs === undefined){
         return [];

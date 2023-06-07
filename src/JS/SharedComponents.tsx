@@ -1,28 +1,9 @@
 import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {useEffect, useRef, useState} from "react";
-import {deleteComment, isLoggedIn, retrieveProfileComments, submitComment} from './HDM'
+import {MutableRefObject, useEffect, useRef, useState} from "react";
+/* @ts-ignore */
+import {deleteComment, isLoggedIn, retrieveComments, submitComment, User, Comment} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
-
-interface UserInterface {
-    id: string,
-    username: string,
-    email: string,
-    user_id: string,
-    profile_picture: string,
-    created: string,
-    updated: string
-}
-
-interface CommentInterface {
-    id : string,
-    user : UserInterface,
-    parent : CommentInterface,
-    content : string,
-    created : string,
-    updated: string
-}
-
 
 export const StatBlock = (props: {name: string, description: string, value: number, alignment? : "left" | "right", shadow? : number}) => {
     const {name, description, value, alignment = 'left', shadow = null} = props;
@@ -126,24 +107,43 @@ export const StyledField = styled(TextField)({
         fontFamily: 'Inter Tight, sans-serif',
     },
 });
+
+export function LoadingIndicator () {
+    return (
+        <div className={'centre'}>
+            <div className="lds-grid">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    )
+}
+
 // PAGE HASH SHOULD BE CHANGED SO THE COMMENT SECTION CAN BE USED ON ANY PAGE
-export function CommentSection (props : {pageHash : string, isAdmin : boolean}) {
+export function CommentSection (props : {sectionID : string, isAdmin : boolean}) {
     // An admin will be able to delete all comments in the comment section
-    const {pageHash, isAdmin} = props;
+    const {sectionID, isAdmin} = props;
     const [comments, setComments] = useState([]);
-    const valueRef = useRef(""); // Creating a reference for TextField Component
+    const valueRef = useRef(null) ; // Creating a reference for TextField Component
     const charLimit = 500;
     const loggedIn = isLoggedIn();
     const loggedUserID = loggedIn ? window.localStorage.getItem('user_id') : null;
 
     useEffect(() => {
-        retrieveProfileComments(pageHash).then(function(c) {
+        retrieveComments(sectionID).then(function(c) {
             setComments(c);
         })
     }, [])
 
     const handleSubmit = () => {
-        submitComment(window.localStorage.getItem("user_id"), pageHash, valueRef.current)
+        submitComment(window.localStorage.getItem("user_id"), sectionID, valueRef.current.value)
             .then((c) => {
                 const newComments = comments.concat([c]);
                 setComments(newComments);
@@ -153,9 +153,9 @@ export function CommentSection (props : {pageHash : string, isAdmin : boolean}) 
             });
     };
 
-    const handleDelete = async (comment) => {
-        await deleteComment(comment);
-        const newComments = comments.filter((c) => c.id !== comment.id);
+    const handleDelete = async (id) => {
+        await deleteComment(id);
+        const newComments = comments.filter((c) => c.id !== id);
         setComments(newComments);
     };
 
@@ -188,7 +188,7 @@ export function CommentSection (props : {pageHash : string, isAdmin : boolean}) 
                 {comments.length > 0 ? (
                     comments.map((c) => {
                         const ownComment = loggedIn ? loggedUserID === c.user.user_id : false;
-                        return <Comment key={c.id} item={c} onDelete={handleDelete} isDeletable={ownComment || isAdmin} />;
+                        return <CommentInstance key={c.id} item={c} onDelete={handleDelete} isDeletable={ownComment || isAdmin} />;
                     })
                 ) : (
                     <p style={{ color: "var(--secondary-colour)" }}>Looks like there aren't any comments yet.</p>
@@ -197,13 +197,13 @@ export function CommentSection (props : {pageHash : string, isAdmin : boolean}) 
         </>
     );
 }
-function Comment(props : {item : CommentInterface, onDelete : any, isDeletable : boolean}) {
+function CommentInstance(props : {item : Comment, onDelete : any, isDeletable : boolean}) {
     const { item, onDelete, isDeletable } = props;
-    const user = item.user;
+    const user : User = item.user;
     const date = new Date(item.created);
 
     const handleDelete = async () => {
-        await onDelete(item);
+        await onDelete(item.id);
     };
 
     return (

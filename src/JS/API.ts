@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
-import {formatArtist} from "./HDM";
+import {formatArtist, hashString} from "./HDM.ts";
 import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
@@ -108,7 +108,7 @@ const handleCreationException = (err) => {
             break;
         default:
             console.error(`Error ${err.status} creating database record.`)
-            console.error(err.data);
+            console.error(err);
     }
 }
 const handleUpdateException = (err) => {
@@ -128,19 +128,7 @@ const handleFetchException = (err) => {
     }
 }
 
-export function hashString(inputString) {
-    let hash = 0n; // Use BigInt to support larger values
-    if (inputString.length === 0) {
-        return '0000000000000000';
-    }
-    for (let i = 0; i < inputString.length; i++) {
-        const char = BigInt(inputString.charCodeAt(i));
-        hash = ((hash << 5n) - hash) + char;
-        hash &= hash; // Convert to 64-bit integer
-    }
-    const hex = hash.toString(16);
-    return hex.padStart(15, '0').substring(0, 15);
-}
+
 
 let databaseCache = {
     artists: [],

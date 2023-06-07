@@ -1,6 +1,6 @@
 import { styled, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
-import { isLoggedIn, retrieveAllPublicUsers, retrieveFollowing } from "./HDM";
+import { isLoggedIn, retrieveAllPublicUsers, retrieveFollowing } from "./HDM.ts";
 import { FormControl } from "@mui/base";
 import Fuse from 'fuse.js';
 import {StyledField} from "./SharedComponents.tsx";

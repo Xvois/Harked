@@ -5,12 +5,11 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './HDM';
+import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
 import {handleLogin} from "./Authentication";
-import {hashString, putLocalData} from "./API";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -68,8 +67,9 @@ function Homepage() {
                         <></>
                     }
                 </div>
+                <h4 style={{color: 'red'}}>This is a development branch test. Major revisions are being made to the database. Your profile data may be lost. The site may not function at times.</h4>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.7 Refactor branch</p>
+                    v1.3.8 Refactor branch</p>
             </div>
         </div>
     );

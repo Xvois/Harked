@@ -18,15 +18,15 @@ import {
     retrieveFollowers,
     retrievePlaylists,
     retrievePrevAllDatapoints,
-    retrieveProfileComments,
+    retrieveComments,
     retrieveProfileData,
     retrieveProfileRecommendations,
     retrieveSearchResults,
     retrieveSettings, retrieveSongAnalytics,
     retrieveUser,
     submitComment, submitRecommendation,
-    unfollowUser
-} from './HDM';
+    unfollowUser, hashString
+} from './HDM.ts';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
@@ -42,7 +42,7 @@ import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Fuse from "fuse.js";
-import { SpotifyLink, StatBlock, PageError, StyledField, CommentSection } from "./SharedComponents.tsx";
+import { SpotifyLink, StatBlock, PageError, StyledField, CommentSection, LoadingIndicator } from "./SharedComponents.tsx";
 
 const Profile = () => {
 
@@ -50,6 +50,7 @@ const Profile = () => {
     const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
     const pageHash = window.location.hash.split("#")[1];
     const isOwnPage = isLoggedIn() ? (pageHash === window.localStorage.getItem('user_id') || pageHash === 'me') : false
+    const pageGlobalUserID = isOwnPage ? window.localStorage.getItem('user_id') : pageHash;
 
     const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
     // The datapoint that is selected for viewing
@@ -89,7 +90,7 @@ const Profile = () => {
     const loadPage = () => {
         // Promises that need to be made before the page can be loaded
         let loadPromises = [
-            retrieveUser(pageHash).then(function (user) {
+            retrieveUser(pageGlobalUserID).then(function (user) {
                 setPageUser(user);
                 retrieveFollowers(user.user_id).then(f => setFollowers(f));
                 if (!isOwnPage) {
@@ -99,7 +100,7 @@ const Profile = () => {
                 }
                 console.info("User retrieved!");
             }),
-            retrieveAllDatapoints(pageHash).then(function (datapoints) {
+            retrieveAllDatapoints(pageGlobalUserID).then(function (datapoints) {
                 // Is there an invalid / nonexistent datapoint in the array?
                 if(datapoints.some(d => d === null)){
                     const indexes = getAllIndexes(datapoints, null);
@@ -118,12 +119,12 @@ const Profile = () => {
                 setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                 console.info("Datapoints retrieved!");
             }),
-            retrievePrevAllDatapoints(pageHash, 1).then(function (datapoints) {
+            retrievePrevAllDatapoints(pageGlobalUserID, 1).then(function (datapoints) {
                 setAllPreviousDatapoints(datapoints);
                 setSelectedPrevDatapoint(datapoints[termIndex]);
                 console.info("Previous datapoints retrieved!");
             }),
-            retrieveSettings(pageHash).then(function (s) {
+            retrieveSettings(pageGlobalUserID).then(function (s) {
                 setSettings(s);
                 if (!s.public && !isOwnPage) {
                     console.info("LOCKED PAGE", settings)
@@ -131,7 +132,7 @@ const Profile = () => {
                     setErrorDetails({icon: <LockIcon fontSize={'large'}/>, description: 'This profile is private.'});
                 }
             }),
-            retrieveProfileData(pageHash).then(function (d) {
+            retrieveProfileData(pageGlobalUserID).then(function (d) {
                 setProfileData(d);
             })
         ]
@@ -141,10 +142,10 @@ const Profile = () => {
             const loggedUserID = window.localStorage.getItem('user_id');
             if (!isOwnPage) {
                 console.info('Is not own page.');
-                followsUser(loggedUserID, pageHash).then(f => setIsLoggedUserFollowing(f));
+                followsUser(loggedUserID, pageGlobalUserID).then(f => setIsLoggedUserFollowing(f));
             }
             loadPromises.push(
-                retrievePlaylists(pageHash).then(function (p) {
+                retrievePlaylists(pageGlobalUserID).then(function (p) {
                     p.sort((a, b) => b.tracks.length - a.tracks.length)
                     setPlaylists(p);
                     console.info("Playlists retrieved!");
@@ -164,11 +165,9 @@ const Profile = () => {
         }
         // Load the page
         loadPage();
-        console.info('Global profile useEffect called!')
     }, []);
 
     useEffect(() => {
-        console.info('termIndex initiated useEffect called!')
         setSelectedDatapoint(allDatapoints[termIndex]);
         setSelectedPrevDatapoint(allPreviousDatapoints[termIndex]);
     }, [termIndex])
@@ -181,12 +180,12 @@ const Profile = () => {
 
 
         useEffect(() => {
-            retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
+            retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
         }, [])
 
         const handleDelete = (id) => {
             deleteRecommendation(id).then(() => {
-                retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
+                retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
             });
         }
 
@@ -214,10 +213,10 @@ const Profile = () => {
                     submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
                 }
                 console.log(submissionItem)
-                await submitRecommendation(pageHash, submissionItem, type, descriptionRef.current.value).then(() => {
+                await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
                     setSelectedItem(null);
                     setShowSelection(false);
-                    retrieveProfileRecommendations(pageHash).then(res => setRecs(res));
+                    retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
                 });
             }
 
@@ -376,7 +375,7 @@ const Profile = () => {
     const ArtistAnalysis = (props) => {
         const {artist} = props;
 
-        const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState([]);
+        const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState(null);
 
         useEffect(() => {
             const tracks = playlists.map(e => e.tracks).flat(1);
@@ -386,26 +385,31 @@ const Profile = () => {
         }, [])
 
         if (artist.hasOwnProperty("artist_id")) {
-            const orderedAlbums = artistsAlbumsWithLikedSongs.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
+            const orderedAlbums = artistsAlbumsWithLikedSongs?.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
             return (
                 <div className={'analysis'}>
 
-                    {orderedAlbums.length > 0 ?
-                        <>
-                            {
-                                orderedAlbums.map(function (album) {
-                                    return <StatBlock key={album.id}
-                                                      name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
-                                                      description={`${album.saved_songs.length} saved songs.`}
-                                                      value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
-                                                      alignment={'right'}/>
-                                })
-                            }
-                        </>
-
+                    {artistsAlbumsWithLikedSongs === null ?
+                        <LoadingIndicator />
                         :
-                        <p>There are no saved songs from this
-                            artist on {possessive} public profile, so an analysis is not available.</p>
+                        (
+                            orderedAlbums.length > 0 ?
+                                <>
+                                    {
+                                        orderedAlbums.map(function (album) {
+                                            return <StatBlock key={album.id}
+                                                              name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
+                                                              description={`${album.saved_songs.length} saved songs.`}
+                                                              value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
+                                                              alignment={'right'}/>
+                                        })
+                                    }
+                                </>
+
+                                :
+                                <p>There are no saved songs from this
+                                    artist on {possessive} public profile, so an analysis is not available.</p>
+                        )
                     }
                 </div>
             )
@@ -732,19 +736,7 @@ const Profile = () => {
         <>
             {!loaded || isError ? // Locked and loaded B)
                 !loaded ?
-                    <div style={{top: '40%', left: '0', right: '0', position: 'absolute'}}>
-                        <div className="lds-grid">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                        </div>
-                    </div>
+                    <LoadingIndicator />
                     :
                     <PageError icon={errorDetails.icon} description={errorDetails.description} />
                 :
@@ -774,7 +766,7 @@ const Profile = () => {
                                 <button
                                     className={'std-button'}
                                     onClick={() => {
-                                        unfollowUser(window.localStorage.getItem('user_id'), pageHash).then(() => {
+                                        unfollowUser(window.localStorage.getItem('user_id'), pageGlobalUserID).then(() => {
                                             setIsLoggedUserFollowing(false);
                                         });
                                     }}>
@@ -784,7 +776,7 @@ const Profile = () => {
                                 <button
                                     className={'std-button'}
                                     onClick={() => {
-                                        followUser(window.localStorage.getItem('user_id'), pageHash).then(() => {
+                                        followUser(window.localStorage.getItem('user_id'), pageGlobalUserID).then(() => {
                                             setIsLoggedUserFollowing(true);
                                         });
                                     }}>
@@ -825,7 +817,7 @@ const Profile = () => {
                                             onClick={() => {
                                                 const new_settings = {...settings, public: !settings.public};
                                                 setSettings(new_settings);
-                                                changeSettings(pageHash, new_settings);
+                                                changeSettings(pageGlobalUserID, new_settings);
                                             }}>{settings.public ? 'Public' : 'Private'}</button>
                                 </div>
                                 :
@@ -1014,7 +1006,7 @@ const Profile = () => {
                                 maxWidth: '1000px',
                                 width: '80%'
                             }}>
-                                <CommentSection pageHash={pageHash} isAdmin={isOwnPage} />
+                                <CommentSection sectionID={hashString(pageGlobalUserID)} isAdmin={isOwnPage} />
                             </div>
                         </div>
                     </div>
