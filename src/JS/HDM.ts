@@ -181,7 +181,7 @@ export const followUser = async function (primaryUserID : string, targetUserID :
         // Update the primary user's data to show they are following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
         // Update the target user's data to show they are being followed by the primary user
-        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res : FollowersInterface) => {
+        await getLocalDataByID("user_followers", hashString(targetUserID)).then(res => {
             let item = res;
             item.followers.push(primaryObj.user);
             updateLocalData("user_followers", item, item.id);
@@ -481,8 +481,8 @@ export const retrievePlaylists = async function (user_id : string) {
 
             promises.push(promise);
         }
-
-        return Promise.all(promises).then(tracksArrays => tracksArrays.flat().map(t => formatSong(t)));
+        // Some tracks can be returned as null
+        return Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null).map(t => formatSong(t)));
     });
 
     await Promise.all(playlistTrackPromises).then(tracksArrays => {
@@ -753,6 +753,7 @@ export const getSimilarArtists = async (id : string) => {
  * @param seed_genres
  * @param seed_tracks
  * @param limit
+ * @returns Array<Song>
  */
 export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tracks, limit = 20) => {
     let params = new URLSearchParams([

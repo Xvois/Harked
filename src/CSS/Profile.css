@@ -205,6 +205,8 @@ select.dropdown {
     font-family: "Inter Tight", sans-serif;
     text-align: right;
     overflow: hidden;
+    /* So it grows */
+    width: 0;
 }
 
 .block-wrapper {

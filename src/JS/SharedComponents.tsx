@@ -56,14 +56,16 @@ export const SpotifyLink = (props : {link: string, simple?: boolean}) => {
 )
 }
 
-export const PageError = (props : {icon : ReactJSXElement, description: string}) => {
-    const {icon, description} = props;
+export const PageError = (props : {icon : ReactJSXElement, description: string, errCode?: string}) => {
+    const {icon, description, errCode} = props;
+    console.log(props);
     return (
-        <div style={{top: '50%', left: '0', right: '0', position: 'absolute'}}>
-            <div className="centre" style={{textAlign: 'center'}}>
-                {icon}
-                <h1>{description}</h1>
-            </div>
+        <div className="centre" style={{textAlign: 'center', width: '75%'}}>
+            {icon}
+            <h1>{description}</h1>
+            {errCode && (
+                <p>ERR CODE: {errCode}</p>
+            )}
         </div>
     )
 }
@@ -126,7 +128,52 @@ export function LoadingIndicator () {
     )
 }
 
-// PAGE HASH SHOULD BE CHANGED SO THE COMMENT SECTION CAN BE USED ON ANY PAGE
+export function ValueIndicator(props : {value: number, diameter?: number}) {
+    const {value, diameter = 70} = props;
+    const padding = 5 * (diameter / 70);
+
+    return (
+        <div style={{
+            padding: '3px',
+            border: `3px solid var(--primary-colour)`,
+            borderRadius: '100%',
+            height: 'max-content',
+            width: 'max-content',
+            margin: 'auto'
+        }}>
+            <div style={{
+                position: 'relative',
+                height: `${diameter}px`,
+                width: `${diameter}px`,
+                padding: `${padding}px`,
+                borderRadius: '100%',
+                overflow: 'hidden'
+            }}>
+                <div style={{
+                    zIndex: '0',
+                    transform: `translate(0, ${(diameter + 2 * padding) - ((value / 100) * (diameter + 2 * padding))}px)`,
+                    position: 'absolute',
+                    height: `${diameter + 2 * padding}px`,
+                    width: `${diameter + 2 * padding}px`,
+                    background: 'var(--accent-colour)',
+                    top: '0',
+                    left: '0',
+                    animation: 'rise 1s ease-out'
+                }}/>
+                <div style={{position: 'relative', width: '100%', height: '100%'}}>
+                    <div className={'centre'}>
+                        <h2 style={{
+                            margin: '0',
+                            color: 'var(--primary-colour)',
+                            fontSize: `${(diameter / 70) * 24}px`
+                        }}>{Math.round(value)}%</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export function CommentSection (props : {sectionID : string, isAdmin : boolean}) {
     // An admin will be able to delete all comments in the comment section
     const {sectionID, isAdmin} = props;
