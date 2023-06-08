@@ -5,8 +5,8 @@
 import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import PocketBase from "pocketbase";
-import {formatUser} from "./PDM";
-import {hashString, putLocalData} from "./API";
+import {formatUser, hashString} from "./HDM.ts";
+import {putLocalData} from "./API.ts";
 
 // TODO: FIX ISSUE THAT STATES THAT USERNAME MUST BE IN VALID FORMAT
 // LIKELY AN ISSUE WITH USERNAMES WITH SPACES
@@ -75,7 +75,8 @@ function Authentication() {
                             putLocalData("user_following", following);
                             putLocalData("settings", settings);
                             putLocalData("profile_data", profile_data);
-                            putLocalData("profile_comments", profile_comments);
+                            // Automatically generate a comment section for the profile
+                            putLocalData("comment_section", profile_comments);
                             putLocalData("profile_recommendations", profile_recommendations);
                             const redirectPath = window.localStorage.getItem("redirect");
                             if(redirectPath){

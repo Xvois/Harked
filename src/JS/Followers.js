@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { retrieveFollowers, isLoggedIn, followUser, unfollowUser, retrieveFollowing, retrieveUser } from './PDM';
+import { retrieveFollowers, isLoggedIn, followUser, unfollowUser, retrieveFollowing, retrieveUser } from './HDM.ts';
 import './../CSS/Followers.css'
 
 const FollowersComponent = () => {

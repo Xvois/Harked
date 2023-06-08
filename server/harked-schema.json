@@ -1,42 +1,5 @@
 [
   {
-    "id": "dg0snz7hl0acyxy",
-    "name": "settings",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "vtl6g1z0",
-        "name": "user",
-        "type": "relation",
-        "system": false,
-        "required": false,
-        "options": {
-          "collectionId": "jjliyfj8n5u4g1t",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": []
-        }
-      },
-      {
-        "id": "9axqror8",
-        "name": "public",
-        "type": "bool",
-        "system": false,
-        "required": false,
-        "options": {}
-      }
-    ],
-    "indexes": [],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "",
-    "updateRule": "@request.auth.user_id = @request.data.user.user_id",
-    "deleteRule": null,
-    "options": {}
-  },
-  {
     "id": "w3nfs9zv02kgc7h",
     "name": "datapoints",
     "type": "base",
@@ -217,91 +180,6 @@
     ],
     "indexes": [
       "CREATE UNIQUE INDEX `idx_23MjoPi` ON `genres` (`genre`)"
-    ],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "@request.auth.verified = true",
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "pv9gax2vt2oiyjz",
-    "name": "songs",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "rcgaknkm",
-        "name": "song_id",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "4sgsbmet",
-        "name": "title",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "xz8gedos",
-        "name": "artists",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "d5kpanvycoam44i",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": null,
-          "displayFields": []
-        }
-      },
-      {
-        "id": "opin3etl",
-        "name": "link",
-        "type": "url",
-        "system": false,
-        "required": true,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "nn4c9ipt",
-        "name": "image",
-        "type": "url",
-        "system": false,
-        "required": false,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "yup9hhok",
-        "name": "analytics",
-        "type": "json",
-        "system": false,
-        "required": true,
-        "options": {}
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_XSWBKl2` ON `songs` (`song_id`)"
     ],
     "listRule": "",
     "viewRule": "",
@@ -519,36 +397,236 @@
           "maxSelect": 1,
           "displayFields": []
         }
-      },
-      {
-        "id": "whqmfqgc",
-        "name": "profile_comments_id",
-        "type": "relation",
-        "system": false,
-        "required": false,
-        "options": {
-          "collectionId": "w4ktfueeqbkf3yf",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": []
-        }
       }
     ],
     "indexes": [],
     "listRule": null,
     "viewRule": "",
     "createRule": "",
-    "updateRule": "@request.auth.verified = true",
+    "updateRule": "@request.auth.user_id = @request.data.user.user_id",
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "dg0snz7hl0acyxy",
+    "name": "settings",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "vtl6g1z0",
+        "name": "user",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "jjliyfj8n5u4g1t",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "9axqror8",
+        "name": "public",
+        "type": "bool",
+        "system": false,
+        "required": false,
+        "options": {}
+      }
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "@request.auth.user_id = @request.data.user.user_id",
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "q2zz606poz94gl0",
+    "name": "profile_recommendations",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "ajxncrrs",
+        "name": "user",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "jjliyfj8n5u4g1t",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "mn48juty",
+        "name": "recommendations",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "zix5suasepyhgmq",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": null,
+          "displayFields": []
+        }
+      }
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
     "deleteRule": "",
     "options": {}
   },
   {
-    "id": "w4ktfueeqbkf3yf",
-    "name": "profile_comments",
+    "id": "zix5suasepyhgmq",
+    "name": "recommendations",
     "type": "base",
     "system": false,
     "schema": [
+      {
+        "id": "jn6tgjaw",
+        "name": "item",
+        "type": "json",
+        "system": false,
+        "required": false,
+        "options": {}
+      },
+      {
+        "id": "ekto2r4t",
+        "name": "description",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      }
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "id": "pv9gax2vt2oiyjz",
+    "name": "songs",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "rcgaknkm",
+        "name": "song_id",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "4sgsbmet",
+        "name": "title",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "xz8gedos",
+        "name": "artists",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "d5kpanvycoam44i",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": null,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "opin3etl",
+        "name": "link",
+        "type": "url",
+        "system": false,
+        "required": true,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "nn4c9ipt",
+        "name": "image",
+        "type": "url",
+        "system": false,
+        "required": false,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "yup9hhok",
+        "name": "analytics",
+        "type": "json",
+        "system": false,
+        "required": false,
+        "options": {}
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_XSWBKl2` ON `songs` (`song_id`)"
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "@request.auth.verified = true",
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "w4ktfueeqbkf3yf",
+    "name": "comment_section",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "hnrxkiev",
+        "name": "owner",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "jjliyfj8n5u4g1t",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
       {
         "id": "d1umjznl",
         "name": "comments",
@@ -567,9 +645,9 @@
     "indexes": [],
     "listRule": "",
     "viewRule": "",
-    "createRule": "@request.auth.verified = true",
+    "createRule": "@request.auth.user_id = @request.data.user.user_id",
     "updateRule": "@request.auth.verified = true",
-    "deleteRule": "@request.auth.verified = true",
+    "deleteRule": null,
     "options": {}
   }
 ]
