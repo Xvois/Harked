@@ -67,9 +67,8 @@ function Homepage() {
                         <></>
                     }
                 </div>
-                <h4 style={{color: 'red'}}>This is a development branch test. Major revisions are being made to the database. Your profile data may be lost. The site may not function at times.</h4>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.8 Refactor branch</p>
+                    v1.3.8</p>
             </div>
         </div>
     );
