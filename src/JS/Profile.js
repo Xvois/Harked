@@ -644,7 +644,7 @@ const Profile = () => {
     const [followers, setFollowers] = useState([]);
     const [allDatapoints, setAllDatapoints] = useState([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
-    const [playlists, setPlaylists] = useState(null);
+    const [playlists, setPlaylists] = useState([]);
     const [possessive, setPossessive] = useState('');
     const [settings, setSettings] = useState({});
     const [profileData, setProfileData] = useState({});
@@ -717,18 +717,20 @@ const Profile = () => {
                 console.info('Is not own page.');
                 followsUser(loggedUserID, pageGlobalUserID).then(f => setIsLoggedUserFollowing(f));
             }
-            loadPromises.push(
+        }
+
+        Promise.all(loadPromises)
+            .then(() =>
+            {
+                setLoaded(true);
                 retrievePlaylists(pageGlobalUserID).then(function (p) {
                     p.sort((a, b) => b.tracks.length - a.tracks.length);
                     setPlaylists(p);
                     console.info("Playlists retrieved!");
                     console.log('Playlists: ', p);
-                }),
-            );
-        }
-
-        Promise.all(loadPromises)
-            .then(() => setLoaded(true))
+                })
+            }
+            )
             .catch((error) => {
                 console.error("Error loading page:", error);
                 // Handle errors appropriately
@@ -871,7 +873,7 @@ const Profile = () => {
                                         <div style={{maxWidth: '400px', textAlign: 'right'}}>
                                         </div>
                                     </div>
-                                    <ShowcaseList selectedDatapoint={selectedDatapoint} pageUser={pageUser} playlists={playlists} possessive={possessive} datapoint={selectedDatapoint} type={type} start={0} end={9}/>
+                                    <ShowcaseList selectedDatapoint={selectedDatapoint} selectedPrevDatapoint={selectedPrevDatapoint} pageUser={pageUser} playlists={playlists} possessive={possessive} datapoint={selectedDatapoint} type={type} start={0} end={9}/>
                                     <div className={'section-footer'}>
                                         {type === 'songs' ?
                                             <div style={{textAlign: 'left'}}>
