@@ -553,49 +553,6 @@
     "options": {}
   },
   {
-    "id": "w4ktfueeqbkf3yf",
-    "name": "comment_section",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "hnrxkiev",
-        "name": "owner",
-        "type": "relation",
-        "system": false,
-        "required": false,
-        "options": {
-          "collectionId": "jjliyfj8n5u4g1t",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": []
-        }
-      },
-      {
-        "id": "d1umjznl",
-        "name": "comments",
-        "type": "relation",
-        "system": false,
-        "required": false,
-        "options": {
-          "collectionId": "v7rgjynrw2og1i9",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": null,
-          "displayFields": []
-        }
-      }
-    ],
-    "indexes": [],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "@request.auth.user_id = @request.data.user.user_id && @request.auth.verified = true",
-    "updateRule": "@request.auth.verified = true && @request.data.comments.user.user_id = @request.auth.user_id",
-    "deleteRule": null,
-    "options": {}
-  },
-  {
     "id": "v7rgjynrw2og1i9",
     "name": "comments",
     "type": "base",
@@ -648,6 +605,49 @@
     "createRule": "@request.auth.verified = true && @request.data.user.user_id = @request.auth.user_id",
     "updateRule": "@request.auth.verified = true && @request.data.user.user_id = @request.auth.user_id",
     "deleteRule": "",
+    "options": {}
+  },
+  {
+    "id": "w4ktfueeqbkf3yf",
+    "name": "comment_section",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "hnrxkiev",
+        "name": "owner",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "jjliyfj8n5u4g1t",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "d1umjznl",
+        "name": "comments",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "v7rgjynrw2og1i9",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": null,
+          "displayFields": []
+        }
+      }
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "@request.auth.user_id = @request.data.user.user_id && @request.auth.verified = true",
+    "updateRule": "@request.auth.verified = true",
+    "deleteRule": null,
     "options": {}
   }
 ]
