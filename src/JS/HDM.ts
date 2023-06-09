@@ -608,16 +608,19 @@ const formatDatapoint = function (d : Datapoint) {
 }
 
 export const retrieveAllDatapoints = async function (user_id) {
+    await disableAutoCancel();
     const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
     const valid_exists = await validDPExists(user_id, "long_term");
     if(valid_exists){
         const promises = terms.map(term => retrieveDatapoint(user_id, term));
         const datapoints = await Promise.all(promises);
+        await enableAutoCancel();
         return datapoints;
     }else{
         await hydrateDatapoints();
         const promises = terms.map(term => retrieveDatapoint(user_id, term));
         const datapoints = await Promise.all(promises);
+        await enableAutoCancel();
         return datapoints;
     }
 
@@ -626,9 +629,12 @@ export const retrieveAllDatapoints = async function (user_id) {
 
 
 export const retrievePrevAllDatapoints = async function (user_id) {
+    console.info('Getting all previous datapoints.')
+    await disableAutoCancel();
     const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
     const promises = terms.map(term => retrievePrevDatapoint(user_id, term));
     const datapoints = await Promise.all(promises);
+    await enableAutoCancel();
     return datapoints;
 }
 

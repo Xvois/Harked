@@ -371,7 +371,7 @@ export const getDelayedDatapoint = async (user_id, term, delay) => {
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
     }).catch(handleFetchException);
-    return  dps[delay] ?? null;
+    return  dps[delay];
 }
 
 
