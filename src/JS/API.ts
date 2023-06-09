@@ -276,6 +276,20 @@ export const songsToRefIDs = async (songs) => {
     return ids;
 };
 
+export const validDPExists = async (user_id, term) => {
+    // Calculate the date of a week ago.
+    const d = new Date();
+    const WEEK_IN_MILLISECONDS = 6.048e+8;
+    d.setMilliseconds(d.getMilliseconds() - WEEK_IN_MILLISECONDS);
+
+    return await pb.collection('datapoints').getFirstListItem(`created >= "${d.toISOString()}" && term="${term}" && owner.user_id = "${user_id}"`)
+        .catch(function (err) {
+            if (err.status !== 404) {
+                console.warn(err);
+            }
+        });
+}
+
 
 
 
@@ -284,19 +298,7 @@ export const postDatapoint = async (datapoint) => {
     pb.autoCancellation(false);
     console.info('Posting datapoint.')
 
-    // Calculate the date of a week ago.
-    const d = new Date();
-    const WEEK_IN_MILLISECONDS = 6.048e+8;
-    d.setMilliseconds(d.getMilliseconds() - WEEK_IN_MILLISECONDS);
-
-    // Check if a valid datapoint already exists in the database for the given term and within the past week.
-    const valid_exists = await pb.collection('datapoints').getFirstListItem(`created >= "${d.toISOString()}" && term="${datapoint.term}" && owner.user_id = "${datapoint.user_id}"`)
-        .catch(function (err) {
-            if (err.status !== 404) {
-                console.warn(err);
-            }
-        })
-
+    const valid_exists = await validDPExists(datapoint.user_id, datapoint.term);
     // If a valid datapoint already exists, log a message and return without creating a new datapoint.
     if (!!valid_exists) {
         console.info("Attempted to post new datapoint, but valid already exists.");

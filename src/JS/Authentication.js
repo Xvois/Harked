@@ -25,14 +25,14 @@ export function handleLogin() {
 }
 
 export function reAuthenticate() {
-    const origin = (new URL).origin
+    const url = new URL(window.location);
+
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", `${origin}/authentication`],
+        ["redirect_uri", `${url.origin}/authentication`],
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])
-    const url = new URL(window.location);
     window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
     window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }

@@ -746,23 +746,18 @@ const Profile = () => {
                 }),
             ];
 
-            const laggedLoadPromises = [];
-            if(isLoggedIn()){
-                loadPromises.push(
-                    retrievePlaylists(loadID).then(function (p) {
-                        p.sort((a, b) => b.tracks.length - a.tracks.length);
-                        setPlaylists(p);
-                        console.info("Playlists retrieved!");
-                        console.log('Playlists: ', p);
-                    })
-                );
-            }
-
             Promise.all(loadPromises)
                 .then(() =>
                     {
                         setLoaded(true);
-                        Promise.all(laggedLoadPromises);
+                        if(isLoggedIn()){
+                            retrievePlaylists(loadID).then(function (p) {
+                                p.sort((a, b) => b.tracks.length - a.tracks.length);
+                                setPlaylists(p);
+                                console.info("Playlists retrieved!");
+                                console.log('Playlists: ', p);
+                            })
+                        }
                     }
                 )
                 .catch((error) => {

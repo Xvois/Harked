@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { retrieveFollowers, isLoggedIn, followUser, unfollowUser, retrieveFollowing, retrieveUser } from './HDM.ts';
+import {
+    retrieveFollowers,
+    isLoggedIn,
+    followUser,
+    unfollowUser,
+    retrieveFollowing,
+    retrieveUser,
+    retrieveLoggedUserID
+} from './HDM.ts';
 import './../CSS/Followers.css'
 
 const FollowersComponent = () => {
@@ -12,7 +20,7 @@ const FollowersComponent = () => {
         const fetchData = async () => {
             let targetUserID = window.location.hash.substr(1);
             if (targetUserID === 'me') {
-                targetUserID = window.localStorage.getItem('user_id');
+                targetUserID = await retrieveLoggedUserID();
                 window.location.replace(`/followers#${targetUserID}`)
             }
 

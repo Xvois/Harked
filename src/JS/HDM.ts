@@ -12,7 +12,7 @@ import {
     getUser,
     postDatapoint,
     putLocalData, songsToRefIDs,
-    updateLocalData
+    updateLocalData, validDPExists
 } from "./API.ts";
 import {getLIName} from "./Analysis";
 
@@ -547,7 +547,6 @@ export const retrieveDatapoint = async function (user_id : string, term : "short
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
-    console.log(currDatapoint);
     if (currDatapoint === undefined && timeSensitive) {
         await hydrateDatapoints().then(async () =>
             currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
@@ -600,25 +599,30 @@ const formatDatapoint = function (d : Datapoint) {
 }
 
 export const retrieveAllDatapoints = async function (user_id) {
-    const terms : Array<"short_term" | "medium_term" | "long_term">  = ["short_term", "medium_term", "long_term"];
-    const datapoints = [];
-    for (const term of terms) {
-        const datapoint = await retrieveDatapoint(user_id, term);
-        datapoints.push(datapoint);
+    const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
+    const valid_exists = await validDPExists(user_id, "long_term");
+    if(valid_exists){
+        const promises = terms.map(term => retrieveDatapoint(user_id, term));
+        const datapoints = await Promise.all(promises);
+        return datapoints;
+    }else{
+        await hydrateDatapoints();
+        const promises = terms.map(term => retrieveDatapoint(user_id, term));
+        const datapoints = await Promise.all(promises);
+        return datapoints;
     }
-    return datapoints;
+
 }
+
 
 
 export const retrievePrevAllDatapoints = async function (user_id) {
-    const terms : Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
-    const datapoints = [];
-    for (const term of terms) {
-        const datapoint = await retrievePrevDatapoint(user_id, term);
-        datapoints.push(datapoint);
-    }
+    const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
+    const promises = terms.map(term => retrievePrevDatapoint(user_id, term));
+    const datapoints = await Promise.all(promises);
     return datapoints;
 }
+
 
 function chunks(array, size) {
     const result = [];
@@ -819,12 +823,11 @@ export const hydrateDatapoints = async function () {
     const datapoints = await Promise.all(datapointPromises);
 
     console.info("Posting datapoints...");
-    for (let i = 0; i < datapoints.length; i++) {
-        const datapoint = datapoints[i];
-        await postDatapoint(datapoint).then(function () {
+    await Promise.all(datapoints.map(datapoint => postDatapoint(datapoint)
+        .then(() => {
             console.info(datapoint.term + " success!");
-        });
-    }
+        })
+    ));
 
     console.info("Hydration over.");
     console.timeEnd("Hydration."); // End the timer and display the elapsed time
