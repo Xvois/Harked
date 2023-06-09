@@ -58,7 +58,6 @@ function Authentication() {
                 const id = pb.authStore.model.id;
                 const user = authData.meta.rawUser;
                 window.localStorage.setItem('access-token', authData.meta.accessToken);
-                window.localStorage.setItem('user_id', user.id);
                 formatUser(user).then(function (fUser) {
                     // TODO: TEMP FIX
                     fUser.username = fUser.username.replace(' ', '-');

@@ -22,7 +22,7 @@ import {
     retrieveSettings, retrieveSongAnalytics,
     retrieveUser,
     submitRecommendation,
-    unfollowUser, hashString, retrieveDatapoint
+    unfollowUser, hashString, retrieveDatapoint, retrieveUserID, retrieveLoggedUserID
 } from './HDM.ts';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
@@ -88,6 +88,10 @@ const ShowcaseListItem = (props) => {
     const [recommendations, setRecommendations] = useState(null);
     const [seeRecommendations, setSeeRecommendations] = useState(false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
+
+    useEffect(() => {
+        setExpanded(index===0);
+    }, [index])
 
     const handleRecommendations = () => {
         if (recommendations === null) {
@@ -244,21 +248,20 @@ const ShowcaseListItem = (props) => {
 }
 
 function ComparisonLink(props) {
-    const {pageUser, pageHash, longTermDP} = props;
-    const loggedID = window.localStorage.getItem("user_id");
+    const {pageUser, pageHash, loggedUserID, longTermDP} = props;
     const [loggedDP, setLoggedDP] = useState(null);
 
     useEffect(() => {
-        retrieveDatapoint(loggedID, "long_term").then(res => setLoggedDP(res));
+        retrieveDatapoint(loggedUserID, "long_term").then(res => setLoggedDP(res));
     }, [])
 
     return (
-        <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
+        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto'}}>
             <div style={{textAlign: 'right', marginLeft: 'auto'}}>
                 <h3 style={{margin: 0}}>Compare</h3>
                 <p style={{margin: '0 0 5px 0'}}>See how your stats stack up against {pageUser.username}</p>
                 <a className={'std-button'} style={{marginLeft: 'auto'}}
-                   href={`/compare#${window.localStorage.getItem('user_id')}&${pageHash}`}>Compare</a>
+                   href={`/compare#${loggedUserID}&${pageHash}`}>Compare</a>
             </div>
             <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)} diameter={50} />
         </div>
@@ -625,8 +628,6 @@ const Profile = () => {
     const simpleDatapoints = ["artists", "songs", "genres"]
     const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
     const pageHash = window.location.hash.split("#")[1];
-    const isOwnPage = isLoggedIn() ? (pageHash === window.localStorage.getItem('user_id') || pageHash === 'me') : false
-    const pageGlobalUserID = isOwnPage ? window.localStorage.getItem('user_id') : pageHash;
 
     const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
     // The datapoint that is selected for viewing
@@ -637,9 +638,12 @@ const Profile = () => {
     const [termIndex, setTermIndex] = useState(2);
     const [loaded, setLoaded] = useState(false);
     const [isLoggedUserFollowing, setIsLoggedUserFollowing] = useState(null);
+    const [loggedUserID, setLoggedUserID] = useState(null);
 
     // Uninitialised variables
     const [pageUser, setPageUser] = useState(null);
+    const [isOwnPage, setIsOwnPage] = useState(false);
+    const [pageGlobalUserID, setPageGlobalUserID] = useState(null);
     const [chipData, setChipData] = useState([]);
     const [followers, setFollowers] = useState([]);
     const [allDatapoints, setAllDatapoints] = useState([]);
@@ -663,85 +667,114 @@ const Profile = () => {
 
 
     const loadPage = useCallback(() => {
-        const loadPromises = [
-            retrieveUser(pageGlobalUserID).then(function (user) {
-                setPageUser(user);
-                retrieveFollowers(user.user_id).then(f => setFollowers(f));
-                if (!isOwnPage) {
-                    setPossessive(user.username + "'s");
-                } else {
-                    setPossessive("your");
-                }
-                console.info("User retrieved!");
-            }),
-            retrieveAllDatapoints(pageGlobalUserID).then(function (datapoints) {
-                if (datapoints.some(d => d === null)) {
-                    const indexes = getAllIndexes(datapoints, null);
-                    if (indexes.length === 3) {
-                        console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.");
-                        setIsError(true);
-                        setErrorDetails({ icon: <ReportGmailerrorredIcon fontSize={'large'} />, description: 'We do not have enough information about this user to generate a profile for them.', errCode: 'COMP TERM ELIMINATION'});
 
+        // Resolve logged user's information
+        // and context of page
+        const resolveContext = async () => {
+            // The ID we will use for loading references
+            let loadID;
+            if(isLoggedIn()){
+                await retrieveLoggedUserID().then(id => {
+                    // Are we on our page and don't know it?
+                    if(id === pageHash){
+                        window.location = 'profile#me';
+                        // Are we on our own page and know it?
+                    }else if(pageHash === 'me'){
+                        setIsOwnPage(true);
+                        loadID = id;
+                        setPageGlobalUserID(id);
+                        // Are we on someone else's page?
+                    }else{
+                        followsUser(id, pageHash).then(f => setIsLoggedUserFollowing(f));
+                        loadID = pageHash;
+                        setPageGlobalUserID(pageHash);
+                        setLoggedUserID(id);
                     }
-                    let termsCopy = terms;
-                    indexes.forEach(i => termsCopy[i] = null);
-                    setTerms(termsCopy);
-                }
-                setAllDatapoints(datapoints);
-                setSelectedDatapoint(datapoints[termIndex]);
-                setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
-                console.info("Datapoints retrieved!");
-            }),
-            retrievePrevAllDatapoints(pageGlobalUserID, 1).then(function (datapoints) {
-                setAllPreviousDatapoints(datapoints);
-                setSelectedPrevDatapoint(datapoints[2]);
-                console.info("Previous datapoints retrieved!");
-            }),
-            retrieveSettings(pageGlobalUserID).then(function (s) {
-                setSettings(s);
-                if (!s.public && !isOwnPage) {
-                    console.info("LOCKED PAGE", settings);
-                    setIsError(true);
-                    setErrorDetails({ icon: <LockIcon fontSize={'large'} />, description: 'This profile is private.' });
-                }
-            }),
-            retrieveProfileData(pageGlobalUserID).then(function (d) {
-                setProfileData(d);
-            }),
-        ];
-
-        // Behavior for if the user is logged in
-        if (isLoggedIn()) {
-            const loggedUserID = window.localStorage.getItem('user_id');
-            if (!isOwnPage) {
-                console.info('Is not own page.');
-                followsUser(loggedUserID, pageGlobalUserID).then(f => setIsLoggedUserFollowing(f));
+                })
+            }else{
+                setPageGlobalUserID(pageHash)
+                loadID = pageHash;
             }
+            return loadID;
         }
 
-        Promise.all(loadPromises)
-            .then(() =>
-            {
-                setLoaded(true);
-                retrievePlaylists(pageGlobalUserID).then(function (p) {
-                    p.sort((a, b) => b.tracks.length - a.tracks.length);
-                    setPlaylists(p);
-                    console.info("Playlists retrieved!");
-                    console.log('Playlists: ', p);
-                })
+        resolveContext().then((loadID) => {
+
+            const loadPromises = [
+                retrieveUser(loadID).then(function (user) {
+                    setPageUser(user);
+                    retrieveFollowers(user.user_id).then(f => setFollowers(f));
+                    if (!isOwnPage) {
+                        setPossessive(user.username + "'s");
+                    } else {
+                        setPossessive("your");
+                    }
+                    console.info("User retrieved!");
+                }),
+                retrieveAllDatapoints(loadID).then(function (datapoints) {
+                    if (datapoints.some(d => d === null)) {
+                        const indexes = getAllIndexes(datapoints, null);
+                        if (indexes.length === 3) {
+                            console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.");
+                            setIsError(true);
+                            setErrorDetails({ icon: <ReportGmailerrorredIcon fontSize={'large'} />, description: 'We do not have enough information about this user to generate a profile for them.', errCode: 'COMP TERM ELIMINATION'});
+                        }
+                        let termsCopy = terms;
+                        indexes.forEach(i => termsCopy[i] = null);
+                        setTerms(termsCopy);
+                    }
+                    setAllDatapoints(datapoints);
+                    setSelectedDatapoint(datapoints[termIndex]);
+                    setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
+                    console.info("Datapoints retrieved!");
+                }),
+                retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
+                    setAllPreviousDatapoints(datapoints);
+                    setSelectedPrevDatapoint(datapoints[2]);
+                    console.info("Previous datapoints retrieved!");
+                }),
+                retrieveSettings(loadID).then(function (s) {
+                    setSettings(s);
+                    if (!s.public && !isOwnPage) {
+                        console.info("LOCKED PAGE", settings);
+                        setIsError(true);
+                        setErrorDetails({ icon: <LockIcon fontSize={'large'} />, description: 'This profile is private.' });
+                    }
+                }),
+                retrieveProfileData(loadID).then(function (d) {
+                    setProfileData(d);
+                }),
+            ];
+
+            const laggedLoadPromises = [];
+            if(isLoggedIn()){
+                loadPromises.push(
+                    retrievePlaylists(loadID).then(function (p) {
+                        p.sort((a, b) => b.tracks.length - a.tracks.length);
+                        setPlaylists(p);
+                        console.info("Playlists retrieved!");
+                        console.log('Playlists: ', p);
+                    })
+                );
             }
-            )
-            .catch((error) => {
-                console.error("Error loading page:", error);
-                // Handle errors appropriately
-            });
+
+            Promise.all(loadPromises)
+                .then(() =>
+                    {
+                        setLoaded(true);
+                        Promise.all(laggedLoadPromises);
+                    }
+                )
+                .catch((error) => {
+                    console.error("Error loading page:", error);
+                    // Handle errors appropriately
+                });
+
+        })
+
     }, []);
 
     useEffect(() => {
-        // Redirect if attempting to load own page & not identified as such initially
-        if (window.localStorage.getItem('user_id') === pageHash) {
-            window.location = 'profile#me';
-        }
         // Load the page
         loadPage();
     }, [loadPage]);
@@ -754,10 +787,10 @@ const Profile = () => {
     return (
         <>
             {!loaded || isError ? // Locked and loaded B)
-                !loaded ?
-                    <LoadingIndicator />
-                    :
+                isError ?
                     <PageError icon={errorDetails.icon} description={errorDetails.description} errCode={errorDetails.errCode} />
+                    :
+                    <LoadingIndicator />
                 :
                 <div className='wrapper'>
                     <meta
@@ -785,7 +818,7 @@ const Profile = () => {
                                 <button
                                     className={'std-button'}
                                     onClick={() => {
-                                        unfollowUser(window.localStorage.getItem('user_id'), pageGlobalUserID).then(() => {
+                                        unfollowUser(loggedUserID, pageGlobalUserID).then(() => {
                                             setIsLoggedUserFollowing(false);
                                         });
                                     }}>
@@ -795,7 +828,7 @@ const Profile = () => {
                                 <button
                                     className={'std-button'}
                                     onClick={() => {
-                                        followUser(window.localStorage.getItem('user_id'), pageGlobalUserID).then(() => {
+                                        followUser(loggedUserID, pageGlobalUserID).then(() => {
                                             setIsLoggedUserFollowing(true);
                                         });
                                     }}>
@@ -821,7 +854,7 @@ const Profile = () => {
                             </div>
                         </div>
                         {!isOwnPage && isLoggedIn() ?
-                            <ComparisonLink pageHash={pageHash} pageUser={pageUser} longTermDP={allDatapoints[2]} />
+                            <ComparisonLink pageHash={pageHash} pageUser={pageUser} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} />
                             :
                             isOwnPage && isLoggedIn() ?
                                 <div style={{textAlign: 'right', marginLeft: 'auto'}}>
@@ -953,14 +986,14 @@ const Profile = () => {
                                 :
                                 playlists.length < 1 ?
                                     <div style={{
-                                        alignItems: 'center',
                                         display: 'flex',
-                                        flexDirection: 'column',
-                                        fontFamily: 'Inter Tight',
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        gap: '10px',
                                         maxWidth: '1000px',
                                         width: '80%'
                                     }}>
-                                        <p>It looks like there are no public playlists on {possessive} profile.</p>
+                                        <p style={{ color: "var(--secondary-colour)", marginRight: 'auto' }}>Looks like there aren't any public playlists.</p>
                                     </div>
                                     :
                                     <div style={{

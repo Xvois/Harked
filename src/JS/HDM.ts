@@ -518,7 +518,13 @@ export const formatUser = async function (user) {
  * @returns {boolean}
  */
 export const isLoggedIn = function () {
-    return !!(window.localStorage.getItem("user_id") && window.localStorage.getItem("access-token"));
+    return !!(window.localStorage.getItem("access-token"));
+}
+/**
+ * @returns user_id
+ */
+export const retrieveLoggedUserID = async function() {
+    return (await fetchData('me')).id;
 }
 
 /**
