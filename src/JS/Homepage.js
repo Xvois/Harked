@@ -5,7 +5,7 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers} from './HDM.ts';
+import {isLoggedIn, retrieveAllPublicUsers, retrieveAllUsers, retrieveLoggedUserID} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -25,7 +25,7 @@ function Homepage() {
     }
 
     const handleCompare = async () => {
-        const currUserID = window.localStorage.getItem('user_id')
+        const currUserID = await retrieveLoggedUserID();
         const IDs = (await retrieveAllPublicUsers()).map(e => e.user_id);
         let userID;
         do {
