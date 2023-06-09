@@ -704,7 +704,7 @@ const Profile = () => {
                 retrieveUser(loadID).then(function (user) {
                     setPageUser(user);
                     retrieveFollowers(user.user_id).then(f => setFollowers(f));
-                    if (!isOwnPage) {
+                    if (pageHash !== 'me') {
                         setPossessive(user.username + "'s");
                     } else {
                         setPossessive("your");
