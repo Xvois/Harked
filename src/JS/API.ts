@@ -20,7 +20,7 @@ export const fetchData = async (path) => {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         } else if (err.response.status === 401) {
-            //reAuthenticate();
+            reAuthenticate();
         } else if (err.response.status === 429) {
             alert("Too many API calls made! Take a deep breath and refresh the page.")
         } else if (err.response.status === 503) {
