@@ -317,6 +317,7 @@ export const postDatapoint = async (datapoint) => {
     await genresToRefIDs(datapoint.top_genres).then(ids => datapoint.top_genres = ids);
     console.timeEnd('genresToRefIDs');
     console.time('resolveOwner');
+    console.log(datapoint.user_id)
     await pb.collection('users').getFirstListItem(`user_id="${datapoint.user_id}"`).then(user => datapoint.owner = user.id);
     console.timeEnd('resolveOwner');
 

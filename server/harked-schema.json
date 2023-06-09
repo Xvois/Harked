@@ -645,7 +645,7 @@
     "indexes": [],
     "listRule": "",
     "viewRule": "",
-    "createRule": "@request.auth.user_id = @request.data.user.user_id && @request.auth.verified = true",
+    "createRule": "@request.auth.verified = true",
     "updateRule": "@request.auth.verified = true",
     "deleteRule": null,
     "options": {}

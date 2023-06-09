@@ -25,9 +25,10 @@ export function handleLogin() {
 }
 
 export function reAuthenticate() {
+    const origin = (new URL).origin
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", `https://harked.xyz/authentication`],
+        ["redirect_uri", `${origin}/authentication`],
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])
@@ -68,7 +69,7 @@ function Authentication() {
                             const following = {id: hash, user: id, following: []}
                             const settings = {id: hash, user: id, public: true}
                             const profile_data = {id: hash, user: id}
-                            const profile_comments = {id: hash, user: id, comments: []}
+                            const profile_comments = {id: hash, owner: id, comments: []}
                             const profile_recommendations = {id: hash, user: id, recommendations: []}
                             putLocalData("user_followers", followers);
                             putLocalData("user_following", following);

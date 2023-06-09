@@ -539,14 +539,16 @@ export const retrieveDatapoint = async function (user_id : string, term : "short
     let timeSensitive = false;
     // Are we accessing the logged-in user?
     // [Unknowingly]
-    if (user_id === window.localStorage.getItem("user_id")) {
+    const loggedUserID = await retrieveLoggedUserID();
+    if (user_id === loggedUserID) {
         timeSensitive = true
     }
     let currDatapoint : Datapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
-    if (!currDatapoint && timeSensitive) {
+    console.log(currDatapoint);
+    if (currDatapoint === undefined && timeSensitive) {
         await hydrateDatapoints().then(async () =>
             currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
                 console.warn("Error retrieving datapoint: ");
@@ -778,11 +780,12 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
 export const hydrateDatapoints = async function () {
     console.time("Hydration."); // Start a timer for performance measurement
     const terms : Array<"short_term" | "medium_term" | "long_term"> = ['short_term', 'medium_term', 'long_term'];
+    const loggedUserID = await retrieveLoggedUserID();
 
     const datapointPromises = terms.map(async (term) => {
         console.info("Hydrating: " + term);
         let datapoint = {
-            user_id: window.localStorage.getItem("user_id"),
+            user_id: loggedUserID,
             term: term,
             top_songs: [],
             top_artists: [],
