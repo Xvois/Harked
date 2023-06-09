@@ -5,7 +5,7 @@
 import {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import PocketBase from "pocketbase";
-import {formatUser, hashString} from "./HDM.ts";
+import {formatUser, hashString, userExists} from "./HDM.ts";
 import {putLocalData} from "./API.ts";
 
 // TODO: FIX ISSUE THAT STATES THAT USERNAME MUST BE IN VALID FORMAT
@@ -26,7 +26,6 @@ export function handleLogin() {
 
 export function reAuthenticate() {
     const url = new URL(window.location);
-
     const params = new URLSearchParams([
         ["client_id", "a0b3f8d150d34dd79090608621999149"],
         ["redirect_uri", `${url.origin}/authentication`],
@@ -62,30 +61,34 @@ function Authentication() {
                 formatUser(user).then(function (fUser) {
                     // TODO: TEMP FIX
                     fUser.username = fUser.username.replace(' ', '-');
-                    pb.collection('users').update(id, fUser)
-                        .then(() => {
-                            const hash = hashString(fUser.user_id);
-                            const followers = {id: hash, user: id, followers: []}
-                            const following = {id: hash, user: id, following: []}
-                            const settings = {id: hash, user: id, public: true}
-                            const profile_data = {id: hash, user: id}
-                            const profile_comments = {id: hash, owner: id, comments: []}
-                            const profile_recommendations = {id: hash, user: id, recommendations: []}
-                            putLocalData("user_followers", followers);
-                            putLocalData("user_following", following);
-                            putLocalData("settings", settings);
-                            putLocalData("profile_data", profile_data);
-                            // Automatically generate a comment section for the profile
-                            putLocalData("comment_section", profile_comments);
-                            putLocalData("profile_recommendations", profile_recommendations);
-                            const redirectPath = window.localStorage.getItem("redirect");
-                            if(redirectPath){
-                                window.localStorage.removeItem("redirect");
-                                redirect(redirectPath);
-                            }else{
-                                redirect('/profile#me');
-                            }
-                        });
+                    userExists(fUser.user_id).then(exists => {
+                        if(!exists){
+                            pb.collection('users').update(id, fUser)
+                                .then(() => {
+                                    const hash = hashString(fUser.user_id);
+                                    const followers = {id: hash, user: id, followers: []}
+                                    const following = {id: hash, user: id, following: []}
+                                    const settings = {id: hash, user: id, public: true}
+                                    const profile_data = {id: hash, user: id}
+                                    const profile_comments = {id: hash, owner: id, comments: []}
+                                    const profile_recommendations = {id: hash, user: id, recommendations: []}
+                                    putLocalData("user_followers", followers);
+                                    putLocalData("user_following", following);
+                                    putLocalData("settings", settings);
+                                    putLocalData("profile_data", profile_data);
+                                    // Automatically generate a comment section for the profile
+                                    putLocalData("comment_section", profile_comments);
+                                    putLocalData("profile_recommendations", profile_recommendations);
+                                });
+                        }
+                        const redirectPath = window.localStorage.getItem("redirect");
+                        if(redirectPath){
+                            window.localStorage.removeItem("redirect");
+                            redirect(redirectPath);
+                        }else{
+                            redirect('/profile#me');
+                        }
+                    })
                 })
             })
         } else {

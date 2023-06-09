@@ -223,6 +223,14 @@ export const retrieveFollowers = async function (user_id : string) {
         return [];
     }
 }
+/**
+ * Returns whether a user exists in the database.
+ * @param user_id
+ * @returns boolean
+ */
+export const userExists = async function (user_id : string) {
+    return !!(await getUser(user_id));
+}
 
 /**
  * Returns the user records who the target is following.
@@ -230,6 +238,7 @@ export const retrieveFollowers = async function (user_id : string) {
  * @returns {Array<User>}
  */
 export const retrieveFollowing = async function (user_id : string) {
+    console.log('retrieveFollowing called!')
     const res : FollowingRecord = await getLocalDataByID("user_following", hashString(user_id), "following");
     if (res.following.length > 0) {
         return res.expand.following;
