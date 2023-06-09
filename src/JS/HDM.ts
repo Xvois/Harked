@@ -548,10 +548,13 @@ export const retrieveDatapoint = async function (user_id : string, term : "short
     let timeSensitive = false;
     // Are we accessing the logged-in user?
     // [Unknowingly]
-    const loggedUserID = await retrieveLoggedUserID();
-    if (user_id === loggedUserID) {
-        timeSensitive = true
+    if(isLoggedIn()){
+        const loggedUserID = await retrieveLoggedUserID();
+        if (user_id === loggedUserID) {
+            timeSensitive = true
+        }
     }
+
     let currDatapoint : Datapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);

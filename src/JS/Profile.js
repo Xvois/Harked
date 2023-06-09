@@ -674,6 +674,7 @@ const Profile = () => {
             // The ID we will use for loading references
             let loadID;
             if(isLoggedIn()){
+                console.log('Context is of logged in user.')
                 await retrieveLoggedUserID().then(id => {
                     // Are we on our page and don't know it?
                     if(id === pageHash){

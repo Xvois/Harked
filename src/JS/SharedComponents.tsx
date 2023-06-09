@@ -2,7 +2,7 @@ import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {MutableRefObject, useEffect, useRef, useState} from "react";
 /* @ts-ignore */
-import {deleteComment, isLoggedIn, retrieveComments, submitComment, User, Comment} from "./HDM.ts"
+import {deleteComment, isLoggedIn, retrieveComments, submitComment, User, Comment, retrieveLoggedUserID} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
 
 export const StatBlock = (props: {name: string, description: string, value: number, alignment? : "left" | "right", shadow? : number}) => {
@@ -178,19 +178,21 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
     // An admin will be able to delete all comments in the comment section
     const {sectionID, isAdmin} = props;
     const [comments, setComments] = useState([]);
+    const [loggedUserID, setLoggedUserID] = useState(null)
     const valueRef = useRef(null) ; // Creating a reference for TextField Component
     const charLimit = 500;
-    const loggedIn = isLoggedIn();
-    const loggedUserID = loggedIn ? window.localStorage.getItem('user_id') : null;
 
     useEffect(() => {
+        if(isLoggedIn()){
+            retrieveLoggedUserID().then(id => setLoggedUserID(id));
+        }
         retrieveComments(sectionID).then(function(c) {
             setComments(c);
         })
     }, [])
 
     const handleSubmit = () => {
-        submitComment(window.localStorage.getItem("user_id"), sectionID, valueRef.current.value)
+        submitComment(loggedUserID, sectionID, valueRef.current.value)
             .then((c) => {
                 const newComments = comments.concat([c]);
                 setComments(newComments);
@@ -208,7 +210,7 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
 
     return (
         <>
-            {loggedIn && (
+            {isLoggedIn() && (
                 <div className="comment-submit-field">
                     <form noValidate autoComplete="off">
                         <div>
@@ -234,7 +236,7 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
             <div className="comments-wrapper">
                 {comments.length > 0 ? (
                     comments.map((c) => {
-                        const ownComment = loggedIn ? loggedUserID === c.user.user_id : false;
+                        const ownComment = isLoggedIn() ? loggedUserID === c.user.user_id : false;
                         return <CommentInstance key={c.id} item={c} onDelete={handleDelete} isDeletable={ownComment || isAdmin} />;
                     })
                 ) : (

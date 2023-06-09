@@ -47,21 +47,9 @@ const Search = (props) => {
             // Retrieve all public users
             const users = await retrieveAllPublicUsers();
 
-            // Get the current user's ID
-            let loggedUserID = null;
-
-            if (isLoggedIn()) {
-                loggedUserID = await retrieveLoggedUserID();
-            }
-
-            // Filter the users based on the current user's ID
-            const filteredUsers = loggedUserID !== null
-                ? users.filter(user => user.user_id !== loggedUserID)
-                : users;
-
             // Create a map of usernames to user objects for efficient lookup
             const usersMap = {};
-            filteredUsers.forEach(user => {
+            users.forEach(user => {
                 usersMap[user.username] = user;
             });
 
