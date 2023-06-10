@@ -5,24 +5,29 @@ import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
     changeSettings,
-    deleteComment, deleteRecommendation,
+    deleteRecommendation,
     followsUser,
     followUser,
-    getAlbumsWithTracks, getAllIndexes,
+    getAlbumsWithTracks,
+    getAllIndexes,
     getSimilarArtists,
     getTrackRecommendations,
+    hashString,
     isLoggedIn,
     retrieveAllDatapoints,
+    retrieveDatapoint,
     retrieveFollowers,
+    retrieveLoggedUserID,
     retrievePlaylists,
     retrievePrevAllDatapoints,
     retrieveProfileData,
     retrieveProfileRecommendations,
     retrieveSearchResults,
-    retrieveSettings, retrieveSongAnalytics,
+    retrieveSettings,
+    retrieveSongAnalytics,
     retrieveUser,
     submitRecommendation,
-    unfollowUser, hashString, retrieveDatapoint, retrieveUserID, retrieveLoggedUserID
+    unfollowUser
 } from './HDM.ts';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
@@ -32,7 +37,8 @@ import {
     calculateSimilarity,
     getAverageAnalytics,
     getItemAnalysis,
-    getItemIndexChange, getItemType,
+    getItemIndexChange,
+    getItemType,
     getLIDescription,
     getLIName,
     translateAnalytics
@@ -42,12 +48,12 @@ import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Fuse from "fuse.js";
 import {
-    SpotifyLink,
-    StatBlock,
-    PageError,
-    StyledField,
     CommentSection,
     LoadingIndicator,
+    PageError,
+    SpotifyLink,
+    StatBlock,
+    StyledField,
     ValueIndicator
 } from "./SharedComponents.tsx";
 
@@ -451,7 +457,7 @@ const Recommendation = (props) => {
         <div key={rec.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
             <div className={'supplemental-image'} style={{position: 'relative', height: '150px', width: '150px'}}>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{position: 'absolute', aspectRatio: '1', width: '100%', filter: 'blur(75px)', zIndex: '-1'}} />
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{aspectRatio: '1', width: '100%'}} />
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'} style={{aspectRatio: '1', width: '100%'}} />
             </div>
             <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
                 <p style={{margin: '0', textTransform: 'capitalize', color: 'var(--accent-colour)'}}>{type.slice(0, type.length - 1)}</p>
