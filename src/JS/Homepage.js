@@ -1,7 +1,7 @@
 // noinspection SpellCheckingInspection,JSValidateTypes
 
 /**
- * The home component. This deals with loggin in, out, checking the server status and
+ * The home component. This deals with logging in, out, checking the server status and
  * handelling a user declining the Spotify scopes.
  */
 
