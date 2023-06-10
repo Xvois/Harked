@@ -159,7 +159,6 @@ select.dropdown {
     height: 250px;
     max-width: 400px;
     flex-grow: 1;
-    animation: fadeIn 0.5s ease;
 }
 
 

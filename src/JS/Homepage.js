@@ -21,6 +21,19 @@ function Homepage() {
 
     const handleLogOut = () => {
         window.localStorage.clear();
+        if ('caches' in window) {
+            caches.delete('userIDCache').then(success => {
+                if (success) {
+                    console.log(`Cache 'userIDCache' has been cleared.`);
+                } else {
+                    console.log(`Cache 'userIDCache' does not exist.`);
+                }
+            }).catch(error => {
+                console.error(`Error while clearing cache 'userIDCache': ${error}`);
+            });
+        } else {
+            console.warn('The caches API is not supported in this browser.');
+        }
         setToken("");
     }
 

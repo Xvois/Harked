@@ -135,7 +135,37 @@ export function hashString(inputString) {
 /**
  * A mapping of the getUser method.
  */
-export const retrieveUser = getUser;
+export const retrieveUser = async function(user_id) {
+    const cacheName = 'userDataCache';
+    const cacheKey = `user_${user_id}`;
+
+    // Check if the result is in the cache
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const cachedResponse = await cacheStorage.match(cacheKey);
+
+        if (cachedResponse) {
+            const cachedData = await cachedResponse.json();
+            console.log(cachedData)
+            return cachedData;
+        }
+    }
+
+    // If not in cache, make the API request
+    const userData = await getUser(user_id);
+
+    // Cache the result
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const responseToCache = new Response(JSON.stringify(userData),{
+            headers: { 'Cache-Control': 'max-age=36000' }
+        });
+        await cacheStorage.put(cacheKey, responseToCache);
+    }
+
+    return userData;
+}
+
 
 /**
  * A boolean function that returns true if the currently logged-in user follows the target and false if not.
@@ -503,6 +533,7 @@ export const retrievePlaylists = async function (user_id : string) {
     return playlists;
 }
 
+
 /**
  * Formats a user object from spotify in to a formatted user object.
  * @returns User
@@ -533,9 +564,33 @@ export const isLoggedIn = function () {
  * @returns user_id
  */
 export const retrieveLoggedUserID = async function() {
-    return (await fetchData('me')).id;
-}
+    const cacheName = 'userIDCache';
+    const cacheKey = 'loggedUserID';
 
+    // Check if the result is in the cache
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const cachedResponse = await cacheStorage.match(cacheKey);
+
+        if (cachedResponse) {
+            const cachedData = await cachedResponse.json();
+            return cachedData;
+        }
+    }
+
+    // If not in cache, make the API request
+    const response = await fetchData('me');
+    const userID = response.id;
+
+    // Cache the result
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const responseToCache = new Response(JSON.stringify(userID));
+        await cacheStorage.put(cacheKey, responseToCache);
+    }
+
+    return userID;
+}
 /**
  * Returns a valid datapoint for a given user in a given term.
  * If the function does not get a valid datapoint from the database, it will hydrate the user's datapoints
@@ -611,35 +666,86 @@ const formatDatapoint = function (d : Datapoint) {
 }
 
 export const retrieveAllDatapoints = async function (user_id) {
+    const cacheName = 'datapointsCache';
+    const cacheKey = `allDatapoints_${user_id}`;
+
+    // Check if the result is in the cache
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const cachedResponse = await cacheStorage.match(cacheKey);
+
+        if (cachedResponse) {
+            const cachedData = await cachedResponse.json();
+            return cachedData;
+        }
+    }
+
     await disableAutoCancel();
     const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
     const valid_exists = await validDPExists(user_id, "long_term");
-    if(valid_exists){
+    let datapoints;
+
+    if (valid_exists) {
         const promises = terms.map(term => retrieveDatapoint(user_id, term));
-        const datapoints = await Promise.all(promises);
-        await enableAutoCancel();
-        return datapoints;
-    }else{
+        datapoints = await Promise.all(promises);
+    } else {
         await hydrateDatapoints();
         const promises = terms.map(term => retrieveDatapoint(user_id, term));
-        const datapoints = await Promise.all(promises);
-        await enableAutoCancel();
-        return datapoints;
+        datapoints = await Promise.all(promises);
     }
 
+    await enableAutoCancel();
+
+    // Cache the result with max age of 30 minutes
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const responseToCache = new Response(JSON.stringify(datapoints), {
+            headers: { 'Cache-Control': 'max-age=1800' }
+        });
+        await cacheStorage.put(cacheKey, responseToCache);
+    }
+
+    return datapoints;
 }
 
 
 
+
 export const retrievePrevAllDatapoints = async function (user_id) {
-    console.info('Getting all previous datapoints.')
+    const cacheName = 'prevDatapointsCache';
+    const cacheKey = `prevAllDatapoints_${user_id}`;
+
+    // Check if the result is in the cache
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const cachedResponse = await cacheStorage.match(cacheKey);
+
+        if (cachedResponse) {
+            const cachedData = await cachedResponse.json();
+            return cachedData;
+        }
+    }
+
+    console.info('Getting all previous datapoints.');
+
     await disableAutoCancel();
     const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
     const promises = terms.map(term => retrievePrevDatapoint(user_id, term));
     const datapoints = await Promise.all(promises);
     await enableAutoCancel();
+
+    // Cache the result
+    if ('caches' in window) {
+        const cacheStorage = await caches.open(cacheName);
+        const responseToCache = new Response(JSON.stringify(datapoints), {
+            headers: { 'Cache-Control': 'max-age=1800' }
+        });
+        await cacheStorage.put(cacheKey, responseToCache);
+    }
+
     return datapoints;
 }
+
 
 
 function chunks(array, size) {

@@ -84,7 +84,7 @@ const ShowcaseList = (props) => {
 const ShowcaseListItem = (props) => {
     const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type} = props;
 
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(index===0);
     const [recommendations, setRecommendations] = useState(null);
     const [seeRecommendations, setSeeRecommendations] = useState(false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
@@ -430,13 +430,15 @@ const ProfileRecommendations = (props) => {
                                         </span>
                                     </h2>
                                     <p style={{margin: '0'}}>{getLIDescription(e.item)}</p>
-                                    <p>
-                                        <em>
-                                            <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
-                                            {e.description}
-                                            <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
-                                        </em>
-                                    </p>
+                                    {e.description.length > 0 && (
+                                        <p>
+                                            <em>
+                                                <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                                                {e.description}
+                                                <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                                            </em>
+                                        </p>
+                                    )}
                                     {isOwnPage && (
                                         <div style={{margin: 'auto 0 0 auto'}}>
                                             <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}}
