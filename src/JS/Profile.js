@@ -456,7 +456,7 @@ const Recommendation = (props) => {
     return (
         <div key={rec.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
             <div className={'supplemental-image'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{position: 'absolute', aspectRatio: '1', width: '100%', filter: 'blur(75px)', zIndex: '-1'}} />
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{position: 'absolute', aspectRatio: '1', width: '100%', filter: 'blur(75px) brightness(100%)', zIndex: '-1'}} />
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'} style={{aspectRatio: '1', width: '100%'}} />
             </div>
             <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
