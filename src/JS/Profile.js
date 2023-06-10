@@ -65,7 +65,6 @@ const ShowcaseList = (props) => {
                             key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]}
                             onMouseEnter={() => setHoverItem(index)}
                             onMouseLeave={() => setHoverItem(-1)}
-                            tabIndex={0}
                             style={
                                 hoverItem !== -1 ?
                                     hoverItem === index ? {cursor: 'pointer'} : {opacity: '0.5'}
@@ -154,7 +153,7 @@ const ShowcaseListItem = (props) => {
 
     return (
         <div className={"showcase-list-item"}
-             tabIndex={1}
+             tabIndex={0}
              style={expanded ? (window.innerWidth > 800 ? {height: '300px'} : {height: '350px'}) : {}}
              onClick={() => {
                  if (!expanded) {
@@ -344,7 +343,14 @@ const ProfileRecommendations = (props) => {
         return showSelection && (
             <div>
                 {selectedItem === null && (
-                    <div style={{marginBottom: '16px'}}>
+                    <form noValidate autoComplete="off" onSubmit={handleSearch}
+                          onKeyDown={(e) => {
+                              if(e.keyCode === 13 && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSearch();
+                              }
+                          }}
+                    >
                         <StyledField
                             label='Search'
                             placeholder={`Search for ${type}`}
@@ -360,9 +366,9 @@ const ProfileRecommendations = (props) => {
                                     return <button key={e} className={'std-button'} style={type !== e ? {color: 'var(--secondary-colour)', borderColor: 'var(--secondary-colour)', textTransform: 'capitalize'} : {textTransform: 'capitalize'}} onClick={() => setType(e)}>{e}</button>
                                 })}
                             </div>
-                            <button className={'std-button'} onClick={handleSearch}>Search</button>
+                            <button className={'std-button'} type={"submit"}>Search</button>
                         </div>
-                    </div>
+                    </form>
                 )
                 }
 
@@ -418,38 +424,7 @@ const ProfileRecommendations = (props) => {
                 {recs.length > 0 ?
                     recs.map(e => {
                         const type = getItemType(e.item);
-                        return (
-                            <div key={e.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
-                                <img alt={`${getLIName(e.item)}`} className={'supplemental-image'} src={e.item.image} style={{aspectRatio: '1', objectFit: 'cover', width: '150px'}} />
-                                <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
-                                    <p style={{margin: '0', textTransform: 'capitalize', color: 'var(--accent-colour)'}}>{type.slice(0, type.length - 1)}</p>
-                                    <h2 style={{margin: '0'}}>
-                                        {getLIName(e.item)}
-                                        <span style={{margin: '5px 0 0 10px'}}>
-                                            <SpotifyLink simple link={e.item.link} />
-                                        </span>
-                                    </h2>
-                                    <p style={{margin: '0'}}>{getLIDescription(e.item)}</p>
-                                    {e.description.length > 0 && (
-                                        <p>
-                                            <em>
-                                                <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
-                                                {e.description}
-                                                <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
-                                            </em>
-                                        </p>
-                                    )}
-                                    {isOwnPage && (
-                                        <div style={{margin: 'auto 0 0 auto'}}>
-                                            <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}}
-                                                    onClick={() => handleDelete(e.id)}>
-                                                <DeleteIcon />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )
+                        return <Recommendation rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete} />
                     })
                     :
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
@@ -466,6 +441,45 @@ const ProfileRecommendations = (props) => {
                 </div>
             )}
             <Selection show={showSelection} />
+        </div>
+    )
+}
+
+const Recommendation = (props) => {
+    const {rec, type, isOwnPage, handleDelete} = props;
+    return (
+        <div key={rec.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
+            <div className={'supplemental-image'} style={{position: 'relative', height: '150px', width: '150px'}}>
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{position: 'absolute', aspectRatio: '1', width: '100%', filter: 'blur(75px)', zIndex: '-1'}} />
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{aspectRatio: '1', width: '100%'}} />
+            </div>
+            <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
+                <p style={{margin: '0', textTransform: 'capitalize', color: 'var(--accent-colour)'}}>{type.slice(0, type.length - 1)}</p>
+                <h2 style={{margin: '0'}}>
+                    {getLIName(rec.item)}
+                    <span style={{margin: '5px 0 0 10px'}}>
+                                            <SpotifyLink simple link={rec.item.link} />
+                                        </span>
+                </h2>
+                <p style={{margin: '0'}}>{getLIDescription(rec.item)}</p>
+                {rec.description.length > 0 && (
+                    <p>
+                        <em>
+                            <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                            {rec.description}
+                            <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                        </em>
+                    </p>
+                )}
+                {isOwnPage && (
+                    <div style={{margin: 'auto 0 0 auto'}}>
+                        <button style={{background: 'none', border: 'none', color: 'var(--accent-colour)', width: 'max-content', cursor: 'pointer', marginLeft: 'auto'}}
+                                onClick={() => handleDelete(rec.id)}>
+                            <DeleteIcon />
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
@@ -621,6 +635,27 @@ const PlaylistItem = function (props) {
                 </div>
             </div>
         </div>
+    )
+}
+
+const ShareProfileButton = (props) => {
+    const {pageGlobalUserID} = props;
+    const origin = (new URL(window.location)).origin;
+
+    const [copied, setCopied] = useState(false);
+
+    window.addEventListener('copy', () => {
+        setCopied(false);
+    })
+
+    return (
+        <button className={'std-button'} onClick={() => {navigator.clipboard.writeText(`${origin}/profile#${pageGlobalUserID}`).then(() => setCopied(true))}}>
+            {copied ?
+                "Copied link!"
+                :
+                "Share profile"
+            }
+        </button>
     )
 }
 
@@ -836,6 +871,12 @@ const Profile = () => {
                             <></>
                         }
                     </div>
+                    {isOwnPage && (
+                            <div style={{padding: '15px 0 0 15px'}}>
+                                <ShareProfileButton pageGlobalUserID={pageGlobalUserID} />
+                            </div>
+                        )
+                    }
                     <div className={'settings-container'}>
                         <div>
                             <h3>Time frame</h3>

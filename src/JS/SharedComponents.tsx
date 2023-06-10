@@ -212,25 +212,32 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
         <>
             {isLoggedIn() && (
                 <div className="comment-submit-field">
-                    <form noValidate autoComplete="off">
-                        <div>
+                    <form noValidate autoComplete="off" onSubmit={handleSubmit}>
+                        <div
+                            onKeyDown={(e) => {
+                                if(e.keyCode === 13 && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit();
+                                }
+                            }}
+                        >
                             <StyledField
                                 id="outlined-textarea"
                                 label="Comment"
                                 placeholder="Write your thoughts"
-                                multiline
                                 variant="outlined"
                                 rows={2}
+                                multiline
                                 inputRef={valueRef}
                                 inputProps={{ maxLength: charLimit }}
                             />
                         </div>
+                        <div style={{ margin: "0 0 0 auto", width: "max-content" }}>
+                            <button className="std-button" type={"submit"}>
+                                Submit
+                            </button>
+                        </div>
                     </form>
-                    <div style={{ margin: "0 0 0 auto", width: "max-content" }}>
-                        <button className="std-button" onClick={handleSubmit}>
-                            Submit
-                        </button>
-                    </div>
                 </div>
             )}
             <div className="comments-wrapper">

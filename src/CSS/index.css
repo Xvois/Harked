@@ -11,7 +11,7 @@ body {
     --bg-colour: #FFEDD4;
     --primary-colour: #322E2D;
     --secondary-colour: #83867E;
-    --accent-colour: #76625A;
+    --accent-colour: #b9a38a;
     color: var(--primary-colour);
     background: var(--bg-colour);
 }
