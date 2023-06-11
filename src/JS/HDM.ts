@@ -146,12 +146,15 @@ export const retrieveUser = async function(user_id) {
         const cacheStorage = await caches.open(cacheName);
         const cachedResponse = await cacheStorage.match(cacheKey);
 
-        if (cachedResponse) {
-            console.log(cachedResponse);
-            console.log(cacheStorage);
-            const cachedData = await cachedResponse.json();
-            console.log(cachedData)
-            return cachedData;
+        if (cachedResponse && cacheStorage) {
+            const cachedData = await cachedResponse.json()
+                .catch((err) => {
+                console.error('retrieveUser cache failure: ', err);
+                caches.delete(cacheName);
+            });
+            if(cachedData){
+                return cachedData;
+            }
         }
     }
 
