@@ -11,8 +11,10 @@ import {
     getLocalDataByID,
     getUser,
     postDatapoint,
-    putLocalData, songsToRefIDs,
-    updateLocalData, validDPExists
+    putLocalData,
+    songsToRefIDs,
+    updateLocalData,
+    validDPExists
 } from "./API.ts";
 import {getLIName} from "./Analysis";
 
@@ -145,6 +147,7 @@ export const retrieveUser = async function(user_id) {
         const cachedResponse = await cacheStorage.match(cacheKey);
 
         if (cachedResponse) {
+            console.log(cacheStorage);
             const cachedData = await cachedResponse.json();
             console.log(cachedData)
             return cachedData;
