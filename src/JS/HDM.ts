@@ -147,6 +147,7 @@ export const retrieveUser = async function(user_id) {
         const cachedResponse = await cacheStorage.match(cacheKey);
 
         if (cachedResponse) {
+            console.log(cachedResponse);
             console.log(cacheStorage);
             const cachedData = await cachedResponse.json();
             console.log(cachedData)
