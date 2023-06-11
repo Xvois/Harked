@@ -102,7 +102,7 @@ export const calculateSimilarity = (dp1, dp2) => {
     })
     artistsSimilarity /= dp1.top_artists.length;
     genresSimilarity /= avgGenreListLength;
-    genresSimilarity = Math.sqrt(genresSimilarity);
+    genresSimilarity = Math.pow(genresSimilarity, 0.25);
     const excludedKeys = ['tempo', 'loudness'];
     for (const key in u0Metrics) {
         if(!excludedKeys.some(e => e === key)){
