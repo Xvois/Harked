@@ -212,6 +212,28 @@ export const getAllArtistAssociations = function () {
     }
 };
 
+function getMaxValueAttribute(attributes) {
+    const ignoredAttributes = ["key", "mode", "speechiness", "duration_ms", "time_signature", "tempo"];
+
+    let max = Number.MIN_SAFE_INTEGER;
+    let maxAttribute = '';
+
+    for (const key in attributes) {
+        if (typeof attributes[key] === 'number' && !ignoredAttributes.includes(key)) {
+            let value = attributes[key];
+
+            if (value > max) {
+                max = value;
+                maxAttribute = key;
+            }
+        }
+    }
+
+    return maxAttribute;
+}
+
+
+
 export const getItemAnalysis = function (item, type, user, datapoint) {
     const memoFunc = getAllArtistAssociations(datapoint);
     const artistAssociations = memoFunc(datapoint); // Call the artistAssociations function with the datapoint
@@ -240,7 +262,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             break;
         case "songs":
             try {
-                let maxAnalytic = Object.keys(item.analytics).reduce((a,b) => item.analytics[a] > item.analytics[b] ? a : b);
+                let maxAnalytic = getMaxValueAttribute(item.analytics);
                 topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
                 if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
                     const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
