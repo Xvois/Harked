@@ -13,8 +13,7 @@ import {
     postDatapoint,
     putLocalData,
     songsToRefIDs,
-    updateLocalData,
-    validDPExists
+    updateLocalData
 } from "./API.ts";
 import {getLIName} from "./Analysis";
 
@@ -688,17 +687,12 @@ export const retrieveAllDatapoints = async function (user_id) {
     }
 
     await disableAutoCancel();
-    const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
-    const valid_exists = await validDPExists(user_id, "long_term");
-    let datapoints;
+    const terms = ["short_term", "medium_term", "long_term"];
+    let datapoints = [];
 
-    if (valid_exists) {
-        const promises = terms.map(term => retrieveDatapoint(user_id, term));
-        datapoints = await Promise.all(promises);
-    } else {
-        await hydrateDatapoints();
-        const promises = terms.map(term => retrieveDatapoint(user_id, term));
-        datapoints = await Promise.all(promises);
+    for (const term of terms) {
+        const datapoint = await retrieveDatapoint(user_id, term);
+        datapoints.push(datapoint);
     }
 
     await enableAutoCancel();
@@ -713,8 +707,7 @@ export const retrieveAllDatapoints = async function (user_id) {
     }
 
     return datapoints;
-}
-
+};
 
 
 
@@ -736,9 +729,14 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     console.info('Getting all previous datapoints.');
 
     await disableAutoCancel();
-    const terms: Array<"short_term" | "medium_term" | "long_term"> = ["short_term", "medium_term", "long_term"];
-    const promises = terms.map(term => retrievePrevDatapoint(user_id, term));
-    const datapoints = await Promise.all(promises);
+    const terms = ["short_term", "medium_term", "long_term"];
+    let datapoints = [];
+
+    for (const term of terms) {
+        const datapoint = await retrievePrevDatapoint(user_id, term);
+        datapoints.push(datapoint);
+    }
+
     await enableAutoCancel();
 
     // Cache the result
@@ -751,7 +749,7 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     }
 
     return datapoints;
-}
+};
 
 
 
@@ -914,10 +912,11 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
  */
 export const hydrateDatapoints = async function () {
     console.time("Hydration."); // Start a timer for performance measurement
-    const terms : Array<"short_term" | "medium_term" | "long_term"> = ['short_term', 'medium_term', 'long_term'];
+    const terms = ['short_term', 'medium_term', 'long_term'];
     const loggedUserID = await retrieveLoggedUserID();
+    const datapoints = [];
 
-    const datapointPromises = terms.map(async (term) => {
+    for (const term of terms) {
         console.info("Hydrating: " + term);
         let datapoint = {
             user_id: loggedUserID,
@@ -937,7 +936,7 @@ export const hydrateDatapoints = async function () {
         // Add all the songs
         datapoint.top_songs = top_songs.map(s => formatSong(s));
         await batchAnalytics(datapoint.top_songs).then(res =>
-            datapoint.top_songs.map((e: Song, i) =>
+            datapoint.top_songs.map((e, i) =>
                 e.analytics = res[i]
             )
         );
@@ -948,21 +947,20 @@ export const hydrateDatapoints = async function () {
         datapoint.top_genres = calculateTopGenres(top_artists);
         console.log(datapoint);
 
-        return datapoint;
-    });
-
-    const datapoints = await Promise.all(datapointPromises);
+        datapoints.push(datapoint);
+    }
 
     console.info("Posting datapoints...");
-    await Promise.all(datapoints.map(datapoint => postDatapoint(datapoint)
-        .then(() => {
+    for (const datapoint of datapoints) {
+        await postDatapoint(datapoint).then(() => {
             console.info(datapoint.term + " success!");
-        })
-    ));
+        });
+    }
 
     console.info("Hydration over.");
     console.timeEnd("Hydration."); // End the timer and display the elapsed time
-}
+};
+
 
 
 /**
