@@ -8,6 +8,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Search from "./Search"
+import {isLoggedIn} from "./HDM.ts";
 
 const TopBar = () => {
     const [showSearchResults, setShowSearchResults] = useState(false);
@@ -29,7 +30,11 @@ const TopBar = () => {
             {windowWidth > 1000 ?
                 <div className="element-container">
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
-                    <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
+                    {isLoggedIn() &&
+                        (
+                            <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
+                        )
+                    }
                     <ClickAwayListener onClickAway={() => setShowSearchResults(false)}>
                         <div className='element' onClick={() => setShowSearchResults(true)}>
                             <Search showResults={showSearchResults}></Search>
