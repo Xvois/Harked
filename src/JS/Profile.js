@@ -36,6 +36,7 @@ import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
 import {
     calculateSimilarity,
     getAverageAnalytics,
+    getGenresRelatedArtists,
     getItemAnalysis,
     getItemIndexChange,
     getItemType,
@@ -56,6 +57,7 @@ import {
     StyledField,
     ValueIndicator
 } from "./SharedComponents.tsx";
+import {ExpandMore} from "@mui/icons-material";
 
 const ShowcaseList = (props) => {
     const {pageUser, possessive, playlists,  selectedDatapoint, selectedPrevDatapoint = null, type, start, end} = props;
@@ -67,18 +69,7 @@ const ShowcaseList = (props) => {
             {selectedDatapoint[`top_${type}`].map(function (element, index) {
                 if (index >= start && index <= end) {
                     return (
-                        <div
-                            key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]}
-                            onMouseEnter={() => setHoverItem(index)}
-                            onMouseLeave={() => setHoverItem(-1)}
-                            style={
-                                hoverItem !== -1 ?
-                                    hoverItem === index ? {cursor: 'pointer'} : {opacity: '0.5'}
-                                    :
-                                    {}
-                            }>
-                            <ShowcaseListItem pageUser={pageUser} possesive={possessive} playlists={playlists} element={element} index={index} selectedDatapoint={selectedDatapoint} selectedPrevDatapoint={selectedPrevDatapoint} type={type}/>
-                        </div>
+                        <ShowcaseListItem key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]} pageUser={pageUser} possesive={possessive} playlists={playlists} element={element} index={index} selectedDatapoint={selectedDatapoint} selectedPrevDatapoint={selectedPrevDatapoint} type={type}/>
                     )
                 }
             })}
@@ -89,47 +80,84 @@ const ShowcaseList = (props) => {
 const ShowcaseListItem = (props) => {
     const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type} = props;
 
-    const [expanded, setExpanded] = useState(index===0);
-    const [recommendations, setRecommendations] = useState(null);
-    const [seeRecommendations, setSeeRecommendations] = useState(false);
+    const [expansion, setExpansion] = useState(77);
+    const [showAnalytics, setShowAnalytics] = useState(false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
 
-    useEffect(() => {
-        setExpanded(index===0);
-    }, [index])
-
-    const handleRecommendations = () => {
-        if (recommendations === null) {
-            switch (type) {
-                case 'artists':
-                    getSimilarArtists(element.artist_id).then(function (result) {
-                        setRecommendations(result);
-                        setSeeRecommendations(!seeRecommendations);
-                    });
-                    break;
-                case 'songs':
-                    const seed_artists = element.artists.map(a => a.artist_id).slice(0, 2);
-                    let seed_genres = [];
-                    element.artists.forEach(artist => {
-                        if (artist.genres) {
-                            artist.genres.forEach(genre => {
-                                if (!seed_genres.some(e => e === genre)) {
-                                    seed_genres.push(genre);
-                                }
-                            })
-                        }
-                    })
-                    seed_genres = seed_genres.slice(0, 2);
-                    const seed_track = element.song_id;
-                    getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function (result) {
-                        setRecommendations(result);
-                        setSeeRecommendations(!seeRecommendations);
-                    });
-            }
-        } else {
-            setSeeRecommendations(!seeRecommendations);
+    const handleClick = () => {
+        if(showAnalytics){
+            setExpansion(300);
+            setShowAnalytics(false);
+        }else {
+            setExpansion(600);
+            setShowAnalytics(true);
         }
     }
+
+    const Recommendations = (props) => {
+        const {element, type} = props;
+        const [recommendations, setRecommendations] = useState(null);
+        useEffect(() => {
+            generateRecommendations();
+        }, [])
+        const generateRecommendations = () => {
+            if (recommendations === null) {
+                switch (type) {
+                    case 'artists':
+                        getSimilarArtists(element.artist_id).then(function (result) {
+                            setRecommendations(result);
+                        });
+                        break;
+                    case 'songs':
+                        const seed_artists = element.artists.map(a => a.artist_id).slice(0, 2);
+                        let seed_genres = [];
+                        element.artists.forEach(artist => {
+                            if (artist.genres) {
+                                artist.genres.forEach(genre => {
+                                    if (!seed_genres.some(e => e === genre)) {
+                                        seed_genres.push(genre);
+                                    }
+                                })
+                            }
+                        })
+                        seed_genres = seed_genres.slice(0, 2);
+                        const seed_track = element.song_id;
+                        getTrackRecommendations(seed_artists, seed_genres, seed_track).then(function (result) {
+                            setRecommendations(result);
+                        });
+                }
+            }
+        }
+        return (
+            <div style={{position: 'relative', textAlign: 'right'}} className={'analysis'}>
+                {recommendations ?
+                    <>
+                        <h3 style={{margin: '0'}}>Because you like</h3>
+                        <p style={{margin: '-5px 0 5px 0'}}>{getLIName(element)}</p>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '17px'}}>
+                            {
+                                recommendations.slice(0,4).map(e => {
+                                    return (
+                                        <div style={{display: 'flex', flexDirection: 'row', cursor: 'pointer', justifyContent: 'right', alignItems: 'center', gap: '5px'}}>
+                                            <div>
+                                                <p style={{margin: 0}}>{getLIName(e)}</p>
+                                                <p style={{margin: 0, fontSize: '12px', color: 'var(--accent-colour)'}}>{getLIDescription(e, 20)}</p>
+                                            </div>
+                                            <SpotifyLink link={e.link} simple />
+                                        </div>
+                                    )
+                                })
+                            }
+                        </div>
+                    </>
+                    :
+                    <LoadingIndicator />
+                }
+            </div>
+        )
+    }
+
+
 
     let changeMessage;
     if (indexChange < 0) {
@@ -155,92 +183,74 @@ const ShowcaseListItem = (props) => {
             style={{color: 'var(--primary-colour)', animation: 'equals-animation 0.5s ease-out'}}
             fontSize={"small"}></ClearAllOutlinedIcon>
     }
+
     const description = getItemAnalysis(element, type, pageUser, selectedDatapoint);
+    const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0]).image;
 
     return (
         <div className={"showcase-list-item"}
              tabIndex={0}
-             style={expanded ? (window.innerWidth > 800 ? {height: '300px'} : {height: '350px'}) : {}}
-             onClick={() => {
-                 if (!expanded) {
-                     setExpanded(true)
-                 }
-             }}>
-            <h3>{index + 1} <span
-                style={{transition: 'all 0.5s', opacity: `${expanded ? '0' : '1'}`}}>{changeMessage}</span></h3>
-            {expanded ?
+             style={{height: `${expansion}px`}}
+            onClick={() => {if(expansion < 100){setExpansion(300)}}}>
+            {expansion > 100 ?
                 <>
                     <div className={"showcase-list-item-expanded"}>
-                        <div className={'item-description'}
-                             style={{fontFamily: 'Inter Tight', margin: 'auto', height: 'max-content'}}>
-                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '15px'}}>
-                                <div>
-                                    <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
-                                    <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
+                        <div className={'item-top-element'}>
+                            <div className={'item-image supplemental-image'}>
+                                <img alt={'decorative blur'} src={image} className={'backdrop-image'} style={{width: '100%', height: '100%', objectFit: 'cover', animation: 'fadeIn 0.25s'}} />
+                                <img alt={getLIName(element)} src={image} className={'levitating-image'} style={{width: '100%', height: '100%', objectFit: 'cover', animation: 'fadeIn 0.25s'}} />
+                            </div>
+                            <div className={'item-description'}>
+                                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '15px'}}>
+                                    <div>
+                                        <h2 style={{margin: '0'}}>{getLIName(element)}</h2>
+                                        <p style={{margin: '0', textTransform: 'uppercase'}}>{getLIDescription(element)}</p>
+                                    </div>
+                                    {type !== 'genres' ?
+                                        <SpotifyLink link={element.link} simple/>
+                                        :
+                                        <></>
+                                    }
                                 </div>
+                                <p style={{marginTop: '0 auto'}}>{description.header}</p>
+                                <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
                                 {type !== 'genres' ?
-                                    <SpotifyLink link={element.link} simple/>
+                                    <div style={{margin: '0 auto', width: 'max-content', transform: `rotate(${showAnalytics ? '180' : '0'}deg)`, transition: '0.25s all', cursor: 'pointer'}}>
+                                        <button style={{background: 'none', border: 'none', color: 'var(--primary-colour)'}} onClick={handleClick}>
+                                            <ExpandMore fontSize={'large'} />
+                                        </button>
+                                    </div>
                                     :
                                     <></>
                                 }
                             </div>
-                            <p style={{marginTop: '0 auto'}}>{description.header}</p>
-                            <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
-                            {type !== 'genres' && isLoggedIn() ?
-                                <button className={'std-button'} id={'showcase-rec-button'}
-                                        onClick={handleRecommendations}>
-                                    {seeRecommendations ?
-                                        "See analysis"
-                                        :
-                                        "See recommendations"
-                                    }
-                                </button>
-                                :
-                                <></>
-                            }
                         </div>
-                        {seeRecommendations ?
-                            <div
-                                style={{textAlign: 'right', fontFamily: 'Inter Tight', height: 'max-content'}}>
-                                <h2 style={{margin: '0'}}>Recommendations</h2>
-                                <p style={{margin: '0', textTransform: 'uppercase'}}>for {getLIName(element)}</p>
-                                <div className={'recommendations-wrapper'}>
-                                    {recommendations.map(function (item, index) {
-                                        if (index < 3) {
-                                            return (
-                                                <a key={getLIName(item)} href={item.link} target="_blank"
-                                                   className={'recommendation'}>
-                                                    <p style={{
-                                                        margin: '0',
-                                                        fontWeight: 'bold'
-                                                    }}>{getLIName(item)}</p>
-                                                    <p style={{margin: '0'}}>{getLIDescription(item)}</p>
-                                                </a>
-                                            )
-                                        }
-                                    })}
-                                </div>
-
+                        {expansion > 300 ?
+                            <div className={'analysis-wrapper'}>
+                                    {
+                                        type === 'songs' ?
+                                            <SongAnalysis song={element}/>
+                                            :
+                                            type === 'artists' ?
+                                                isLoggedIn() ?
+                                                    <ArtistAnalysis artist={element} playlists={playlists}/>
+                                                    :
+                                                    <div className={'analysis'} style={{textAlign: 'right', padding: '0px'}}>
+                                                        <p>Log in to see {possessive} analysis for {getLIName(element)}</p>
+                                                        <button style={{width: 'max-content', marginLeft: 'auto'}}
+                                                                className={'std-button'} onClick={handleLogin}>Log-in
+                                                        </button>
+                                                    </div>
+                                                :
+                                                <></>
+                                    }
+                                <Recommendations element={element} type={type} />
                             </div>
                             :
-                            type === 'songs' ?
-                                <SongAnalysis song={element}/>
-                                :
-                                type === 'artists' ?
-                                    isLoggedIn() ?
-                                        <ArtistAnalysis artist={element} possessive={possessive} playlists={playlists}/>
-                                        :
-                                        <div className={'analysis'} style={{textAlign: 'right', padding: '0px'}}>
-                                            <p>Log in to see {possessive} analysis for {getLIName(element)}</p>
-                                            <button style={{width: 'max-content', marginLeft: 'auto'}}
-                                                    className={'std-button'} onClick={handleLogin}>Log-in
-                                            </button>
-                                        </div>
-                                    :
-                                    <></>
+                            <></>
                         }
                     </div>
-                    <button className={'showcase-exit-button'} onClick={() => setExpanded(false)}>x</button>
+                    <button className={'showcase-exit-button'} onClick={() => setExpansion(77)}>x</button>
                 </>
                 :
                 <div className={"showcase-list-item-text"}>
@@ -436,14 +446,11 @@ const ProfileRecommendations = (props) => {
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
                 }
             </div>
-            {isOwnPage && !showSelection && (
-                <div style={{margin: '0 auto', width: 'max-content'}}>
-                    <button className={'std-button'} onClick={() => setShowSelection(true)}>+</button>
-                </div>
-            )}
-            {isOwnPage && showSelection && (
-                <div style={{margin: '0 auto 16px auto', width: 'max-content'}}>
-                    <button className={'std-button'} onClick={() => setShowSelection(false)}>-</button>
+            {isOwnPage && (
+                <div style={{margin: '0 auto', width: 'max-content', transform: `rotate(${showSelection ? '180' : '0'}deg)`, transition: '0.25s all', cursor: 'pointer'}}>
+                    <button style={{background: 'none', border: 'none', color: 'var(--primary-colour)'}} onClick={() => {if(showSelection){setShowSelection(false)}else{setShowSelection(true)}}}>
+                        <ExpandMore fontSize={'large'} />
+                    </button>
                 </div>
             )}
             <Selection show={showSelection} />
@@ -456,7 +463,7 @@ const Recommendation = (props) => {
     return (
         <div key={rec.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
             <div className={'supplemental-image'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} style={{position: 'absolute', aspectRatio: '1', width: '100%', filter: 'blur(75px) brightness(100%)', zIndex: '-1'}} />
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} />
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'} style={{aspectRatio: '1', width: '100%'}} />
             </div>
             <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
@@ -491,7 +498,7 @@ const Recommendation = (props) => {
 }
 
 const ArtistAnalysis = (props) => {
-    const {artist, playlists, possessive} = props;
+    const {artist, playlists} = props;
 
     const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState(null);
 
@@ -506,7 +513,8 @@ const ArtistAnalysis = (props) => {
         const orderedAlbums = artistsAlbumsWithLikedSongs?.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
         return (
             <div className={'analysis'}>
-
+                <h3 style={{margin: '0'}}>Analysis</h3>
+                <p style={{margin: '-5px 0 5px 0'}}>of {getLIName(artist)}</p>
                 {artistsAlbumsWithLikedSongs === null ?
                     <LoadingIndicator />
                     :
@@ -519,14 +527,14 @@ const ArtistAnalysis = (props) => {
                                                           name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
                                                           description={`${album.saved_songs.length} saved songs.`}
                                                           value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
-                                                          alignment={'right'}/>
+                                                          alignment={'left'}/>
                                     })
                                 }
                             </>
 
                             :
                             <p>There are no saved songs from this
-                                artist on {possessive} public profile, so an analysis is not available.</p>
+                                artist on this public profile, so an analysis is not available.</p>
                     )
                 }
             </div>
@@ -536,18 +544,20 @@ const ArtistAnalysis = (props) => {
 
 const SongAnalysis = (props) => {
     const song = props.song;
-    const excludedKeys = ['loudness', 'liveness', 'instrumentalness', 'tempo']
+    const excludedKeys = ['loudness', 'liveness', 'instrumentalness',  'tempo']
     if (song.hasOwnProperty("song_id")) {
         const analytics = song.analytics;
         if(analytics !== undefined && analytics !== null){
             return (
-                <div className={'analysis'}>
+                <div className={'analysis'} style={{textAlign: 'left'}}>
+                    <h3 style={{margin: '0'}}>Analysis</h3>
+                    <p style={{margin: '-5px 0 5px 0'}}>of {getLIName(song)}</p>
                     {
                         Object.keys(translateAnalytics).map(function (key) {
                             if (excludedKeys.findIndex(e => e === key) === -1) {
                                 return <StatBlock key={key} name={translateAnalytics[key].name}
                                                   description={translateAnalytics[key].description}
-                                                  value={analytics[key] * 100} alignment={'right'}/>
+                                                  value={analytics[key] * 100} alignment={'left'}/>
                             }
                         })
                     }

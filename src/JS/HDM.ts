@@ -15,7 +15,7 @@ import {
     songsToRefIDs,
     updateLocalData
 } from "./API.ts";
-import {getLIName} from "./Analysis";
+import {containsElement, getLIName} from "./Analysis";
 
 
 export interface Record {
@@ -558,6 +558,19 @@ export const formatUser = async function (user) {
         media: null,
     }
 }
+/**
+ * Returns all the users that have a matching item for a given term.
+ */
+export const followingContentsSearch = async function (user_id : string, item : Artist | Song | string, type : 'artists' | 'songs' | 'genres', term : 'short_term' | 'medium_term' | 'long_term') {
+    const following = await retrieveFollowing(user_id);
+    const dpPromises = [];
+    following.forEach((user : User) => {
+        dpPromises.push(getDatapoint(user.user_id, term));
+    })
+    const dps = await Promise.all(dpPromises);
+    const ownerIDs = dps.filter(e => containsElement(item, e, type)).map(e => e.owner);
+    return following.filter(e => ownerIDs.some(id => id === e.id));
+}
 
 /**
  * A boolean function for checking whether the session user is logged in or not.
@@ -960,8 +973,6 @@ export const hydrateDatapoints = async function () {
     console.info("Hydration over.");
     console.timeEnd("Hydration."); // End the timer and display the elapsed time
 };
-
-
 
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.

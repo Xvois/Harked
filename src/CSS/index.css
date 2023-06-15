@@ -8,8 +8,8 @@ body {
     sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    --bg-colour: #FFEDD4;
-    --primary-colour: #322E2D;
+    --bg-colour: #F3EFE0;
+    --primary-colour: #191919;
     --secondary-colour: #83867E;
     --accent-colour: #b9a38a;
     color: var(--primary-colour);
@@ -24,6 +24,7 @@ body {
         --accent-colour: #a19485;
     }
 }
+
 
 ::selection {
     background: var(--accent-colour);

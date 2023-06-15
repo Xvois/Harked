@@ -98,6 +98,7 @@ select.dropdown {
     align-content: center;
     border: 1px solid var(--secondary-colour);
     will-change: height;
+    cursor: pointer;
     transition: all 0.5s;
 }
 
@@ -140,24 +141,64 @@ select.dropdown {
 
 .showcase-list-item-expanded {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     overflow: hidden;
     height: 100%;
-    width: 92%;
+    width: 100%;
     margin: auto;
     cursor: auto;
+    padding: 0 25px;
 }
 
-.showcase-list-item-expanded > div {
-    position: relative;
-    overflow: hidden;
-    justify-content: center;
-    padding: 0 5px;
+.item-top-element {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 300px;
+    align-items: center;
+    flex-shrink: 0;
+}
 
+.item-top-element > div {
+    margin: 0 25px;
+}
+
+.analysis-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    height: 300px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.analysis-wrapper > div {
+    min-width: 200px;
+    margin: 0 25px;
+    flex-grow: 1;
+}
+
+.analysis {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 275px;
+    max-width: 50%;
+    gap: 5px;
+    font-family: "Inter Tight", sans-serif;
+    overflow: hidden;
+}
+
+.item-image {
+    flex-shrink: 0;
     height: 250px;
-    max-width: 400px;
+    width: 250px;
+    position: relative;
+}
+
+.item-description {
     flex-grow: 1;
 }
 
@@ -200,17 +241,15 @@ select.dropdown {
     box-shadow: 0px 4px 16px rgba(17,17,26,0.1), 0px 8px 24px rgba(17,17,26,0.1), 0px 16px 56px rgba(17,17,26,0.1);
 }
 
-.analysis {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    font-family: "Inter Tight", sans-serif;
-    text-align: right;
-    overflow: hidden;
-    /* So it grows */
-    width: 0;
+.backdrop-image{
+    position: absolute;
+    aspect-ratio: 1;
+    width: 100%;
+    filter: blur(100px) brightness(150%);
+    z-index: -1;
 }
+
+
 
 .block-wrapper {
     display: flex;
@@ -450,18 +489,6 @@ select.dropdown {
         padding: 15px 0;
     }
 
-    .showcase-list-item-expanded {
-        height: 300px;
-    }
-
-    .item-description {
-        padding: 15px;
-        left: 30px;
-        flex-grow: 0;
-        flex-shrink: 0;
-        width: 80%;
-    }
-
     .showcase-list-item-text > h2 {
         font-size: 18px;
     }
@@ -473,10 +500,6 @@ select.dropdown {
     .recommendations {
         display: none;
         opacity: 0;
-    }
-
-    .analysis {
-        scale: 0;
     }
 
     #showcase-rec-button {

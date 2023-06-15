@@ -1,8 +1,8 @@
 import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {MutableRefObject, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 /* @ts-ignore */
-import {deleteComment, isLoggedIn, retrieveComments, submitComment, User, Comment, retrieveLoggedUserID} from "./HDM.ts"
+import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
 
 export const StatBlock = (props: {name: string, description: string, value: number, alignment? : "left" | "right", shadow? : number}) => {
@@ -46,7 +46,7 @@ export const SpotifyLink = (props : {link: string, simple?: boolean}) => {
     return (
         simple ?
             <a href={link} style={{height: 'max-content', alignItems: 'center'}}>
-                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
+                <img alt={'Spotify logo'} style={{height: '21px', width: '21px', marginBottom: '-4px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
             </a>
         :
             <a className={'std-button'} style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '10.5px', height: 'max-content'}} href={link}>
