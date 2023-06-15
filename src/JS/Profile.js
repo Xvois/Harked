@@ -80,9 +80,14 @@ const ShowcaseList = (props) => {
 const ShowcaseListItem = (props) => {
     const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type} = props;
 
-    const [expansion, setExpansion] = useState(77);
-    const [showAnalytics, setShowAnalytics] = useState(false);
+    const [expansion, setExpansion] = useState(index === 0 ? (type === 'genres' ? 300 : 600) : 77);
+    const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres') : false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
+
+    useEffect(() => {
+        setExpansion(index === 0 ? (type === 'genres' ? 300 : 600) : 77)
+        setShowAnalytics(index === 0 ? (type !== 'genres') : false);
+    }, [index])
 
     const handleClick = () => {
         if(showAnalytics){
@@ -132,7 +137,7 @@ const ShowcaseListItem = (props) => {
             <div style={{position: 'relative', textAlign: 'right'}} className={'analysis supplemental-content'}>
                 {recommendations ?
                     <>
-                        <h3 style={{margin: '0'}}>Because you like</h3>
+                        <h3 style={{margin: '0'}}>Recommendations for</h3>
                         <p style={{margin: '-5px 0 5px 0'}}>{getLIName(element)}</p>
                         <div style={{display: 'flex', flexDirection: 'column', gap: '17px'}}>
                             {
