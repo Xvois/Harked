@@ -185,7 +185,6 @@ select.dropdown {
     display: flex;
     flex-direction: column;
     height: 275px;
-    max-width: 50%;
     gap: 5px;
     font-family: "Inter Tight", sans-serif;
     overflow: hidden;
@@ -481,7 +480,7 @@ select.dropdown {
 
 @media screen and (max-width: 1000px) {
 
-    .supplemental-image {
+    .supplemental-content {
         display: none;
     }
 

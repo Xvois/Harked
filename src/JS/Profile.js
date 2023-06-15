@@ -129,7 +129,7 @@ const ShowcaseListItem = (props) => {
             }
         }
         return (
-            <div style={{position: 'relative', textAlign: 'right'}} className={'analysis'}>
+            <div style={{position: 'relative', textAlign: 'right'}} className={'analysis supplemental-content'}>
                 {recommendations ?
                     <>
                         <h3 style={{margin: '0'}}>Because you like</h3>
@@ -196,7 +196,7 @@ const ShowcaseListItem = (props) => {
                 <>
                     <div className={"showcase-list-item-expanded"}>
                         <div className={'item-top-element'}>
-                            <div className={'item-image supplemental-image'}>
+                            <div className={'item-image supplemental-content'}>
                                 <img alt={'decorative blur'} src={image} className={'backdrop-image'} style={{width: '100%', height: '100%', objectFit: 'cover', animation: 'fadeIn 0.25s'}} />
                                 <img alt={getLIName(element)} src={image} className={'levitating-image'} style={{width: '100%', height: '100%', objectFit: 'cover', animation: 'fadeIn 0.25s'}} />
                             </div>
@@ -244,7 +244,7 @@ const ShowcaseListItem = (props) => {
                                                 :
                                                 <></>
                                     }
-                                <Recommendations element={element} type={type} />
+                                    <Recommendations element={element} type={type} />
                             </div>
                             :
                             <></>
@@ -407,7 +407,7 @@ const ProfileRecommendations = (props) => {
                 <div>
                     {selectedItem !== null && (
                         <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                            <img alt={`${getLIName(selectedItem)}`} className={'supplemental-image'} style={{aspectRatio: '1', objectFit: 'cover', width: '300px', height: '300px'}} src={selectedItem.image}  />
+                            <img alt={`${getLIName(selectedItem)}`} className={'supplemental-content'} style={{aspectRatio: '1', objectFit: 'cover', width: '300px', height: '300px'}} src={selectedItem.image}  />
                             <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
                                 <h2 style={{margin: '0'}}>{getLIName(selectedItem)}</h2>
                                 <p>{getLIDescription(selectedItem)}</p>
@@ -462,7 +462,7 @@ const Recommendation = (props) => {
     const {rec, type, isOwnPage, handleDelete} = props;
     return (
         <div key={rec.id} style={{display: 'flex', flexDirection: 'row', flexGrow: '1', gap: '15px', border: '1px solid var(--secondary-colour)', padding: '15px', width: 'max-content', overflow: 'hidden', wordBreak: 'break-all'}}>
-            <div className={'supplemental-image'} style={{position: 'relative', height: '150px', width: '150px'}}>
+            <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} />
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'} style={{aspectRatio: '1', width: '100%'}} />
             </div>
