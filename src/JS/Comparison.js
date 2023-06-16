@@ -101,7 +101,11 @@ const Comparison = () => {
                 <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}><span
                     style={{color: 'var(--accent-colour)'}}>{topArtist.name}</span> fan · <span
                     style={{color: 'var(--accent-colour)'}}>{topGenre}</span> fan</p>
-                <div style={alignment === 'right' ? {marginLeft: 'auto', marginTop: '15px', width: 'max-content'} : {marginTop: '15px', width: 'max-content'}}>
+                <div style={alignment === 'right' ? {
+                    marginLeft: 'auto',
+                    marginTop: '15px',
+                    width: 'max-content'
+                } : {marginTop: '15px', width: 'max-content'}}>
                     <a className={'std-button'} href={`/profile#${user.user_id}`}>View profile</a>
                 </div>
             </div>

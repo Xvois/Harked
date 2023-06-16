@@ -105,7 +105,7 @@ export const calculateSimilarity = (dp1, dp2) => {
     genresSimilarity = Math.pow(genresSimilarity, 0.25);
     const excludedKeys = ['tempo', 'loudness'];
     for (const key in u0Metrics) {
-        if(!excludedKeys.some(e => e === key)){
+        if (!excludedKeys.some(e => e === key)) {
             metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]);
         }
     }
@@ -233,7 +233,6 @@ function getMaxValueAttribute(attributes) {
 }
 
 
-
 export const getItemAnalysis = function (item, type, user, datapoint) {
     const memoFunc = getAllArtistAssociations(datapoint);
     const artistAssociations = memoFunc(datapoint); // Call the artistAssociations function with the datapoint
@@ -316,13 +315,13 @@ export const compareItemBetweenUsers = (item, dp1, dp2, type) => {
 }
 
 export const getItemType = (item) => {
-    if(item.hasOwnProperty('artist_id')){
+    if (item.hasOwnProperty('artist_id')) {
         return 'artists'
-    }else if(item.hasOwnProperty('song_id')){
+    } else if (item.hasOwnProperty('song_id')) {
         return 'songs'
-    }else if(typeof item !== "object"){
+    } else if (typeof item !== "object") {
         return 'genres'
-    }else {
+    } else {
         throw new Error('Unknown item submitted to getItemType.');
     }
 }

@@ -10,20 +10,18 @@ import TopBar from './JS/TopBar';
 import Profile from './JS/Profile';
 import {Analytics} from '@vercel/analytics/react';
 import Followers from "./JS/Followers";
-import FollowersPage from "./JS/Followers";
-import BottomBar from "./JS/BottomBar";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <>
-        <TopBar />
+        <TopBar/>
         <BrowserRouter>
             <Routes> (//Routes to pages)
                 <Route index element={<Homepage/>}/>
                 <Route path="authentication" element={<Authentication/>}/>
                 <Route path="profile" element={<Profile/>}/>
                 <Route path="compare" element={<Comparison/>}/>
-                <Route path="followers" element={<Followers />}/>
+                <Route path="followers" element={<Followers/>}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>

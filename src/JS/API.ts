@@ -129,7 +129,6 @@ const handleFetchException = (err) => {
 }
 
 
-
 let databaseCache = {
     artists: [],
     songs: [],
@@ -214,7 +213,7 @@ const postGenre = async (genre) => {
 
 
 export const artistsToRefIDs = async (artists) => {
-    if(databaseCache.artists.length === 0){
+    if (databaseCache.artists.length === 0) {
         await updateDatabaseCache();
     }
     let ids = [];
@@ -234,7 +233,7 @@ export const artistsToRefIDs = async (artists) => {
 
 
 export const genresToRefIDs = async (genres) => {
-    if(databaseCache.genres.length === 0){
+    if (databaseCache.genres.length === 0) {
         await updateDatabaseCache();
     }
     let ids = [];
@@ -255,7 +254,7 @@ export const genresToRefIDs = async (genres) => {
     return ids;
 }
 export const songsToRefIDs = async (songs) => {
-    if(databaseCache.songs.length === 0){
+    if (databaseCache.songs.length === 0) {
         await updateDatabaseCache();
     }
     const existingSongIDs = new Set(databaseCache.songs.map((song) => song.song_id));
@@ -263,7 +262,7 @@ export const songsToRefIDs = async (songs) => {
 
     for (let i = 0; i < songs.length; i++) {
         const song = songs[i];
-        const { song_id } = song;
+        const {song_id} = song;
         const id = hashString(song_id);
         song.id = id;
         ids.push(id);
@@ -289,8 +288,6 @@ export const validDPExists = async (user_id, term) => {
             }
         });
 }
-
-
 
 
 export const postDatapoint = async (datapoint) => {
@@ -371,7 +368,7 @@ export const getDelayedDatapoint = async (user_id, term, delay) => {
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
     }).catch(handleFetchException);
-    return  dps[delay];
+    return dps[delay];
 }
 
 

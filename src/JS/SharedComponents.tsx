@@ -5,58 +5,75 @@ import {useEffect, useRef, useState} from "react";
 import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
 
-export const StatBlock = (props: {name: string, description: string, value: number, alignment? : "left" | "right", shadow? : number}) => {
+export const StatBlock = (props: {
+    name: string,
+    description: string,
+    value: number,
+    alignment?: "left" | "right",
+    shadow?: number
+}) => {
     const {name, description, value, alignment = 'left', shadow = null} = props;
 
     return (
         <div className={'stat-block'}>
-        <h3 style={{textAlign: alignment}}>{name}</h3>
-    <div className={'stat-bar'} style={
-    {
-        '--val': `100%`,
-        backgroundColor: 'var(--primary-colour)',
-        opacity: '0.1',
-        marginBottom: '-5px',
-        animation: 'none'
-    } as React.CSSProperties
-}></div>
-    <div className={'stat-bar'}
-    style={{'--val': `${value}%`, marginLeft: `${alignment === 'right' ? 'auto' : ''}`} as React.CSSProperties }></div>
-    {shadow ?
-        <div className={'stat-bar'}
-        style={{
-            '--val': `${shadow}%`,
-            marginLeft: `${alignment === 'right' ? 'auto' : ''}`,
-            marginTop: '-5px',
-            opacity: '0.25'
-    } as React.CSSProperties
-        }></div>
-    :
-        <></>
-    }
+            <h3 style={{textAlign: alignment}}>{name}</h3>
+            <div className={'stat-bar'} style={
+                {
+                    '--val': `100%`,
+                    backgroundColor: 'var(--primary-colour)',
+                    opacity: '0.1',
+                    marginBottom: '-5px',
+                    animation: 'none'
+                } as React.CSSProperties
+            }></div>
+            <div className={'stat-bar'}
+                 style={{
+                     '--val': `${value}%`,
+                     marginLeft: `${alignment === 'right' ? 'auto' : ''}`
+                 } as React.CSSProperties}></div>
+            {shadow ?
+                <div className={'stat-bar'}
+                     style={{
+                         '--val': `${shadow}%`,
+                         marginLeft: `${alignment === 'right' ? 'auto' : ''}`,
+                         marginTop: '-5px',
+                         opacity: '0.25'
+                     } as React.CSSProperties
+                     }></div>
+                :
+                <></>
+            }
 
-    <p style={{textAlign: alignment}}>{description}</p>
-    </div>
-)
+            <p style={{textAlign: alignment}}>{description}</p>
+        </div>
+    )
 }
 
-export const SpotifyLink = (props : {link: string, simple?: boolean}) => {
+export const SpotifyLink = (props: { link: string, simple?: boolean }) => {
     const {link, simple = false} = props;
     const darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return (
         simple ?
             <a href={link} style={{height: 'max-content', alignItems: 'center'}}>
-                <img alt={'Spotify logo'} style={{height: '21px', width: '21px', marginBottom: '-4px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
+                <img alt={'Spotify logo'} style={{height: '21px', width: '21px', marginBottom: '-4px'}}
+                     src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`}/>
             </a>
-        :
-            <a className={'std-button'} style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '10.5px', height: 'max-content'}} href={link}>
-                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`} />
+            :
+            <a className={'std-button'} style={{
+                flexDirection: 'row',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10.5px',
+                height: 'max-content'
+            }} href={link}>
+                <img alt={'Spotify logo'} style={{height: '21px', width: '21px'}}
+                     src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`}/>
                 <p style={{margin: '0'}}>Open in Spotify</p>
             </a>
-)
+    )
 }
 
-export const PageError = (props : {icon : ReactJSXElement, description: string, errCode?: string}) => {
+export const PageError = (props: { icon: ReactJSXElement, description: string, errCode?: string }) => {
     const {icon, description, errCode} = props;
     console.log(props);
     return (
@@ -110,7 +127,7 @@ export const StyledField = styled(TextField)({
     },
 });
 
-export function LoadingIndicator () {
+export function LoadingIndicator() {
     return (
         <div className={'centre'}>
             <div className="lds-grid">
@@ -128,7 +145,7 @@ export function LoadingIndicator () {
     )
 }
 
-export function ValueIndicator(props : {value: number, diameter?: number}) {
+export function ValueIndicator(props: { value: number, diameter?: number }) {
     const {value, diameter = 70} = props;
     const padding = 5 * (diameter / 70);
 
@@ -174,19 +191,19 @@ export function ValueIndicator(props : {value: number, diameter?: number}) {
     )
 }
 
-export function CommentSection (props : {sectionID : string, isAdmin : boolean}) {
+export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
     // An admin will be able to delete all comments in the comment section
     const {sectionID, isAdmin} = props;
     const [comments, setComments] = useState([]);
     const [loggedUserID, setLoggedUserID] = useState(null)
-    const valueRef = useRef(null) ; // Creating a reference for TextField Component
+    const valueRef = useRef(null); // Creating a reference for TextField Component
     const charLimit = 500;
 
     useEffect(() => {
-        if(isLoggedIn()){
+        if (isLoggedIn()) {
             retrieveLoggedUserID().then(id => setLoggedUserID(id));
         }
-        retrieveComments(sectionID).then(function(c) {
+        retrieveComments(sectionID).then(function (c) {
             setComments(c);
         })
     }, [])
@@ -215,7 +232,7 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
                     <form noValidate autoComplete="off" onSubmit={handleSubmit}>
                         <div
                             onKeyDown={(e) => {
-                                if(e.keyCode === 13 && !e.shiftKey) {
+                                if (e.keyCode === 13 && !e.shiftKey) {
                                     e.preventDefault();
                                     handleSubmit();
                                 }
@@ -229,10 +246,10 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
                                 rows={2}
                                 multiline
                                 inputRef={valueRef}
-                                inputProps={{ maxLength: charLimit }}
+                                inputProps={{maxLength: charLimit}}
                             />
                         </div>
-                        <div style={{ margin: "0 0 0 auto", width: "max-content" }}>
+                        <div style={{margin: "0 0 0 auto", width: "max-content"}}>
                             <button className="std-button" type={"submit"}>
                                 Submit
                             </button>
@@ -244,18 +261,20 @@ export function CommentSection (props : {sectionID : string, isAdmin : boolean})
                 {comments.length > 0 ? (
                     comments.map((c) => {
                         const ownComment = isLoggedIn() ? loggedUserID === c.user.user_id : false;
-                        return <CommentInstance key={c.id} item={c} onDelete={handleDelete} isDeletable={ownComment || isAdmin} />;
+                        return <CommentInstance key={c.id} item={c} onDelete={handleDelete}
+                                                isDeletable={ownComment || isAdmin}/>;
                     })
                 ) : (
-                    <p style={{ color: "var(--secondary-colour)" }}>Looks like there aren't any comments yet.</p>
+                    <p style={{color: "var(--secondary-colour)"}}>Looks like there aren't any comments yet.</p>
                 )}
             </div>
         </>
     );
 }
-function CommentInstance(props : {item : Comment, onDelete : any, isDeletable : boolean}) {
-    const { item, onDelete, isDeletable } = props;
-    const user : User = item.user;
+
+function CommentInstance(props: { item: Comment, onDelete: any, isDeletable: boolean }) {
+    const {item, onDelete, isDeletable} = props;
+    const user: User = item.user;
     const date = new Date(item.created);
 
     const handleDelete = async () => {
@@ -266,17 +285,24 @@ function CommentInstance(props : {item : Comment, onDelete : any, isDeletable : 
         <div className="comment">
             <a href={`/profile#${user.user_id}`}>{user.username}</a>
             {item.created && (
-                <p style={{ fontSize: "12px", color: "var(--accent-colour)", paddingBottom: "5px" }}>
+                <p style={{fontSize: "12px", color: "var(--accent-colour)", paddingBottom: "5px"}}>
                     {date.getUTCDate()}/{date.getUTCMonth()}/{date.getFullYear()}
                 </p>
             )}
             <p>{item.content}</p>
             {isDeletable && (
                 <button
-                    style={{ background: "none", border: "none", color: "var(--accent-colour)", width: "max-content", cursor: "pointer", marginLeft: "auto" }}
+                    style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--accent-colour)",
+                        width: "max-content",
+                        cursor: "pointer",
+                        marginLeft: "auto"
+                    }}
                     onClick={handleDelete}
                 >
-                    <DeleteIcon />
+                    <DeleteIcon/>
                 </button>
             )}
         </div>

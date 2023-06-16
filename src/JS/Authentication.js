@@ -62,7 +62,7 @@ function Authentication() {
                     // TODO: TEMP FIX
                     fUser.username = fUser.username.replace(' ', '-');
                     userExists(fUser.user_id).then(exists => {
-                        if(!exists){
+                        if (!exists) {
                             pb.collection('users').update(id, fUser)
                                 .then(async () => {
                                     const hash = hashString(fUser.user_id);
@@ -85,12 +85,12 @@ function Authentication() {
                                     )
                                     redirect('/profile#me');
                                 });
-                        }else{
+                        } else {
                             const redirectPath = window.localStorage.getItem("redirect");
-                            if(redirectPath){
+                            if (redirectPath) {
                                 window.localStorage.removeItem("redirect");
                                 redirect(redirectPath);
-                            }else{
+                            } else {
                                 redirect('/profile#me');
                             }
                         }
@@ -107,10 +107,10 @@ function Authentication() {
             window.location.hash = ""
             window.localStorage.setItem("access-token", local_token);
             const redirectPath = window.localStorage.getItem("redirect");
-            if(redirectPath){
+            if (redirectPath) {
                 window.localStorage.removeItem("redirect");
                 redirect(redirectPath);
-            }else{
+            } else {
                 redirect('/profile#me');
             }
         }

@@ -1,7 +1,6 @@
-import { styled, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
-import {isLoggedIn, retrieveAllPublicUsers, retrieveFollowing, retrieveLoggedUserID} from "./HDM.ts";
-import { FormControl } from "@mui/base";
+import {useEffect, useState} from "react";
+import {retrieveAllPublicUsers} from "./HDM.ts";
+import {FormControl} from "@mui/base";
 import Fuse from 'fuse.js';
 import {StyledField} from "./SharedComponents.tsx";
 
@@ -10,7 +9,7 @@ const Results = (props) => {
     return (
         <div className='results'>
             {/* Render search results */}
-            {searchResults.slice(0,5).map(result => {
+            {searchResults.slice(0, 5).map(result => {
                 return (
                     <a className='result' href={`/profile#${result.user_id}`} key={result.user_id}>
                         <div className='result-title'>
@@ -24,7 +23,7 @@ const Results = (props) => {
 }
 
 const Search = (props) => {
-    const { showResults } = props;
+    const {showResults} = props;
     const [searchResults, setSearchResults] = useState(null);
     const [cachedUsersMap, setCachedUsersMap] = useState({});
 
@@ -74,13 +73,13 @@ const Search = (props) => {
             <FormControl variant="outlined">
                 <StyledField
                     className='search-bar'
-                    inputProps={{ className: `search-label` }}
+                    inputProps={{className: `search-label`}}
                     onChange={(event) => handleSearch(event.target.value)}
                     label="Search"
                 />
             </FormControl>
             {!!searchResults && (
-                <Results searchResults={searchResults} />
+                <Results searchResults={searchResults}/>
             )}
         </div>
     );

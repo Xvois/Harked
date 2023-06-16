@@ -1,3 +1,4 @@
+// @ts-ignore
 import {
     artistsToRefIDs,
     deleteLocalData,
@@ -19,10 +20,10 @@ import {containsElement, getLIName} from "./Analysis";
 
 
 export interface Record {
-    id : string,
-    created : string,
-    modified : string,
-    expand? : any
+    id: string,
+    created: string,
+    modified: string,
+    expand?: any
 }
 
 export interface User extends Record {
@@ -33,56 +34,60 @@ export interface User extends Record {
 }
 
 export interface Comment extends Record {
-    user : User,
-    parent : Comment,
-    content : string,
+    user: User,
+    parent: Comment,
+    content: string,
 }
+
 export interface FollowingRecord extends Record {
-    user : User | string,
+    user: User | string,
     /** Following can be an array of the user objects or of their record ids **/
-    following : Array<User> | Array<string>
+    following: Array<User> | Array<string>
 }
+
 export interface FollowersRecord extends Record {
-    user : User | string,
+    user: User | string,
     /** Followers can be an array of the user objects or of their record ids **/
-    followers : Array<User> | Array<string>
+    followers: Array<User> | Array<string>
 }
+
 /**
  * Stores information pertaining to the customisation of a
  * user's profile.
  */
 interface ProfileData extends Record {
-    user : User | string
+    user: User | string
 }
+
 interface Settings extends Record {
-    user : User | string,
-    public : boolean
+    user: User | string,
+    public: boolean
 }
 
 interface Recommendation extends Record {
-    item : {id : string, type: "songs" | "artists"} | Artist | Song,
-    description : string
+    item: { id: string, type: "songs" | "artists" } | Artist | Song,
+    description: string
 }
 
 interface Genre extends Record {
-    genre : string
+    genre: string
 }
 
 interface Artist extends Record {
-    artist_id : string,
-    name : string,
-    image : string,
-    link : string,
-    genres : Array<string> | Array<Genre>
+    artist_id: string,
+    name: string,
+    image: string,
+    link: string,
+    genres: Array<string> | Array<Genre>
 }
 
 interface Song extends Record {
-    song_id : string,
-    title : string,
-    artists : Array<Artist> | Array<string>,
-    link : string,
-    image : string,
-    analytics : Analytics
+    song_id: string,
+    title: string,
+    artists: Array<Artist> | Array<string>,
+    link: string,
+    image: string,
+    analytics: Analytics
 }
 
 type Analytics = {
@@ -107,8 +112,8 @@ type Analytics = {
 }
 
 interface ProfileRecommendations extends Record {
-    user : User,
-    recommendations : Array<Recommendation> | Array<string>
+    user: User,
+    recommendations: Array<Recommendation> | Array<string>
 }
 
 interface Datapoint extends Record {
@@ -136,7 +141,7 @@ export function hashString(inputString) {
 /**
  * A mapping of the getUser method.
  */
-export const retrieveUser = async function(user_id) {
+export const retrieveUser = async function (user_id) {
     const cacheName = 'userDataCache';
     const cacheKey = `user_${user_id}`;
 
@@ -148,10 +153,10 @@ export const retrieveUser = async function(user_id) {
         if (cachedResponse && cacheStorage) {
             const cachedData = await cachedResponse.json()
                 .catch((err) => {
-                console.error('retrieveUser cache failure: ', err);
-                caches.delete(cacheName);
-            });
-            if(cachedData){
+                    console.error('retrieveUser cache failure: ', err);
+                    caches.delete(cacheName);
+                });
+            if (cachedData) {
                 return cachedData;
             }
         }
@@ -163,8 +168,8 @@ export const retrieveUser = async function(user_id) {
     // Cache the result
     if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
-        const responseToCache = new Response(JSON.stringify(userData),{
-            headers: { 'Cache-Control': 'max-age=36000' }
+        const responseToCache = new Response(JSON.stringify(userData), {
+            headers: {'Cache-Control': 'max-age=36000'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
     }
@@ -179,20 +184,20 @@ export const retrieveUser = async function(user_id) {
  * @param primaryUserID
  * @param targetUserID
  */
-export const followsUser = async function (primaryUserID : string, targetUserID : string) {
+export const followsUser = async function (primaryUserID: string, targetUserID: string) {
     // If both are the same we can simply return false as a user cannot follow themself.
     if (primaryUserID === targetUserID) {
         return false;
     }
     let follows = false;
-    const targetUser : User = await getUser(targetUserID);
+    const targetUser: User = await getUser(targetUserID);
     // Get who the primary user follows
     await getLocalData("user_following", `user.user_id="${primaryUserID}"`)
-        .then((res : FollowingRecord) => {
+        .then((res: FollowingRecord) => {
             const item = res[0];
             // Check if the record id of the target user is held in the array of
             // the primary user's following array
-            if (item.following.some((e : string) => e === targetUser.id)) {
+            if (item.following.some((e: string) => e === targetUser.id)) {
                 follows = true;
             }
         });
@@ -204,12 +209,12 @@ export const followsUser = async function (primaryUserID : string, targetUserID 
  * @param primaryUserID
  * @param targetUserID
  */
-export const followUser = async function (primaryUserID : string, targetUserID : string) {
-    if(await followsUser(primaryUserID, targetUserID)){
+export const followUser = async function (primaryUserID: string, targetUserID: string) {
+    if (await followsUser(primaryUserID, targetUserID)) {
         return;
     }
     // Get the record for who follows who for both the primary and target user
-    let [primaryObj , targetObj] : Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
+    let [primaryObj, targetObj]: Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
 
     // Since this is a relational key, .user is simply the record id for that user
     if (!primaryObj.following.some(e => e === targetObj.user)) {
@@ -229,9 +234,9 @@ export const followUser = async function (primaryUserID : string, targetUserID :
  * @param primaryUserID
  * @param targetUserID
  */
-export const unfollowUser = async function (primaryUserID : string, targetUserID : string) {
+export const unfollowUser = async function (primaryUserID: string, targetUserID: string) {
     // Get the record for who follows who for both the primary and target user
-    let [primaryObj, targetObj] : Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
+    let [primaryObj, targetObj]: Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
 
     // Since this is a relational key, .user is simply the record id for tha user
     if (primaryObj.following.some(e => e === targetObj.user)) {
@@ -239,7 +244,7 @@ export const unfollowUser = async function (primaryUserID : string, targetUserID
         // Update the primary user's data to show they are not following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
         // Update the target user's data to show they are not being followed by the primary user
-        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res : FollowersRecord) => {
+        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res: FollowersRecord) => {
             let item = res;
             item.followers = item.followers.filter(e => e !== primaryObj.user);
             updateLocalData("user_followers", item, item.id);
@@ -251,8 +256,8 @@ export const unfollowUser = async function (primaryUserID : string, targetUserID
  * @param user_id
  * @returns {Array<User>}
  */
-export const retrieveFollowers = async function (user_id : string) {
-    const res : FollowersRecord = await getLocalDataByID("user_followers", hashString(user_id), "followers");
+export const retrieveFollowers = async function (user_id: string) {
+    const res: FollowersRecord = await getLocalDataByID("user_followers", hashString(user_id), "followers");
     if (res.followers.length > 0) {
         return res.expand.followers;
     } else {
@@ -264,7 +269,7 @@ export const retrieveFollowers = async function (user_id : string) {
  * @param user_id
  * @returns boolean
  */
-export const userExists = async function (user_id : string) {
+export const userExists = async function (user_id: string) {
     return !!(await getUser(user_id));
 }
 
@@ -273,9 +278,9 @@ export const userExists = async function (user_id : string) {
  * @param user_id
  * @returns {Array<User>}
  */
-export const retrieveFollowing = async function (user_id : string) {
+export const retrieveFollowing = async function (user_id: string) {
     console.log('retrieveFollowing called!')
-    const res : FollowingRecord = await getLocalDataByID("user_following", hashString(user_id), "following");
+    const res: FollowingRecord = await getLocalDataByID("user_following", hashString(user_id), "following");
     if (res.following.length > 0) {
         return res.expand.following;
     } else {
@@ -289,9 +294,9 @@ export const retrieveFollowing = async function (user_id : string) {
  * @param user_id
  * @returns {Settings}
  */
-export const retrieveSettings = async function (user_id : string) {
-    const id : string = hashString(user_id);
-    const res : Settings = await getLocalDataByID("settings", id);
+export const retrieveSettings = async function (user_id: string) {
+    const id: string = hashString(user_id);
+    const res: Settings = await getLocalDataByID("settings", id);
     return res;
 }
 
@@ -300,7 +305,7 @@ export const retrieveSettings = async function (user_id : string) {
  * @param user_id
  * @param new_settings : Settings
  */
-export const changeSettings = async function (user_id : string, new_settings : Settings) {
+export const changeSettings = async function (user_id: string, new_settings: Settings) {
     const id = hashString(user_id);
     await updateLocalData("settings", new_settings, id);
 }
@@ -310,7 +315,7 @@ export const changeSettings = async function (user_id : string, new_settings : S
  * @param user_id
  * @returns ProfileData
  */
-export const retrieveProfileData = async function (user_id : string) {
+export const retrieveProfileData = async function (user_id: string) {
     const id = hashString(user_id);
     return await getLocalDataByID("profile_data", id);
 }
@@ -320,7 +325,7 @@ export const retrieveProfileData = async function (user_id : string) {
  * the hash of the userID.**
  * @param section_id
  */
-export const retrieveComments = async function (section_id : string) {
+export const retrieveComments = async function (section_id: string) {
     const comment_section = await getLocalDataByID("comment_section", section_id, "comments, comments.user");
     let comments = comment_section.expand.comments ?? [];
     comments.map(c => c.user = c.expand.user);
@@ -336,13 +341,17 @@ export const retrieveComments = async function (section_id : string) {
  * @param parent
  * @returns Comment }
  */
-export const submitComment = async function (user_id : string, section_id : string, content : string, parent : Comment = null) {
+export const submitComment = async function (user_id: string, section_id: string, content: string, parent: Comment = null) {
     try {
-        const user : User = await retrieveUser(user_id);
+        const user: User = await retrieveUser(user_id);
         // Just a random, valid, and unique ID.
         const commentID = hashString(section_id + user_id + content);
-        const date = new Date();
-        const comment : { user: string; parent: Comment; id: string; content: string } = { id: commentID, user: user.id, parent: parent, content: content };
+        const comment: { user: string; parent: Comment; id: string; content: string } = {
+            id: commentID,
+            user: user.id,
+            parent: parent,
+            content: content
+        };
         console.log(comment)
         await putLocalData("comments", comment);
 
@@ -351,7 +360,7 @@ export const submitComment = async function (user_id : string, section_id : stri
 
         await updateLocalData("comment_section", profileComments, profileComments.id);
 
-        return { ...comment, user: user };
+        return {...comment, user: user};
     } catch (error) {
         console.error("Error submitting comment:", error);
         throw error;
@@ -362,7 +371,7 @@ export const submitComment = async function (user_id : string, section_id : stri
  * Deletes a comment.
  * @param comment_id
  */
-export const deleteComment = async function (comment_id : string) {
+export const deleteComment = async function (comment_id: string) {
     await deleteLocalData("comments", comment_id);
 }
 /**
@@ -372,23 +381,26 @@ export const deleteComment = async function (comment_id : string) {
  * @param type
  * @param description
  */
-export const submitRecommendation = async function (user_id : string, item : Song | Artist, type : "songs" | "artists", description : string) {
+export const submitRecommendation = async function (user_id: string, item: Song | Artist, type: "songs" | "artists", description: string) {
     const id = hashString(getLIName(item) + description + user_id);
-    let currRecommendations : ProfileRecommendations = await getLocalDataByID("profile_recommendations", hashString(user_id));
-    if(currRecommendations.recommendations === null){
+    let currRecommendations: ProfileRecommendations = await getLocalDataByID("profile_recommendations", hashString(user_id));
+    if (currRecommendations.recommendations === null) {
         currRecommendations.recommendations = [];
     }
-    switch (type){
+    switch (type) {
         case 'artists':
-            const [artistRefID] : Array<string> = await artistsToRefIDs([item]);
+            const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
             const artistItemObj = {type: type, id: artistRefID}
             const artistRecommendation = {id: id, item: artistItemObj, description: description};
             await putLocalData("recommendations", artistRecommendation);
-            const newRecs_a : ProfileRecommendations = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
+            const newRecs_a: ProfileRecommendations = {
+                ...currRecommendations,
+                recommendations: currRecommendations.recommendations.concat(id)
+            }
             await updateLocalData("profile_recommendations", newRecs_a, currRecommendations.id);
             break;
         case 'songs':
-            const [songRefID] : Array<string> = await songsToRefIDs([item]);
+            const [songRefID]: Array<string> = await songsToRefIDs([item]);
             const songItemObj = {type: type, id: songRefID}
             const songRecommendation = {id: id, item: songItemObj, description: description};
             await putLocalData("recommendations", songRecommendation);
@@ -402,7 +414,7 @@ export const submitRecommendation = async function (user_id : string, item : Son
  * Deletes a profile recommendation.
  * @param rec_id
  */
-export const deleteRecommendation = async function (rec_id : string) {
+export const deleteRecommendation = async function (rec_id: string) {
     await deleteLocalData("recommendations", rec_id);
 }
 
@@ -422,8 +434,8 @@ export const retrieveAllUsers = async function () {
  */
 export const retrieveAllPublicUsers = async function () {
     await disableAutoCancel();
-    let users : Array<User> = await getFullLocalData("users");
-    const settings : Array<Settings> = await getFullLocalData("settings");
+    let users: Array<User> = await getFullLocalData("users");
+    const settings: Array<Settings> = await getFullLocalData("settings");
     users = users.filter(u => settings.some(s => s.user === u.id && s.public));
     await enableAutoCancel();
     return users;
@@ -433,27 +445,27 @@ export const retrieveAllPublicUsers = async function () {
  * Returns all the profile recommendations from the target user.
  * @param user_id
  */
-export const retrieveProfileRecommendations = async function (user_id : string)  {
+export const retrieveProfileRecommendations = async function (user_id: string) {
     const data = await getLocalDataByID("profile_recommendations", hashString(user_id), "recommendations");
-    let recs : Array<Recommendation> = data.expand.recommendations;
-    if(recs === undefined){
+    let recs: Array<Recommendation> = data.expand.recommendations;
+    if (recs === undefined) {
         return [];
     }
     // Resolve all the items in the recommendations
-    for (let i = 0; i < recs.length; i++){
+    for (let i = 0; i < recs.length; i++) {
         let e = recs[i];
-        if(e.item.type === "artists"){
-            let artist : Artist = await getLocalDataByID("artists", e.item.id, "genres");
+        if (e.item.type === "artists") {
+            let artist: Artist = await getLocalDataByID("artists", e.item.id, "genres");
             artist.genres = artist.expand.genres;
-            if(artist.genres !== undefined){
-                artist.genres = artist.genres.map(e  => e.genre);
+            if (artist.genres !== undefined) {
+                artist.genres = artist.genres.map(e => e.genre);
             }
             e.item = artist;
-        }else if(e.item.type === "songs"){
-            let song : Song = await getLocalDataByID("songs", e.item.id, "artists");
+        } else if (e.item.type === "songs") {
+            let song: Song = await getLocalDataByID("songs", e.item.id, "artists");
             song.artists = song.expand.artists;
             e.item = song;
-        }else{
+        } else {
             throw new Error("Unknown type fetched from profile recommendations.");
         }
     }
@@ -465,7 +477,7 @@ export const retrieveProfileRecommendations = async function (user_id : string) 
  * @param type
  * @returns Artist | Song
  */
-export const retrieveSearchResults = async function (query : string, type : "artists" | "songs") {
+export const retrieveSearchResults = async function (query: string, type: "artists" | "songs") {
     let typeParam;
     switch (type) {
         case 'artists':
@@ -485,13 +497,13 @@ export const retrieveSearchResults = async function (query : string, type : "art
 
     let data = await fetchData(`search?${params}`);
 
-    if(type === 'artists'){
+    if (type === 'artists') {
         data.artists = data.artists.items;
         data.artists = data.artists.map(a => formatArtist(a));
-    }else if(type === 'songs'){
+    } else if (type === 'songs') {
         data.tracks = data.tracks.items;
         data.tracks = data.tracks.map(t => formatSong(t));
-    }else {
+    } else {
         console.warn('No type identified for', data);
     }
     return data;
@@ -502,7 +514,7 @@ export const retrieveSearchResults = async function (query : string, type : "art
  * @param user_id
  * @returns {Promise<Array>}
  */
-export const retrievePlaylists = async function (user_id : string) {
+export const retrievePlaylists = async function (user_id: string) {
     // Fetch all playlists
     let playlists = (await fetchData(`users/${user_id}/playlists`)).items;
     // Filter by those that are not collaborative and are public
@@ -517,7 +529,7 @@ export const retrievePlaylists = async function (user_id : string) {
         // Max of 50 songs per call, so they must be batched
         for (let i = 0; i < numCalls; i++) {
             const offset = i * 50;
-            const promise : Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+            const promise: Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
                 .then(response => response.items.map(e => e.track))
                 .catch(error => {
                     console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
@@ -561,10 +573,10 @@ export const formatUser = async function (user) {
 /**
  * Returns all the users that have a matching item for a given term.
  */
-export const followingContentsSearch = async function (user_id : string, item : Artist | Song | string, type : 'artists' | 'songs' | 'genres', term : 'short_term' | 'medium_term' | 'long_term') {
+export const followingContentsSearch = async function (user_id: string, item: Artist | Song | string, type: 'artists' | 'songs' | 'genres', term: 'short_term' | 'medium_term' | 'long_term') {
     const following = await retrieveFollowing(user_id);
     const dpPromises = [];
-    following.forEach((user : User) => {
+    following.forEach((user: User) => {
         dpPromises.push(getDatapoint(user.user_id, term));
     })
     const dps = await Promise.all(dpPromises);
@@ -582,7 +594,7 @@ export const isLoggedIn = function () {
 /**
  * @returns user_id
  */
-export const retrieveLoggedUserID = async function() {
+export const retrieveLoggedUserID = async function () {
     const cacheName = 'userIDCache';
     const cacheKey = 'loggedUserID';
 
@@ -618,18 +630,18 @@ export const retrieveLoggedUserID = async function() {
  * @param term [short_term, medium_term, long_term]
  * @returns {Promise<*>} A datapoint object.
  */
-export const retrieveDatapoint = async function (user_id : string, term : "short_term" | "medium_term" | "long_term") {
+export const retrieveDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
     let timeSensitive = false;
     // Are we accessing the logged-in user?
     // [Unknowingly]
-    if(isLoggedIn()){
+    if (isLoggedIn()) {
         const loggedUserID = await retrieveLoggedUserID();
         if (user_id === loggedUserID) {
             timeSensitive = true
         }
     }
 
-    let currDatapoint : Datapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
+    let currDatapoint: Datapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
         console.warn("Error retrieving datapoint: ");
         console.warn(err);
     })
@@ -648,14 +660,14 @@ export const retrieveDatapoint = async function (user_id : string, term : "short
 
 export function getAllIndexes(arr, val) {
     let indexes = [], i;
-    for(i = 0; i < arr.length; i++)
+    for (i = 0; i < arr.length; i++)
         if (arr[i] === val)
             indexes.push(i);
     return indexes;
 }
 
-export const retrievePrevDatapoint = async function (user_id : string, term : "short_term" | "medium_term" | "long_term") {
-    const datapoint : Datapoint = await getDelayedDatapoint(user_id, term, 1);
+export const retrievePrevDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
+    const datapoint: Datapoint = await getDelayedDatapoint(user_id, term, 1);
     if (datapoint === undefined) {
         return null
     } else {
@@ -664,8 +676,8 @@ export const retrievePrevDatapoint = async function (user_id : string, term : "s
 }
 
 
-const formatDatapoint = function (d : Datapoint) {
-    if(d === null || d === undefined){
+const formatDatapoint = function (d: Datapoint) {
+    if (d === null || d === undefined) {
         return null;
     }
     // Turn relation ids into the actual arrays / records themselves using
@@ -714,14 +726,13 @@ export const retrieveAllDatapoints = async function (user_id) {
     if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(datapoints), {
-            headers: { 'Cache-Control': 'max-age=1800' }
+            headers: {'Cache-Control': 'max-age=1800'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
     }
 
     return datapoints;
 };
-
 
 
 export const retrievePrevAllDatapoints = async function (user_id) {
@@ -756,14 +767,13 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(datapoints), {
-            headers: { 'Cache-Control': 'max-age=1800' }
+            headers: {'Cache-Control': 'max-age=1800'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
     }
 
     return datapoints;
 };
-
 
 
 function chunks(array, size) {
@@ -779,7 +789,7 @@ function chunks(array, size) {
  * @param song_id
  * @returns Analytics
  */
-export const retrieveSongAnalytics = async (song_id : string) => {
+export const retrieveSongAnalytics = async (song_id: string) => {
     const data = await fetchData(`audio-features?id=${song_id}`)
     return data.audio_features;
 }
@@ -788,7 +798,7 @@ export const retrieveSongAnalytics = async (song_id : string) => {
  * @param songs
  * @returns Array<Analytics>
  */
-export const batchAnalytics = async (songs : Array<{song_id : string}>) => {
+export const batchAnalytics = async (songs: Array<{ song_id: string }>) => {
     const songChunks = chunks(songs, 50);
     const analytics = [];
     for (const chunk of songChunks) {
@@ -803,17 +813,13 @@ export const batchAnalytics = async (songs : Array<{song_id : string}>) => {
  * @param artist_ids
  * @returns Array<Artist>
  */
-export const batchArtists = async (artist_ids : Array<string>) => {
+export const batchArtists = async (artist_ids: Array<string>) => {
     const artistChunks = chunks(artist_ids, 50);
     const artists = [];
     for (const chunk of artistChunks) {
         const ids = chunk.join(',');
         const result = (await fetchData(`artists/?ids=${ids}`)).artists;
         artists.push(...result.map(function (e) {
-            let image = null;
-            if (e.images.length > 0) {
-                image = e.images[1].url
-            }
             return formatArtist(e);
         }));
     }
@@ -825,7 +831,7 @@ export const batchArtists = async (artist_ids : Array<string>) => {
  * @param artistID
  * @param tracks
  */
-export const getAlbumsWithTracks = async function (artistID : string, tracks : Array<Song>) {
+export const getAlbumsWithTracks = async function (artistID: string, tracks: Array<Song>) {
     let albumsWithTracks = [];
 
     if (!tracks) {
@@ -839,7 +845,7 @@ export const getAlbumsWithTracks = async function (artistID : string, tracks : A
 
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
-        const trackList : Array<Song> = albumTracks[i].items;
+        const trackList: Array<Song> = albumTracks[i].items;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
         if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithTracks.push(album);
@@ -882,7 +888,7 @@ export const formatSong = (song) => {
             console.warn("Error formatting song: Image not found for ", song);
         }
     }
-    let artists : Array<Artist> = song.artists.map(a => formatArtist(a));
+    let artists: Array<Artist> = song.artists.map(a => formatArtist(a));
     return {
         song_id: song.id,
         title: song.name,
@@ -897,7 +903,7 @@ export const formatSong = (song) => {
  * @param id
  * @returns Array<Artist>
  */
-export const getSimilarArtists = async (id : string) => {
+export const getSimilarArtists = async (id: string) => {
     return (await fetchData(`artists/${id}/related-artists`)).artists.map(a => formatArtist(a));
 }
 
@@ -979,7 +985,7 @@ export const hydrateDatapoints = async function () {
  * @param artists
  * @returns {*[]}
  */
-const calculateTopGenres = function (artists : Array<Artist>) {
+const calculateTopGenres = function (artists: Array<Artist>) {
 
     let topGenres = [];
 
@@ -990,7 +996,7 @@ const calculateTopGenres = function (artists : Array<Artist>) {
             if (existingGenre) {
                 existingGenre.weight += artists.length - i;
             } else {
-                topGenres.push({ genre, weight: artists.length - i });
+                topGenres.push({genre, weight: artists.length - i});
             }
         });
     });

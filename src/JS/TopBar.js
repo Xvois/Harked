@@ -32,7 +32,8 @@ const TopBar = () => {
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                     {isLoggedIn() &&
                         (
-                            <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p></a>
+                            <a className='element' href='profile#me'><PersonIcon fontSize='large'/><p>Your profile</p>
+                            </a>
                         )
                     }
                     <ClickAwayListener onClickAway={() => setShowSearchResults(false)}>

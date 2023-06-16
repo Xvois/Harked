@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    retrieveFollowers,
-    isLoggedIn,
     followUser,
-    unfollowUser,
+    isLoggedIn,
+    retrieveFollowers,
     retrieveFollowing,
+    retrieveLoggedUserID,
     retrieveUser,
-    retrieveLoggedUserID
+    unfollowUser
 } from './HDM.ts';
 import './../CSS/Followers.css'
 
@@ -49,17 +49,17 @@ const FollowersComponent = () => {
             setLoggedFollowing((prevFollowing) => prevFollowing.filter((followedUser) => followedUser.user_id !== followerUserID));
         } else {
             await followUser(loggedUser.user_id, followerUserID);
-            setLoggedFollowing((prevFollowing) => [...prevFollowing, { user_id: followerUserID }]);
+            setLoggedFollowing((prevFollowing) => [...prevFollowing, {user_id: followerUserID}]);
         }
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
             <div style={{borderBottom: '1px solid var(--secondary-colour)', marginBottom: '15px'}}>
-                <h2 style={{ color: 'var(--primary-colour)', fontSize: '1.5em', marginBottom: '0px'}}>
+                <h2 style={{color: 'var(--primary-colour)', fontSize: '1.5em', marginBottom: '0px'}}>
                     Followers for {targetUser ? targetUser.username : 'Loading...'}
                 </h2>
-                <p style={{ color: 'var(--secondary-colour)', fontSize: '1.2em', marginBottom: '0', marginTop: '0'}}>
+                <p style={{color: 'var(--secondary-colour)', fontSize: '1.2em', marginBottom: '0', marginTop: '0'}}>
                     {followers.length} follower{followers.length !== 1 ? 's' : ''}
                 </p>
             </div>
@@ -75,7 +75,7 @@ const FollowersComponent = () => {
                         borderBottom: index === followers.length - 1 ? 'none' : '1px solid var(--accent-colour)'
                     }}
                 >
-                    {index % 2 === 0 && <div className={'bg-element'} />}
+                    {index % 2 === 0 && <div className={'bg-element'}/>}
                     <a
                         href={`/profile#${follower.user_id}`}
                         style={{
