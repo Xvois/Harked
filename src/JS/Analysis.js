@@ -279,7 +279,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             } else {
                 topMessage = `${possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} love for ${item} is best described by ${possessive} time listening to ${relatedArtists[0].name}.`
                 if (relatedArtists.length > 1) {
-                    secondMessage = `It's also contributed to by ${possessive} time listening to${relatedArtists.slice(1, relatedArtists.length).map(e => ' ' + e.name)}.`
+                    secondMessage = `It's also contributed to by ${relatedArtists.slice(1, 4).map(e => ' ' + e.name)}${relatedArtists.length > 4 ? (`, as well as ${relatedArtists.length - 4} other${relatedArtists.length > 5 ? 's' : ''}`) : ('')}.`
                 } else {
                     secondMessage = ``
                 }

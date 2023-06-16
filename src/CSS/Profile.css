@@ -416,6 +416,7 @@ select.dropdown {
 
 .user-details {
     font-family: "Inter Tight", sans-serif;
+    word-break: break-all;
     height: max-content;
     width: max-content;
 }
