@@ -894,9 +894,7 @@ export const formatSong = (song) => {
         title: song.name,
         artists: artists,
         image: image,
-        link: song.external_urls.spotify,
-        analytics: {}
-    }
+        link: song.external_urls.spotify,}
 }
 /**
  * Returns similar artists to the artist id passed in.

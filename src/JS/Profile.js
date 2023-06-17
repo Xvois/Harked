@@ -257,15 +257,15 @@ const ShowcaseListItem = (props) => {
                                 {type !== 'genres' ?
                                     <div style={{width: 'max-content', alignContent: 'center'}}>
                                         <button style={{
+                                            fontFamily: 'Inter Tight',
+                                            color: 'var(--primary-colour)',
                                             background: 'none',
                                             border: 'none',
-                                            color: 'var(--primary-colour)',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             flexDirection: 'row',
                                             alignItems: 'center'
                                         }} onClick={handleClick}>
-                                            <h3>{showAnalytics ? 'Less' : 'More'}</h3>
                                             <div style={{
                                                 transform: `rotate(${showAnalytics ? '180' : '0'}deg)`,
                                                 transition: '0.25s all',
@@ -273,6 +273,7 @@ const ShowcaseListItem = (props) => {
                                             }}>
                                                 <ExpandMore fontSize={'large'}/>
                                             </div>
+                                            <h3>{showAnalytics ? 'Less' : 'More'}</h3>
                                         </button>
                                     </div>
                                     :
@@ -311,12 +312,16 @@ const ShowcaseListItem = (props) => {
                             <></>
                         }
                     </div>
-                    <button className={'showcase-exit-button'} onClick={() => setExpansion(77)}>x</button>
+                    <button className={'showcase-exit-button'} onClick={() => {setExpansion(77); setShowAnalytics(false)}}>x</button>
                 </>
                 :
                 <div className={"showcase-list-item-text"}>
                     <h2>{getLIName(element)}</h2>
-                    <p>{getLIDescription(element)}</p>
+                    <div className={"showcase-list-item-text"} style={{display:'flex', flexDirection: 'row'}}>
+                        {changeMessage && (changeMessage)}
+                        {changeMessage && getLIDescription(element) && (<p style={{padding: '0 5px'}}>·</p>)}
+                        <p>{getLIDescription(element)}</p>
+                    </div>
                 </div>
             }
         </div>
@@ -916,6 +921,7 @@ const Profile = () => {
                         indexes.forEach(i => termsCopy[i] = null);
                         setTerms(termsCopy);
                     }
+                    console.log(datapoints);
                     setAllDatapoints(datapoints);
                     setSelectedDatapoint(datapoints[termIndex]);
                     setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
