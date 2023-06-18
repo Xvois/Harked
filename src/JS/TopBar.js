@@ -18,7 +18,7 @@ const TopBar = () => {
 
     const updateSize = () => {
         setWindowWidth(window.innerWidth);
-        if (window.innerWidth > 1000) {
+        if (window.innerWidth > 800) {
             setMenuExpanded(false);
         }
     }
@@ -27,7 +27,7 @@ const TopBar = () => {
     // noinspection HtmlUnknownAnchorTarget
     return (
         <header className="header">
-            {windowWidth > 1000 ?
+            {windowWidth > 800 ?
                 <div className="element-container">
                     <a className='element' href='/'><HomeIcon fontSize='large'/><p>Home</p></a>
                     {isLoggedIn() &&

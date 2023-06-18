@@ -18,6 +18,8 @@ import {
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
 
+// TODO: REINSTATE CACHE WITH PROPER GUARD RAILS
+
 
 export interface Record {
     id: string,
@@ -166,13 +168,13 @@ export const retrieveUser = async function (user_id) {
     const userData = await getUser(user_id);
 
     // Cache the result
-    if ('caches' in window) {
+/*    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(userData), {
             headers: {'Cache-Control': 'max-age=36000'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
-    }
+    }*/
 
     return userData;
 }
@@ -614,11 +616,11 @@ export const retrieveLoggedUserID = async function () {
     const userID = response.id;
 
     // Cache the result
-    if ('caches' in window) {
+/*    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(userID));
         await cacheStorage.put(cacheKey, responseToCache);
-    }
+    }*/
 
     return userID;
 }
@@ -723,13 +725,13 @@ export const retrieveAllDatapoints = async function (user_id) {
     await enableAutoCancel();
 
     // Cache the result with max age of 30 minutes
-    if ('caches' in window) {
+/*    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(datapoints), {
             headers: {'Cache-Control': 'max-age=1800'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
-    }
+    }*/
 
     return datapoints;
 };
@@ -764,13 +766,13 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     await enableAutoCancel();
 
     // Cache the result
-    if ('caches' in window) {
+/*    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(datapoints), {
             headers: {'Cache-Control': 'max-age=1800'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
-    }
+    }*/
 
     return datapoints;
 };

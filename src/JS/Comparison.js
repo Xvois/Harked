@@ -96,9 +96,9 @@ const Comparison = () => {
         const topGenre = datapoints[userIndex].top_genres[0];
         return (
             <div className={'user-details'} style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>
-                <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>Comparison with</p>
-                <h2 style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>{user.username}</h2>
-                <p style={alignment === 'right' ? {marginLeft: 'auto'} : {}}><span
+                <p style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {}}>Comparison with</p>
+                <h2 style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {}}>{user.username}</h2>
+                <p style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {}}><span
                     style={{color: 'var(--accent-colour)'}}>{topArtist.name}</span> fan · <span
                     style={{color: 'var(--accent-colour)'}}>{topGenre}</span> fan</p>
                 <div style={alignment === 'right' ? {

@@ -15,25 +15,33 @@ function Homepage() {
     const [token, setToken] = useState("")
     const navigate = useNavigate();
     useEffect(() => {
+        handleCacheReset();
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
     }, [token])
 
-    const handleLogOut = () => {
-        window.localStorage.clear();
+    const handleCacheReset = () => {
         if ('caches' in window) {
-            caches.delete('userIDCache').then(success => {
-                if (success) {
-                    console.log(`Cache 'userIDCache' has been cleared.`);
-                } else {
-                    console.log(`Cache 'userIDCache' does not exist.`);
-                }
-            }).catch(error => {
-                console.error(`Error while clearing cache 'userIDCache': ${error}`);
-            });
+            const cacheTypes = ['userDataCache', 'datapointsCache', 'prevDatapointsCache', 'userIDCache'];
+            cacheTypes.forEach(t => {
+                caches.delete(t).then(success => {
+                    if (success) {
+                        console.log(`Cache ${t} has been cleared.`);
+                    } else {
+                        console.log(`Cache ${t} does not exist.`);
+                    }
+                }).catch(error => {
+                    console.error(`Error while clearing cache ${t}: ${error}`);
+                });
+            })
         } else {
             console.warn('The caches API is not supported in this browser.');
         }
+    }
+
+    const handleLogOut = () => {
+        handleCacheReset();
+        window.localStorage.clear();
         setToken("");
     }
 
@@ -80,8 +88,9 @@ function Homepage() {
                         <></>
                     }
                 </div>
+                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '12px', color: 'red'}}>Work is being done to fix issues with the current cache policy. As a part of debugging, data caching has currently been disabled. Pages will take longer to load as a result.</p>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.9</p>
+                    v1.3.10<span style={{color: 'var(--secondary-colour)'}}>cr</span></p>
             </div>
         </div>
     );

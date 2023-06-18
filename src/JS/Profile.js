@@ -82,21 +82,25 @@ const ShowcaseList = (props) => {
 const ShowcaseListItem = (props) => {
     const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type} = props;
 
-    const [expansion, setExpansion] = useState(index === 0 ? (type === 'genres' ? 300 : 675) : 77);
+    const maxExpansion = 650;
+    const secondExpansion = 300;
+    const minExpansion = 77;
+
+    const [expansion, setExpansion] = useState(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion);
     const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres') : false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
 
     useEffect(() => {
-        setExpansion(index === 0 ? (type === 'genres' ? 300 : 675) : 77)
+        setExpansion(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion)
         setShowAnalytics(index === 0 ? (type !== 'genres') : false);
     }, [index])
 
     const handleClick = () => {
         if (showAnalytics) {
-            setExpansion(300);
+            setExpansion(secondExpansion);
             setShowAnalytics(false);
         } else {
-            setExpansion(675);
+            setExpansion(maxExpansion);
             setShowAnalytics(true);
         }
     }
@@ -210,7 +214,7 @@ const ShowcaseListItem = (props) => {
              style={{height: `${expansion}px`}}
              onClick={() => {
                  if (expansion < 100) {
-                     setExpansion(300)
+                     setExpansion(secondExpansion)
                  }
              }}>
             {expansion > 100 ?
@@ -253,7 +257,7 @@ const ShowcaseListItem = (props) => {
                                     }
                                 </div>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
-                                <p style={{marginTop: '0 auto'}}>{description.subtitle}</p>
+                                <p className={'supplemental-content'} style={{marginTop: '0 auto'}}>{description.subtitle}</p>
                                 {type !== 'genres' ?
                                     <div style={{width: 'max-content', alignContent: 'center'}}>
                                         <button style={{
@@ -281,7 +285,7 @@ const ShowcaseListItem = (props) => {
                                 }
                             </div>
                         </div>
-                        {expansion > 300 ?
+                        {expansion > secondExpansion ?
                             <>
                                 <hr style={{width: '100%', color: 'var(--secondary-colour)'}}/>
                                 <div className={'analysis-wrapper'}>
@@ -312,7 +316,7 @@ const ShowcaseListItem = (props) => {
                             <></>
                         }
                     </div>
-                    <button className={'showcase-exit-button'} onClick={() => {setExpansion(77); setShowAnalytics(false)}}>x</button>
+                    <button className={'showcase-exit-button'} onClick={() => {setExpansion(minExpansion); setShowAnalytics(false)}}>x</button>
                 </>
                 :
                 <div className={"showcase-list-item-text"}>
@@ -577,7 +581,7 @@ const Recommendation = (props) => {
             padding: '15px',
             width: 'max-content',
             overflow: 'hidden',
-            wordBreak: 'break-all'
+            wordBreak: 'break-word'
         }}>
             <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'}/>

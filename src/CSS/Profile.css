@@ -115,6 +115,7 @@ select.dropdown {
 
 
 .showcase-list-item-text {
+    align-items: center;
     height: max-content;
     width: max-content;
     margin-left: auto;
@@ -169,7 +170,6 @@ select.dropdown {
     flex-direction: row;
     flex-wrap: wrap;
     width: 100%;
-    height: 300px;
     padding: 25px 0;
     align-items: center;
     overflow: hidden;
@@ -186,7 +186,7 @@ select.dropdown {
     display: flex;
     flex-direction: column;
     height: 275px;
-    max-width: 50%;
+    max-width: 45%;
     gap: 5px;
     font-family: "Inter Tight", sans-serif;
     overflow: hidden;
@@ -194,8 +194,9 @@ select.dropdown {
 
 .item-image {
     flex-shrink: 0;
-    height: 250px;
-    width: 250px;
+    aspect-ratio: 1;
+    max-width: 250px;
+    width: 35%;
     position: relative;
 }
 
@@ -410,27 +411,24 @@ select.dropdown {
     flex-direction: row;
     justify-content: space-between;
     height: max-content;
-    width: max-content;
     overflow: hidden;
     padding: 15px;
 }
 
 .user-details {
+    word-break: break-word;
     font-family: "Inter Tight", sans-serif;
-    word-break: break-all;
     height: max-content;
-    width: max-content;
+    width: 100%;
 }
 
 .user-details > h2 {
-    width: max-content;
     font-size: 60px;
     margin: 0;
     text-transform: uppercase;
 }
 
 .user-details > p {
-    width: max-content;
     font-weight: bold;
     margin: 0;
 }
@@ -480,7 +478,7 @@ select.dropdown {
 }
 
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 800px) {
 
     .supplemental-content {
         display: none;
