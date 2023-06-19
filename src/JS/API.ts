@@ -8,30 +8,37 @@ const pb = new PocketBase("https://harked.fly.dev/");
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.
  * @param path
+ * @param retryCount
  * @returns {Promise<any>} An object.
  */
-export const fetchData = async (path) => {
-    //console.log("External API call made to: " + path)
-    const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
-        headers: {
-            Authorization: `Bearer ${window.localStorage.getItem('access-token')}`
-        },
-    }).catch(function (err) {
+export async function fetchData(path, retryCount = 0) {
+    try {
+        const { data } = await axios.get(`https://api.spotify.com/v1/${path}`, {
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem('access-token')}`
+            },
+        });
+        return data;
+    } catch (err) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         } else if (err.response.status === 401) {
             reAuthenticate();
-        } else if (err.response.status === 429) {
-            alert("Too many API calls made! Take a deep breath and refresh the page.")
-        } else if (err.response.status === 503) {
-            console.warn("[Error in API call] Server is temporarily unavailable, retrying in 3 seconds...");
-            return new Promise((resolve) => setTimeout(resolve, 3000));
+        } else if (err.response.status === 429 || err.response.status === 503) {
+            if (retryCount < 3) {
+                console.warn(`[Error in API call] CODE : ${err.response.status}`);
+                await new Promise((resolve) => setTimeout(resolve, 3000));
+                return fetchData(path, retryCount + 1);
+            } else {
+                console.warn(`[Error in API call] CODE : ${err.response.status}`);
+                return null;
+            }
         } else {
             alert(err);
         }
-    })
-    return data;
+    }
 }
+
 
 /**
  * Makes a put request to the Spotify api.

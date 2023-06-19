@@ -19,7 +19,7 @@ export const translateAnalytics = {
 
 export const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
 
-// Get the display name of the list item
+// Get the display name of the list item.
 export const getLIName = function (data) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
@@ -167,14 +167,6 @@ export const getItemIndexChange = function (item, index, type, comparisonDP) {
     return lastIndex - index;
 }
 
-export const getAllItemIndexChanges = function (type, dp1, dp2) {
-    let deltas = [];
-    dp1[`top_${type}`].forEach(function (element, index) {
-        deltas.push(getItemIndexChange(element, index, type, dp2));
-    })
-    return deltas;
-}
-
 export const getAllArtistAssociations = function () {
     // noinspection SpellCheckingInspection
     const memo = new Map();
@@ -291,27 +283,6 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
         header: topMessage,
         subtitle: secondMessage
     }
-}
-
-export const compareItemBetweenUsers = (item, dp1, dp2, type) => {
-    let returnMessage;
-    switch (type) {
-        case 'artists':
-            const dp1Contains = containsElement(item, dp1, type);
-            const dp2Contains = containsElement(item, dp2, type);
-            if (dp1Contains && dp2Contains) {
-                returnMessage = `Both users have this artist in their datapoints.`
-            } else {
-                const genresShared = item.genres.filter(g => containsElement(g, dp1, 'genres') && containsElement(g, dp2, 'genres'));
-                if (genresShared.length > 0) {
-                    returnMessage = `${item.name} isn't a shared interest, but the following genre(s) are ${genresShared}.`
-                } else {
-                    returnMessage = `Not only is the artist not shared, but neither are any of the genres.`
-                }
-            }
-    }
-
-    return returnMessage;
 }
 
 export const getItemType = (item) => {

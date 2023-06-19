@@ -1,0 +1,9 @@
+
+.setting-element {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 25px;
+    border-bottom: 1px solid var(--secondary-colour);
+}

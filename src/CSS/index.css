@@ -1,7 +1,7 @@
 body {
     position: relative;
     margin: 0;
-    padding: 0 50px;
+    padding-top: 75px;
     min-height: 100vh;
     font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -60,12 +60,6 @@ code {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-}
-
-@media screen and (max-width: 1000px) {
-    body {
-        padding: 0;
-    }
 }
 
 

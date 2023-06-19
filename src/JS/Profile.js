@@ -4,7 +4,6 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
-    changeSettings,
     deleteRecommendation,
     followsUser,
     followUser,
@@ -87,12 +86,12 @@ const ShowcaseListItem = (props) => {
     const minExpansion = 77;
 
     const [expansion, setExpansion] = useState(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion);
-    const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres') : false);
+    const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres' && isLoggedIn()) : false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
 
     useEffect(() => {
-        setExpansion(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion)
-        setShowAnalytics(index === 0 ? (type !== 'genres') : false);
+        setExpansion(index === 0 ? (type === 'genres' || !isLoggedIn() ? secondExpansion : maxExpansion) : minExpansion)
+        setShowAnalytics(index === 0 ? (type !== 'genres' && isLoggedIn()) : false);
     }, [index])
 
     const handleClick = () => {
@@ -258,7 +257,7 @@ const ShowcaseListItem = (props) => {
                                 </div>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
                                 <p className={'supplemental-content'} style={{marginTop: '0 auto'}}>{description.subtitle}</p>
-                                {type !== 'genres' ?
+                                {type !== 'genres' && isLoggedIn() ?
                                     <div style={{width: 'max-content', alignContent: 'center'}}>
                                         <button style={{
                                             fontFamily: 'Inter Tight',
@@ -285,7 +284,7 @@ const ShowcaseListItem = (props) => {
                                 }
                             </div>
                         </div>
-                        {expansion > secondExpansion ?
+                        {showAnalytics ?
                             <>
                                 <hr style={{width: '100%', color: 'var(--secondary-colour)'}}/>
                                 <div className={'analysis-wrapper'}>
@@ -538,7 +537,7 @@ const ProfileRecommendations = (props) => {
                 {recs.length > 0 ?
                     recs.map(e => {
                         const type = getItemType(e.item);
-                        return <Recommendation rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete}/>
+                        return <Recommendation key={e.id} rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete}/>
                     })
                     :
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
@@ -667,7 +666,7 @@ const ArtistAnalysis = (props) => {
 
                             :
                             <p>There are no saved songs from this
-                                artist on this public profile, so an analysis is not available.</p>
+                                artist on in any public playlists, so an analysis is not available.</p>
                     )
                 }
             </div>
@@ -918,7 +917,7 @@ const Profile = () => {
                             setErrorDetails({
                                 icon: <ReportGmailerrorredIcon fontSize={'large'}/>,
                                 description: 'We do not have enough information about this user to generate a profile for them.',
-                                errCode: 'COMP TERM ELIMINATION'
+                                errCode: 'complete_term_elimination'
                             });
                         }
                         let termsCopy = terms;
@@ -938,7 +937,7 @@ const Profile = () => {
                 }),
                 retrieveSettings(loadID).then(function (s) {
                     setSettings(s);
-                    if (!s.public && !isOwnPage) {
+                    if (!s.public && pageHash !== 'me') {
                         console.info("LOCKED PAGE", settings);
                         setIsError(true);
                         setErrorDetails({
@@ -1067,19 +1066,7 @@ const Profile = () => {
                             <ComparisonLink pageHash={pageHash} pageUser={pageUser} loggedUserID={loggedUserID}
                                             longTermDP={allDatapoints[2]}/>
                             :
-                            isOwnPage && isLoggedIn() ?
-                                <div style={{textAlign: 'right', marginLeft: 'auto'}}>
-                                    <h3>Profile visibility</h3>
-                                    <p>Change whether or not your profile is publicly displayed.</p>
-                                    <button className={'std-button'} style={{marginLeft: 'auto'}}
-                                            onClick={() => {
-                                                const new_settings = {...settings, public: !settings.public};
-                                                setSettings(new_settings);
-                                                changeSettings(pageGlobalUserID, new_settings);
-                                            }}>{settings.public ? 'Public' : 'Private'}</button>
-                                </div>
-                                :
-                                <></>
+                            <></>
                         }
                     </div>
                     <div className={'simple-wrapper'}>

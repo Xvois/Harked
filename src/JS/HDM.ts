@@ -167,14 +167,14 @@ export const retrieveUser = async function (user_id) {
     // If not in cache, make the API request
     const userData = await getUser(user_id);
 
-    // Cache the result
-/*    if ('caches' in window) {
+   // Cache the result
+    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(userData), {
             headers: {'Cache-Control': 'max-age=36000'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
-    }*/
+    }
 
     return userData;
 }
@@ -616,11 +616,11 @@ export const retrieveLoggedUserID = async function () {
     const userID = response.id;
 
     // Cache the result
-/*    if ('caches' in window) {
+    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(userID));
         await cacheStorage.put(cacheKey, responseToCache);
-    }*/
+    }
 
     return userID;
 }
@@ -725,13 +725,13 @@ export const retrieveAllDatapoints = async function (user_id) {
     await enableAutoCancel();
 
     // Cache the result with max age of 30 minutes
-/*    if ('caches' in window) {
+    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(datapoints), {
             headers: {'Cache-Control': 'max-age=1800'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
-    }*/
+    }
 
     return datapoints;
 };
@@ -752,8 +752,6 @@ export const retrievePrevAllDatapoints = async function (user_id) {
         }
     }
 
-    console.info('Getting all previous datapoints.');
-
     await disableAutoCancel();
     const terms = ["short_term", "medium_term", "long_term"];
     let datapoints = [];
@@ -766,13 +764,13 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     await enableAutoCancel();
 
     // Cache the result
-/*    if ('caches' in window) {
+    if ('caches' in window) {
         const cacheStorage = await caches.open(cacheName);
         const responseToCache = new Response(JSON.stringify(datapoints), {
             headers: {'Cache-Control': 'max-age=1800'}
         });
         await cacheStorage.put(cacheKey, responseToCache);
-    }*/
+    }
 
     return datapoints;
 };
@@ -827,6 +825,24 @@ export const batchArtists = async (artist_ids: Array<string>) => {
     }
     return artists;
 };
+
+export const deleteUser = async (user_id : string) => {
+    const universal_id = hashString(user_id);
+    const datapoints = await getLocalData('datapoints', `owner.user_id="${user_id}"`);
+    const datapointPromises = datapoints.map(d => deleteLocalData('datapoints', d.id));
+    await Promise.all(datapointPromises);
+    const connectedRecordsPromises = [
+        deleteLocalData("user_followers", universal_id),
+        deleteLocalData("user_following", universal_id),
+        deleteLocalData("settings", universal_id),
+        deleteLocalData("profile_data", universal_id),
+        deleteLocalData("comment_section", universal_id),
+        deleteLocalData("profile_recommendations", universal_id),
+    ]
+    await Promise.all(connectedRecordsPromises);
+    const user = await getUser(user_id);
+    await deleteLocalData('user', user.id);
+}
 
 /**
  * Returns any albums from a given that contain the tracks given.
