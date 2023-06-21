@@ -15,7 +15,6 @@ select.dropdown {
 .wrapper {
     display: flex;
     flex-direction: column;
-    padding-bottom: 200px;
 }
 
 @keyframes fadeIn {
@@ -60,6 +59,7 @@ select.dropdown {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .simple-instance {
@@ -68,7 +68,8 @@ select.dropdown {
     position: relative;
     align-items: center;
     height: max-content;
-    width: 1000px;
+    width: 750px;
+    max-width: 1000px;
     min-width: 0;
     flex-grow: 1;
     padding: 25px 25px 0 25px;
@@ -400,52 +401,37 @@ select.dropdown {
 
 
 .user-container {
-    display: flex;
     position: relative;
-    flex-grow: 1;
-    flex-direction: row;
-    justify-content: space-between;
     height: max-content;
-    overflow: hidden;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.profile-picture {
+    position: relative;
+    max-height: 150px;
+    aspect-ratio: 1;
 }
 
 .user-details {
-    word-break: break-word;
     margin-left: 10px;
-    font-family: "Inter Tight", sans-serif;
-    height: max-content;
-    width: 100%;
 }
 
-.user-details > h2 {
-    font-size: 60px;
-    margin: 0;
-    text-transform: uppercase;
-}
-
-.user-details > p {
-    font-weight: bold;
-    margin: 0;
-}
-
-.user-followers {
+.user-links {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    width: max-content;
-    justify-content: center;
-    font-family: "Inter Tight", sans-serif;
-    font-weight: normal;
+    justify-content: space-between;
+    align-items: flex-end;
+    text-align: right;
+    margin-left: auto;
 }
 
-.follow-button {
-    font-family: "Inter Tight", sans-serif;
-    color: var(--primary-colour);
-    background: none;
-    border-radius: 10px;
-    border: 2px solid var(--primary-colour);
-    cursor: pointer;
+.term-button {
+    padding: 10px;
+    border-radius: 100%;
+    border: 1px solid var(--primary-colour);
 }
+
 
 .settings-container {
     display: flex;

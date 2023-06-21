@@ -26,7 +26,7 @@ const TopBar = () => {
     const [showBorder, setShowBorder] = useState(false);
 
     const ShowBarStyle = (showBorder ? {borderBottom: '1px solid var(--bg-colour)'} : {})
-    const HideBarStyle = {height: '0px', opacity: '0', overflow: 'hidden'};
+    const HideBarStyle = {height: '0px', opacity: '0', overflow: 'hidden', pointerEvents: 'none'};
     const OpenMenuStyle = {...ShowBarStyle, height: '100vh', background: 'var(--bg-colour)'}
 
     useEffect(() => {
@@ -57,12 +57,12 @@ const TopBar = () => {
                 setShowBar(true);
             }
         }else{
-            if(showBar && window.pageYOffset >= 75){
+            if(showBar && window.pageYOffset >= 77){
                 setShowBar(false);
             }
         }
 
-        if(window.pageYOffset <= 75 && !isMenuOpen){
+        if(window.pageYOffset <= 77 && !isMenuOpen){
             setShowBorder(true);
         }else{
             if(showBar){
@@ -74,8 +74,8 @@ const TopBar = () => {
     }
 
     return (
-        <div className='header-pin'>
-            <header className="header" style={
+        <header className='header-pin'>
+            <div className="header" style={
                 isMenuOpen ?
                     (OpenMenuStyle)
                     :
@@ -86,11 +86,11 @@ const TopBar = () => {
                         <div className={'element-container'}>
                             <a id='logo' href={'/'}>
                                 <BlurOn fontSize={'large'} />
-                                <h1>Harked</h1>
+                                <h1 style={{margin : '0'}}>Harked</h1>
                             </a>
                             {
                                 redirects.map(e => {
-                                    return <RedirectElement concise title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                    return <RedirectElement key={e.title} concise title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
                                 })
                             }
                             <Search showSearchResults />
@@ -113,13 +113,13 @@ const TopBar = () => {
                         <Search width={'100%'} showSearchResults />
                         {
                             redirects.map(e => {
-                                return <RedirectElement title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                return <RedirectElement key={e.title} title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
                             })
                         }
                     </div>
                 )}
-            </header>
-        </div>
+            </div>
+        </header>
     )
 }
 

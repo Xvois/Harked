@@ -16,7 +16,6 @@ function Homepage() {
     const navigate = useNavigate();
     useEffect(() => {
         // TEMP FOR CR TESTING TODO: REMOVE
-        handleCacheReset();
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
     }, [token])

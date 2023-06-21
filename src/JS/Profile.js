@@ -53,10 +53,15 @@ import {
     PageError,
     SpotifyLink,
     StatBlock,
-    StyledField, UserContainer,
+    StyledField,
     ValueIndicator
 } from "./SharedComponents.tsx";
 import {ExpandMore} from "@mui/icons-material";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import * as PropTypes from "prop-types";
+
+const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
 
 const ShowcaseList = (props) => {
     const {pageUser, possessive, playlists, selectedDatapoint, selectedPrevDatapoint = null, type, start, end} = props;
@@ -332,7 +337,7 @@ const ShowcaseListItem = (props) => {
 }
 
 function ComparisonLink(props) {
-    const {pageUser, pageHash, loggedUserID, longTermDP} = props;
+    const {pageUser, loggedUserID, longTermDP, concise = false} = props;
     const [loggedDP, setLoggedDP] = useState(null);
 
     useEffect(() => {
@@ -341,14 +346,23 @@ function ComparisonLink(props) {
 
     return (
         <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto'}}>
-            <div style={{textAlign: 'right', marginLeft: 'auto'}}>
-                <h3 style={{margin: 0}}>Compare</h3>
-                <p style={{margin: '0 0 5px 0'}}>See how your stats stack up against {pageUser.username}</p>
-                <a className={'std-button'} style={{marginLeft: 'auto'}}
-                   href={`/compare#${loggedUserID}&${pageHash}`}>Compare</a>
-            </div>
-            <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                            diameter={50}/>
+            {concise ?
+                <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
+                    <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
+                                    diameter={50}/>
+                </a>
+                :
+                <>
+                    <div style={{textAlign: 'right', marginLeft: 'auto'}}>
+                        <h3 style={{margin: 0}}>Compare</h3>
+                        <p style={{margin: '0 0 5px 0'}}>See how your stats stack up against {pageUser.username}</p>
+                        <a className={'std-button'} style={{marginLeft: 'auto'}}
+                           href={`/compare#${loggedUserID}&${pageUser.user_id}`}>Compare</a>
+                    </div>
+                    <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
+                                    diameter={50}/>
+                </>
+            }
         </div>
     )
 }
@@ -795,11 +809,130 @@ const PlaylistItem = function (props) {
     )
 }
 
+function TermSelection(props) {
+    const {terms, termIndex, setTermIndex} = props;
+    return (
+        <div>
+            {terms.map((t, i) => {
+                if(t !== null){
+                    return <button className={'term-button'} style={termIndex === i ? {background: 'var(--primary-colour)'} : {background: 'none'}} onClick={() => setTermIndex(i)}></button>
+                }
+            })}
+        </div>
+    );
+}
+
+function UserContainer(props){
+    const {user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage, longTermDP, setTermIndex, terms, termIndex} = props;
+
+    const ShareProfileButton = (props) => {
+        const {pageGlobalUserID} = props;
+        const origin = (new URL(window.location)).origin;
+
+        const [copied, setCopied] = useState(false);
+
+        window.addEventListener('copy', () => {
+            setCopied(false);
+        })
+
+        return (
+            <button className={'std-button'} onClick={() => {
+                navigator.clipboard.writeText(`${origin}/profile#${pageGlobalUserID}`).then(() => setCopied(true))
+            }}>
+                {copied ?
+                    "Copied link!"
+                    :
+                    "Share profile"
+                }
+            </button>
+        )
+    }
+
+    const [isFollowing, setIsFollowing] = useState(isLoggedUserFollowing);
+    // For optimistic updates
+    const [followerNumber, setFollowerNumber] = useState(followers.length);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    const updateSize = () => {
+        setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener("resize", updateSize);
+
+    const handleFollowClick = () => {
+        if(!isFollowing){
+            setIsFollowing(true);
+            const n = followerNumber;
+            setFollowerNumber(n+1);
+            followUser(loggedUserID, user.user_id).then(() => {
+                console.info('User followed!');
+            }).catch((err) => {
+                console.warn(`Error following user: `, err);
+                setIsFollowing(false);
+            })
+        }else{
+            setIsFollowing(false);
+            const n = followerNumber;
+            setFollowerNumber(n-1);
+            unfollowUser(loggedUserID, user.user_id).then(() => {
+                console.info('User unfollowed!');
+            }).catch((err) => {
+                console.warn(`Error unfollowing user: `, err);
+                setIsFollowing(true);
+            })
+        }
+    }
+
+    useEffect(() => {
+        setIsFollowing(isLoggedUserFollowing);
+    }, [isLoggedUserFollowing]);
+
+    useEffect(() => {
+        setFollowerNumber(followers.length);
+    }, [followers]);
+
+
+    return (
+        <div className='user-container'>
+            <div style={{display: 'flex', flexDirection: 'row'}}>
+
+                    <div className={'profile-picture'}>
+                        {user.profile_picture && (
+                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture} style={{height: '100%', width: '100%', objectFit: 'cover'}} />
+                        )}
+                    </div>
+                <div className={'user-details'}>
+                    <p style={{margin: '0'}}>Profile for</p>
+                    <h2 style={{margin: '0'}}>{user.username}</h2>
+                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center'}}>
+                        <a href={`/followers#${user.user_id}`} style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}</a>
+                        {isLoggedIn() && !isOwnPage && (
+                            <button style={{border: 'none', background: 'none', alignItems: 'center', height: '20px', width: '20px', margin: '0', padding: '0', color: 'var(--primary-colour)'}}
+                                    onClick={handleFollowClick}>
+                                {isFollowing ?
+                                    <CheckCircleOutlineIcon fontSize={'small'} />
+                                    :
+                                    <AddCircleOutlineIcon fontSize={'small'} />
+                                }
+                            </button>
+                        )}
+                    </div>
+                    <TermSelection setTermIndex={setTermIndex} terms={terms} termIndex={termIndex}/>
+                </div>
+                <div className={'user-links'}>
+                    <SpotifyLink simple={windowWidth < 700} link={`https://open.spotify.com/user/${user.user_id}`} />
+                    {!isOwnPage && isLoggedIn() &&
+                        <ComparisonLink concise={windowWidth < 700} pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                    }
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 const Profile = () => {
 
     const simpleDatapoints = ["artists", "songs", "genres"]
-    const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
     const pageHash = window.location.hash.split("#")[1];
 
     const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
@@ -974,32 +1107,7 @@ const Profile = () => {
                         name="description"
                         content={`Explore ${pageUser.username}'s profile on Harked.`}
                     />
-                    <UserContainer user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} />
-                    <div className={'settings-container'}>
-                        <div>
-                            <h3>Time frame</h3>
-                            <p>of information capture</p>
-                            <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                                {terms.map(function (term, i) {
-                                    if (term !== null) {
-                                        return (<button key={term}
-                                                        className={'std-button'}
-                                                        style={termIndex === i ? {} : {
-                                                            color: 'var(--secondary-colour)',
-                                                            borderColor: 'var(--secondary-colour)'
-                                                        }}
-                                                        onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
-                                    }
-                                })}
-                            </div>
-                        </div>
-                        {!isOwnPage && isLoggedIn() ?
-                            <ComparisonLink pageHash={pageHash} pageUser={pageUser} loggedUserID={loggedUserID}
-                                            longTermDP={allDatapoints[2]}/>
-                            :
-                            <></>
-                        }
-                    </div>
+                    <UserContainer user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
                             let description = '';
