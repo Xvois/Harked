@@ -1,45 +1,59 @@
+.header-pin {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: max-content;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
 
 .header {
-    position: fixed;
+    flex-grow: 1;
     top: 0;
     left: 0;
     display: flex;
-    flex-direction: row;
-    z-index: 2;
+    flex-direction: column;
     backdrop-filter: blur(10px);
-    width: 100%;
-    align-items: center;
+    height: max-content;
+    padding: 10px 25px;
     border-bottom: 1px solid var(--secondary-colour);
-    transition: 0.1s all ease-in-out;
+    transition: 0.25s all ease;
 }
 
 #logo {
     display: flex;
     flex-direction: row;
     align-items: center;
+    height: max-content;
     text-decoration: none;
     color: var(--primary-colour);
-    padding: 0 25px;
 }
 
 
 .element-container {
     display: flex;
     align-items: center;
-    width: 100%;
-    height: 100%;
     justify-content: space-between;
-    padding: 0 50px;
+}
+
+.expanded-menu-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 20px;
+    gap: 20px;
 }
 
 .redirect-element {
-    padding: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-width: max-content;
-    width: 100px;
+    flex-grow: 1;
     font-size: 20px;
     color: var(--primary-colour);
     text-decoration: none;
@@ -54,56 +68,11 @@
     text-transform: uppercase;
 }
 
-
-#menu {
-    width: min-content;
-    margin-left: auto;
-    cursor: pointer;
-}
-
-#menu:hover {
-    cursor: pointer;
-}
-
-#expanded-menu {
-    display: flex;
-    position: fixed;
-    flex-direction: column;
-    max-width: 100%;
-    min-width: 300px;
-    height: 100%;
-    top: 0;
-    right: 0;
-    z-index: 1;
-    background: var(--bg-colour);
-    border-left: 1px solid var(--primary-colour);
-}
-
-#expanded-menu > hr {
-    width: 200px;
-    border: 1px solid var(--primary-colour);
-    background: var(--primary-colour);
-    border-radius: 10px;
-    margin: 0;
-}
-
-.menu-element {
-    color: var(--primary-colour);
-    text-decoration: none;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px 20px 10px 20px;
-    gap: 15px;
-    font-family: 'Inter Tight', sans-serif;
-    text-transform: uppercase;
-    cursor: pointer;
-
-}
-
 .search-bar-container {
-    width: 250px;
+    position: relative;
+    height: max-content;
     justify-content: center;
+    background: var(--bg-colour);
 }
 
 .MuiFormControl-root {
@@ -113,8 +82,8 @@
 .results {
     display: flex;
     flex-direction: column;
+    width: 100%;
     position: absolute;
-    z-index: 5;
 }
 
 .result {
@@ -126,9 +95,9 @@
     color: var(--primary-colour);
     text-decoration: none;
     text-transform: none;
-
+    background: var(--bg-colour);
     backdrop-filter: blur(10px);
-    width: 218px;
+    flex-grow: 1;
     padding: 15px;
     border-left: 1px solid var(--secondary-colour);
     border-bottom: 1px solid var(--secondary-colour);

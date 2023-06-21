@@ -83,11 +83,9 @@ select.dropdown {
 
 .showcase-list-wrapper > div {
     transition: all 0.5s;
-    width: 80%;
-    max-width: 1000px;
+    width: 100%;
     margin: 0 auto;
 }
-
 
 .showcase-list-item {
     display: flex;
@@ -364,10 +362,8 @@ select.dropdown {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-
+    width: 100%;
     height: max-content;
-    width: 80%;
-    max-width: 1000px;
     margin: 0 auto;
 
     font-family: 'Inter Tight', sans-serif;
@@ -380,9 +376,8 @@ select.dropdown {
     flex-direction: row;
     justify-content: space-between;
 
+    width: 100%;
     height: max-content;
-    width: 80%;
-    max-width: 1000px;
     margin: 15px auto;
     padding: 0 0 16px 0;
 
@@ -412,11 +407,11 @@ select.dropdown {
     justify-content: space-between;
     height: max-content;
     overflow: hidden;
-    padding: 15px;
 }
 
 .user-details {
     word-break: break-word;
+    margin-left: 10px;
     font-family: "Inter Tight", sans-serif;
     height: max-content;
     width: 100%;
@@ -441,14 +436,12 @@ select.dropdown {
     justify-content: center;
     font-family: "Inter Tight", sans-serif;
     font-weight: normal;
-    padding-left: 15px;
 }
 
 .follow-button {
     font-family: "Inter Tight", sans-serif;
     color: var(--primary-colour);
     background: none;
-    padding: 0 10px;
     border-radius: 10px;
     border: 2px solid var(--primary-colour);
     cursor: pointer;
@@ -459,7 +452,6 @@ select.dropdown {
     flex-direction: row;
     justify-content: space-between;
     flex-wrap: wrap;
-    padding: 15px;
     gap: 15px;
     font-family: "Inter Tight", sans-serif;
 }
@@ -478,7 +470,7 @@ select.dropdown {
 }
 
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 650px) {
 
     .supplemental-content {
         display: none;

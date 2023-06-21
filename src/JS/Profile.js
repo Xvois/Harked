@@ -53,7 +53,7 @@ import {
     PageError,
     SpotifyLink,
     StatBlock,
-    StyledField,
+    StyledField, UserContainer,
     ValueIndicator
 } from "./SharedComponents.tsx";
 import {ExpandMore} from "@mui/icons-material";
@@ -162,7 +162,7 @@ const ShowcaseListItem = (props) => {
                                                     margin: 0,
                                                     fontSize: '12px',
                                                     color: 'var(--accent-colour)'
-                                                }}>{getLIDescription(e, 20)}</p>
+                                                }}>{getLIDescription(e)}</p>
                                             </div>
                                             <SpotifyLink link={e.link} simple/>
                                         </div>
@@ -286,7 +286,7 @@ const ShowcaseListItem = (props) => {
                         </div>
                         {showAnalytics ?
                             <>
-                                <hr style={{width: '100%', color: 'var(--secondary-colour)'}}/>
+                                <hr style={{width: '100%', border: '1px solid var(--secondary-colour)'}}/>
                                 <div className={'analysis-wrapper'}>
                                     {
                                         type === 'songs' ?
@@ -532,7 +532,7 @@ const ProfileRecommendations = (props) => {
                 gap: '15px',
                 flexWrap: 'wrap',
                 margin: '16px 0',
-                position: 'relative'
+                position: 'relative',
             }}>
                 {recs.length > 0 ?
                     recs.map(e => {
@@ -795,29 +795,6 @@ const PlaylistItem = function (props) {
     )
 }
 
-const ShareProfileButton = (props) => {
-    const {pageGlobalUserID} = props;
-    const origin = (new URL(window.location)).origin;
-
-    const [copied, setCopied] = useState(false);
-
-    window.addEventListener('copy', () => {
-        setCopied(false);
-    })
-
-    return (
-        <button className={'std-button'} onClick={() => {
-            navigator.clipboard.writeText(`${origin}/profile#${pageGlobalUserID}`).then(() => setCopied(true))
-        }}>
-            {copied ?
-                "Copied link!"
-                :
-                "Share profile"
-            }
-        </button>
-    )
-}
-
 
 const Profile = () => {
 
@@ -997,53 +974,7 @@ const Profile = () => {
                         name="description"
                         content={`Explore ${pageUser.username}'s profile on Harked.`}
                     />
-                    <div className='user-container'>
-                        <div className={'user-details'}>
-                            <p>Profile for</p>
-                            <h2>{pageUser.username}</h2>
-                            <p><span
-                                style={{color: 'var(--accent-colour)'}}>{chipData[0].name}</span> fan · <span
-                                style={{color: 'var(--accent-colour)'}}>{chipData[1]}</span> fan</p>
-                        </div>
-                    </div>
-                    <div className={'user-followers'}>
-                        <a href={`/followers#${pageHash}`} style={{
-                            margin: '0',
-                            textDecoration: 'none',
-                            color: 'var(--primary-colour)',
-                            fontWeight: '800'
-                        }}>{followers.length} follower{followers.length !== 1 ? 's' : ''}</a>
-                        {isLoggedIn() && pageHash !== 'me' ?
-                            isLoggedUserFollowing ?
-                                <button
-                                    className={'std-button'}
-                                    onClick={() => {
-                                        unfollowUser(loggedUserID, pageGlobalUserID).then(() => {
-                                            setIsLoggedUserFollowing(false);
-                                        });
-                                    }}>
-                                    Unfollow
-                                </button>
-                                :
-                                <button
-                                    className={'std-button'}
-                                    onClick={() => {
-                                        followUser(loggedUserID, pageGlobalUserID).then(() => {
-                                            setIsLoggedUserFollowing(true);
-                                        });
-                                    }}>
-                                    Follow
-                                </button>
-                            :
-                            <></>
-                        }
-                    </div>
-                    {isOwnPage && (
-                        <div style={{padding: '15px 0 0 15px'}}>
-                            <ShareProfileButton pageGlobalUserID={pageGlobalUserID}/>
-                        </div>
-                    )
-                    }
+                    <UserContainer user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} />
                     <div className={'settings-container'}>
                         <div>
                             <h3>Time frame</h3>
@@ -1089,7 +1020,7 @@ const Profile = () => {
                             return (
                                 <div key={type} className='simple-instance' style={{minWidth: '0px'}}>
                                     <div className={'section-header'}>
-                                        <div style={{maxWidth: '400px'}}>
+                                        <div>
                                             <p style={{
                                                 margin: '16px 0 0 0',
                                                 textTransform: 'uppercase'
@@ -1100,8 +1031,6 @@ const Profile = () => {
                                                 textTransform: 'uppercase'
                                             }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
                                             <p>{description}</p>
-                                        </div>
-                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
                                         </div>
                                     </div>
                                     <ShowcaseList selectedDatapoint={selectedDatapoint}
@@ -1165,7 +1094,7 @@ const Profile = () => {
                         })}
                         <div className={'simple-instance'} style={{alignItems: 'center'}}>
                             <div className={'section-header'}>
-                                <div style={{maxWidth: '400px'}}>
+                                <div>
                                     <p style={{
                                         margin: '16px 0 0 0',
                                         textTransform: 'uppercase'
@@ -1179,8 +1108,6 @@ const Profile = () => {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     fontFamily: 'Inter Tight',
-                                    maxWidth: '1000px',
-                                    width: '80%'
                                 }}>
                                     <p>Viewing someone's playlists requires being logged in.</p>
                                     <button className={'std-button'} onClick={handleLogin}>Log-in</button>
@@ -1192,8 +1119,7 @@ const Profile = () => {
                                         flexDirection: 'row',
                                         flexWrap: 'wrap',
                                         gap: '10px',
-                                        maxWidth: '1000px',
-                                        width: '80%'
+                                        width: '100%'
                                     }}>
                                         <p style={{color: "var(--secondary-colour)", marginRight: 'auto'}}>Looks like
                                             there aren't any public playlists.</p>
@@ -1204,8 +1130,7 @@ const Profile = () => {
                                         flexDirection: 'row',
                                         flexWrap: 'wrap',
                                         gap: '10px',
-                                        maxWidth: '1000px',
-                                        width: '80%'
+                                        width: '100%'
                                     }}>
                                         {playlists.map(p => {
                                             return (
@@ -1232,8 +1157,7 @@ const Profile = () => {
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
                                 gap: '10px',
-                                maxWidth: '1000px',
-                                width: '80%'
+                                width: '100%'
                             }}>
                                 <ProfileRecommendations pageGlobalUserID={pageGlobalUserID} isOwnPage={isOwnPage}/>
                             </div>
@@ -1254,8 +1178,7 @@ const Profile = () => {
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
                                 gap: '10px',
-                                maxWidth: '1000px',
-                                width: '80%'
+                                width: '100%'
                             }}>
                                 <CommentSection sectionID={hashString(pageGlobalUserID)} isAdmin={isOwnPage}/>
                             </div>

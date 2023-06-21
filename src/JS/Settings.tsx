@@ -3,13 +3,13 @@ import {changeSettings, deleteUser, retrieveLoggedUserID, retrieveSettings, retr
 import "./../CSS/Settings.css"
 
 
-const SettingElement = (props : {name : string, value : string, toggle? : boolean, button? : boolean, callback?, warning? : boolean }) => {
-    const {name, value, toggle = false, button = false, callback, warning} = props;
+const SettingElement = (props : {name : string, value : string, button? : boolean, callback?, warning? : boolean }) => {
+    const {name, value, button = false, callback, warning} = props;
     return (
         <div className={'setting-element'} style={warning ? {background: 'rgba(255,0,0,0.1)'} : {}}>
             <p style={{color: 'var(--secondary-colour)'}}>{name}</p>
             {button && <button style={warning ? {borderColor: 'red', color: 'red'} : {}} onClick={callback} className={'std-button'}>{value}</button>}
-            {!button && !toggle && <p>{value}</p>}
+            {!button && <p>{value}</p>}
         </div>
     )
 }

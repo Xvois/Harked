@@ -35,7 +35,7 @@ export const getLIName = function (data) {
     return result;
 }
 
-export const getLIDescription = function (data, maxLength = 80) {
+export const getLIDescription = function (data) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
         if (data.genres && data.genres.length > 0) {
@@ -48,8 +48,8 @@ export const getLIDescription = function (data, maxLength = 80) {
     } else {
         result = '';
     }
-    if (result.length > maxLength) {
-        result = result.substring(0, maxLength) + "..."
+    if (result.length > 30) {
+        result = result.substring(0, 30) + "..."
     }
     return result;
 }

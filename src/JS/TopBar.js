@@ -6,11 +6,13 @@ import PersonIcon from '@mui/icons-material/Person';
 import Search from "./Search"
 import {isLoggedIn} from "./HDM.ts";
 import {BlurOn, Settings} from "@mui/icons-material";
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 const RedirectElement = (props) => {
-    const {title, href, icon, requiresLogIn = false} = props;
+    const {title, href, icon, requiresLogIn = false, concise = false} = props;
     return (((requiresLogIn && isLoggedIn()) || !requiresLogIn) &&
-        <a className={'redirect-element'} href={href} >
+        <a className={'redirect-element'} style={!concise ? {flexDirection: 'row', justifyContent: 'left', gap: '10px', flexGrow: '1', border: '1px solid var(--secondary-colour)', padding: '16.5px 14px'} : {}} href={href} >
             {icon}
             <p>{title}</p>
         </a>
@@ -18,10 +20,14 @@ const RedirectElement = (props) => {
 }
 
 const TopBar = () => {
-    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [showBar, setShowBar] = useState(true);
     const [showBorder, setShowBorder] = useState(false);
+
+    const ShowBarStyle = (showBorder ? {borderBottom: '1px solid var(--bg-colour)'} : {})
+    const HideBarStyle = {height: '0px', opacity: '0', overflow: 'hidden'};
+    const OpenMenuStyle = {...ShowBarStyle, height: '100vh', background: 'var(--bg-colour)'}
 
     useEffect(() => {
         if(!window.pageYOffset){
@@ -51,12 +57,12 @@ const TopBar = () => {
                 setShowBar(true);
             }
         }else{
-            if(showBar){
+            if(showBar && window.pageYOffset >= 75){
                 setShowBar(false);
             }
         }
 
-        if(window.pageYOffset <= 75){
+        if(window.pageYOffset <= 75 && !isMenuOpen){
             setShowBorder(true);
         }else{
             if(showBar){
@@ -67,20 +73,53 @@ const TopBar = () => {
         this.oldScroll = this.scrollY;
     }
 
-    // noinspection HtmlUnknownAnchorTarget
     return (
-        <header className="header" style={showBar ? (showBorder  ? {height: '75px', borderBottom: '1px solid var(--bg-colour)'} : {height: '75px'})  : {height: '0px', opacity: '0', overflow: 'hidden'}}>
-            <div className={'element-container'}>
-                <a id='logo' href={'/'}>
-                    <BlurOn fontSize={'large'} />
-                    <h1>Harked</h1>
-                </a>
-                {redirects.map(e => {
-                    return <RedirectElement title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
-                })}
-                <Search showSearchResults={true} />
-            </div>
-        </header>
+        <div className='header-pin'>
+            <header className="header" style={
+                isMenuOpen ?
+                    (OpenMenuStyle)
+                    :
+                    (showBar ? ShowBarStyle : HideBarStyle)
+            }>
+                <div>
+                    {(windowWidth > 700) ?
+                        <div className={'element-container'}>
+                            <a id='logo' href={'/'}>
+                                <BlurOn fontSize={'large'} />
+                                <h1>Harked</h1>
+                            </a>
+                            {
+                                redirects.map(e => {
+                                    return <RedirectElement concise title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                })
+                            }
+                            <Search showSearchResults />
+                        </div>
+                        :
+                        <div style={{alignItems: 'center', display: 'flex', flexDirection: 'row', width: '100%', height: '100%', justifyContent: 'space-between'}}>
+                            <a id='logo' href={'/'}>
+                                <BlurOn fontSize={'large'} />
+                            </a>
+                            <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)'}} onClick={() => {const state = isMenuOpen; setIsMenuOpen(!state)}}>
+                                {!isMenuOpen && <MenuIcon fontSize={'medium'} />}
+                                {isMenuOpen && <CloseIcon fontSize={'medium'} />}
+                            </button>
+                        </div>
+
+                    }
+                </div>
+                {isMenuOpen && (
+                    <div className={'expanded-menu-container'}>
+                        <Search width={'100%'} showSearchResults />
+                        {
+                            redirects.map(e => {
+                                return <RedirectElement title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                            })
+                        }
+                    </div>
+                )}
+            </header>
+        </div>
     )
 }
 

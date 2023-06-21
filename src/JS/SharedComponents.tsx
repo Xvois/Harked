@@ -1,8 +1,17 @@
 import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 /* @ts-ignore */
-import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
+import {
+    Comment,
+    deleteComment, followUser,
+    isLoggedIn,
+    retrieveComments,
+    retrieveLoggedUserID,
+    submitComment,
+    unfollowUser,
+    User
+} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
 
 export const StatBlock = (props: {
@@ -186,6 +195,98 @@ export function ValueIndicator(props: { value: number, diameter?: number }) {
                         }}>{Math.round(value)}%</h2>
                     </div>
                 </div>
+            </div>
+        </div>
+    )
+}
+
+export function UserContainer(props : {user : User, followers : Array<User>, isLoggedUserFollowing : boolean, isOwnPage : boolean, loggedUserID : string }){
+    const {user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage} = props;
+
+    const ShareProfileButton = (props) => {
+        const {pageGlobalUserID} = props;
+        const origin = (new URL(window.location)).origin;
+
+        const [copied, setCopied] = useState(false);
+
+        window.addEventListener('copy', () => {
+            setCopied(false);
+        })
+
+        return (
+            <button className={'std-button'} onClick={() => {
+                navigator.clipboard.writeText(`${origin}/profile#${pageGlobalUserID}`).then(() => setCopied(true))
+            }}>
+                {copied ?
+                    "Copied link!"
+                    :
+                    "Share profile"
+                }
+            </button>
+        )
+    }
+
+    const [isFollowing, setIsFollowing] = useState(isLoggedUserFollowing);
+
+    useEffect(() => {
+       setIsFollowing(isLoggedUserFollowing);
+    }, [isLoggedUserFollowing])
+
+    return (
+        <div className='user-container'>
+            <div className={'item-image'} style={{maxHeight: '200px', maxWidth: '200px'}}>
+                <img alt={'decorative blur'} src={user.profile_picture} className={'backdrop-image'} style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    animation: 'fadeIn 0.25s'
+                }}/>
+                <img alt={'profile picture'} src={user.profile_picture} className={'levitating-image'} style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    animation: 'fadeIn 0.25s'
+                }}/>
+            </div>
+            <div className={'user-details'}>
+                <p>Profile for</p>
+                <h2 style={{marginTop: '-5px'}}>{user.username}</h2>
+                <div className={'user-followers'}>
+                    <a href={`/followers#${user.user_id}`} style={{
+                        margin: '0',
+                        textDecoration: 'none',
+                        color: 'var(--primary-colour)',
+                        fontWeight: '800'
+                    }}>{followers.length} follower{followers.length !== 1 ? 's' : ''}</a>
+                    {isLoggedIn() && !isOwnPage ?
+                        isFollowing ?
+                            <button
+                                className={'std-button'}
+                                onClick={() => {
+                                    unfollowUser(loggedUserID, user.user_id).then(() => {
+                                        setIsFollowing(false);
+                                    });
+                                }}>
+                                Unfollow
+                            </button>
+                            :
+                            <button
+                                className={'std-button'}
+                                onClick={() => {
+                                    followUser(loggedUserID, user.user_id).then(() => {
+                                        setIsFollowing(true);
+                                    });
+                                }}>
+                                Follow
+                            </button>
+                        :
+                        <></>
+                    }
+                </div>
+                {isOwnPage && (
+                        <ShareProfileButton pageGlobalUserID={user.user_id}/>
+                    )
+                }
             </div>
         </div>
     )

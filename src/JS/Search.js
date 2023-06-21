@@ -5,7 +5,7 @@ import Fuse from 'fuse.js';
 import {StyledField} from "./SharedComponents.tsx";
 
 const Results = (props) => {
-    const {searchResults} = props;
+    const {searchResults, width} = props;
     return (
         <div className='results'>
             {/* Render search results */}
@@ -23,7 +23,7 @@ const Results = (props) => {
 }
 
 const Search = (props) => {
-    const {showResults} = props;
+    const {showResults, width = 250} = props;
     const [searchResults, setSearchResults] = useState(null);
     const [cachedUsersMap, setCachedUsersMap] = useState({});
 
@@ -68,7 +68,7 @@ const Search = (props) => {
     }, [showResults]);
 
     return (
-        <div className='search-bar-container'>
+        <div className='search-bar-container' style={{width: width}}>
             {/* SearchBar component */}
             <FormControl variant="outlined">
                 <StyledField
