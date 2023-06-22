@@ -54,7 +54,7 @@ code {
     border: 1px solid var(--primary-colour);
     padding: 5px 30px 5px 30px;
     cursor: pointer;
-    transition: all 0.1s ease-out;
+    transition: all 0.25s ease;
 }
 
 .std-button:hover {

@@ -148,7 +148,6 @@ select.dropdown {
     width: 100%;
     margin: auto;
     cursor: auto;
-    padding: 0 25px;
 }
 
 .item-top-element {
@@ -404,6 +403,7 @@ select.dropdown {
     position: relative;
     height: max-content;
     width: 100%;
+    max-height: 150px;
     margin-top: 25px;
 }
 
@@ -429,13 +429,8 @@ select.dropdown {
 .terms-container {
     display: flex;
     flex-direction: row;
+    width: 100%;
     gap: 5px;
-}
-
-.term-button {
-    padding: 0 10px;
-    color: var(--primary-colour);
-    border: 1px solid var(--primary-colour);
 }
 
 

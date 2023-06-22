@@ -166,7 +166,7 @@ const ShowcaseListItem = (props) => {
                                                 <p style={{
                                                     margin: 0,
                                                     fontSize: '12px',
-                                                    color: 'var(--accent-colour)'
+                                                    color: 'var(--secondary-colour)'
                                                 }}>{getLIDescription(e)}</p>
                                             </div>
                                             <SpotifyLink link={e.link} simple/>
@@ -291,7 +291,7 @@ const ShowcaseListItem = (props) => {
                         </div>
                         {showAnalytics ?
                             <>
-                                <hr style={{width: '100%', border: '1px solid var(--secondary-colour)'}}/>
+                                <hr style={{width: '95%', border: '1px solid var(--secondary-colour)'}}/>
                                 <div className={'analysis-wrapper'}>
                                     {
                                         type === 'songs' ?
@@ -345,7 +345,7 @@ function ComparisonLink(props) {
     }, [])
 
     return (
-        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto'}}>
+        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto', height: 'max-content'}}>
             {simple ?
                 <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
                     <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
@@ -812,15 +812,20 @@ const PlaylistItem = function (props) {
 function TermSelection(props) {
     const {terms, termIndex, setTermIndex} = props;
     return (
-        <div className={'terms-container'}>
-            {terms.map((t, i) => {
-                if(t !== null){
-                    return <button className={'term-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)'} : {background: 'none'}} onClick={() => setTermIndex(i)}>
-                        {translateTerm[t]}
-                    </button>
-                }
-            })}
+        <div style={{maxWidth: '500px', marginRight: 'auto'}}>
+            <h3 style={{margin: 0}}>Time frame</h3>
+            <p style={{marginTop: 0}}>Select the range of time to view information for.</p>
+            <div className={'terms-container'}>
+                {terms.map((t, i) => {
+                    if(t !== null){
+                        return <button className={'std-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', flexGrow: '5'} : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
+                            {translateTerm[t]}
+                        </button>
+                    }
+                })}
+            </div>
         </div>
+
     );
 }
 
@@ -837,7 +842,7 @@ function UserContainer(props){
         const handleShare = () => {
             const content = {
                 title: "Harked",
-                text: `View ${user.username}'s profile.`,
+                text: `View ${user.username}'s profile on Harked.`,
                 url: link
             }
             try {
@@ -923,7 +928,7 @@ function UserContainer(props){
 
     return (
         <div className='user-container'>
-            <div style={{display: 'flex', flexDirection: 'row'}}>
+            <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px'}}>
 
                     <div className={'profile-picture'}>
                         {user.profile_picture && (
@@ -932,8 +937,8 @@ function UserContainer(props){
                     </div>
                 <div className={'user-details'}>
                     <p style={{margin: '0'}}>Profile for</p>
-                    <h2 style={{margin: '0'}}>{user.username}</h2>
-                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center'}}>
+                    <h2 style={{margin: '-5px 0 0 0', fontSize: '50px'}}>{user.username} <ShareProfileButton simple /></h2>
+                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center', marginTop: '-5px'}}>
                         <a href={`/followers#${user.user_id}`} style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}</a>
                         {isLoggedIn() && !isOwnPage && (
                             <button style={{border: 'none', background: 'none', alignItems: 'center', height: '20px', width: '20px', margin: '0', padding: '0', color: 'var(--primary-colour)'}}
@@ -946,11 +951,9 @@ function UserContainer(props){
                             </button>
                         )}
                     </div>
-                    <TermSelection setTermIndex={setTermIndex} terms={terms} termIndex={termIndex}/>
                 </div>
                 <div className={'user-links'}>
                     <SpotifyLink simple={windowWidth < 700} link={`https://open.spotify.com/user/${user.user_id}`} />
-                    <ShareProfileButton simple={windowWidth < 700} />
                     {!isOwnPage && isLoggedIn() &&
                         <ComparisonLink simple={windowWidth < 700} pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
                     }
@@ -981,7 +984,6 @@ const Profile = () => {
     const [pageUser, setPageUser] = useState(null);
     const [isOwnPage, setIsOwnPage] = useState(false);
     const [pageGlobalUserID, setPageGlobalUserID] = useState(null);
-    const [chipData, setChipData] = useState([]);
     const [followers, setFollowers] = useState([]);
     const [allDatapoints, setAllDatapoints] = useState([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
@@ -1037,7 +1039,6 @@ const Profile = () => {
         }
 
         resolveContext().then((loadID) => {
-
             const loadPromises = [
                 retrieveUser(loadID).then(function (user) {
                     setPageUser(user);
@@ -1065,10 +1066,8 @@ const Profile = () => {
                         indexes.forEach(i => termsCopy[i] = null);
                         setTerms(termsCopy);
                     }
-                    console.log(datapoints);
                     setAllDatapoints(datapoints);
                     setSelectedDatapoint(datapoints[termIndex]);
-                    setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                     console.info("Datapoints retrieved!");
                 }),
                 retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
@@ -1139,6 +1138,9 @@ const Profile = () => {
                         content={`Explore ${pageUser.username}'s profile on Harked.`}
                     />
                     <UserContainer user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
+                    <div style={{marginTop: '25px', width: '100%', alignItems: 'center'}}>
+                        <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex} />
+                    </div>
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
                             let description = '';

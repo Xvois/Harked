@@ -19,10 +19,6 @@ const FollowersComponent = () => {
     useEffect(() => {
         const fetchData = async () => {
             let targetUserID = window.location.hash.substr(1);
-            if (targetUserID === 'me') {
-                targetUserID = await retrieveLoggedUserID();
-                window.location.replace(`/followers#${targetUserID}`)
-            }
 
             const user = await retrieveUser(targetUserID);
             setTargetUser(user);
@@ -31,7 +27,7 @@ const FollowersComponent = () => {
             setFollowers(fetchedFollowers);
 
             if (isLoggedIn()) {
-                const user_id = window.localStorage.getItem('user_id');
+                const user_id = await retrieveLoggedUserID();
                 const user = await retrieveUser(user_id);
                 setLoggedFollowing(await retrieveFollowing(user_id));
                 setLoggedUser(user);
@@ -42,8 +38,6 @@ const FollowersComponent = () => {
     }, []);
 
     const handleFollowClick = async (followerUserID) => {
-        const targetUserID = window.location.hash.substr(1);
-
         if (loggedFollowing.some((followedUser) => followedUser.user_id === followerUserID)) {
             await unfollowUser(loggedUser.user_id, followerUserID);
             setLoggedFollowing((prevFollowing) => prevFollowing.filter((followedUser) => followedUser.user_id !== followerUserID));
@@ -56,8 +50,8 @@ const FollowersComponent = () => {
     return (
         <div style={{display: 'flex', flexDirection: 'column'}}>
             <div style={{borderBottom: '1px solid var(--secondary-colour)', marginBottom: '15px'}}>
-                <h2 style={{color: 'var(--primary-colour)', fontSize: '1.5em', marginBottom: '0px'}}>
-                    Followers for {targetUser ? targetUser.username : 'Loading...'}
+                <h2 style={{fontSize: '1.5em', marginBottom: '0px'}}>
+                    Followers for <a style={{textDecoration: 'none', color: 'var(--primary-colour)'}} href={targetUser ? `/profile#${targetUser.user_id}` : ''}>{targetUser ? targetUser.username : 'Loading...'}</a>
                 </h2>
                 <p style={{color: 'var(--secondary-colour)', fontSize: '1.2em', marginBottom: '0', marginTop: '0'}}>
                     {followers.length} follower{followers.length !== 1 ? 's' : ''}
@@ -88,7 +82,7 @@ const FollowersComponent = () => {
                         {follower.username}
                     </a>
                     {isLoggedIn() && (
-                        follower.user_id !== loggedUser?.user_id && (
+                        follower.user_id !== loggedUser?.user_id && loggedUser && (
                             <button className="std-button" onClick={() => handleFollowClick(follower.user_id)}>
                                 {loggedFollowing.some((followedUser) => followedUser.user_id === follower.user_id)
                                     ? 'Unfollow'
