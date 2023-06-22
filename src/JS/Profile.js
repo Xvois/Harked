@@ -950,12 +950,10 @@ function UserContainer(props){
                 </div>
                 <div className={'user-links'}>
                     <SpotifyLink simple={windowWidth < 700} link={`https://open.spotify.com/user/${user.user_id}`} />
+                    <ShareProfileButton simple={windowWidth < 700} />
                     {!isOwnPage && isLoggedIn() &&
                         <ComparisonLink simple={windowWidth < 700} pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
                     }
-                    {isOwnPage && (
-                        <ShareProfileButton simple={windowWidth < 700} />
-                    )}
                 </div>
             </div>
         </div>
