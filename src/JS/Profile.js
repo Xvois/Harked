@@ -59,7 +59,7 @@ import {
 import {ExpandMore} from "@mui/icons-material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import * as PropTypes from "prop-types";
+import IosShareIcon from '@mui/icons-material/IosShare';
 
 const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
 
@@ -337,7 +337,7 @@ const ShowcaseListItem = (props) => {
 }
 
 function ComparisonLink(props) {
-    const {pageUser, loggedUserID, longTermDP, concise = false} = props;
+    const {pageUser, loggedUserID, longTermDP, simple = false} = props;
     const [loggedDP, setLoggedDP] = useState(null);
 
     useEffect(() => {
@@ -346,7 +346,7 @@ function ComparisonLink(props) {
 
     return (
         <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto'}}>
-            {concise ?
+            {simple ?
                 <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
                     <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
                                     diameter={50}/>
@@ -812,10 +812,12 @@ const PlaylistItem = function (props) {
 function TermSelection(props) {
     const {terms, termIndex, setTermIndex} = props;
     return (
-        <div>
+        <div className={'terms-container'}>
             {terms.map((t, i) => {
                 if(t !== null){
-                    return <button className={'term-button'} style={termIndex === i ? {background: 'var(--primary-colour)'} : {background: 'none'}} onClick={() => setTermIndex(i)}></button>
+                    return <button className={'term-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)'} : {background: 'none'}} onClick={() => setTermIndex(i)}>
+                        {translateTerm[t]}
+                    </button>
                 }
             })}
         </div>
@@ -826,25 +828,51 @@ function UserContainer(props){
     const {user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage, longTermDP, setTermIndex, terms, termIndex} = props;
 
     const ShareProfileButton = (props) => {
-        const {pageGlobalUserID} = props;
+        const {simple = false} = props;
         const origin = (new URL(window.location)).origin;
+        const link = `${origin}/profile#${user.user_id}`;
 
         const [copied, setCopied] = useState(false);
+
+        const handleShare = () => {
+            const content = {
+                title: "Harked",
+                text: `View ${user.username}'s profile.`,
+                url: link
+            }
+            try {
+                if(navigator.canShare(content)){
+                    navigator.share(content).then(() => setCopied(true));
+                }else{
+                    navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
+                }
+            } catch (error) {
+                console.warn('Web Share API not supported. Copying to clipboard.', error);
+                navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
+            }
+
+        }
 
         window.addEventListener('copy', () => {
             setCopied(false);
         })
 
         return (
-            <button className={'std-button'} onClick={() => {
-                navigator.clipboard.writeText(`${origin}/profile#${pageGlobalUserID}`).then(() => setCopied(true))
-            }}>
-                {copied ?
-                    "Copied link!"
+            <>
+                {simple === true ?
+                    <button style={copied ? {border: 'none', background: 'none', color: 'var(--secondary-colour)'} : {border: 'none', background: 'none', color: 'var(--primary-colour)'}} onClick={handleShare}>
+                        <IosShareIcon fontSize={'small'} />
+                    </button>
                     :
-                    "Share profile"
+                    <button className={'std-button'} onClick={handleShare}>
+                        {copied ?
+                            "Copied link!"
+                            :
+                            "Share profile"
+                        }
+                    </button>
                 }
-            </button>
+            </>
         )
     }
 
@@ -868,6 +896,7 @@ function UserContainer(props){
             }).catch((err) => {
                 console.warn(`Error following user: `, err);
                 setIsFollowing(false);
+                setFollowerNumber(n);
             })
         }else{
             setIsFollowing(false);
@@ -878,6 +907,7 @@ function UserContainer(props){
             }).catch((err) => {
                 console.warn(`Error unfollowing user: `, err);
                 setIsFollowing(true);
+                setFollowerNumber(n);
             })
         }
     }
@@ -921,8 +951,11 @@ function UserContainer(props){
                 <div className={'user-links'}>
                     <SpotifyLink simple={windowWidth < 700} link={`https://open.spotify.com/user/${user.user_id}`} />
                     {!isOwnPage && isLoggedIn() &&
-                        <ComparisonLink concise={windowWidth < 700} pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                        <ComparisonLink simple={windowWidth < 700} pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
                     }
+                    {isOwnPage && (
+                        <ShareProfileButton simple={windowWidth < 700} />
+                    )}
                 </div>
             </div>
         </div>

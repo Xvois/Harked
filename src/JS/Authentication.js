@@ -84,7 +84,15 @@ function Authentication() {
                                         ]
                                     )
                                     redirect('/profile#me');
-                                });
+                                }).catch((err) => {
+                                    console.error('Error patching user: ', err);
+                                    console.info('User: ', fUser);
+                                    pb.collection('users').delete(id).then(() => {
+                                        console.info('User successfully removed as a result.')
+                                    }).catch((deletionError) => {
+                                        console.error('Error subsequently deleting user: ', deletionError);
+                                    });
+                            });
                         } else {
                             const redirectPath = window.localStorage.getItem("redirect");
                             if (redirectPath) {

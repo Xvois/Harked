@@ -426,9 +426,15 @@ select.dropdown {
     margin-left: auto;
 }
 
+.terms-container {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
 .term-button {
-    padding: 10px;
-    border-radius: 100%;
+    padding: 0 10px;
+    color: var(--primary-colour);
     border: 1px solid var(--primary-colour);
 }
 

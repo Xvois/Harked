@@ -7,9 +7,9 @@ const SettingElement = (props : {name : string, value : string, button? : boolea
     const {name, value, button = false, callback, warning} = props;
     return (
         <div className={'setting-element'} style={warning ? {background: 'rgba(255,0,0,0.1)'} : {}}>
-            <p style={{color: 'var(--secondary-colour)'}}>{name}</p>
+            <p>{name}</p>
             {button && <button style={warning ? {borderColor: 'red', color: 'red'} : {}} onClick={callback} className={'std-button'}>{value}</button>}
-            {!button && <p>{value}</p>}
+            {!button && <h4 style={{margin: '0'}}>{value}</h4>}
         </div>
     )
 }
@@ -55,19 +55,26 @@ export const Settings = () => {
             }
             window.localStorage.clear();
             window.location.href = '/';
+        }).catch(err => {
+            console.error('Error deleting user: ', err);
         });
     }
 
     return user && settings && (
         <div>
-            <h2>Settings</h2>
-            <h3>Your account</h3>
-            <SettingElement name={'Username'} value={user.username} />
-            <SettingElement name={'UserID'} value={user.user_id} />
-            <SettingElement name={'Profile created'} value={(new Date(user.created)).toDateString()} />
-            <h3>Privacy</h3>
-            <SettingElement name={'Profile visibility'} value={settings.public ? 'Public' : 'Private'} button callback={invertProfilePrivacy} />
-            <SettingElement name={'Delete profile'} value={'Delete'} button warning callback={handleDeleteUser} />
+            <div className={'settings-section'}>
+                <h3>Your account</h3>
+                <p>Details about your account.</p>
+                <SettingElement name={'Username'} value={user.username} />
+                <SettingElement name={'UserID'} value={user.user_id} />
+                <SettingElement name={'Profile created'} value={(new Date(user.created)).toDateString()} />
+            </div>
+            <div className={'settings-section'}>
+                <h3>Privacy</h3>
+                <p>Settings to control your privacy and data.</p>
+                <SettingElement name={'Profile visibility'} value={settings.public ? 'Public' : 'Private'} button callback={invertProfilePrivacy} />
+                <SettingElement name={'Delete profile'} value={'Delete'} button warning callback={handleDeleteUser} />
+            </div>
         </div>
     )
 }
