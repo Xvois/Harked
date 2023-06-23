@@ -46,7 +46,6 @@ import {
 import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Fuse from "fuse.js";
 import {
     CommentSection,
     LoadingIndicator,
@@ -113,7 +112,9 @@ const ShowcaseListItem = (props) => {
         const {element, type} = props;
         const [recommendations, setRecommendations] = useState(null);
         useEffect(() => {
-            generateRecommendations();
+            if(recommendations === null){
+                generateRecommendations();
+            }
         }, [])
         const generateRecommendations = () => {
             if (recommendations === null) {
@@ -345,25 +346,151 @@ function ComparisonLink(props) {
     }, [])
 
     return (
-        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto', height: 'max-content'}}>
+        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto', height: 'max-content', flexGrow: '0', width: 'max-content'}}>
             {simple ?
                 <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
                     <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                                    diameter={50}/>
+                                    diameter={64.5}/>
                 </a>
                 :
                 <>
-                    <div style={{textAlign: 'right', marginLeft: 'auto'}}>
+                    <div style={{maxWidth: '500px', marginRight: 'auto', textAlign: 'right'}}>
                         <h3 style={{margin: 0}}>Compare</h3>
-                        <p style={{margin: '0 0 5px 0'}}>See how your stats stack up against {pageUser.username}</p>
-                        <a className={'std-button'} style={{marginLeft: 'auto'}}
-                           href={`/compare#${loggedUserID}&${pageUser.user_id}`}>Compare</a>
+                        <p style={{marginTop: 0}}>See how your stats stack up against {pageUser.username}'s.</p>
+                        <div className={'terms-container'} style={{justifyContent: 'right'}}>
+                            <a href={`/compare#${loggedUserID}&${pageUser.user_id}`} className={'std-button'}>Compare</a>
+                        </div>
                     </div>
                     <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                                    diameter={50}/>
+                                    diameter={64.5}/>
                 </>
             }
         </div>
+    )
+}
+
+const SelectionModal = (props) => {
+    const {showModal, setShowModal, setRecommendations, pageGlobalUserID} = props;
+
+    const [searchResults, setSearchResults] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [processing, setProcessing] = useState(false);
+    const searchRef = useRef('');
+    const descriptionRef = useRef('');
+    const typeChoices = ['songs', 'artists'];
+    const [type, setType] = useState(typeChoices[0]);
+
+    useEffect(() => {
+        const modal = document.getElementById('rec-modal');
+        if(showModal){
+            modal.showModal();
+        }else if(!showModal){
+            modal.close();
+        }
+    }, [showModal])
+
+    const handleSearch = () => {
+        if (searchRef.current !== null && searchRef.current !== undefined && searchRef.current.value !== '') {
+            retrieveSearchResults(searchRef.current.value, type).then(res => {
+                setSearchResults(res);
+            });
+        }
+    }
+
+    const handleSubmit = async () => {
+        setProcessing(true);
+        let type = getItemType(selectedItem);
+        let submissionItem = selectedItem;
+        if (type === 'songs') {
+            submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
+        }
+        console.log(submissionItem)
+        await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
+            setSearchResults(null);
+            setSelectedItem(null);
+            setShowModal(false);
+            setProcessing(false);
+            retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
+        });
+    }
+
+    return (
+        <dialog autoFocus id={'rec-modal'}>
+            {selectedItem === null ?
+                <div>
+                    <form onSubmit={handleSearch} style={{minWidth: '300px'}}>
+                        <h3 style={{margin: 0}}>Type</h3>
+                        <p style={{marginTop: 0}}>of item to recommend.</p>
+                        <div id={'rec-type-wrapper'}>
+                            {typeChoices.map(t => {
+                                return <button onClick={() => setType(t)} className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                            })}
+                        </div>
+                        <h3 style={{marginBottom: 0}}>Search</h3>
+                        <p style={{marginTop: 0}}>for an item to recommend.</p>
+                        <StyledField
+                            placeholder={`Search for ${type}`}
+                            variant='outlined'
+                            rows={1}
+                            inputRef={searchRef}
+                            inputProps={{maxLength: 100}}
+                        />
+                        <div style={{width: "max-content", marginLeft: 'auto'}}>
+                            <button type={'submit'} className={'std-button'}>Search</button>
+                        </div>
+                    </form>
+                    {searchResults && (
+                        <div id={'rec-search-results'}>
+                            {/* Render search results */}
+                            {searchResults.slice(0, 5).map((result, index) => {
+                                return (
+                                    <div key={getLIName(result) + index} style={{position: 'relative'}}>
+                                        {index % 2 === 0 && <div className={'bg-element'}/>}
+                                        <button onClick={() => setSelectedItem(result)} className={'rec-search-result'}>
+                                            <img alt={getLIName(result)} src={result.image} className={'levitating-image'} />
+                                            <h4>{getLIName(result, 20)}</h4>
+                                            <p>{getLIDescription(result, 20)}</p>
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        )
+                    }
+                </div>
+                :
+                <div>
+                    {processing && (
+                        <div className={'processing-indicator-wrapper'}>
+                            <LoadingIndicator />
+                        </div>
+                        )
+                    }
+                    <form onSubmit={handleSubmit}>
+                        <div style={{position: 'relative'}} className={'rec-details-img'}>
+                            <img src={selectedItem.image} className={'backdrop-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
+                            <img src={selectedItem.image} className={'levitating-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
+                        </div>
+                        <div>
+                            <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
+                            <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}.</p>
+                            <StyledField
+                                placeholder={`Why are you recommending this?`}
+                                variant='outlined'
+                                multiline
+                                rows={3}
+                                inputRef={descriptionRef}
+                                inputProps={{maxLength: 200}}
+                            />
+                            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '16px'}}>
+                                <button className={'std-button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                <button className={'std-button'} type={"submit"}>Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            }
+        </dialog>
     )
 }
 
@@ -382,160 +509,6 @@ const ProfileRecommendations = (props) => {
         deleteRecommendation(id).then(() => {
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
         });
-    }
-
-    const Selection = () => {
-
-        const [searchResults, setSearchResults] = useState(null);
-        const [selectedItem, setSelectedItem] = useState(null);
-        const searchRef = useRef('') //creating a reference for TextField Component
-        const descriptionRef = useRef('');
-        const [type, setType] = useState('songs');
-        const typeChoices = ['songs', 'artists']
-
-        const handleSearch = () => {
-            console.log('handleSearch called', searchRef.current)
-            if (searchRef.current !== null && searchRef.current !== undefined && searchRef.current.value !== '') {
-                console.log('ran with', searchRef.current.value)
-                retrieveSearchResults(searchRef.current.value, type).then(res => setSearchResults(formatSearchResults(res)));
-            }
-        }
-
-        const handleSubmit = async () => {
-            let type = getItemType(selectedItem);
-            let submissionItem = selectedItem;
-            if (type === 'songs') {
-                submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
-            }
-            console.log(submissionItem)
-            await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
-                setSelectedItem(null);
-                setShowSelection(false);
-                retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
-            });
-        }
-
-        const formatSearchResults = (results) => {
-            const query = searchRef.current.value;
-
-            switch (type) {
-                case 'artists':
-                    const artistOptions = {
-                        keys: ['name'],
-                        threshold: 0.3, // Adjust the threshold as needed
-                    };
-                    const artistFuse = new Fuse(results.artists, artistOptions);
-                    const artistRes = artistFuse.search(query);
-                    return artistRes.sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
-                case 'songs':
-                    const songOptions = {
-                        keys: ['title'],
-                        threshold: 0.3, // Adjust the threshold as needed
-                    };
-                    const songFuse = new Fuse(results.tracks, songOptions);
-                    const songRes = songFuse.search(query);
-                    return songRes.sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
-                default:
-                    return null;
-            }
-        }
-
-        return showSelection && (
-            <div>
-                {selectedItem === null && (
-                    <form noValidate autoComplete="off" onSubmit={handleSearch}
-                          onKeyDown={(e) => {
-                              if (e.keyCode === 13 && !e.shiftKey) {
-                                  e.preventDefault();
-                                  handleSearch();
-                              }
-                          }}
-                    >
-                        <StyledField
-                            label='Search'
-                            placeholder={`Search for ${type}`}
-                            multiline
-                            variant='outlined'
-                            rows={1}
-                            inputRef={searchRef}
-                            inputProps={{maxLength: 100}}
-                        />
-                        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                            <div>
-                                {typeChoices.map(e => {
-                                    return <button key={e} className={'std-button'} style={type !== e ? {
-                                        color: 'var(--secondary-colour)',
-                                        borderColor: 'var(--secondary-colour)',
-                                        textTransform: 'capitalize'
-                                    } : {textTransform: 'capitalize'}} onClick={() => setType(e)}>{e}</button>
-                                })}
-                            </div>
-                            <button className={'std-button'} type={"submit"}>Search</button>
-                        </div>
-                    </form>
-                )
-                }
-
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                    {searchResults !== null && selectedItem === null ?
-                        (
-                            searchResults.slice(0, 5).map((e, i) => {
-                                return (
-                                    <button className={'std-button'}
-                                            style={i === searchResults.slice(0, 5).length - 1 ? {
-                                                border: 'none',
-                                                width: '100%'
-                                            } : {
-                                                borderTop: 'none',
-                                                borderLeft: 'none',
-                                                borderRight: 'none',
-                                                width: '100%'
-                                            }} key={e.link} onClick={() => setSelectedItem(e)}>
-                                        <h3>{getLIName(e)}</h3>
-                                        <p>{getLIDescription(e)}</p>
-                                    </button>
-                                )
-                            })
-                        )
-                        :
-                        <></>
-                    }
-                </div>
-                <div>
-                    {selectedItem !== null && (
-                        <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                            <img alt={`${getLIName(selectedItem)}`} className={'supplemental-content'}
-                                 style={{aspectRatio: '1', objectFit: 'cover', width: '300px', height: '300px'}}
-                                 src={selectedItem.image}/>
-                            <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
-                                <h2 style={{margin: '0'}}>{getLIName(selectedItem)}</h2>
-                                <p>{getLIDescription(selectedItem)}</p>
-                                <StyledField
-                                    id='outlined-textarea'
-                                    label='Description'
-                                    placeholder='Why are you recommending this?'
-                                    multiline
-                                    variant='outlined'
-                                    rows={6}
-                                    inputRef={descriptionRef}
-                                    inputProps={{maxLength: 400}}
-                                />
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    marginTop: 'auto'
-                                }}>
-                                    <button className={'std-button'} onClick={() => setSelectedItem(null)}>Back</button>
-                                    <button className={'std-button'} onClick={handleSubmit}>Submit</button>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                    }
-                </div>
-            </div>
-        )
     }
 
     return (
@@ -558,26 +531,12 @@ const ProfileRecommendations = (props) => {
                 }
             </div>
             {isOwnPage && (
-                <div style={{
-                    margin: '0 auto',
-                    width: 'max-content',
-                    transform: `rotate(${showSelection ? '180' : '0'}deg)`,
-                    transition: '0.25s all',
-                    cursor: 'pointer'
-                }}>
-                    <button style={{background: 'none', border: 'none', color: 'var(--primary-colour)'}}
-                            onClick={() => {
-                                if (showSelection) {
-                                    setShowSelection(false)
-                                } else {
-                                    setShowSelection(true)
-                                }
-                            }}>
-                        <ExpandMore fontSize={'large'}/>
-                    </button>
-                </div>
+                <button className={'std-button'} style={{width: '100%', border: '1px solid var(--secondary-colour)'}}
+                        onClick={() => setShowSelection(true)}>
+                    +
+                </button>
             )}
-            <Selection show={showSelection}/>
+            <SelectionModal showModal={showSelection} setShowModal={setShowSelection} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
         </div>
     )
 }
@@ -597,9 +556,9 @@ const Recommendation = (props) => {
             wordBreak: 'break-word'
         }}>
             <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'}/>
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} style={{objectFit: 'cover'}}/>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'}
-                     style={{aspectRatio: '1', width: '100%'}}/>
+                     style={{aspectRatio: '1', width: '100%', objectFit: 'cover'}}/>
             </div>
             <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
                 <p style={{
@@ -812,7 +771,7 @@ const PlaylistItem = function (props) {
 function TermSelection(props) {
     const {terms, termIndex, setTermIndex} = props;
     return (
-        <div style={{maxWidth: '500px', marginRight: 'auto'}}>
+        <div style={{maxWidth: '500px', marginRight: 'auto', flexGrow: '1'}}>
             <h3 style={{margin: 0}}>Time frame</h3>
             <p style={{marginTop: 0}}>Select the range of time to view information for.</p>
             <div className={'terms-container'}>
@@ -830,7 +789,7 @@ function TermSelection(props) {
 }
 
 function UserContainer(props){
-    const {user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage, longTermDP, setTermIndex, terms, termIndex} = props;
+    const {windowWidth, user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage, longTermDP} = props;
 
     const ShareProfileButton = (props) => {
         const {simple = false} = props;
@@ -865,7 +824,7 @@ function UserContainer(props){
         return (
             <>
                 {simple === true ?
-                    <button style={copied ? {border: 'none', background: 'none', color: 'var(--secondary-colour)'} : {border: 'none', background: 'none', color: 'var(--primary-colour)'}} onClick={handleShare}>
+                    <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)', cursor: 'pointer'}} onClick={handleShare}>
                         <IosShareIcon fontSize={'small'} />
                     </button>
                     :
@@ -884,12 +843,6 @@ function UserContainer(props){
     const [isFollowing, setIsFollowing] = useState(isLoggedUserFollowing);
     // For optimistic updates
     const [followerNumber, setFollowerNumber] = useState(followers.length);
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-    const updateSize = () => {
-        setWindowWidth(window.innerWidth);
-    }
-    window.addEventListener("resize", updateSize);
 
     const handleFollowClick = () => {
         if(!isFollowing){
@@ -929,19 +882,21 @@ function UserContainer(props){
     return (
         <div className='user-container'>
             <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px'}}>
-
                     <div className={'profile-picture'}>
                         {user.profile_picture && (
-                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture} style={{height: '100%', width: '100%', objectFit: 'cover'}} />
+                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture} style= {{height: '100%', width: '100%', objectFit: 'cover'}} />
                         )}
                     </div>
                 <div className={'user-details'}>
                     <p style={{margin: '0'}}>Profile for</p>
-                    <h2 style={{margin: '-5px 0 0 0', fontSize: '50px'}}>{user.username} <ShareProfileButton simple /></h2>
-                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center', marginTop: '-5px'}}>
+                    <h2 style={{margin: '-5px 0 0 0', fontSize: '30px', wordBreak: 'keep-all'}}>
+                        {user.username}
+                        <ShareProfileButton simple />
+                    </h2>
+                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center'}}>
                         <a href={`/followers#${user.user_id}`} style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}</a>
                         {isLoggedIn() && !isOwnPage && (
-                            <button style={{border: 'none', background: 'none', alignItems: 'center', height: '20px', width: '20px', margin: '0', padding: '0', color: 'var(--primary-colour)'}}
+                            <button style={{border: 'none', background: 'none', alignItems: 'center', height: '20px', width: '20px', margin: '0', padding: '0', color: 'var(--primary-colour)', cursor: 'pointer'}}
                                     onClick={handleFollowClick}>
                                 {isFollowing ?
                                     <CheckCircleOutlineIcon fontSize={'small'} />
@@ -953,16 +908,70 @@ function UserContainer(props){
                     </div>
                 </div>
                 <div className={'user-links'}>
-                    <SpotifyLink simple={windowWidth < 700} link={`https://open.spotify.com/user/${user.user_id}`} />
-                    {!isOwnPage && isLoggedIn() &&
-                        <ComparisonLink simple={windowWidth < 700} pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
-                    }
+                    <SpotifyLink simple link={`https://open.spotify.com/user/${user.user_id}`} />
+                    <div style={{marginTop: 'auto'}}>
+                        {windowWidth < 700 && !isOwnPage && isLoggedIn() &&
+                            <ComparisonLink simple pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     )
 }
 
+
+function TopContainer(props) {
+    const {pageUser, followers, isLoggedUserFollowing, isOwnPage, loggedUserID, longTermDP, terms, setTermIndex, termIndex} = props;
+
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
+
+    return (
+        <div>
+            <UserContainer windowWidth={windowWidth} user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={longTermDP} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
+            <div style={{display: 'flex', flexDirection: 'row', marginTop: '25px', width: '100%', alignItems: 'left', gap: '15px'}}>
+                <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex} />
+                {!isOwnPage && isLoggedIn() && windowWidth > 700 &&
+                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                }
+            </div>
+        </div>
+    );
+}
+
+function PlaylistItemList(props) {
+    const {playlists} = props;
+
+    const [listLength, setListLength] = useState(5);
+
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: '10px',
+            width: '100%'
+        }}>
+            {playlists.slice(0,listLength).map(p => {
+                return (
+                    <PlaylistItem key={p.id} playlist={p}/>
+                )
+            })}
+            {playlists.length > listLength ?
+                <button onClick={() => {setListLength(playlists.length)}} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}} className={'std-button'}>See more</button>
+                :
+                (
+                    playlists.length > 5 ?
+                        <button onClick={() => {setListLength(5)}} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}} className={'std-button'}>See less</button>
+                        :
+                        <></>
+                )
+            }
+        </div>
+    )
+}
 
 const Profile = () => {
 
@@ -998,6 +1007,7 @@ const Profile = () => {
     // The icon should be a MUI icon component.
     const [isError, setIsError] = useState(false);
     const [errorDetails, setErrorDetails] = useState({icon: null, description: null, errCode: null});
+
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
@@ -1125,7 +1135,7 @@ const Profile = () => {
 
     return (
         <>
-            {!loaded || isError ? // Locked and loaded B)
+            {!loaded || isError ?
                 isError ?
                     <PageError icon={errorDetails.icon} description={errorDetails.description}
                                errCode={errorDetails.errCode}/>
@@ -1137,10 +1147,7 @@ const Profile = () => {
                         name="description"
                         content={`Explore ${pageUser.username}'s profile on Harked.`}
                     />
-                    <UserContainer user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
-                    <div style={{marginTop: '25px', width: '100%', alignItems: 'center'}}>
-                        <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex} />
-                    </div>
+                    <TopContainer pageUser={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
                             let description = '';
@@ -1241,7 +1248,16 @@ const Profile = () => {
                                         textTransform: 'uppercase'
                                     }}>{possessive}</p>
                                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Playlists</h2>
-                                    <p>A look at {possessive} public playlists, sorted by their number of songs.</p>
+                                    {isLoggedIn() ?
+                                        <>
+                                            <p>A look at {possessive} public playlists, sorted by their number of songs.</p>
+                                        </>
+                                        :
+                                        <>
+                                            <p>Viewing someone's playlists requires being logged in.</p>
+                                            <button className={'std-button'} onClick={handleLogin}>Log-in</button>
+                                        </>
+                                    }
                                 </div>
                             </div>
                             {!isLoggedIn() ?
@@ -1250,8 +1266,7 @@ const Profile = () => {
                                     flexDirection: 'column',
                                     fontFamily: 'Inter Tight',
                                 }}>
-                                    <p>Viewing someone's playlists requires being logged in.</p>
-                                    <button className={'std-button'} onClick={handleLogin}>Log-in</button>
+
                                 </div>
                                 :
                                 playlists.length < 1 ?
@@ -1266,19 +1281,7 @@ const Profile = () => {
                                             there aren't any public playlists.</p>
                                     </div>
                                     :
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        gap: '10px',
-                                        width: '100%'
-                                    }}>
-                                        {playlists.map(p => {
-                                            return (
-                                                <PlaylistItem key={p.id} playlist={p}/>
-                                            )
-                                        })}
-                                    </div>
+                                    <PlaylistItemList playlists={playlists} />
                             }
                         </div>
                         <div className={'simple-instance'}>

@@ -68,7 +68,7 @@ select.dropdown {
     position: relative;
     align-items: center;
     height: max-content;
-    width: 750px;
+    width: 850px;
     max-width: 1000px;
     min-width: 0;
     flex-grow: 1;
@@ -414,6 +414,7 @@ select.dropdown {
 }
 
 .user-details {
+    word-break: keep-all;
     margin-left: 10px;
 }
 
@@ -454,6 +455,79 @@ select.dropdown {
 
 .settings-container > div > p {
     margin: 0 0 5px 0;
+}
+
+#rec-modal {
+    height: max-content;
+    background: var(--bg-colour);
+    color: var(--primary-colour);
+    border: 1px solid var(--secondary-colour);
+}
+
+#rec-modal::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#rec-type-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 15px;
+    justify-content: left;
+    margin: 15px 0;
+}
+
+.rec-type-button {
+    padding: 5px 15px;
+    border: 1px solid var(--secondary-colour);
+    text-transform: capitalize;
+    transition: all 0.25s ease;
+}
+
+#rec-search-results {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    gap: 15px;
+}
+
+.rec-search-result {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    gap: 15px;
+    background: none;
+    color: var(--primary-colour);
+    cursor: pointer;
+    border: none;
+}
+
+.rec-search-result > img {
+    aspect-ratio: 1;
+    height: 50px;
+    width: 50px;
+    object-fit: cover;
+}
+
+.rec-search-result > p {
+    color: var(--secondary-colour);
+}
+
+.rec-details-img {
+    aspect-ratio: initial;
+}
+
+.processing-indicator-wrapper {
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.75);
 }
 
 

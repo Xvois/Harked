@@ -494,21 +494,24 @@ export const retrieveSearchResults = async function (query: string, type: "artis
     let params = new URLSearchParams([
         ["q", query],
         ["type", typeParam],
-        ["limit", 5]
+        ["limit", 10]
     ]);
 
     let data = await fetchData(`search?${params}`);
+    let returnValue;
 
     if (type === 'artists') {
         data.artists = data.artists.items;
         data.artists = data.artists.map(a => formatArtist(a));
+        returnValue = data.artists;
     } else if (type === 'songs') {
         data.tracks = data.tracks.items;
         data.tracks = data.tracks.map(t => formatSong(t));
+        returnValue = data.tracks;
     } else {
         console.warn('No type identified for', data);
     }
-    return data;
+    return returnValue;
 }
 
 /**

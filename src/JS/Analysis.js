@@ -20,7 +20,7 @@ export const translateAnalytics = {
 export const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
 
 // Get the display name of the list item.
-export const getLIName = function (data) {
+export const getLIName = function (data, maxLength = 30) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
         result = data.name;
@@ -29,13 +29,13 @@ export const getLIName = function (data) {
     } else {
         result = data;
     }
-    if (result.length > 30) {
-        result = result.substring(0, 30) + "..."
+    if (result.length > maxLength) {
+        result = result.substring(0, maxLength) + "..."
     }
     return result;
 }
 
-export const getLIDescription = function (data) {
+export const getLIDescription = function (data, maxLength = 30) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
         if (data.genres && data.genres.length > 0) {
@@ -48,8 +48,8 @@ export const getLIDescription = function (data) {
     } else {
         result = '';
     }
-    if (result.length > 30) {
-        result = result.substring(0, 30) + "..."
+    if (result.length > maxLength) {
+        result = result.substring(0, maxLength) + "..."
     }
     return result;
 }

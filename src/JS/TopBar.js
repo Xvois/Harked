@@ -47,6 +47,9 @@ const TopBar = () => {
 
     const updateSize = () => {
         setWindowWidth(window.innerWidth);
+        if(window.innerWidth > 700 && isMenuOpen){
+            setIsMenuOpen(false);
+        }
     }
     window.addEventListener("resize", updateSize);
 

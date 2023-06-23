@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
-import {batchAnalytics, formatArtist, hashString} from "./HDM.ts";
+import {formatArtist, hashString, retrieveSongAnalytics} from "./HDM.ts";
 import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
@@ -179,8 +179,8 @@ const postSong = async (song) => {
 
     if(!song.hasOwnProperty('analytics') || Object.keys(song.analytics).length === 0){
         console.info('Resolving analytics for song attempting to be posted.');
-        await batchAnalytics([song]).then(res =>
-            song.analytics = res[0]
+        await retrieveSongAnalytics(song.song_id).then(res =>
+            song.analytics = res
         );
     }
 
