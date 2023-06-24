@@ -1,21 +1,21 @@
 // noinspection SpellCheckingInspection,JSValidateTypes
 
 /**
- * The home component. This deals with logging in, out, checking the server status and
+ * The home component. This deals with logging in, out and
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, retrieveAllPublicUsers, retrieveLoggedUserID} from './HDM.ts';
+import {isLoggedIn} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {handleLogin} from "./Authentication";
+import {handleAlternateLogin} from "./Authentication";
 
 function Homepage() {
     const [token, setToken] = useState("")
     const navigate = useNavigate();
     useEffect(() => {
-        handleCacheReset();
+        // TEMP FOR CR TESTING TODO: REMOVE
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
     }, [token])
@@ -45,19 +45,6 @@ function Homepage() {
         setToken("");
     }
 
-    const handleCompare = async () => {
-        const currUserID = await retrieveLoggedUserID();
-        const IDs = (await retrieveAllPublicUsers()).map(e => e.user_id);
-        let userID;
-        do {
-            do {
-                let index = Math.round(Math.random() * (IDs.length - 1));
-                userID = IDs[index];
-            } while (userID === undefined)
-            navigate(`/compare#${currUserID}&${userID}`)
-        } while (userID === currUserID)
-    }
-
     let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
     let welcomeMessage = "Just click log-in to get started exploring your Spotify profile in a new light. None of your log-in information is shared with us.";
 
@@ -73,13 +60,12 @@ function Homepage() {
                 <div className={'button-wrapper'}>
                     {!isLoggedIn() ?
                         <>
-                            <button className="std-button" onClick={handleLogin}>Login with Spotify</button>
+                            <button className="std-button" onClick={handleAlternateLogin}>Login with Spotify</button>
                             <a className="std-button" href={'/profile#sonn-gb'}>View a sample profile</a>
                         </>
                         :
                         <>
                             <a className="std-button" href={`profile#me`}>Explore your profile</a>
-                            <button className="std-button" onClick={handleCompare}>Compare to others</button>
                         </>
                     }
                     {isLoggedIn() ?
@@ -88,9 +74,8 @@ function Homepage() {
                         <></>
                     }
                 </div>
-                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '12px', color: 'red'}}>Work is being done to fix issues with the current cache policy. As a part of debugging, data caching has currently been disabled. Pages will take longer to load as a result.</p>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.10<span style={{color: 'var(--secondary-colour)'}}>cr</span></p>
+                    v1.3.11<span style={{color: 'var(--secondary-colour)'}}></span></p>
             </div>
         </div>
     );

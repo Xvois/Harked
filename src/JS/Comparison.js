@@ -95,12 +95,9 @@ const Comparison = () => {
         const topArtist = datapoints[userIndex].top_artists[0];
         const topGenre = datapoints[userIndex].top_genres[0];
         return (
-            <div className={'user-details'} style={alignment === 'right' ? {marginLeft: 'auto'} : {}}>
-                <p style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {}}>Comparison with</p>
-                <h2 style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {}}>{user.username}</h2>
-                <p style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {}}><span
-                    style={{color: 'var(--accent-colour)'}}>{topArtist.name}</span> fan · <span
-                    style={{color: 'var(--accent-colour)'}}>{topGenre}</span> fan</p>
+            <div className={'comparison-user-container'} style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {width: 'max-content'}}>
+                <p style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {width: 'max-content'}}>Comparison with</p>
+                <h2 style={alignment === 'right' ? {marginLeft: 'auto', width: 'max-content'} : {width: 'max-content'}}>{user.username}</h2>
                 <div style={alignment === 'right' ? {
                     marginLeft: 'auto',
                     marginTop: '15px',
@@ -154,7 +151,6 @@ const Comparison = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
-                        borderTop: '1px solid var(--secondary-colour)'
                     }}>
                         <meta
                             name="description"

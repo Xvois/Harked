@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
-import {batchAnalytics, formatArtist, hashString} from "./HDM.ts";
+import {formatArtist, hashString, retrieveSongAnalytics} from "./HDM.ts";
 import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
@@ -8,30 +8,38 @@ const pb = new PocketBase("https://harked.fly.dev/");
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.
  * @param path
+ * @param retryCount
  * @returns {Promise<any>} An object.
  */
-export const fetchData = async (path) => {
-    //console.log("External API call made to: " + path)
-    const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
-        headers: {
-            Authorization: `Bearer ${window.localStorage.getItem('access-token')}`
-        },
-    }).catch(function (err) {
+export async function fetchData(path, retryCount = 0) {
+    try {
+        const { data } = await axios.get(`https://api.spotify.com/v1/${path}`, {
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem('access-token')}`
+            },
+        });
+        return data;
+    } catch (err) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         } else if (err.response.status === 401) {
-            reAuthenticate();
-        } else if (err.response.status === 429) {
-            alert("Too many API calls made! Take a deep breath and refresh the page.")
-        } else if (err.response.status === 503) {
-            console.warn("[Error in API call] Server is temporarily unavailable, retrying in 3 seconds...");
-            return new Promise((resolve) => setTimeout(resolve, 3000));
+            console.warn('Token expired. Attempting reauthentication.');
+            reAuthenticate()
+        } else if (err.response.status === 429 || err.response.status === 503) {
+            if (retryCount < 3) {
+                console.warn(`[Error in API call] CODE : ${err.response.status}`);
+                await new Promise((resolve) => setTimeout(resolve, 3000));
+                return fetchData(path, retryCount + 1);
+            } else {
+                console.warn(`[Error in API call] CODE : ${err.response.status}`);
+                return null;
+            }
         } else {
             alert(err);
         }
-    })
-    return data;
+    }
 }
+
 
 /**
  * Makes a put request to the Spotify api.
@@ -169,11 +177,10 @@ const postSong = async (song) => {
         console.info('Song attempting to be posted already cached.');
         return;
     }
-
     if(!song.hasOwnProperty('analytics') || Object.keys(song.analytics).length === 0){
-        console.info('Resolving analytics for song attempting to be posted.');
-        await batchAnalytics([song]).then(res =>
-            song.analytics = res[0]
+        console.info(`Resolving analytics for a song (${song.song_id}) attempting to be posted.`);
+        await retrieveSongAnalytics(song.song_id).then(res =>
+            song.analytics = res
         );
     }
 

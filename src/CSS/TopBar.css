@@ -1,26 +1,78 @@
-
-.header {
-    height: min-content;
-    display: block;
-    align-items: center;
+.header-pin {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: max-content;
+    top: 0;
+    left: 0;
+    z-index: 2;
 }
 
-.element {
-    padding: 10px;
+
+.header {
+    flex-grow: 1;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    height: max-content;
+    background: none;
+    backdrop-filter: blur(15px);
+    padding: 10px 25px;
+    border-bottom: 1px solid var(--secondary-colour);
+    transition: 0.25s all ease;
+}
+
+@media screen and (max-width: 700px) {
+    .header {
+        background: var(--bg-colour);
+    }
+}
+
+#logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: max-content;
+    text-decoration: none;
+    color: var(--primary-colour);
+}
+
+
+.element-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.expanded-menu-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+.redirect-element {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    max-width: 200px;
     min-width: max-content;
-    width: 100px;
+    flex-grow: 1;
     font-size: 20px;
     color: var(--primary-colour);
     text-decoration: none;
-    transition: color 0.2s ease-out;
+    cursor: pointer;
+
+    background: none;
+    border: none;
 }
 
 
-.element p {
+.redirect-element p {
     margin: 0;
     font-size: 12px;
     font-family: 'Inter Tight', sans-serif;
@@ -28,63 +80,11 @@
     text-transform: uppercase;
 }
 
-
-.element-container {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-}
-
-#menu {
-    width: min-content;
-    margin-left: auto;
-    cursor: pointer;
-}
-
-#menu:hover {
-    cursor: pointer;
-}
-
-#expanded-menu {
-    display: flex;
-    position: fixed;
-    flex-direction: column;
-    max-width: 100%;
-    min-width: 300px;
-    height: 100%;
-    top: 0;
-    right: 0;
-    z-index: 1;
-    background: var(--bg-colour);
-    border-left: 1px solid var(--primary-colour);
-}
-
-#expanded-menu > hr {
-    width: 200px;
-    border: 1px solid var(--primary-colour);
-    background: var(--primary-colour);
-    border-radius: 10px;
-    margin: 0;
-}
-
-.menu-element {
-    color: var(--primary-colour);
-    text-decoration: none;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px 20px 10px 20px;
-    gap: 15px;
-    font-family: 'Inter Tight', sans-serif;
-    text-transform: uppercase;
-    cursor: pointer;
-
-}
-
 .search-bar-container {
-    margin: auto;
-    width: 250px;
+    position: relative;
+    height: max-content;
     justify-content: center;
+    background: var(--bg-colour);
 }
 
 .MuiFormControl-root {
@@ -94,6 +94,7 @@
 .results {
     display: flex;
     flex-direction: column;
+    width: 100%;
     position: absolute;
 }
 
@@ -106,14 +107,13 @@
     color: var(--primary-colour);
     text-decoration: none;
     text-transform: none;
-
+    background: var(--bg-colour);
     backdrop-filter: blur(10px);
-    width: 218px;
+    flex-grow: 1;
     padding: 15px;
     border-left: 1px solid var(--secondary-colour);
     border-bottom: 1px solid var(--secondary-colour);
     border-right: 1px solid var(--secondary-colour);
-    z-index: 1;
 }
 
 .result-title {

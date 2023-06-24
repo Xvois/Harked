@@ -9,6 +9,7 @@ import {BrowserRouter, Route, Routes} from "react-router-dom"; // Functionality 
 import TopBar from './JS/TopBar';
 import Profile from './JS/Profile';
 import {Analytics} from '@vercel/analytics/react';
+import {Settings} from './JS/Settings.tsx'
 import Followers from "./JS/Followers";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -22,10 +23,10 @@ root.render(
                 <Route path="profile" element={<Profile/>}/>
                 <Route path="compare" element={<Comparison/>}/>
                 <Route path="followers" element={<Followers/>}/>
+                <Route path="settings" element={<Settings />}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>
-
     </>
 );
 

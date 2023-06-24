@@ -19,8 +19,8 @@ export const translateAnalytics = {
 
 export const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
 
-// Get the display name of the list item
-export const getLIName = function (data) {
+// Get the display name of the list item.
+export const getLIName = function (data, maxLength = 30) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
         result = data.name;
@@ -29,13 +29,13 @@ export const getLIName = function (data) {
     } else {
         result = data;
     }
-    if (result.length > 30) {
-        result = result.substring(0, 30) + "..."
+    if (result.length > maxLength) {
+        result = result.substring(0, maxLength) + "..."
     }
     return result;
 }
 
-export const getLIDescription = function (data, maxLength = 80) {
+export const getLIDescription = function (data, maxLength = 30) {
     let result;
     if (data.hasOwnProperty('artist_id')) {
         if (data.genres && data.genres.length > 0) {
@@ -167,14 +167,6 @@ export const getItemIndexChange = function (item, index, type, comparisonDP) {
     return lastIndex - index;
 }
 
-export const getAllItemIndexChanges = function (type, dp1, dp2) {
-    let deltas = [];
-    dp1[`top_${type}`].forEach(function (element, index) {
-        deltas.push(getItemIndexChange(element, index, type, dp2));
-    })
-    return deltas;
-}
-
 export const getAllArtistAssociations = function () {
     // noinspection SpellCheckingInspection
     const memo = new Map();
@@ -233,7 +225,7 @@ function getMaxValueAttribute(attributes) {
 }
 
 
-export const getItemAnalysis = function (item, type, user, datapoint) {
+export const getItemAnalysis = function (item, type, user, datapoint, term) {
     const memoFunc = getAllArtistAssociations(datapoint);
     const artistAssociations = memoFunc(datapoint); // Call the artistAssociations function with the datapoint
     let topMessage = '';
@@ -256,7 +248,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             // The index of the song in the user's top songs list made by this artist.
             const songIndex = datapoint.top_songs.findIndex((element) => element.artists[0].name === item.name);
             if (songIndex !== -1) {
-                secondMessage += `${datapoint.top_songs[songIndex].title} by ${item.name} is Nº ${songIndex + 1} on ${possessive} top 50 songs list for this time frame.`
+                secondMessage += `"${datapoint.top_songs[songIndex].title}" by ${item.name} is Nº ${songIndex + 1} on ${possessive} top songs of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`
             }
             break;
         case "songs":
@@ -265,7 +257,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
                 topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
                 if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
                     const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
-                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
+                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`
                 }
             } catch (e) {
                 topMessage += "This song hasn't been analysed yet. Look back at another time to see this song's characteristics."
@@ -291,27 +283,6 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
         header: topMessage,
         subtitle: secondMessage
     }
-}
-
-export const compareItemBetweenUsers = (item, dp1, dp2, type) => {
-    let returnMessage;
-    switch (type) {
-        case 'artists':
-            const dp1Contains = containsElement(item, dp1, type);
-            const dp2Contains = containsElement(item, dp2, type);
-            if (dp1Contains && dp2Contains) {
-                returnMessage = `Both users have this artist in their datapoints.`
-            } else {
-                const genresShared = item.genres.filter(g => containsElement(g, dp1, 'genres') && containsElement(g, dp2, 'genres'));
-                if (genresShared.length > 0) {
-                    returnMessage = `${item.name} isn't a shared interest, but the following genre(s) are ${genresShared}.`
-                } else {
-                    returnMessage = `Not only is the artist not shared, but neither are any of the genres.`
-                }
-            }
-    }
-
-    return returnMessage;
 }
 
 export const getItemType = (item) => {

@@ -4,7 +4,6 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import './../CSS/Graph.css'
 import {
-    changeSettings,
     deleteRecommendation,
     followsUser,
     followUser,
@@ -47,7 +46,6 @@ import {
 import {handleLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Fuse from "fuse.js";
 import {
     CommentSection,
     LoadingIndicator,
@@ -58,9 +56,14 @@ import {
     ValueIndicator
 } from "./SharedComponents.tsx";
 import {ExpandMore} from "@mui/icons-material";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import IosShareIcon from '@mui/icons-material/IosShare';
+
+const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
 
 const ShowcaseList = (props) => {
-    const {pageUser, possessive, playlists, selectedDatapoint, selectedPrevDatapoint = null, type, start, end} = props;
+    const {pageUser, possessive, playlists, selectedDatapoint, selectedPrevDatapoint = null, type, start, end, term} = props;
 
     return (
         <div className={'showcase-list-wrapper'}>
@@ -71,7 +74,7 @@ const ShowcaseList = (props) => {
                             key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]}
                             pageUser={pageUser} possesive={possessive} playlists={playlists} element={element}
                             index={index} selectedDatapoint={selectedDatapoint}
-                            selectedPrevDatapoint={selectedPrevDatapoint} type={type}/>
+                            selectedPrevDatapoint={selectedPrevDatapoint} type={type} term={term}/>
                     )
                 }
             })}
@@ -80,19 +83,19 @@ const ShowcaseList = (props) => {
 }
 
 const ShowcaseListItem = (props) => {
-    const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type} = props;
+    const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type, term} = props;
 
     const maxExpansion = 650;
     const secondExpansion = 300;
     const minExpansion = 77;
 
     const [expansion, setExpansion] = useState(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion);
-    const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres') : false);
+    const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres' && isLoggedIn()) : false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
 
     useEffect(() => {
-        setExpansion(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion)
-        setShowAnalytics(index === 0 ? (type !== 'genres') : false);
+        setExpansion(index === 0 ? (type === 'genres' || !isLoggedIn() ? secondExpansion : maxExpansion) : minExpansion)
+        setShowAnalytics(index === 0 ? (type !== 'genres' && isLoggedIn()) : false);
     }, [index])
 
     const handleClick = () => {
@@ -109,7 +112,9 @@ const ShowcaseListItem = (props) => {
         const {element, type} = props;
         const [recommendations, setRecommendations] = useState(null);
         useEffect(() => {
-            generateRecommendations();
+            if(recommendations === null){
+                generateRecommendations();
+            }
         }, [])
         const generateRecommendations = () => {
             if (recommendations === null) {
@@ -162,8 +167,8 @@ const ShowcaseListItem = (props) => {
                                                 <p style={{
                                                     margin: 0,
                                                     fontSize: '12px',
-                                                    color: 'var(--accent-colour)'
-                                                }}>{getLIDescription(e, 20)}</p>
+                                                    color: 'var(--secondary-colour)'
+                                                }}>{getLIDescription(e)}</p>
                                             </div>
                                             <SpotifyLink link={e.link} simple/>
                                         </div>
@@ -205,7 +210,7 @@ const ShowcaseListItem = (props) => {
             fontSize={"small"}></ClearAllOutlinedIcon>
     }
 
-    const description = getItemAnalysis(element, type, pageUser, selectedDatapoint);
+    const description = getItemAnalysis(element, type, pageUser, selectedDatapoint, term);
     const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0]).image;
 
     return (
@@ -258,7 +263,7 @@ const ShowcaseListItem = (props) => {
                                 </div>
                                 <p style={{marginTop: '0 auto'}}>{description.header}</p>
                                 <p className={'supplemental-content'} style={{marginTop: '0 auto'}}>{description.subtitle}</p>
-                                {type !== 'genres' ?
+                                {type !== 'genres' && isLoggedIn() ?
                                     <div style={{width: 'max-content', alignContent: 'center'}}>
                                         <button style={{
                                             fontFamily: 'Inter Tight',
@@ -285,9 +290,9 @@ const ShowcaseListItem = (props) => {
                                 }
                             </div>
                         </div>
-                        {expansion > secondExpansion ?
+                        {showAnalytics ?
                             <>
-                                <hr style={{width: '100%', color: 'var(--secondary-colour)'}}/>
+                                <hr style={{width: '95%', border: '1px solid var(--secondary-colour)'}}/>
                                 <div className={'analysis-wrapper'}>
                                     {
                                         type === 'songs' ?
@@ -333,7 +338,7 @@ const ShowcaseListItem = (props) => {
 }
 
 function ComparisonLink(props) {
-    const {pageUser, pageHash, loggedUserID, longTermDP} = props;
+    const {pageUser, loggedUserID, longTermDP, simple = false} = props;
     const [loggedDP, setLoggedDP] = useState(null);
 
     useEffect(() => {
@@ -341,16 +346,154 @@ function ComparisonLink(props) {
     }, [])
 
     return (
-        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto'}}>
-            <div style={{textAlign: 'right', marginLeft: 'auto'}}>
-                <h3 style={{margin: 0}}>Compare</h3>
-                <p style={{margin: '0 0 5px 0'}}>See how your stats stack up against {pageUser.username}</p>
-                <a className={'std-button'} style={{marginLeft: 'auto'}}
-                   href={`/compare#${loggedUserID}&${pageHash}`}>Compare</a>
-            </div>
-            <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                            diameter={50}/>
+        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto', height: 'max-content', flexGrow: '0', width: 'max-content'}}>
+            {simple ?
+                <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
+                    <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
+                                    diameter={50}/>
+                </a>
+                :
+                <>
+                    <div style={{maxWidth: '500px', marginRight: 'auto', textAlign: 'right'}}>
+                        <h3 style={{margin: 0}}>Compare</h3>
+                        <p style={{marginTop: 0}}>See how your stats stack up against {pageUser.username}'s.</p>
+                        <div className={'terms-container'} style={{justifyContent: 'right'}}>
+                            <a href={`/compare#${loggedUserID}&${pageUser.user_id}`} className={'std-button'}>Compare</a>
+                        </div>
+                    </div>
+                    <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
+                                    diameter={64.5}/>
+                </>
+            }
         </div>
+    )
+}
+
+const SelectionModal = (props) => {
+    const {showModal, setShowModal, setRecommendations, pageGlobalUserID} = props;
+
+    const [searchResults, setSearchResults] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [processing, setProcessing] = useState(false);
+    const searchRef = useRef('');
+    const descriptionRef = useRef('');
+    const typeChoices = ['songs', 'artists'];
+    const [type, setType] = useState(typeChoices[0]);
+
+    useEffect(() => {
+        const modal = document.getElementById('rec-modal');
+        if(showModal){
+            modal.showModal();
+        }else if(!showModal){
+            modal.close();
+        }
+    }, [showModal])
+
+    const handleSearch = () => {
+        if (searchRef.current !== null && searchRef.current !== undefined && searchRef.current.value !== '') {
+            retrieveSearchResults(searchRef.current.value, type).then(res => {
+                setSearchResults(res);
+            });
+        }
+    }
+
+    const handleSubmit = async () => {
+        setProcessing(true);
+        let type = getItemType(selectedItem);
+        let submissionItem = selectedItem;
+        if (type === 'songs') {
+            submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
+        }
+        console.log(submissionItem)
+        await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
+            setSearchResults(null);
+            setSelectedItem(null);
+            setShowModal(false);
+            setProcessing(false);
+            retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
+        });
+    }
+
+    return (
+        <dialog autoFocus id={'rec-modal'}>
+            <div style={{position: 'absolute', top: '0', right: '0'}}>
+                <button className={'showcase-exit-button'} onClick={() => {setShowModal(false); setSearchResults(null)}}>x</button>
+            </div>
+            {selectedItem === null ?
+                <div>
+                    <form autoComplete={"off"} onSubmit={handleSearch} style={{minWidth: '300px'}}>
+                        <h3 style={{margin: 0}}>Type</h3>
+                        <p style={{marginTop: 0}}>of item.</p>
+                        <div id={'rec-type-wrapper'}>
+                            {typeChoices.map(t => {
+                                return <button onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                            })}
+                        </div>
+                        <h3 style={{marginBottom: 0}}>Search</h3>
+                        <p style={{marginTop: 0}}>for an item to recommend.</p>
+                        <StyledField
+                            placeholder={`Search for ${type}`}
+                            variant='outlined'
+                            rows={1}
+                            inputRef={searchRef}
+                            inputProps={{maxLength: 100}}
+                        />
+                        <div style={{width: "max-content", marginLeft: 'auto'}}>
+                            <button type={'submit'} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
+                        </div>
+                    </form>
+                    {searchResults && (
+                        <div id={'rec-search-results'}>
+                            {/* Render search results */}
+                            {searchResults.slice(0, 5).map((result, index) => {
+                                return (
+                                    <div key={getLIName(result) + index} style={{position: 'relative'}}>
+                                        {index % 2 === 0 && <div className={'bg-element'}/>}
+                                        <button onClick={() => setSelectedItem(result)} className={'rec-search-result'}>
+                                            <img alt={getLIName(result)} src={result.image} className={'levitating-image'} />
+                                            <h4>{getLIName(result, 20)}</h4>
+                                            <p>{getLIDescription(result, 20)}</p>
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        )
+                    }
+                </div>
+                :
+                <div>
+                    {processing && (
+                        <div className={'processing-indicator-wrapper'}>
+                            <LoadingIndicator />
+                        </div>
+                        )
+                    }
+                    <form onSubmit={handleSubmit}>
+                        <div style={{position: 'relative'}} className={'rec-details-img'}>
+                            <img src={selectedItem.image} className={'backdrop-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
+                            <img src={selectedItem.image} className={'levitating-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
+                        </div>
+                        <div>
+                            <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
+                            <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}</p>
+                            <StyledField
+                                placeholder={`Why are you recommending this?`}
+                                variant='outlined'
+                                multiline
+                                rows={3}
+                                inputRef={descriptionRef}
+                                inputProps={{maxLength: 200}}
+                            />
+                            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '16px'}}>
+                                <button className={'std-button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                <button className={'std-button'} type={"submit"}>Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            }
+        </dialog>
     )
 }
 
@@ -371,160 +514,6 @@ const ProfileRecommendations = (props) => {
         });
     }
 
-    const Selection = () => {
-
-        const [searchResults, setSearchResults] = useState(null);
-        const [selectedItem, setSelectedItem] = useState(null);
-        const searchRef = useRef('') //creating a reference for TextField Component
-        const descriptionRef = useRef('');
-        const [type, setType] = useState('songs');
-        const typeChoices = ['songs', 'artists']
-
-        const handleSearch = () => {
-            console.log('handleSearch called', searchRef.current)
-            if (searchRef.current !== null && searchRef.current !== undefined && searchRef.current.value !== '') {
-                console.log('ran with', searchRef.current.value)
-                retrieveSearchResults(searchRef.current.value, type).then(res => setSearchResults(formatSearchResults(res)));
-            }
-        }
-
-        const handleSubmit = async () => {
-            let type = getItemType(selectedItem);
-            let submissionItem = selectedItem;
-            if (type === 'songs') {
-                submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
-            }
-            console.log(submissionItem)
-            await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
-                setSelectedItem(null);
-                setShowSelection(false);
-                retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
-            });
-        }
-
-        const formatSearchResults = (results) => {
-            const query = searchRef.current.value;
-
-            switch (type) {
-                case 'artists':
-                    const artistOptions = {
-                        keys: ['name'],
-                        threshold: 0.3, // Adjust the threshold as needed
-                    };
-                    const artistFuse = new Fuse(results.artists, artistOptions);
-                    const artistRes = artistFuse.search(query);
-                    return artistRes.sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
-                case 'songs':
-                    const songOptions = {
-                        keys: ['title'],
-                        threshold: 0.3, // Adjust the threshold as needed
-                    };
-                    const songFuse = new Fuse(results.tracks, songOptions);
-                    const songRes = songFuse.search(query);
-                    return songRes.sort((a, b) => a.refIndex - b.refIndex).map(e => e.item);
-                default:
-                    return null;
-            }
-        }
-
-        return showSelection && (
-            <div>
-                {selectedItem === null && (
-                    <form noValidate autoComplete="off" onSubmit={handleSearch}
-                          onKeyDown={(e) => {
-                              if (e.keyCode === 13 && !e.shiftKey) {
-                                  e.preventDefault();
-                                  handleSearch();
-                              }
-                          }}
-                    >
-                        <StyledField
-                            label='Search'
-                            placeholder={`Search for ${type}`}
-                            multiline
-                            variant='outlined'
-                            rows={1}
-                            inputRef={searchRef}
-                            inputProps={{maxLength: 100}}
-                        />
-                        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                            <div>
-                                {typeChoices.map(e => {
-                                    return <button key={e} className={'std-button'} style={type !== e ? {
-                                        color: 'var(--secondary-colour)',
-                                        borderColor: 'var(--secondary-colour)',
-                                        textTransform: 'capitalize'
-                                    } : {textTransform: 'capitalize'}} onClick={() => setType(e)}>{e}</button>
-                                })}
-                            </div>
-                            <button className={'std-button'} type={"submit"}>Search</button>
-                        </div>
-                    </form>
-                )
-                }
-
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                    {searchResults !== null && selectedItem === null ?
-                        (
-                            searchResults.slice(0, 5).map((e, i) => {
-                                return (
-                                    <button className={'std-button'}
-                                            style={i === searchResults.slice(0, 5).length - 1 ? {
-                                                border: 'none',
-                                                width: '100%'
-                                            } : {
-                                                borderTop: 'none',
-                                                borderLeft: 'none',
-                                                borderRight: 'none',
-                                                width: '100%'
-                                            }} key={e.link} onClick={() => setSelectedItem(e)}>
-                                        <h3>{getLIName(e)}</h3>
-                                        <p>{getLIDescription(e)}</p>
-                                    </button>
-                                )
-                            })
-                        )
-                        :
-                        <></>
-                    }
-                </div>
-                <div>
-                    {selectedItem !== null && (
-                        <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                            <img alt={`${getLIName(selectedItem)}`} className={'supplemental-content'}
-                                 style={{aspectRatio: '1', objectFit: 'cover', width: '300px', height: '300px'}}
-                                 src={selectedItem.image}/>
-                            <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
-                                <h2 style={{margin: '0'}}>{getLIName(selectedItem)}</h2>
-                                <p>{getLIDescription(selectedItem)}</p>
-                                <StyledField
-                                    id='outlined-textarea'
-                                    label='Description'
-                                    placeholder='Why are you recommending this?'
-                                    multiline
-                                    variant='outlined'
-                                    rows={6}
-                                    inputRef={descriptionRef}
-                                    inputProps={{maxLength: 400}}
-                                />
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    marginTop: 'auto'
-                                }}>
-                                    <button className={'std-button'} onClick={() => setSelectedItem(null)}>Back</button>
-                                    <button className={'std-button'} onClick={handleSubmit}>Submit</button>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                    }
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div style={{width: '100%'}}>
             <div style={{
@@ -533,38 +522,24 @@ const ProfileRecommendations = (props) => {
                 gap: '15px',
                 flexWrap: 'wrap',
                 margin: '16px 0',
-                position: 'relative'
+                position: 'relative',
             }}>
                 {recs.length > 0 ?
                     recs.map(e => {
                         const type = getItemType(e.item);
-                        return <Recommendation rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete}/>
+                        return <Recommendation key={e.id} rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete}/>
                     })
                     :
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
                 }
             </div>
             {isOwnPage && (
-                <div style={{
-                    margin: '0 auto',
-                    width: 'max-content',
-                    transform: `rotate(${showSelection ? '180' : '0'}deg)`,
-                    transition: '0.25s all',
-                    cursor: 'pointer'
-                }}>
-                    <button style={{background: 'none', border: 'none', color: 'var(--primary-colour)'}}
-                            onClick={() => {
-                                if (showSelection) {
-                                    setShowSelection(false)
-                                } else {
-                                    setShowSelection(true)
-                                }
-                            }}>
-                        <ExpandMore fontSize={'large'}/>
-                    </button>
-                </div>
+                <button className={'std-button'} style={{width: '100%', border: '1px solid var(--secondary-colour)'}}
+                        onClick={() => setShowSelection(true)}>
+                    + Add recommendation
+                </button>
             )}
-            <Selection show={showSelection}/>
+            <SelectionModal showModal={showSelection} setShowModal={setShowSelection} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
         </div>
     )
 }
@@ -584,9 +559,9 @@ const Recommendation = (props) => {
             wordBreak: 'break-word'
         }}>
             <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'}/>
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} style={{objectFit: 'cover'}}/>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'}
-                     style={{aspectRatio: '1', width: '100%'}}/>
+                     style={{aspectRatio: '1', width: '100%', objectFit: 'cover'}}/>
             </div>
             <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
                 <p style={{
@@ -667,7 +642,7 @@ const ArtistAnalysis = (props) => {
 
                             :
                             <p>There are no saved songs from this
-                                artist on this public profile, so an analysis is not available.</p>
+                                artist on in any public playlists, so an analysis is not available.</p>
                     )
                 }
             </div>
@@ -796,34 +771,214 @@ const PlaylistItem = function (props) {
     )
 }
 
-const ShareProfileButton = (props) => {
-    const {pageGlobalUserID} = props;
-    const origin = (new URL(window.location)).origin;
+function TermSelection(props) {
+    const {terms, termIndex, setTermIndex} = props;
+    return (
+        <div style={{maxWidth: '500px', marginRight: 'auto', flexGrow: '1'}}>
+            <h3 style={{margin: 0}}>Time frame</h3>
+            <p style={{marginTop: 0}}>Select the range of time to view information for.</p>
+            <div className={'terms-container'}>
+                {terms.map((t, i) => {
+                    if(t !== null){
+                        return <button key={t} className={'std-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', flexGrow: '5'} : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
+                            {translateTerm[t]}
+                        </button>
+                    }
+                })}
+            </div>
+        </div>
 
-    const [copied, setCopied] = useState(false);
+    );
+}
 
-    window.addEventListener('copy', () => {
-        setCopied(false);
-    })
+function UserContainer(props){
+    const {windowWidth, user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage, longTermDP} = props;
+
+    const ShareProfileButton = (props) => {
+        const {simple = false} = props;
+        const origin = (new URL(window.location)).origin;
+        const link = `${origin}/profile#${user.user_id}`;
+
+        const [copied, setCopied] = useState(false);
+
+        const handleShare = () => {
+            const content = {
+                title: "Harked",
+                text: `View ${user.username}'s profile on Harked.`,
+                url: link
+            }
+            try {
+                if(navigator.canShare(content)){
+                    navigator.share(content).then(() => setCopied(true));
+                }else{
+                    navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
+                }
+            } catch (error) {
+                console.warn('Web Share API not supported. Copying to clipboard.', error);
+                navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
+            }
+
+        }
+
+        window.addEventListener('copy', () => {
+            setCopied(false);
+        })
+
+        return (
+            <>
+                {simple === true ?
+                    <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)', cursor: 'pointer'}} onClick={handleShare}>
+                        <IosShareIcon fontSize={'small'} />
+                    </button>
+                    :
+                    <button className={'std-button'} onClick={handleShare}>
+                        {copied ?
+                            "Copied link!"
+                            :
+                            "Share profile"
+                        }
+                    </button>
+                }
+            </>
+        )
+    }
+
+    const [isFollowing, setIsFollowing] = useState(isLoggedUserFollowing);
+    // For optimistic updates
+    const [followerNumber, setFollowerNumber] = useState(followers.length);
+
+    const handleFollowClick = () => {
+        if(!isFollowing){
+            setIsFollowing(true);
+            const n = followerNumber;
+            setFollowerNumber(n+1);
+            followUser(loggedUserID, user.user_id).then(() => {
+                console.info('User followed!');
+            }).catch((err) => {
+                console.warn(`Error following user: `, err);
+                setIsFollowing(false);
+                setFollowerNumber(n);
+            })
+        }else{
+            setIsFollowing(false);
+            const n = followerNumber;
+            setFollowerNumber(n-1);
+            unfollowUser(loggedUserID, user.user_id).then(() => {
+                console.info('User unfollowed!');
+            }).catch((err) => {
+                console.warn(`Error unfollowing user: `, err);
+                setIsFollowing(true);
+                setFollowerNumber(n);
+            })
+        }
+    }
+
+    useEffect(() => {
+        setIsFollowing(isLoggedUserFollowing);
+    }, [isLoggedUserFollowing]);
+
+    useEffect(() => {
+        setFollowerNumber(followers.length);
+    }, [followers]);
+
 
     return (
-        <button className={'std-button'} onClick={() => {
-            navigator.clipboard.writeText(`${origin}/profile#${pageGlobalUserID}`).then(() => setCopied(true))
-        }}>
-            {copied ?
-                "Copied link!"
-                :
-                "Share profile"
-            }
-        </button>
+        <div className='user-container'>
+            <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px'}}>
+                    <div className={'profile-picture'}>
+                        {user.profile_picture && (
+                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture} style= {{height: '100%', width: '100%', objectFit: 'cover'}} />
+                        )}
+                    </div>
+                <div className={'user-details'}>
+                    <p style={{margin: '0'}}>Profile for</p>
+                    <h2 style={{margin: '-5px 0 0 0', fontSize: '30px', wordBreak: 'keep-all'}}>
+                        {user.username}
+                        <ShareProfileButton simple />
+                    </h2>
+                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center'}}>
+                        <a href={`/followers#${user.user_id}`} style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}</a>
+                        {isLoggedIn() && !isOwnPage && (
+                            <button style={{border: 'none', background: 'none', alignItems: 'center', height: '20px', width: '20px', margin: '0', padding: '0', color: 'var(--primary-colour)', cursor: 'pointer'}}
+                                    onClick={handleFollowClick}>
+                                {isFollowing ?
+                                    <CheckCircleOutlineIcon fontSize={'small'} />
+                                    :
+                                    <AddCircleOutlineIcon fontSize={'small'} />
+                                }
+                            </button>
+                        )}
+                    </div>
+                </div>
+                <div className={'user-links'}>
+                    <SpotifyLink simple link={`https://open.spotify.com/user/${user.user_id}`} />
+                    <div style={{marginTop: 'auto'}}>
+                        {windowWidth < 700 && !isOwnPage && isLoggedIn() &&
+                            <ComparisonLink simple pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }
 
 
+function TopContainer(props) {
+    const {pageUser, followers, isLoggedUserFollowing, isOwnPage, loggedUserID, longTermDP, terms, setTermIndex, termIndex} = props;
+
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
+
+    return (
+        <div>
+            <UserContainer windowWidth={windowWidth} user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={longTermDP} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
+            <div style={{display: 'flex', flexDirection: 'row', marginTop: '25px', width: '100%', alignItems: 'left', gap: '15px'}}>
+                <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex} />
+                {!isOwnPage && isLoggedIn() && windowWidth > 700 &&
+                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                }
+            </div>
+        </div>
+    );
+}
+
+function PlaylistItemList(props) {
+    const {playlists} = props;
+
+    const [listLength, setListLength] = useState(5);
+
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: '10px',
+            width: '100%'
+        }}>
+            {playlists.slice(0,listLength).map(p => {
+                return (
+                    <PlaylistItem key={p.id} playlist={p}/>
+                )
+            })}
+            {playlists.length > listLength ?
+                <button onClick={() => {setListLength(playlists.length)}} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}} className={'std-button'}>See more</button>
+                :
+                (
+                    playlists.length > 5 ?
+                        <button onClick={() => {setListLength(5)}} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}} className={'std-button'}>See less</button>
+                        :
+                        <></>
+                )
+            }
+        </div>
+    )
+}
+
 const Profile = () => {
 
     const simpleDatapoints = ["artists", "songs", "genres"]
-    const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
     const pageHash = window.location.hash.split("#")[1];
 
     const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
@@ -841,7 +996,6 @@ const Profile = () => {
     const [pageUser, setPageUser] = useState(null);
     const [isOwnPage, setIsOwnPage] = useState(false);
     const [pageGlobalUserID, setPageGlobalUserID] = useState(null);
-    const [chipData, setChipData] = useState([]);
     const [followers, setFollowers] = useState([]);
     const [allDatapoints, setAllDatapoints] = useState([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState([]);
@@ -856,6 +1010,7 @@ const Profile = () => {
     // The icon should be a MUI icon component.
     const [isError, setIsError] = useState(false);
     const [errorDetails, setErrorDetails] = useState({icon: null, description: null, errCode: null});
+
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
@@ -897,7 +1052,6 @@ const Profile = () => {
         }
 
         resolveContext().then((loadID) => {
-
             const loadPromises = [
                 retrieveUser(loadID).then(function (user) {
                     setPageUser(user);
@@ -918,17 +1072,15 @@ const Profile = () => {
                             setErrorDetails({
                                 icon: <ReportGmailerrorredIcon fontSize={'large'}/>,
                                 description: 'We do not have enough information about this user to generate a profile for them.',
-                                errCode: 'COMP TERM ELIMINATION'
+                                errCode: 'complete_term_elimination'
                             });
                         }
                         let termsCopy = terms;
                         indexes.forEach(i => termsCopy[i] = null);
                         setTerms(termsCopy);
                     }
-                    console.log(datapoints);
                     setAllDatapoints(datapoints);
                     setSelectedDatapoint(datapoints[termIndex]);
-                    setChipData([datapoints[2].top_artists[0], datapoints[2].top_genres[0]]);
                     console.info("Datapoints retrieved!");
                 }),
                 retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
@@ -938,7 +1090,7 @@ const Profile = () => {
                 }),
                 retrieveSettings(loadID).then(function (s) {
                     setSettings(s);
-                    if (!s.public && !isOwnPage) {
+                    if (!s.public && pageHash !== 'me') {
                         console.info("LOCKED PAGE", settings);
                         setIsError(true);
                         setErrorDetails({
@@ -986,7 +1138,7 @@ const Profile = () => {
 
     return (
         <>
-            {!loaded || isError ? // Locked and loaded B)
+            {!loaded || isError ?
                 isError ?
                     <PageError icon={errorDetails.icon} description={errorDetails.description}
                                errCode={errorDetails.errCode}/>
@@ -998,90 +1150,7 @@ const Profile = () => {
                         name="description"
                         content={`Explore ${pageUser.username}'s profile on Harked.`}
                     />
-                    <div className='user-container'>
-                        <div className={'user-details'}>
-                            <p>Profile for</p>
-                            <h2>{pageUser.username}</h2>
-                            <p><span
-                                style={{color: 'var(--accent-colour)'}}>{chipData[0].name}</span> fan · <span
-                                style={{color: 'var(--accent-colour)'}}>{chipData[1]}</span> fan</p>
-                        </div>
-                    </div>
-                    <div className={'user-followers'}>
-                        <a href={`/followers#${pageHash}`} style={{
-                            margin: '0',
-                            textDecoration: 'none',
-                            color: 'var(--primary-colour)',
-                            fontWeight: '800'
-                        }}>{followers.length} follower{followers.length !== 1 ? 's' : ''}</a>
-                        {isLoggedIn() && pageHash !== 'me' ?
-                            isLoggedUserFollowing ?
-                                <button
-                                    className={'std-button'}
-                                    onClick={() => {
-                                        unfollowUser(loggedUserID, pageGlobalUserID).then(() => {
-                                            setIsLoggedUserFollowing(false);
-                                        });
-                                    }}>
-                                    Unfollow
-                                </button>
-                                :
-                                <button
-                                    className={'std-button'}
-                                    onClick={() => {
-                                        followUser(loggedUserID, pageGlobalUserID).then(() => {
-                                            setIsLoggedUserFollowing(true);
-                                        });
-                                    }}>
-                                    Follow
-                                </button>
-                            :
-                            <></>
-                        }
-                    </div>
-                    {isOwnPage && (
-                        <div style={{padding: '15px 0 0 15px'}}>
-                            <ShareProfileButton pageGlobalUserID={pageGlobalUserID}/>
-                        </div>
-                    )
-                    }
-                    <div className={'settings-container'}>
-                        <div>
-                            <h3>Time frame</h3>
-                            <p>of information capture</p>
-                            <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                                {terms.map(function (term, i) {
-                                    if (term !== null) {
-                                        return (<button key={term}
-                                                        className={'std-button'}
-                                                        style={termIndex === i ? {} : {
-                                                            color: 'var(--secondary-colour)',
-                                                            borderColor: 'var(--secondary-colour)'
-                                                        }}
-                                                        onClick={() => setTermIndex(i)}>{translateTerm[term]}</button>)
-                                    }
-                                })}
-                            </div>
-                        </div>
-                        {!isOwnPage && isLoggedIn() ?
-                            <ComparisonLink pageHash={pageHash} pageUser={pageUser} loggedUserID={loggedUserID}
-                                            longTermDP={allDatapoints[2]}/>
-                            :
-                            isOwnPage && isLoggedIn() ?
-                                <div style={{textAlign: 'right', marginLeft: 'auto'}}>
-                                    <h3>Profile visibility</h3>
-                                    <p>Change whether or not your profile is publicly displayed.</p>
-                                    <button className={'std-button'} style={{marginLeft: 'auto'}}
-                                            onClick={() => {
-                                                const new_settings = {...settings, public: !settings.public};
-                                                setSettings(new_settings);
-                                                changeSettings(pageGlobalUserID, new_settings);
-                                            }}>{settings.public ? 'Public' : 'Private'}</button>
-                                </div>
-                                :
-                                <></>
-                        }
-                    </div>
+                    <TopContainer pageUser={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
                             let description = '';
@@ -1102,7 +1171,7 @@ const Profile = () => {
                             return (
                                 <div key={type} className='simple-instance' style={{minWidth: '0px'}}>
                                     <div className={'section-header'}>
-                                        <div style={{maxWidth: '400px'}}>
+                                        <div>
                                             <p style={{
                                                 margin: '16px 0 0 0',
                                                 textTransform: 'uppercase'
@@ -1114,13 +1183,11 @@ const Profile = () => {
                                             }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
                                             <p>{description}</p>
                                         </div>
-                                        <div style={{maxWidth: '400px', textAlign: 'right'}}>
-                                        </div>
                                     </div>
                                     <ShowcaseList selectedDatapoint={selectedDatapoint}
                                                   selectedPrevDatapoint={selectedPrevDatapoint} pageUser={pageUser}
                                                   playlists={playlists} possessive={possessive}
-                                                  datapoint={selectedDatapoint} type={type} start={0} end={9}/>
+                                                  datapoint={selectedDatapoint} type={type} start={0} end={9} term={terms[termIndex]}/>
                                     <div className={'section-footer'}>
                                         {type === 'songs' ?
                                             <div style={{textAlign: 'left'}}>
@@ -1178,13 +1245,22 @@ const Profile = () => {
                         })}
                         <div className={'simple-instance'} style={{alignItems: 'center'}}>
                             <div className={'section-header'}>
-                                <div style={{maxWidth: '400px'}}>
+                                <div>
                                     <p style={{
                                         margin: '16px 0 0 0',
                                         textTransform: 'uppercase'
                                     }}>{possessive}</p>
                                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Playlists</h2>
-                                    <p>A look at {possessive} public playlists, sorted by their number of songs.</p>
+                                    {isLoggedIn() ?
+                                        <>
+                                            <p>A look at {possessive} public playlists, sorted by their number of songs.</p>
+                                        </>
+                                        :
+                                        <>
+                                            <p>Viewing someone's playlists requires being logged in.</p>
+                                            <button className={'std-button'} onClick={handleLogin}>Log-in</button>
+                                        </>
+                                    }
                                 </div>
                             </div>
                             {!isLoggedIn() ?
@@ -1192,11 +1268,8 @@ const Profile = () => {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     fontFamily: 'Inter Tight',
-                                    maxWidth: '1000px',
-                                    width: '80%'
                                 }}>
-                                    <p>Viewing someone's playlists requires being logged in.</p>
-                                    <button className={'std-button'} onClick={handleLogin}>Log-in</button>
+
                                 </div>
                                 :
                                 playlists.length < 1 ?
@@ -1205,27 +1278,13 @@ const Profile = () => {
                                         flexDirection: 'row',
                                         flexWrap: 'wrap',
                                         gap: '10px',
-                                        maxWidth: '1000px',
-                                        width: '80%'
+                                        width: '100%'
                                     }}>
                                         <p style={{color: "var(--secondary-colour)", marginRight: 'auto'}}>Looks like
                                             there aren't any public playlists.</p>
                                     </div>
                                     :
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        gap: '10px',
-                                        maxWidth: '1000px',
-                                        width: '80%'
-                                    }}>
-                                        {playlists.map(p => {
-                                            return (
-                                                <PlaylistItem key={p.id} playlist={p}/>
-                                            )
-                                        })}
-                                    </div>
+                                    <PlaylistItemList playlists={playlists} />
                             }
                         </div>
                         <div className={'simple-instance'}>
@@ -1245,8 +1304,7 @@ const Profile = () => {
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
                                 gap: '10px',
-                                maxWidth: '1000px',
-                                width: '80%'
+                                width: '100%'
                             }}>
                                 <ProfileRecommendations pageGlobalUserID={pageGlobalUserID} isOwnPage={isOwnPage}/>
                             </div>
@@ -1267,8 +1325,7 @@ const Profile = () => {
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
                                 gap: '10px',
-                                maxWidth: '1000px',
-                                width: '80%'
+                                width: '100%'
                             }}>
                                 <CommentSection sectionID={hashString(pageGlobalUserID)} isAdmin={isOwnPage}/>
                             </div>
