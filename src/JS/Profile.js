@@ -350,7 +350,7 @@ function ComparisonLink(props) {
             {simple ?
                 <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
                     <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                                    diameter={64.5}/>
+                                    diameter={50}/>
                 </a>
                 :
                 <>
@@ -423,7 +423,7 @@ const SelectionModal = (props) => {
                 <div>
                     <form onSubmit={handleSearch} style={{minWidth: '300px'}}>
                         <h3 style={{margin: 0}}>Type</h3>
-                        <p style={{marginTop: 0}}>of item to recommend.</p>
+                        <p style={{marginTop: 0}}>of item.</p>
                         <div id={'rec-type-wrapper'}>
                             {typeChoices.map(t => {
                                 return <button key={t} onClick={() => setType(t)} className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
@@ -536,7 +536,7 @@ const ProfileRecommendations = (props) => {
             {isOwnPage && (
                 <button className={'std-button'} style={{width: '100%', border: '1px solid var(--secondary-colour)'}}
                         onClick={() => setShowSelection(true)}>
-                    +
+                    + Add recommendation
                 </button>
             )}
             <SelectionModal showModal={showSelection} setShowModal={setShowSelection} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>

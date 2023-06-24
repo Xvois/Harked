@@ -1,7 +1,7 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {formatArtist, hashString, retrieveSongAnalytics} from "./HDM.ts";
-import {alternateReAuthenticate} from "./Authentication";
+import {reAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
 /**
@@ -24,9 +24,7 @@ export async function fetchData(path, retryCount = 0) {
             console.warn("[Error in Spotify API call] " + err);
         } else if (err.response.status === 401) {
             console.warn('Token expired. Attempting reauthentication.');
-            alternateReAuthenticate().then(() => {
-                return fetchData(path, retryCount + 1);
-            });
+            reAuthenticate()
         } else if (err.response.status === 429 || err.response.status === 503) {
             if (retryCount < 3) {
                 console.warn(`[Error in API call] CODE : ${err.response.status}`);
@@ -179,9 +177,8 @@ const postSong = async (song) => {
         console.info('Song attempting to be posted already cached.');
         return;
     }
-
     if(!song.hasOwnProperty('analytics') || Object.keys(song.analytics).length === 0){
-        console.info('Resolving analytics for song attempting to be posted.');
+        console.info(`Resolving analytics for a song (${song.song_id}) attempting to be posted.`);
         await retrieveSongAnalytics(song.song_id).then(res =>
             song.analytics = res
         );

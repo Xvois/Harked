@@ -54,13 +54,10 @@ export const alternateReAuthenticate = async () => {
         await handleAlternateLogin();
     }else{
         const url = new URL(window.location);
-        const redirectURL = `${url.origin}/authentication`;
         let body = new URLSearchParams({
-            grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: redirectURL,
+            grant_type: 'refresh_token',
+            refresh_token: localStorage.getItem('access-token'),
             client_id: CLIENT_ID,
-            code_verifier: provider.codeVerifier
         });
         // Get token
         await fetch('https://accounts.spotify.com/api/token', {
@@ -86,7 +83,6 @@ export const alternateReAuthenticate = async () => {
     }
 
 }
-
 export function reAuthenticate() {
     const url = new URL(window.location);
     const params = new URLSearchParams([
@@ -198,11 +194,11 @@ function Authentication() {
         // Get provider
         let provider = JSON.parse(localStorage.getItem('provider'));
 
-
         // Authenticate with pb
         const pb = new PocketBase("https://harked.fly.dev/");
         // Are we authed already?
         if(!pb.authStore.isValid){
+            console.warn('pb authStore is not valid')
             pb.collection('users').authWithOAuth2Code(
                 provider.name,
                 code,
@@ -263,7 +259,7 @@ function Authentication() {
                 console.log("Failed to exchange code.\n" + err);
             });
         } else {
-            alternateReAuthenticate()
+            CATCH_SPOTIFY_TOKEN()
         }
     }, [redirect])
 

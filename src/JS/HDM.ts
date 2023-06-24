@@ -793,8 +793,8 @@ function chunks(array, size) {
  * @returns Analytics
  */
 export const retrieveSongAnalytics = async (song_id: string) => {
-    const data = await fetchData(`audio-features?id=${song_id}`)
-    return data.audio_features;
+    const data = await fetchData(`audio-features?ids=${song_id}`)
+    return data.audio_features[0];
 }
 /**
  * Returns an array of the analytics of the songs in the array
