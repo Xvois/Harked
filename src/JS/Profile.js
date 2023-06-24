@@ -416,6 +416,9 @@ const SelectionModal = (props) => {
 
     return (
         <dialog autoFocus id={'rec-modal'}>
+            <div style={{position: 'absolute', top: '0', right: '0'}}>
+                <button className={'showcase-exit-button'} onClick={() => {setShowModal(false); setSearchResults(null)}}>x</button>
+            </div>
             {selectedItem === null ?
                 <div>
                     <form onSubmit={handleSearch} style={{minWidth: '300px'}}>
@@ -423,7 +426,7 @@ const SelectionModal = (props) => {
                         <p style={{marginTop: 0}}>of item to recommend.</p>
                         <div id={'rec-type-wrapper'}>
                             {typeChoices.map(t => {
-                                return <button onClick={() => setType(t)} className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                                return <button key={t} onClick={() => setType(t)} className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
                             })}
                         </div>
                         <h3 style={{marginBottom: 0}}>Search</h3>
@@ -473,7 +476,7 @@ const SelectionModal = (props) => {
                         </div>
                         <div>
                             <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
-                            <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}.</p>
+                            <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}</p>
                             <StyledField
                                 placeholder={`Why are you recommending this?`}
                                 variant='outlined'
@@ -777,7 +780,7 @@ function TermSelection(props) {
             <div className={'terms-container'}>
                 {terms.map((t, i) => {
                     if(t !== null){
-                        return <button className={'std-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', flexGrow: '5'} : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
+                        return <button key={t} className={'std-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', flexGrow: '5'} : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
                             {translateTerm[t]}
                         </button>
                     }

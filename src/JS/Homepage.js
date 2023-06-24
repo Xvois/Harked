@@ -9,7 +9,7 @@ import {isLoggedIn} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
-import {handleLogin} from "./Authentication";
+import {handleAlternateLogin} from "./Authentication";
 
 function Homepage() {
     const [token, setToken] = useState("")
@@ -60,7 +60,7 @@ function Homepage() {
                 <div className={'button-wrapper'}>
                     {!isLoggedIn() ?
                         <>
-                            <button className="std-button" onClick={handleLogin}>Login with Spotify</button>
+                            <button className="std-button" onClick={handleAlternateLogin}>Login with Spotify</button>
                             <a className="std-button" href={'/profile#sonn-gb'}>View a sample profile</a>
                         </>
                         :

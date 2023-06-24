@@ -1,7 +1,7 @@
 import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {formatArtist, hashString, retrieveSongAnalytics} from "./HDM.ts";
-import {reAuthenticate} from "./Authentication";
+import {alternateReAuthenticate} from "./Authentication";
 
 const pb = new PocketBase("https://harked.fly.dev/");
 /**
@@ -23,7 +23,10 @@ export async function fetchData(path, retryCount = 0) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         } else if (err.response.status === 401) {
-            reAuthenticate();
+            console.warn('Token expired. Attempting reauthentication.');
+            alternateReAuthenticate().then(() => {
+                return fetchData(path, retryCount + 1);
+            });
         } else if (err.response.status === 429 || err.response.status === 503) {
             if (retryCount < 3) {
                 console.warn(`[Error in API call] CODE : ${err.response.status}`);
