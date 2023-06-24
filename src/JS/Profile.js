@@ -426,7 +426,7 @@ const SelectionModal = (props) => {
                         <p style={{marginTop: 0}}>of item.</p>
                         <div id={'rec-type-wrapper'}>
                             {typeChoices.map(t => {
-                                return <button onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                                return <button type={'button'} onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
                             })}
                         </div>
                         <h3 style={{marginBottom: 0}}>Search</h3>
