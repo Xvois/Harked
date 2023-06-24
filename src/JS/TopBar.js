@@ -8,15 +8,45 @@ import {isLoggedIn} from "./HDM.ts";
 import {BlurOn, Settings} from "@mui/icons-material";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import LoginIcon from '@mui/icons-material/Login';
+import {handleAlternateLogin} from "./Authentication";
 
 const RedirectElement = (props) => {
-    const {title, href, icon, requiresLogIn = false, concise = false} = props;
-    return (((requiresLogIn && isLoggedIn()) || !requiresLogIn) &&
+    const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
+    const link = (
         <a className={'redirect-element'} style={!concise ? {flexDirection: 'row', justifyContent: 'left', gap: '10px', flexGrow: '1', border: '1px solid var(--secondary-colour)', padding: '16.5px 14px'} : {}} href={href} >
             {icon}
             <p>{title}</p>
         </a>
-    )
+        );
+    const button = (
+        <button onClick={callback} className={'redirect-element'} style={!concise ? {flexDirection: 'row', justifyContent: 'left', gap: '10px', flexGrow: '1', border: '1px solid var(--secondary-colour)', padding: '16.5px 14px'} : {}} href={href} >
+            {icon}
+            <p>{title}</p>
+        </button>
+        );
+    const element = callback !== null ? button : link;
+    return (
+            requiresLogIn ?
+                (
+                    isLoggedIn() ?
+                        element
+                        :
+                        <></>
+                )
+                :
+                (
+                    requiresLogOut ?
+                        (
+                            !isLoggedIn() ?
+                                element
+                                :
+                                <></>
+                        )
+                        :
+                        element
+                )
+        )
 }
 
 const TopBar = () => {
@@ -42,7 +72,8 @@ const TopBar = () => {
     const redirects =
         [
             {title: 'Profile', href: '/profile#me', icon: <PersonIcon fontSize={'medium'} />, requiresLogIn: true},
-            {title: 'Settings', href: '/settings', icon: <Settings fontSize={'medium'} />, requiresLogIn: true}
+            {title: 'Settings', href: '/settings', icon: <Settings fontSize={'medium'} />, requiresLogIn: true},
+            {title: 'Login', callback: handleAlternateLogin, icon: <LoginIcon fontSize={'medium'} />, requiresLogOut: true}
         ]
 
     const updateSize = () => {
@@ -93,7 +124,7 @@ const TopBar = () => {
                             </a>
                             {
                                 redirects.map(e => {
-                                    return <RedirectElement key={e.title} concise title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                    return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut} key={e.title} concise title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
                                 })
                             }
                             <Search showSearchResults />
@@ -116,7 +147,7 @@ const TopBar = () => {
                         <Search width={'100%'} showSearchResults />
                         {
                             redirects.map(e => {
-                                return <RedirectElement key={e.title} title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut} key={e.title} title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
                             })
                         }
                     </div>

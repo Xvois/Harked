@@ -225,7 +225,7 @@ function getMaxValueAttribute(attributes) {
 }
 
 
-export const getItemAnalysis = function (item, type, user, datapoint) {
+export const getItemAnalysis = function (item, type, user, datapoint, term) {
     const memoFunc = getAllArtistAssociations(datapoint);
     const artistAssociations = memoFunc(datapoint); // Call the artistAssociations function with the datapoint
     let topMessage = '';
@@ -248,7 +248,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
             // The index of the song in the user's top songs list made by this artist.
             const songIndex = datapoint.top_songs.findIndex((element) => element.artists[0].name === item.name);
             if (songIndex !== -1) {
-                secondMessage += `${datapoint.top_songs[songIndex].title} by ${item.name} is Nº ${songIndex + 1} on ${possessive} top 50 songs list for this time frame.`
+                secondMessage += `"${datapoint.top_songs[songIndex].title}" by ${item.name} is Nº ${songIndex + 1} on ${possessive} top songs of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`
             }
             break;
         case "songs":
@@ -257,7 +257,7 @@ export const getItemAnalysis = function (item, type, user, datapoint) {
                 topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
                 if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
                     const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
-                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists list in this time frame.`
+                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`
                 }
             } catch (e) {
                 topMessage += "This song hasn't been analysed yet. Look back at another time to see this song's characteristics."

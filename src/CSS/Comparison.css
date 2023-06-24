@@ -6,3 +6,13 @@
         translate: 0 0
     }
 }
+
+.comparison-user-container > p {
+    margin: 0;
+}
+
+.comparison-user-container > h2 {
+    font-size: 50px;
+    margin: -5px 0 0 0;
+    word-break: break-all;
+}

@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
 import {retrieveAllPublicUsers} from "./HDM.ts";
-import {FormControl} from "@mui/base";
 import Fuse from 'fuse.js';
 import {StyledField} from "./SharedComponents.tsx";
 
@@ -70,14 +69,14 @@ const Search = (props) => {
     return (
         <div className='search-bar-container' style={{width: width}}>
             {/* SearchBar component */}
-            <FormControl variant="outlined">
+            <form autoComplete={"off"}>
                 <StyledField
                     className='search-bar'
                     inputProps={{className: `search-label`}}
                     onChange={(event) => handleSearch(event.target.value)}
                     label="Search"
                 />
-            </FormControl>
+            </form>
             {!!searchResults && (
                 <Results searchResults={searchResults}/>
             )}

@@ -46,43 +46,6 @@ export const handleAlternateLogin = async () => {
     });
     window.location = 'https://accounts.spotify.com/authorize?' + args;
 }
-
-export const alternateReAuthenticate = async () => {
-    let code = localStorage.getItem('code');
-    let provider = JSON.parse(localStorage.getItem('provider'));
-    if(!code || !provider){
-        await handleAlternateLogin();
-    }else{
-        const url = new URL(window.location);
-        let body = new URLSearchParams({
-            grant_type: 'refresh_token',
-            refresh_token: localStorage.getItem('access-token'),
-            client_id: CLIENT_ID,
-        });
-        // Get token
-        await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: body
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('HTTP status ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.info(data);
-                localStorage.setItem('access-token', data.access_token);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-
-}
 export function reAuthenticate() {
     const url = new URL(window.location);
     const params = new URLSearchParams([
@@ -259,14 +222,16 @@ function Authentication() {
                 console.log("Failed to exchange code.\n" + err);
             });
         } else {
-            CATCH_SPOTIFY_TOKEN()
+            if(window.location.hash){
+                CATCH_SPOTIFY_TOKEN()
+            }
         }
     }, [redirect])
 
     return (
         <div>
             <h2>Redirecting...</h2>
-            <p>Stuck on this page? Ensure pop-ups are enabled.</p>
+            <p>Stuck on this page? <a style={{color: 'var(--primary-colour)'}} href={window.localStorage.getItem("redirect") ?? '/profile#me'}>Click here to redirect.</a></p>
         </div>
     )
 }

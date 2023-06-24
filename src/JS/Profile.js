@@ -63,7 +63,7 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
 
 const ShowcaseList = (props) => {
-    const {pageUser, possessive, playlists, selectedDatapoint, selectedPrevDatapoint = null, type, start, end} = props;
+    const {pageUser, possessive, playlists, selectedDatapoint, selectedPrevDatapoint = null, type, start, end, term} = props;
 
     return (
         <div className={'showcase-list-wrapper'}>
@@ -74,7 +74,7 @@ const ShowcaseList = (props) => {
                             key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]}
                             pageUser={pageUser} possesive={possessive} playlists={playlists} element={element}
                             index={index} selectedDatapoint={selectedDatapoint}
-                            selectedPrevDatapoint={selectedPrevDatapoint} type={type}/>
+                            selectedPrevDatapoint={selectedPrevDatapoint} type={type} term={term}/>
                     )
                 }
             })}
@@ -83,7 +83,7 @@ const ShowcaseList = (props) => {
 }
 
 const ShowcaseListItem = (props) => {
-    const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type} = props;
+    const {pageUser, possessive, element, index, selectedDatapoint, selectedPrevDatapoint, playlists, type, term} = props;
 
     const maxExpansion = 650;
     const secondExpansion = 300;
@@ -210,7 +210,7 @@ const ShowcaseListItem = (props) => {
             fontSize={"small"}></ClearAllOutlinedIcon>
     }
 
-    const description = getItemAnalysis(element, type, pageUser, selectedDatapoint);
+    const description = getItemAnalysis(element, type, pageUser, selectedDatapoint, term);
     const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0]).image;
 
     return (
@@ -421,12 +421,12 @@ const SelectionModal = (props) => {
             </div>
             {selectedItem === null ?
                 <div>
-                    <form onSubmit={handleSearch} style={{minWidth: '300px'}}>
+                    <form autoComplete={"off"} onSubmit={handleSearch} style={{minWidth: '300px'}}>
                         <h3 style={{margin: 0}}>Type</h3>
                         <p style={{marginTop: 0}}>of item.</p>
                         <div id={'rec-type-wrapper'}>
                             {typeChoices.map(t => {
-                                return <button key={t} onClick={() => setType(t)} className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                                return <button onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
                             })}
                         </div>
                         <h3 style={{marginBottom: 0}}>Search</h3>
@@ -439,7 +439,7 @@ const SelectionModal = (props) => {
                             inputProps={{maxLength: 100}}
                         />
                         <div style={{width: "max-content", marginLeft: 'auto'}}>
-                            <button type={'submit'} className={'std-button'}>Search</button>
+                            <button type={'submit'} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
                         </div>
                     </form>
                     {searchResults && (
@@ -1187,7 +1187,7 @@ const Profile = () => {
                                     <ShowcaseList selectedDatapoint={selectedDatapoint}
                                                   selectedPrevDatapoint={selectedPrevDatapoint} pageUser={pageUser}
                                                   playlists={playlists} possessive={possessive}
-                                                  datapoint={selectedDatapoint} type={type} start={0} end={9}/>
+                                                  datapoint={selectedDatapoint} type={type} start={0} end={9} term={terms[termIndex]}/>
                                     <div className={'section-footer'}>
                                         {type === 'songs' ?
                                             <div style={{textAlign: 'left'}}>

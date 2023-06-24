@@ -2,16 +2,7 @@ import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, {useEffect, useRef, useState} from "react";
 /* @ts-ignore */
-import {
-    Comment,
-    deleteComment, followUser,
-    isLoggedIn,
-    retrieveComments,
-    retrieveLoggedUserID,
-    submitComment,
-    unfollowUser,
-    User
-} from "./HDM.ts"
+import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
 
 export const StatBlock = (props: {
@@ -259,7 +250,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
                             />
                         </div>
                         <div style={{margin: "0 0 0 auto", width: "max-content"}}>
-                            <button className="std-button" type={"submit"}>
+                            <button className="std-button" style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} type={"submit"}>
                                 Submit
                             </button>
                         </div>
