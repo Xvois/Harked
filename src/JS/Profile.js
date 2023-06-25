@@ -421,7 +421,7 @@ const SelectionModal = (props) => {
             </div>
             {selectedItem === null ?
                 <div>
-                    <form autoComplete={"off"} onSubmit={handleSearch} style={{minWidth: '300px'}}>
+                    <form autoComplete={"off"} style={{minWidth: '300px'}}>
                         <h3 style={{margin: 0}}>Type</h3>
                         <p style={{marginTop: 0}}>of item.</p>
                         <div id={'rec-type-wrapper'}>
@@ -439,7 +439,7 @@ const SelectionModal = (props) => {
                             inputProps={{maxLength: 100}}
                         />
                         <div style={{width: "max-content", marginLeft: 'auto'}}>
-                            <button type={'submit'} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
+                            <button type={'button'} onClick={handleSearch} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
                         </div>
                     </form>
                     {searchResults && (
@@ -469,7 +469,7 @@ const SelectionModal = (props) => {
                         </div>
                         )
                     }
-                    <form onSubmit={handleSubmit}>
+                    <form>
                         <div style={{position: 'relative'}} className={'rec-details-img'}>
                             <img src={selectedItem.image} className={'backdrop-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
                             <img src={selectedItem.image} className={'levitating-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
@@ -486,8 +486,8 @@ const SelectionModal = (props) => {
                                 inputProps={{maxLength: 200}}
                             />
                             <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '16px'}}>
-                                <button className={'std-button'} onClick={() => setSelectedItem(null)}>Back</button>
-                                <button className={'std-button'} type={"submit"}>Submit</button>
+                                <button className={'std-button'} type={'button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                <button className={'std-button'} type={"button"} onClick={handleSubmit}>Submit</button>
                             </div>
                         </div>
                     </form>

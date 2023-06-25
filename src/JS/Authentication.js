@@ -201,6 +201,7 @@ function Authentication() {
                                 }).catch((err) => {
                                 console.error('Error patching user: ', err);
                                 console.info('User: ', fUser);
+                                console.info('Username: ', fUser.username);
                                 pb.collection('users').delete(id).then(() => {
                                     console.info('User successfully removed as a result.')
                                 }).catch((deletionError) => {
