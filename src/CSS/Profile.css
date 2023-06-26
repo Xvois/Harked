@@ -459,6 +459,7 @@ select.dropdown {
 
 #rec-modal {
     height: max-content;
+    min-width: 300px;
     background: var(--bg-colour);
     color: var(--primary-colour);
     border: 1px solid var(--secondary-colour);

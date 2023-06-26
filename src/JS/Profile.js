@@ -421,27 +421,25 @@ const SelectionModal = (props) => {
             </div>
             {selectedItem === null ?
                 <div>
-                    <form autoComplete={"off"} style={{minWidth: '300px'}}>
-                        <h3 style={{margin: 0}}>Type</h3>
-                        <p style={{marginTop: 0}}>of item.</p>
-                        <div id={'rec-type-wrapper'}>
-                            {typeChoices.map(t => {
-                                return <button type={'button'} onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
-                            })}
-                        </div>
-                        <h3 style={{marginBottom: 0}}>Search</h3>
-                        <p style={{marginTop: 0}}>for an item to recommend.</p>
-                        <StyledField
-                            placeholder={`Search for ${type}`}
-                            variant='outlined'
-                            rows={1}
-                            inputRef={searchRef}
-                            inputProps={{maxLength: 100}}
-                        />
-                        <div style={{width: "max-content", marginLeft: 'auto'}}>
-                            <button type={'button'} onClick={handleSearch} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
-                        </div>
-                    </form>
+                    <h3 style={{margin: 0}}>Type</h3>
+                    <p style={{marginTop: 0}}>of item.</p>
+                    <div id={'rec-type-wrapper'}>
+                        {typeChoices.map(t => {
+                            return <button type={'button'} onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                        })}
+                    </div>
+                    <h3 style={{marginBottom: 0}}>Search</h3>
+                    <p style={{marginTop: 0}}>for an item to recommend.</p>
+                    <StyledField
+                        placeholder={`Search for ${type}`}
+                        variant='outlined'
+                        rows={1}
+                        inputRef={searchRef}
+                        inputProps={{maxLength: 100}}
+                    />
+                    <div style={{width: "max-content", marginLeft: 'auto'}}>
+                        <button type={'button'} onClick={handleSearch} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
+                    </div>
                     {searchResults && (
                         <div id={'rec-search-results'}>
                             {/* Render search results */}
