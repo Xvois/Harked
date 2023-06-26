@@ -152,10 +152,6 @@ const Comparison = () => {
                         flexDirection: 'column',
                         justifyContent: 'space-between',
                     }}>
-                        <meta
-                            name="description"
-                            content={`${users[0].username} and ${users[1].username} are a ${Math.round(similarity.overall)}% match on Harked. Click the link to explore in more detail.`}
-                        />
                         <div style={{
                             display: 'flex',
                             flexDirection: 'row',

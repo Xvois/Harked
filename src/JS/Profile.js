@@ -1146,10 +1146,7 @@ const Profile = () => {
                     <LoadingIndicator/>
                 :
                 <div className='wrapper'>
-                    <meta
-                        name="description"
-                        content={`Explore ${pageUser.username}'s profile on Harked.`}
-                    />
+
                     <TopContainer pageUser={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
