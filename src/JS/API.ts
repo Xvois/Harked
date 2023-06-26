@@ -331,7 +331,7 @@ export const postDatapoint = async (datapoint) => {
     console.timeEnd('genresToRefIDs');
     console.time('resolveOwner');
     console.log(datapoint.user_id)
-    await pb.collection('users').getFirstListItem(`user_id="${datapoint.user_id}"`).then(user => datapoint.owner = user.id);
+    await getUserRecordID(datapoint.user_id).then(id => datapoint.owner = id);
     console.timeEnd('resolveOwner');
 
     // Log the datapoint being posted.
@@ -341,6 +341,10 @@ export const postDatapoint = async (datapoint) => {
 
     // Re-enable auto-cancellation.
     pb.autoCancellation(true);
+}
+
+const getUserRecordID = async (user_id) => {
+    return (await pb.collection('users').getFirstListItem(`user_id="${user_id}"`)).id
 }
 
 export const disableAutoCancel = async () => {

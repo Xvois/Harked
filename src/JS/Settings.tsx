@@ -1,5 +1,12 @@
 import {useEffect, useState} from "react";
-import {changeSettings, deleteUser, retrieveLoggedUserID, retrieveSettings, retrieveUser} from "./HDM.ts";
+import {
+    changeSettings,
+    deleteUser,
+    handleCacheReset,
+    retrieveLoggedUserID,
+    retrieveSettings,
+    retrieveUser
+} from "./HDM.ts";
 import "./../CSS/Settings.css"
 
 
@@ -44,15 +51,7 @@ export const Settings = () => {
 
     const handleDeleteUser = () => {
         deleteUser(user.user_id).then(() => {
-            if ('caches' in window) {
-                caches.delete('userIDCache').then(success => {
-                    if (success) {
-                        console.log(`Cache userIDCache has been cleared.`);
-                    } else {
-                        console.log(`Cache userIDCache does not exist.`);
-                    }
-                })
-            }
+            handleCacheReset();
             window.localStorage.clear();
             window.location.href = '/';
         }).catch(err => {

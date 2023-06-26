@@ -5,7 +5,7 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn} from './HDM.ts';
+import {handleCacheReset, isLoggedIn} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -16,28 +16,11 @@ function Homepage() {
     const navigate = useNavigate();
     useEffect(() => {
         // TEMP FOR CR TESTING TODO: REMOVE
+        handleCacheReset();
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
     }, [token])
 
-    const handleCacheReset = () => {
-        if ('caches' in window) {
-            const cacheTypes = ['userDataCache', 'datapointsCache', 'prevDatapointsCache', 'userIDCache'];
-            cacheTypes.forEach(t => {
-                caches.delete(t).then(success => {
-                    if (success) {
-                        console.log(`Cache ${t} has been cleared.`);
-                    } else {
-                        console.log(`Cache ${t} does not exist.`);
-                    }
-                }).catch(error => {
-                    console.error(`Error while clearing cache ${t}: ${error}`);
-                });
-            })
-        } else {
-            console.warn('The caches API is not supported in this browser.');
-        }
-    }
 
     const handleLogOut = () => {
         handleCacheReset();
