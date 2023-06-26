@@ -211,7 +211,7 @@ const ShowcaseListItem = (props) => {
     }
 
     const description = getItemAnalysis(element, type, pageUser, selectedDatapoint, term);
-    const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0]).image;
+    const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0])?.image;
 
     return (
         <div className={"showcase-list-item"}
