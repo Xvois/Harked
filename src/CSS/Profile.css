@@ -207,12 +207,13 @@ select.dropdown {
     color: var(--primary-colour);
     position: absolute;
     font-size: 20px;
-    top: 20px;
-    right: 20px;
+    top: 5px;
+    right: 10px;
     background: none;
     padding: 5px;
     border: none;
     cursor: pointer;
+    z-index: 2;
 }
 
 .recommendations-wrapper {
@@ -243,8 +244,6 @@ select.dropdown {
 
 .backdrop-image {
     position: absolute;
-    aspect-ratio: 1;
-    width: 100%;
     filter: blur(100px) brightness(150%);
     z-index: -1;
 }
@@ -518,7 +517,11 @@ select.dropdown {
 }
 
 .rec-details-img {
-    aspect-ratio: initial;
+    width: max-content;
+    height: max-content;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
 }
 
 .processing-indicator-wrapper {

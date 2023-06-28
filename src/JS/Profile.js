@@ -469,8 +469,8 @@ const SelectionModal = (props) => {
                     }
                     <form>
                         <div style={{position: 'relative'}} className={'rec-details-img'}>
-                            <img src={selectedItem.image} className={'backdrop-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
-                            <img src={selectedItem.image} className={'levitating-image'} style={{maxWidth: '320px', maxHeight: '320px'}}/>
+                            <img src={selectedItem.image} className={'backdrop-image'} />
+                            <img src={selectedItem.image} className={'levitating-image'} />
                         </div>
                         <div>
                             <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
@@ -557,7 +557,7 @@ const Recommendation = (props) => {
             wordBreak: 'break-word'
         }}>
             <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} style={{objectFit: 'cover'}}/>
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} style={{aspectRatio: '1', width: '125%', objectFit: 'cover'}}/>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'}
                      style={{aspectRatio: '1', width: '100%', objectFit: 'cover'}}/>
             </div>
