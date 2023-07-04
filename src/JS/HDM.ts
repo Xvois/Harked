@@ -670,14 +670,6 @@ async function cacheData(cacheName, cacheKey, data, maxAgeInSeconds = null) {
 }
 
 export const retrieveAllDatapoints = async function (user_id) {
-    const cacheName = 'datapointsCache';
-    const cacheKey = `allDatapoints_${user_id}`;
-
-    // Check if the result is in the cache
-    const cachedData = await retrieveFromCache(cacheName, cacheKey);
-    if (cachedData) {
-        return cachedData;
-    }
 
     await disableAutoCancel();
     const terms = ['short_term', 'medium_term', 'long_term'];
@@ -690,21 +682,10 @@ export const retrieveAllDatapoints = async function (user_id) {
 
     await enableAutoCancel();
 
-    // Cache the result with max age of 30 minutes
-    await cacheData(cacheName, cacheKey, datapoints, 1800);
-
     return datapoints;
 };
 
 export const retrievePrevAllDatapoints = async function (user_id) {
-    const cacheName = 'prevDatapointsCache';
-    const cacheKey = `prevAllDatapoints_${user_id}`;
-
-    // Check if the result is in the cache
-    const cachedData = await retrieveFromCache(cacheName, cacheKey);
-    if (cachedData) {
-        return cachedData;
-    }
 
     await disableAutoCancel();
     const terms = ['short_term', 'medium_term', 'long_term'];
@@ -716,9 +697,6 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     }
 
     await enableAutoCancel();
-
-    // Cache the result with max age of 30 minutes
-    await cacheData(cacheName, cacheKey, datapoints, 1800);
 
     return datapoints;
 };
