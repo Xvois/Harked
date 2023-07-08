@@ -460,8 +460,8 @@ export const createEvent = async function (event_ref_num : number, user_id : str
 export const retrieveEventsForUser = async function (user_id : string) {
     const following : Array<User> = await retrieveFollowing(user_id);
     const followingMap = new Map();
-    // Create map to reference user from user_id
-    following.forEach(u => followingMap.set(u.user_id, u));
+    // Create map to reference user from their db id
+    following.forEach(u => followingMap.set(u.id, u));
     const conditions = following.map(u => `owner.id = "${u.id}"`);
     const filter = conditions.join(" || ");
 
