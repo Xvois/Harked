@@ -462,7 +462,7 @@ export const retrieveEventsForUser = async function (user_id : string) {
     const followingMap = new Map();
     // Create map to reference user from user_id
     following.forEach(u => followingMap.set(u.user_id, u));
-    const conditions = following.map(u => `owner = "${u.id}"`);
+    const conditions = following.map(u => `owner.id = "${u.id}"`);
     const filter = conditions.join(" || ");
 
     // TODO : REMOVE
@@ -562,6 +562,46 @@ export const retrieveProfileRecommendations = async function (user_id: string) {
     }
     return recs;
 }
+
+export const milliToHighestOrder = function (milliseconds) {
+    let calcVal = milliseconds / 1000;
+    let unit = 's';
+    // Minutes
+    if(calcVal > 60){
+        calcVal /= 60;
+        unit = 'm';
+        // Hours
+        if(calcVal > 60){
+            calcVal /= 60;
+            unit = calcVal > 1 ? 'hrs' : 'hr';
+            // Days
+            if(calcVal > 24){
+                calcVal /= 24;
+                unit = 'd';
+                // Weeks
+                if(calcVal > 7){
+                    calcVal /= 7;
+                    unit = 'w';
+                    // Months
+                    if(calcVal > 30){
+                        calcVal /= 30;
+                        unit = 'm';
+                        // Years
+                        if(calcVal > 12){
+                            calcVal /= 12;
+                            unit = calcVal > 1 ? 'yrs' : 'yr';
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return {
+        value: Math.trunc(calcVal),
+        unit: unit
+    }
+}
+
 /**
  * Returns the results of a query of a certain type.
  * @param query
