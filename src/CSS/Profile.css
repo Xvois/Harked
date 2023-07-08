@@ -1,7 +1,4 @@
-/*noinspection CssUnknownTarget*/
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300&family=Lato:wght@900&family=Ubuntu:wght@500;700&display=swap');
-/*noinspection CssUnknownTarget*/
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
 
 select:hover {
     cursor: pointer;
@@ -103,7 +100,6 @@ select.dropdown {
 
 .showcase-list-item > h3 {
     position: absolute;
-    font-family: "Inter Tight", sans-serif;
     font-size: 20px;
     height: max-content;
     top: 0;
@@ -123,7 +119,6 @@ select.dropdown {
 }
 
 .showcase-list-item-text > h2 {
-    font-family: "Inter Tight", sans-serif;
     text-align: center;
     width: 100%;
     margin: 0;
@@ -131,7 +126,6 @@ select.dropdown {
 }
 
 .showcase-list-item-text > p {
-    font-family: "Inter Tight", sans-serif;
     text-transform: uppercase;
     text-align: center;
     height: max-content;
@@ -186,7 +180,6 @@ select.dropdown {
     height: 275px;
     max-width: 45%;
     gap: 5px;
-    font-family: "Inter Tight", sans-serif;
     overflow: hidden;
 }
 
@@ -213,7 +206,7 @@ select.dropdown {
     padding: 5px;
     border: none;
     cursor: pointer;
-    z-index: 2;
+    z-index: 1;
 }
 
 .recommendations-wrapper {
@@ -226,7 +219,6 @@ select.dropdown {
     margin-left: auto;
     padding: 5px;
     width: max-content;
-    font-family: "Inter Tight", sans-serif;
     text-decoration: none;
     text-align: right;
     color: var(--primary-colour);
@@ -271,7 +263,6 @@ select.dropdown {
 }
 
 #genre-breakdown-instance > h3 {
-    font-family: 'Lato', sans-serif;
     text-transform: uppercase;
     font-size: 16px;
 }
@@ -294,7 +285,6 @@ select.dropdown {
 }
 
 .stat-block > p {
-    font-family: 'Inter Tight', sans-serif;
     font-size: 10px;
     margin: 5px 0 0 0;
     color: var(--secondary-colour);
@@ -322,7 +312,6 @@ select.dropdown {
 
 .list-item {
     font-size: 27px;
-    font-family: 'Inter Tight', sans-serif;
     text-align: center;
     margin: auto;
     font-weight: 900;
@@ -365,7 +354,6 @@ select.dropdown {
     height: max-content;
     margin: 0 auto;
 
-    font-family: 'Inter Tight', sans-serif;
 
     border-top: 1px solid var(--secondary-colour);
 }
@@ -380,7 +368,6 @@ select.dropdown {
     margin: 15px auto;
     padding: 0 0 16px 0;
 
-    font-family: 'Inter Tight', sans-serif;
 
     border-bottom: 1px solid var(--secondary-colour);
     border-top: 1px solid var(--secondary-colour);
@@ -414,7 +401,6 @@ select.dropdown {
 
 .user-details {
     word-break: keep-all;
-    margin-left: 10px;
 }
 
 .user-links {
@@ -440,7 +426,6 @@ select.dropdown {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 15px;
-    font-family: "Inter Tight", sans-serif;
 }
 
 .settings-container > div {
@@ -568,7 +553,6 @@ select.dropdown {
 }
 
 .term-buttons {
-    font-family: "Inter Tight", sans-serif;
     text-transform: uppercase;
     cursor: pointer;
     color: var(--primary-colour);

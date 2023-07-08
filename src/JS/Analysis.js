@@ -26,6 +26,8 @@ export const getLIName = function (data, maxLength = 30) {
         result = data.name;
     } else if (data.hasOwnProperty('song_id')) {
         result = data.title;
+    } else if (data.hasOwnProperty('album_id')) {
+        result = data.name;
     } else {
         result = data;
     }
@@ -43,7 +45,7 @@ export const getLIDescription = function (data, maxLength = 30) {
         } else {
             result = '';
         }
-    } else if (data.hasOwnProperty('song_id')) {
+    } else if (data.hasOwnProperty('song_id') || data.hasOwnProperty('album_id')) {
         result = data.artists.map(e => e.name).join(', ');
     } else {
         result = '';
@@ -290,9 +292,14 @@ export const getItemType = (item) => {
         return 'artists'
     } else if (item.hasOwnProperty('song_id')) {
         return 'songs'
+    } else if (item.hasOwnProperty('album_id')) {
+        return 'albums'
+    }else if (item.hasOwnProperty('user_id')){
+        return 'users'
     } else if (typeof item !== "object") {
         return 'genres'
     } else {
+        console.error(item);
         throw new Error('Unknown item submitted to getItemType.');
     }
 }

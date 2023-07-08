@@ -92,6 +92,12 @@ interface Song extends Record {
     analytics: Analytics
 }
 
+export interface UserEvent extends Record {
+    owner: User | string,
+    ref_num: number
+    item: {id: string, type: string} | Album | Artist | Song | User,
+}
+
 type Analytics = {
     acousticness: number,
     analysis_url: string,
@@ -123,6 +129,14 @@ interface Datapoint extends Record {
     top_songs: Array<Song> | Array<string>,
     top_artists: Array<Artist> | Array<string>,
     top_genres: Array<Genre> | Array<string>
+}
+
+interface Album {
+    album_id: string,
+    artists: string,
+    name: string,
+    image: string,
+    link: string
 }
 
 
@@ -170,6 +184,8 @@ export const followsUser = async function (primaryUserID: string, targetUserID: 
 
 /**
  * Will make the primary user follow the target user.
+ *
+ * **Has a built-in event creation side effect.**
  * @param primaryUserID
  * @param targetUserID
  */
@@ -185,6 +201,7 @@ export const followUser = async function (primaryUserID: string, targetUserID: s
         primaryObj.following.push(targetObj.user);
         // Update the primary user's data to show they are following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
+        getUser(targetUserID).then(targetUser => createEvent(52, primaryUserID, targetUser, "users"));
         // Update the target user's data to show they are being followed by the primary user
         await getLocalDataByID("user_followers", hashString(targetUserID)).then(res => {
             let item = res;
@@ -345,7 +362,7 @@ export const deleteComment = async function (comment_id: string) {
  * @param type
  * @param description
  */
-export const submitRecommendation = async function (user_id: string, item: Song | Artist, type: "songs" | "artists", description: string) {
+export const submitRecommendation = async function (user_id: string, item: Song | Artist | Album, type: "songs" | "artists" | "albums", description: string) {
     const id = hashString(getLIName(item) + description + user_id);
     let currRecommendations: ProfileRecommendations = await getLocalDataByID("profile_recommendations", hashString(user_id));
     if (currRecommendations.recommendations === null) {
@@ -371,9 +388,115 @@ export const submitRecommendation = async function (user_id: string, item: Song 
             const newRecs_s = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
             await updateLocalData("profile_recommendations", newRecs_s, currRecommendations.id);
             break;
+        case 'albums':
+            const albumItemObj = {id: item.album_id, type: type};
+            const albumRecommendation = {id: id, item: albumItemObj, description: description};
+            await putLocalData("recommendations", albumRecommendation);
+            const newRecs_al = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
+            await updateLocalData("profile_recommendations", newRecs_al, currRecommendations.id);
+            break;
     }
-
 }
+/**
+ * Will always return the database id for either a song, artist or album.
+ * The type does not need to be specified and the id may **not** always be valid
+ * as it can be unresolved.
+ */
+export const retrieveDatabaseID = (item, type) => {
+    if(type === "songs" || type === "artists"){
+        return hashString(item[`${type.slice(0, type.length-1)}_id`]);
+    }else if (type === "albums") {
+        return item.album_id;
+    } else if (type === "users") {
+        // Assumes a user record is being submitted, otherwise it would
+        // be impossible to know what the id was
+        return item.id;
+    }else {
+        throw new Error("Unknown type seen in retrieveDatabaseID.");
+    }
+}
+
+/**
+ * Creates an event in the database.
+ *
+ * An event is any action that another user following the target user will be notified about.
+ *  The event reference number is a reference to the type of event triggered.
+ *
+ *  1-50 | Major events
+ *
+ *  1: Added recommendation
+ *
+ *  51-100 | Minor events
+ *
+ *  51: Removes recommendation
+ *
+ *  52: Follows user
+ *
+ *
+ * @param event_ref_num
+ * @param user_id
+ * @param item
+ * @param item_type
+ */
+export const createEvent = async function (event_ref_num : number, user_id : string, item : Artist | Song | Album | User, item_type : "artists" | "songs" | "albums" | "users") {
+    const user : User = await retrieveUser(user_id);
+    console.log(item_type)
+    const item_id = retrieveDatabaseID(item, item_type);
+    console.log({
+        event_ref_num: event_ref_num,
+        user_id: user_id,
+        item: item,
+        item_type: item_type,
+        item_id: item_id
+    });
+    await putLocalData("events",
+        {
+            owner: user.id,
+            ref_num: event_ref_num,
+            item: {id: item_id, type: item_type}
+        }
+        )
+}
+export const retrieveEventsForUser = async function (user_id : string) {
+    const following : Array<User> = await retrieveFollowing(user_id);
+    const followingMap = new Map();
+    // Create map to reference user from user_id
+    following.forEach(u => followingMap.set(u.user_id, u));
+    const conditions = following.map(u => `owner = "${u.id}"`);
+    const filter = conditions.join(" || ");
+
+    // TODO : REMOVE
+    //const filter = `owner.user_id = "${user_id}"`;
+    //const user = await getUser(user_id);
+
+    const events : Array<UserEvent> = await getLocalData("events", filter, '-created');
+    for (const e of events) {
+        e.owner = followingMap.get(e.owner);
+        // TODO : REMOVE
+       // e.owner = user;
+        switch (e.item.type) {
+            case "albums":
+                const album = await fetchData(`albums/${e.item.id}`);
+                e.item = formatAlbum(album);
+                break;
+            case "songs":
+                e.item = await getLocalDataByID("songs", e.item.id, "artists");
+                break;
+            case "artists":
+                e.item = await getLocalDataByID("artists", e.item.id, "genres");
+                break;
+            case "users":
+                e.item = await getLocalDataByID("users", e.item.id);
+                break;
+            default:
+                throw new Error(`Unknown type of item in event ${e.id}`);
+        }
+    }
+    console.log(events)
+    return events;
+}
+
+
 /**
  * Deletes a profile recommendation.
  * @param rec_id
@@ -429,6 +552,10 @@ export const retrieveProfileRecommendations = async function (user_id: string) {
             let song: Song = await getLocalDataByID("songs", e.item.id, "artists");
             song.artists = song.expand.artists;
             e.item = song;
+        } else if (e.item.type === "albums") {
+            let album: Album = await fetchData(`albums/${e.item.id}`);
+            album = formatAlbum(album);
+            e.item = album;
         } else {
             throw new Error("Unknown type fetched from profile recommendations.");
         }
@@ -441,7 +568,7 @@ export const retrieveProfileRecommendations = async function (user_id: string) {
  * @param type
  * @returns Artist | Song
  */
-export const retrieveSearchResults = async function (query: string, type: "artists" | "songs") {
+export const retrieveSearchResults = async function (query: string, type: "artists" | "songs" | "albums") {
     let typeParam;
     switch (type) {
         case 'artists':
@@ -449,6 +576,9 @@ export const retrieveSearchResults = async function (query: string, type: "artis
             break;
         case 'songs':
             typeParam = 'track';
+            break;
+        case 'albums':
+            typeParam = 'album'
             break;
         default:
             typeParam = null;
@@ -471,7 +601,10 @@ export const retrieveSearchResults = async function (query: string, type: "artis
         data.tracks = data.tracks.map(t => formatSong(t));
         returnValue = data.tracks;
     } else {
-        console.warn('No type identified for', data);
+        data = data.albums.items
+        data = data.map(a => formatAlbum(a));
+        console.log(data)
+        returnValue = data;
     }
     return returnValue;
 }
@@ -878,6 +1011,27 @@ export const formatArtist = (artist) => {
         image: image,
         link: `https://open.spotify.com/artist/${artist.id}`,
         genres: artist.genres
+    }
+}
+/**
+ *
+ * @param album
+ * @returns Album
+ */
+const formatAlbum = (album) => {
+    let image = null;
+    if (album.hasOwnProperty("images")) {
+        if (album.images[1] !== undefined) {
+            image = album.images[1].url
+        }
+    }
+    const artists = album.artists.map(a => formatArtist(a));
+    return {
+        album_id: album.id,
+        artists: artists,
+        name: album.name,
+        image: image,
+        link: album.external_urls.spotify
     }
 }
 /**

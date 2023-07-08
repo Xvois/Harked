@@ -2,8 +2,8 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
-import './../CSS/Graph.css'
 import {
+    createEvent,
     deleteRecommendation,
     followsUser,
     followUser,
@@ -43,7 +43,7 @@ import {
     getLIName,
     translateAnalytics
 } from "./Analysis";
-import {handleLogin} from "./Authentication";
+import {handleAlternateLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
@@ -307,7 +307,7 @@ const ShowcaseListItem = (props) => {
                                                         <p>Log in to see {possessive} analysis
                                                             for {getLIName(element)}</p>
                                                         <button style={{width: 'max-content', marginLeft: 'auto'}}
-                                                                className={'std-button'} onClick={handleLogin}>Log-in
+                                                                className={'std-button'} onClick={handleAlternateLogin}>Log-in
                                                         </button>
                                                     </div>
                                                 :
@@ -377,7 +377,7 @@ const SelectionModal = (props) => {
     const [processing, setProcessing] = useState(false);
     const searchRef = useRef('');
     const descriptionRef = useRef('');
-    const typeChoices = ['songs', 'artists'];
+    const typeChoices = ['songs', 'artists', 'albums'];
     const [type, setType] = useState(typeChoices[0]);
 
     useEffect(() => {
@@ -410,6 +410,7 @@ const SelectionModal = (props) => {
             setSelectedItem(null);
             setShowModal(false);
             setProcessing(false);
+            createEvent(1, pageGlobalUserID, submissionItem, type);
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
         });
     }
@@ -506,8 +507,10 @@ const ProfileRecommendations = (props) => {
         retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
     }, [])
 
-    const handleDelete = (id) => {
-        deleteRecommendation(id).then(() => {
+    const handleDelete = (e) => {
+        console.log(e);
+        deleteRecommendation(e.id).then(() => {
+            createEvent(51, pageGlobalUserID, e.item, getItemType(e.item));
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
         });
     }
@@ -593,7 +596,7 @@ const Recommendation = (props) => {
                             cursor: 'pointer',
                             marginLeft: 'auto'
                         }}
-                                onClick={() => handleDelete(rec.id)}>
+                                onClick={() => handleDelete(rec)}>
                             <DeleteIcon/>
                         </button>
                     </div>
@@ -882,12 +885,12 @@ function UserContainer(props){
 
     return (
         <div className='user-container'>
-            <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px'}}>
+            <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px', gap: '15px'}}>
+                {user.profile_picture && (
                     <div className={'profile-picture'}>
-                        {user.profile_picture && (
                         <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture} style= {{height: '100%', width: '100%', objectFit: 'cover'}} />
-                        )}
                     </div>
+                )}
                 <div className={'user-details'}>
                     <p style={{margin: '0'}}>Profile for</p>
                     <h2 style={{margin: '-5px 0 0 0', fontSize: '30px', wordBreak: 'keep-all'}}>
@@ -1253,7 +1256,7 @@ const Profile = () => {
                                         :
                                         <>
                                             <p>Viewing someone's playlists requires being logged in.</p>
-                                            <button className={'std-button'} onClick={handleLogin}>Log-in</button>
+                                            <button className={'std-button'} onClick={handleAlternateLogin}>Log-in</button>
                                         </>
                                     }
                                 </div>

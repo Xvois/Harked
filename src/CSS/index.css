@@ -1,3 +1,12 @@
+/*noinspection CssUnknownTarget*/
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Raleway:wght@600;700;900&display=swap');
+/*noinspection CssUnknownTarget*/
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300&family=Lato:wght@900&family=Ubuntu:wght@500;700&display=swap');
+/*noinspection CssUnknownTarget*/
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+/*noinspection CssUnknownTarget*/
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;500&family=Ubuntu:wght@500;700&display=swap");
+
 body {
     position: relative;
     margin: 0;
@@ -18,7 +27,7 @@ body {
 
 @media (prefers-color-scheme: dark) {
     body {
-        --bg-colour: #171514;
+        --bg-colour: #110E09;
         --primary-colour: #FFEDD4;
         --secondary-colour: #83867E;
         --accent-colour: #a19485;

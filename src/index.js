@@ -11,6 +11,7 @@ import Profile from './JS/Profile';
 import {Analytics} from '@vercel/analytics/react';
 import {Settings} from './JS/Settings.tsx'
 import Followers from "./JS/Followers";
+import Feed from "./JS/Feed.tsx";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -24,6 +25,7 @@ root.render(
                 <Route path="compare" element={<Comparison/>}/>
                 <Route path="followers" element={<Followers/>}/>
                 <Route path="settings" element={<Settings />}/>
+                <Route path="feed" element={<Feed />}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>

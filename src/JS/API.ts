@@ -359,8 +359,8 @@ export const deleteLocalData = async (collection, id) => {
     await pb.collection(collection).delete(id);
 }
 
-export const getLocalData = async (collection, filter) => {
-    return (await pb.collection(collection).getList(1, 50, {filter: filter}).catch(handleFetchException)).items;
+export const getLocalData = async (collection, filter = '', sort = '') => {
+    return (await pb.collection(collection).getList(1, 50, {filter: filter, sort: sort}).catch(handleFetchException)).items;
 }
 
 export const getLocalDataByID = async (collection, id, expand = '') => {

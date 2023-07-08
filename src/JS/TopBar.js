@@ -10,6 +10,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import LoginIcon from '@mui/icons-material/Login';
 import {handleAlternateLogin} from "./Authentication";
+import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 
 const RedirectElement = (props) => {
     const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
@@ -72,6 +73,7 @@ const TopBar = () => {
     const redirects =
         [
             {title: 'Profile', href: '/profile#me', icon: <PersonIcon fontSize={'medium'} />, requiresLogIn: true},
+            {title: 'Feed', href: '/feed', icon: <DynamicFeedIcon fontSize={'medium'} />, requiresLogIn: true},
             {title: 'Settings', href: '/settings', icon: <Settings fontSize={'medium'} />, requiresLogIn: true},
             {title: 'Login', callback: handleAlternateLogin, icon: <LoginIcon fontSize={'medium'} />, requiresLogOut: true}
         ]
