@@ -1,0 +1,108 @@
+
+.playlist-view-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.playlist-view-header {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    height: 250px;
+}
+
+.playlist-view-header > img {
+    height: 200px;
+    width: 200px;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.header-text {
+    min-width: 300px;
+    position: relative;
+}
+
+.header-main-text > h1 {
+    margin: 0;
+}
+
+.header-main-text > p {
+    margin: 0;
+}
+
+.header-sub-text {
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.header-sub-text > p {
+    margin: 0;
+}
+
+.header-sub-text > p > a {
+    text-decoration: none;
+    color: var(--primary-colour);
+    font-weight: bold;
+}
+
+.track-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.track-wrapper:hover {
+    background: rgba(125, 125, 125, 0.2);
+}
+
+.track-number {
+    height: max-content;
+    width: 30px;
+    text-align: center;
+    margin: auto 0;
+    font-family: 'Lato', sans-serif;
+    font-weight: bold;
+    color: var(--secondary-colour);
+}
+
+.play-overlay {
+    opacity: 0;
+    transition: opacity 0.25s ease-out;
+}
+
+.track-img-wrapper:hover > .play-overlay {
+    opacity: 1;
+}
+
+.track-img {
+    aspect-ratio: 1;
+    width: 75px;
+    height: 75px;
+    object-fit: cover;
+}
+
+.track-text {
+    height: max-content;
+    margin: auto 0;
+}
+
+.track-text > h3 {
+    margin: 0;
+}
+
+.track-text > p {
+    margin: 0;
+}
+
+.annotation-icon {
+    position: absolute;
+    height: max-content;
+    top: 0;
+    bottom: 0;
+    right: 5%;
+    margin: auto;
+}

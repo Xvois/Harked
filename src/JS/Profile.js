@@ -34,6 +34,7 @@ import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
 import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
+import FlareIcon from '@mui/icons-material/Flare';
 import {
     calculateSimilarity,
     getAverageAnalytics,
@@ -186,7 +187,6 @@ const ShowcaseListItem = (props) => {
         )
     }
 
-
     let changeMessage;
     if (indexChange < 0) {
         changeMessage = <><span style={{
@@ -210,6 +210,8 @@ const ShowcaseListItem = (props) => {
         changeMessage = <ClearAllOutlinedIcon
             style={{color: 'var(--primary-colour)', animation: 'equals-animation 0.5s ease-out'}}
             fontSize={"small"}></ClearAllOutlinedIcon>
+    } else if (selectedPrevDatapoint !== null) {
+        changeMessage = <FlareIcon style={{color: 'var(--primary-colour)', animation: 'fadeIn 0.5s ease-in'}} fontSize={"small"} />
     }
 
     const description = getItemAnalysis(element, type, pageUser, selectedDatapoint, term);
@@ -747,10 +749,11 @@ const PlaylistItem = function (props) {
             border: '1px solid var(--secondary-colour)',
             padding: '10px',
             fontFamily: 'Inter Tight',
-            width: 'max-content'
+            width: 'max-content',
+            gap: '15px'
         }}>
             {playlist.images.length > 0 && (
-                <img style={{width: '100px', height: '100px', marginRight: '10px', objectFit: 'cover'}} alt={'playlist'}
+                <img style={{width: '100px', height: '100px', objectFit: 'cover'}} alt={'playlist'}
                      src={playlist.images[0].url}></img>
             )}
             <div style={{
@@ -760,15 +763,13 @@ const PlaylistItem = function (props) {
                 flexGrow: '1',
                 wordBreak: 'break-all'
             }}>
-                <p style={{margin: '0 0 5px 0'}}>{playlist.name}</p>
+                <p style={{margin: '0 0 5px 0', fontWeight: '800'}}>{playlist.name}</p>
                 <p style={{
                     margin: '0 0 5px 0',
-                    borderBottom: '1px solid var(--secondary-colour)'
+                    borderBottom: '1px solid var(--secondary-colour)',
                 }}>{playlist.description}</p>
                 <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs</p>
-                <div style={{marginTop: 'auto', marginLeft: 'auto'}}>
-                    <SpotifyLink link={playlist.external_urls.spotify} simple/>
-                </div>
+                <a href={`/playlist#${playlist.id}`} className={'std-button'} style={{marginTop: 'auto', marginLeft: 'auto'}}>Explore</a>
             </div>
         </div>
     )
@@ -1126,17 +1127,18 @@ const Profile = () => {
                     console.error("Error loading page:", error);
                     // Handle errors appropriately
                 });
-
-            // Create onHydration to update page
-            // when hydration is fully complete
-            onHydration(loadID,() => {
-                retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
-                    setAllPreviousDatapoints(datapoints);
-                    setSelectedPrevDatapoint(datapoints[2]);
-                    console.info("Previous datapoints retrieved!");
-                    console.log(datapoints);
+            if(pageHash === "me"){
+                // Create onHydration to update page
+                // when hydration is fully complete
+                onHydration(loadID,() => {
+                    retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
+                        setAllPreviousDatapoints(datapoints);
+                        setSelectedPrevDatapoint(datapoints[2]);
+                        console.info("Previous datapoints retrieved!");
+                        console.log(datapoints);
+                    })
                 })
-            })
+            }
         })
 
     }, []);

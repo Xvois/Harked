@@ -86,7 +86,7 @@ interface Artist extends Record {
     genres: Array<string> | Array<Genre>
 }
 
-interface Song extends Record {
+export interface Song extends Record {
     song_id: string,
     title: string,
     artists: Array<Artist> | Array<string>,
@@ -692,6 +692,33 @@ export const retrievePlaylists = async function (user_id: string) {
     });
 
     return playlists;
+}
+
+export const retrievePlaylist = async function (playlist_id: string){
+    let playlist = await fetchData(`playlists/${playlist_id}`);
+
+    const totalTracks = playlist.tracks.total;
+    const numCalls = Math.ceil(totalTracks / 50);
+    const promises: Array<Array<Song>> = [];
+
+    // Max of 50 songs per call, so they must be batched
+    for (let i = 0; i < numCalls; i++) {
+        const offset = i * 50;
+        const promise: Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+            .then(response => response.items.map(e => e.track))
+            .catch(error => {
+                console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
+                return [];
+            });
+
+        promises.push(promise);
+    }
+
+    playlist.tracks = await Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null).map(t => formatSong(t)));
+    const analytics = await batchAnalytics(playlist.tracks);
+    playlist.tracks.map((t,i) => t.analytics = analytics[i]);
+
+    return playlist;
 }
 
 

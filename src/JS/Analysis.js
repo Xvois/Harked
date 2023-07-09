@@ -287,6 +287,137 @@ export const getItemAnalysis = function (item, type, user, datapoint, term) {
     }
 }
 
+const regress = (x, y) => {
+    const n = y.length;
+    let sx = 0;
+    let sy = 0;
+    let sxy = 0;
+    let sxx = 0;
+    let syy = 0;
+    for (let i = 0; i < n; i++) {
+        sx += x[i];
+        sy += y[i];
+        sxy += x[i] * y[i];
+        sxx += x[i] * x[i];
+        syy += y[i] * y[i];
+    }
+    const mx = sx / n;
+    const my = sy / n;
+    const yy = n * syy - sy * sy;
+    const xx = n * sxx - sx * sx;
+    const xy = n * sxy - sx * sy;
+    const slope = xy / xx;
+    const intercept = my - slope * mx;
+    const r = xy / Math.sqrt(xx * yy);
+    const r2 = Math.pow(r,2);
+    let sst = 0;
+    for (let i = 0; i < n; i++) {
+        sst += Math.pow((y[i] - my), 2);
+    }
+    const sse = sst - r2 * sst;
+    const see = Math.sqrt(sse / (n - 2));
+    const ssr = sst - sse;
+    return {slope, intercept, r, r2, sse, ssr, sst, sy, sx, see};
+}
+
+export const getPlaylistAnalysis = (tracks) => {
+
+    let message = '';
+
+    const avgAnalytics = getAverageAnalytics(tracks);
+
+    /**
+     * STANDARD DEVIATION CALCS
+    **/
+
+    // Calculate the sum of the squares of the differences of a track
+    // to the average analytics
+    const getSquaredAnalyticsDiff = (track, avgAnalytics) => {
+        let rollingTotal = 0;
+        for(const key of Object.keys(avgAnalytics)){
+            if(key !== "tempo" && key !== "loudness"){
+                rollingTotal += Math.pow((track.analytics[key] - avgAnalytics[key]),2)
+            }
+        }
+        return rollingTotal;
+    }
+    const playlistStandardDeviation = Math.sqrt(
+        tracks.reduce((accumulator, currentValue) => accumulator + getSquaredAnalyticsDiff(currentValue, avgAnalytics), 0) / tracks.length
+    );
+
+    /**
+     * LINEAR TENDENCIES CALCS
+     *
+     * TAKEN INTO ACCOUNT:
+     * DECREASING (LINEARLY)
+     * STEADY
+     * INCREASING (LINEARLY)
+     *
+     **/
+    const yVals = [];
+
+    for (let i = 1; i <= tracks.length; i++) {
+        yVals.push(i);
+    }
+
+    let regressions = {
+        acousticness: 0,
+        danceability: 0,
+        energy: 0,
+        instrumentalness: 0,
+        liveness: 0,
+        valence: 0,
+    }
+
+    for (const key of Object.keys(regressions)){
+        regressions[key] = regress(yVals, tracks.map(t => t.analytics[key])).slope;
+    }
+
+    const notableTrends = [];
+    for(const key of Object.keys(regressions)){
+        if(Math.abs(regressions[key]) > 0.05){
+            notableTrends.push(key);
+        }
+    }
+
+    /**
+     * NOTABLE ANALYTICS CALCS
+     **/
+
+    const notableAnalytics = [];
+    for(const key of Object.keys(avgAnalytics)){
+        if(key !== "tempo" && avgAnalytics[key] > 0.65){
+            notableAnalytics.push(key);
+        }
+    }
+
+    /**
+     * MESSAGE CONSTRUCTION
+     **/
+
+    if(playlistStandardDeviation > 0.4){
+        message += "This playlist varies a lot. "
+    }else if(playlistStandardDeviation > 0.25){
+        message += "This playlist is fairly consistent. "
+    }else {
+        message += "This playlist is very consistent. "
+    }
+
+    console.log(playlistStandardDeviation)
+
+    if(notableAnalytics.length > 0){
+        message += `It is notably ${notableAnalytics.map(a => translateAnalytics[a].name).join(', ')}. `
+    }
+
+    if(notableTrends.length > 0){
+        notableTrends.forEach(trend => {
+            message += `Across the course of the playlist the songs get ${regressions[trend] > 0 ? 'more' : 'less'} ${translateAnalytics[trend].name}. `
+        })
+    }
+
+    return message;
+}
+
 export const getItemType = (item) => {
     if (item.hasOwnProperty('artist_id')) {
         return 'artists'
