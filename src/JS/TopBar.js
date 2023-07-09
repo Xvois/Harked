@@ -56,7 +56,7 @@ const TopBar = () => {
     const [showBar, setShowBar] = useState(true);
     const [showBorder, setShowBorder] = useState(false);
 
-    const ShowBarStyle = (showBorder ? {borderBottom: '1px solid var(--bg-colour)'} : {})
+    const ShowBarStyle = (showBorder ? {borderBottom: 'none'} : {})
     const HideBarStyle = {height: '0px', opacity: '0', overflow: 'hidden', pointerEvents: 'none'};
     const OpenMenuStyle = {...ShowBarStyle, height: '100vh', background: 'var(--bg-colour)'}
 

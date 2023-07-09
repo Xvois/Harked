@@ -21,6 +21,9 @@
 .header-text {
     min-width: 300px;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 .header-main-text > h1 {
@@ -32,10 +35,9 @@
 }
 
 .header-sub-text {
-    position: absolute;
-    bottom: 0;
     display: flex;
     flex-direction: row;
+    margin-top: 20px;
 }
 
 .header-sub-text > p {
@@ -105,4 +107,19 @@
     bottom: 0;
     right: 5%;
     margin: auto;
+}
+
+.playlist-analysis {
+    margin-top: auto;
+}
+
+.playlist-analysis-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
+.playlist-analysis-item > p {
+    margin: 0;
 }

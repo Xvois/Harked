@@ -7,15 +7,27 @@ import React from "react";
  */
 
 export const translateAnalytics = {
-    acousticness: {name: 'acoustic', description: 'Music with no electric instruments.'},
-    danceability: {name: 'danceable', description: 'Music that makes you want to move it.'},
-    energy: {name: 'energetic', description: 'Music that feels fast and loud.'},
-    instrumentalness: {name: 'instrumental', description: 'Music that contains no vocals.'},
-    liveness: {name: 'live', description: 'Music that is performed live.'},
-    loudness: {name: 'loud', description: 'Music that is noisy.'},
-    valence: {name: 'positive', description: 'Music that feels upbeat.'},
-    tempo: {name: 'tempo', description: 'Music that moves and flows quickly.'}
-}
+    acousticness: { name: 'acoustic', description: 'Music with natural instruments.' },
+    danceability: { name: 'upbeat', description: 'Energetic and groove-inducing music.' },
+    energy: { name: 'dynamic', description: 'High-energy and lively tunes.' },
+    instrumentalness: { name: 'instrumental', description: 'Music without vocals.' },
+    liveness: { name: 'live', description: 'Music performed in a live setting.' },
+    loudness: { name: 'loud', description: 'Energetic and sonically powerful music.' },
+    valence: { name: 'positive', description: 'Uplifting and feel-good melodies.' },
+    tempo: { name: 'tempo', description: 'Music with a fast and vibrant tempo.' }
+};
+
+export const translateAnalyticsLow = {
+    acousticness: { name: 'electronic', description: 'Music with electronic instruments.' },
+    danceability: { name: 'subtle', description: 'Music with a subtle rhythm.' },
+    energy: { name: 'calm', description: 'Relaxed and calm music.' },
+    instrumentalness: { name: 'vocal', description: 'Music that contains vocals.' },
+    liveness: { name: 'studio', description: 'Music that is recorded in a studio.' },
+    loudness: { name: 'soft', description: 'Gentle and quiet music.' },
+    valence: { name: 'negative', description: 'Music that feels downbeat.' },
+    tempo: { name: 'low tempo', description: 'Music that moves at a moderate pace.' }
+};
+
 
 export const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
 
@@ -330,6 +342,7 @@ export const getPlaylistAnalysis = (tracks) => {
      * STANDARD DEVIATION CALCS
     **/
 
+
     // Calculate the sum of the squares of the differences of a track
     // to the average analytics
     const getSquaredAnalyticsDiff = (track, avgAnalytics) => {
@@ -386,36 +399,20 @@ export const getPlaylistAnalysis = (tracks) => {
 
     const notableAnalytics = [];
     for(const key of Object.keys(avgAnalytics)){
-        if(key !== "tempo" && avgAnalytics[key] > 0.65){
-            notableAnalytics.push(key);
+        if(key !== "tempo" && key !== "loudness"){
+           if(avgAnalytics[key] > 0.7){
+               notableAnalytics.push(translateAnalytics[key]);
+           }else if(avgAnalytics[key] < 0.2){
+               notableAnalytics.push(translateAnalyticsLow[key]);
+           }
         }
     }
 
-    /**
-     * MESSAGE CONSTRUCTION
-     **/
-
-    if(playlistStandardDeviation > 0.4){
-        message += "This playlist varies a lot. "
-    }else if(playlistStandardDeviation > 0.25){
-        message += "This playlist is fairly consistent. "
-    }else {
-        message += "This playlist is very consistent. "
+    return {
+        variability: playlistStandardDeviation,
+        notableAnalytics: notableAnalytics.map(a => a.name).join(', '),
+        trends: notableTrends.map(trend => { return {name: translateAnalytics[trend].name, slope: regressions[trend]} })
     }
-
-    console.log(playlistStandardDeviation)
-
-    if(notableAnalytics.length > 0){
-        message += `It is notably ${notableAnalytics.map(a => translateAnalytics[a].name).join(', ')}. `
-    }
-
-    if(notableTrends.length > 0){
-        notableTrends.forEach(trend => {
-            message += `Across the course of the playlist the songs get ${regressions[trend] > 0 ? 'more' : 'less'} ${translateAnalytics[trend].name}. `
-        })
-    }
-
-    return message;
 }
 
 export const getItemType = (item) => {

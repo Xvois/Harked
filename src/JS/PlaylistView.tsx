@@ -5,6 +5,9 @@ import {getLIDescription, getPlaylistAnalysis} from "./Analysis"
 import "./../CSS/PlaylistView.css"
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CommentIcon from '@mui/icons-material/Comment';
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
+import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
+import TimelineIcon from '@mui/icons-material/Timeline';
 
 interface Playlist {
     collaborative: boolean;
@@ -90,6 +93,7 @@ const PlaylistView = () => {
     const playlist_id = window.location.hash.split("#")[1];
 
     const [playlist, setPlaylist] = useState(null);
+    const [playlistAnalysis, setPlaylistAnalysis] = useState(null);
     const [isOwnPlaylist, setIsOwnPlaylist] = useState(false);
 
     useEffect(() => {
@@ -101,8 +105,8 @@ const PlaylistView = () => {
                 console.info('Is own playlist.')
             }
             console.log(p)
-            getPlaylistAnalysis(p.tracks);
             setPlaylist(p);
+            setPlaylistAnalysis(getPlaylistAnalysis(p.tracks));
         }
 
         fetchData();
@@ -125,8 +129,40 @@ const PlaylistView = () => {
                             <h1>{playlist.name}</h1>
                             <p>{playlist.description}</p>
                             <br />
-                            <p style={{fontWeight: 'bold'}}>Harked analysis: </p>
-                            <p>{getPlaylistAnalysis(playlist.tracks)}</p>
+                        </div>
+                        <div className={'playlist-analysis'}>
+                            <div className={'playlist-analysis-item'}>
+                                <GraphicEqIcon fontSize={'medium'} />
+                                <p style={{fontWeight: 'bold'}}>Variability: </p>
+                                <p>
+                                    {playlistAnalysis.variability > 0.5 ?
+                                        'High'
+                                        :
+                                        playlistAnalysis.variability > 0.25 ?
+                                            'Medium'
+                                            :
+                                            'Low'
+                                    }
+                                </p>
+                            </div>
+                            {playlistAnalysis.notableAnalytics && (
+                                <div className={'playlist-analysis-item'}>
+                                    <NoiseAwareIcon fontSize={'medium'} />
+                                    <p style={{fontWeight: 'bold'}}>Vibe: </p>
+                                    <p style={{textTransform: 'capitalize'}}>
+                                        {playlistAnalysis.notableAnalytics}
+                                    </p>
+                                </div>
+                            )}
+                            {playlistAnalysis.trends[0] && (
+                                <div className={'playlist-analysis-item'}>
+                                    <TimelineIcon fontSize={'medium'} />
+                                    <p style={{fontWeight: 'bold'}}>Trend: </p>
+                                    <p>
+                                        {playlistAnalysis.trends[0].slope > 0 ? 'Increasingly ' : 'Decreasingly '} {playlistAnalysis.trends[0].name}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                         <div className={'header-sub-text'}>
                             <p>
