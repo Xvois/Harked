@@ -14,7 +14,10 @@ import {
     postDatapoint,
     putLocalData,
     songsToRefIDs,
-    updateLocalData
+    subscribe,
+    unsubscribe,
+    updateLocalData,
+    validDPExists
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
 
@@ -457,23 +460,23 @@ export const createEvent = async function (event_ref_num : number, user_id : str
         }
         )
 }
-export const retrieveEventsForUser = async function (user_id : string) {
+export const retrieveEventsForUser = async function (user_id : string, page : number = 1, eventsPerPage : number = 50) {
     const following : Array<User> = await retrieveFollowing(user_id);
     const followingMap = new Map();
     // Create map to reference user from their db id
     following.forEach(u => followingMap.set(u.id, u));
     const conditions = following.map(u => `owner.id = "${u.id}"`);
-    const filter = conditions.join(" || ");
+    //const filter = conditions.join(" || ");
 
     // TODO : REMOVE
-    //const filter = `owner.user_id = "${user_id}"`;
-    //const user = await getUser(user_id);
+    const filter = `owner.user_id = "${user_id}"`;
+    const user = await getUser(user_id);
 
-    const events : Array<UserEvent> = await getLocalData("events", filter, '-created');
+    const events : Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
     for (const e of events) {
         e.owner = followingMap.get(e.owner);
         // TODO : REMOVE
-       // e.owner = user;
+        e.owner = user;
         switch (e.item.type) {
             case "albums":
                 const album = await fetchData(`albums/${e.item.id}`);
@@ -573,7 +576,7 @@ export const milliToHighestOrder = function (milliseconds) {
         // Hours
         if(calcVal > 60){
             calcVal /= 60;
-            unit = calcVal > 1 ? 'hrs' : 'hr';
+            unit = Math.trunc(calcVal) !== 1 ? 'hrs' : 'hr';
             // Days
             if(calcVal > 24){
                 calcVal /= 24;
@@ -589,7 +592,7 @@ export const milliToHighestOrder = function (milliseconds) {
                         // Years
                         if(calcVal > 12){
                             calcVal /= 12;
-                            unit = calcVal > 1 ? 'yrs' : 'yr';
+                            unit = Math.trunc(calcVal) !== 1 ? 'yrs' : 'yr';
                         }
                     }
                 }
@@ -759,6 +762,7 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
         console.warn(err);
     })
     if (currDatapoint === undefined && timeSensitive) {
+        console.warn('Deprecated behaviour: Hydration is triggered by retrieveDatapoint method.')
         await hydrateDatapoints().then(async () =>
             currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
                 console.warn("Error retrieving datapoint: ");
@@ -771,14 +775,6 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
     return currDatapoint;
 }
 
-export function getAllIndexes(arr, val) {
-    let indexes = [], i;
-    for (i = 0; i < arr.length; i++)
-        if (arr[i] === val)
-            indexes.push(i);
-    return indexes;
-}
-
 export const retrievePrevDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
     const datapoint: Datapoint = await getDelayedDatapoint(user_id, term, 1);
     if (datapoint === undefined) {
@@ -788,6 +784,58 @@ export const retrievePrevDatapoint = async function (user_id: string, term: "sho
     }
 }
 
+
+export const retrieveAllDatapoints = async function (user_id) {
+
+    await disableAutoCancel();
+    const validExists = await validDPExists(user_id, 'long_term');
+    const terms = ['short_term', 'medium_term', 'long_term'];
+    let datapoints = [];
+
+    if(validExists){
+        for (const term of terms) {
+            const datapoint = await retrieveDatapoint(user_id, term);
+            datapoints.push(datapoint);
+        }
+    }else if(isLoggedIn()){
+        const loggedUserID = await retrieveLoggedUserID();
+        if(user_id === loggedUserID){
+            datapoints = await hydrateDatapoints();
+        }else{
+            // Force complete term elimination
+            datapoints = [null, null, null];
+        }
+    }
+
+    await enableAutoCancel();
+
+    return datapoints;
+};
+
+export const retrievePrevAllDatapoints = async function (user_id) {
+
+    await disableAutoCancel();
+    const terms = ['short_term', 'medium_term', 'long_term'];
+    const datapoints = [];
+
+    for (const term of terms) {
+        const datapoint = await retrievePrevDatapoint(user_id, term);
+        datapoints.push(datapoint);
+    }
+
+    await enableAutoCancel();
+
+    return datapoints;
+};
+
+
+export function getAllIndexes(arr, val) {
+    let indexes = [], i;
+    for (i = 0; i < arr.length; i++)
+        if (arr[i] === val)
+            indexes.push(i);
+    return indexes;
+}
 
 const formatDatapoint = function (d: Datapoint) {
     if (d === null || d === undefined) {
@@ -841,38 +889,6 @@ async function cacheData(cacheName, cacheKey, data, maxAgeInSeconds = null) {
         await cacheStorage.put(cacheKey, responseToCache);
     }
 }
-
-export const retrieveAllDatapoints = async function (user_id) {
-
-    await disableAutoCancel();
-    const terms = ['short_term', 'medium_term', 'long_term'];
-    const datapoints = [];
-
-    for (const term of terms) {
-        const datapoint = await retrieveDatapoint(user_id, term);
-        datapoints.push(datapoint);
-    }
-
-    await enableAutoCancel();
-
-    return datapoints;
-};
-
-export const retrievePrevAllDatapoints = async function (user_id) {
-
-    await disableAutoCancel();
-    const terms = ['short_term', 'medium_term', 'long_term'];
-    const datapoints = [];
-
-    for (const term of terms) {
-        const datapoint = await retrievePrevDatapoint(user_id, term);
-        datapoints.push(datapoint);
-    }
-
-    await enableAutoCancel();
-
-    return datapoints;
-};
 
 export const retrieveLoggedUserID = async function () {
     const cacheName = 'userIDCache';
@@ -1125,10 +1141,15 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
 
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
- * to the database using postDatapoint.
+ * to the database using postDatapoint
+ *
+ * **The hydration will optimistically return the datapoints prior to
+ * posting.**
+ * @returns {[short_term : Datapoint, medium_term : Datapoint, long_term : Datapoint]}
  */
 export const hydrateDatapoints = async function () {
     console.time("Hydration."); // Start a timer for performance measurement
+    console.time("Compilation")
     const terms = ['short_term', 'medium_term', 'long_term'];
     const loggedUserID = await retrieveLoggedUserID();
     const datapoints = [];
@@ -1166,17 +1187,51 @@ export const hydrateDatapoints = async function () {
 
         datapoints.push(datapoint);
     }
-
+    console.timeEnd("Compilation");
     console.info("Posting datapoints...");
+    // Create deep copy clone to prevent optimistic return
+    // resolving in to references via the API
+    let postClone =  structuredClone(datapoints);
+    postHydration(postClone).then(() => {
+        console.info("Hydration over.");
+        console.timeEnd("Hydration."); // End the timer and display the elapsed time
+    });
+    return datapoints;
+};
+
+const postHydration = async (datapoints) => {
     for (const datapoint of datapoints) {
         await postDatapoint(datapoint).then(() => {
             console.info(datapoint.term + " success!");
         });
     }
-
-    console.info("Hydration over.");
-    console.timeEnd("Hydration."); // End the timer and display the elapsed time
-};
+}
+/**
+ * Runs the argument callback function as a side effect of a successful
+ * hydration by the argument user_id.
+ * @param user_id
+ * @param callback
+ */
+export const onHydration = async (user_id: string, callback : Function) => {
+    const user = await retrieveUser(user_id);
+    const func = (e) => {
+        if(e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id){
+            console.info("Hydration event noted!");
+            callback()
+            destroyOnHydration();
+        }
+    }
+    await subscribe("datapoints", "*", func);
+}
+/**
+ * Destroys the onHydration subscription.
+ *
+ * **Should be called after a successful call of the
+ * callback for the onHydration event.**
+ */
+const destroyOnHydration = async () => {
+    await unsubscribe("datapoints", "*");
+}
 
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.

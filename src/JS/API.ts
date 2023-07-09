@@ -359,8 +359,8 @@ export const deleteLocalData = async (collection, id) => {
     await pb.collection(collection).delete(id);
 }
 
-export const getLocalData = async (collection, filter = '', sort = '') => {
-    return (await pb.collection(collection).getList(1, 50, {filter: filter, sort: sort}).catch(handleFetchException)).items;
+export const getLocalData = async (collection, filter = '', sort = '', page = 1, perPage = 50) => {
+    return (await pb.collection(collection).getList(page, perPage, {filter: filter, sort: sort}).catch(handleFetchException)).items;
 }
 
 export const getLocalDataByID = async (collection, id, expand = '') => {
@@ -424,4 +424,12 @@ export const getDatapoint = async (user_id, term, timeSens) => {
                 console.info(`No datapoints for ${user_id} found for within the last week.`)
             } else (console.warn(err));
         })
+}
+
+export const subscribe = (collection: string, record: string = '*', callback: Function) => {
+    pb.collection(collection).subscribe(record, callback);
+}
+
+export const unsubscribe = (collection: string, record: string = '*') => {
+    pb.collection(collection).unsubscribe(record);
 }

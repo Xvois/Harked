@@ -5,6 +5,7 @@ import './../CSS/Profile.css';
 import {
     createEvent,
     deleteRecommendation,
+    destroyOnHydration,
     followsUser,
     followUser,
     getAlbumsWithTracks,
@@ -13,6 +14,7 @@ import {
     getTrackRecommendations,
     hashString,
     isLoggedIn,
+    onHydration,
     retrieveAllDatapoints,
     retrieveDatapoint,
     retrieveFollowers,
@@ -578,7 +580,7 @@ const Recommendation = (props) => {
                 </h2>
                 <p style={{margin: '0'}}>{getLIDescription(rec.item)}</p>
                 {rec.description.length > 0 && (
-                    <p>
+                    <p style={{marginBottom: 0}}>
                         <em>
                             <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
                             {rec.description}
@@ -1083,11 +1085,13 @@ const Profile = () => {
                     setAllDatapoints(datapoints);
                     setSelectedDatapoint(datapoints[termIndex]);
                     console.info("Datapoints retrieved!");
+                    console.log(datapoints);
                 }),
                 retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
                     setAllPreviousDatapoints(datapoints);
                     setSelectedPrevDatapoint(datapoints[2]);
                     console.info("Previous datapoints retrieved!");
+                    console.log(datapoints);
                 }),
                 retrieveSettings(loadID).then(function (s) {
                     setSettings(s);
@@ -1123,6 +1127,16 @@ const Profile = () => {
                     // Handle errors appropriately
                 });
 
+            // Create onHydration to update page
+            // when hydration is fully complete
+            onHydration(loadID,() => {
+                retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
+                    setAllPreviousDatapoints(datapoints);
+                    setSelectedPrevDatapoint(datapoints[2]);
+                    console.info("Previous datapoints retrieved!");
+                    console.log(datapoints);
+                })
+            })
         })
 
     }, []);
@@ -1147,7 +1161,6 @@ const Profile = () => {
                     <LoadingIndicator/>
                 :
                 <div className='wrapper'>
-
                     <TopContainer pageUser={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
