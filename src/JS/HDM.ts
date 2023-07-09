@@ -792,18 +792,27 @@ export const retrieveAllDatapoints = async function (user_id) {
     const terms = ['short_term', 'medium_term', 'long_term'];
     let datapoints = [];
 
-    if(validExists){
+    if(isLoggedIn()){
+        const loggedUserID = await retrieveLoggedUserID();
+        if(user_id === loggedUserID) {
+            if(validExists) {
+                for (const term of terms) {
+                    const datapoint = await retrieveDatapoint(user_id, term);
+                    datapoints.push(datapoint);
+                }
+            }else {
+                datapoints = await hydrateDatapoints();
+            }
+        }else{
+            for (const term of terms) {
+                const datapoint = await retrieveDatapoint(user_id, term);
+                datapoints.push(datapoint);
+            }
+        }
+    }else{
         for (const term of terms) {
             const datapoint = await retrieveDatapoint(user_id, term);
             datapoints.push(datapoint);
-        }
-    }else if(isLoggedIn()){
-        const loggedUserID = await retrieveLoggedUserID();
-        if(user_id === loggedUserID){
-            datapoints = await hydrateDatapoints();
-        }else{
-            // Force complete term elimination
-            datapoints = [null, null, null];
         }
     }
 

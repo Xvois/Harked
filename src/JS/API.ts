@@ -290,6 +290,7 @@ export const songsToRefIDs = async (songs) => {
 };
 
 export const validDPExists = async (user_id, term) => {
+
     // Calculate the date of a week ago.
     const d = new Date();
     const WEEK_IN_MILLISECONDS = 6.048e+8;
