@@ -406,12 +406,10 @@ export const modifyRecommendation = async (existingRecommendation, type, newDesc
     let unresolvedExistingRec = structuredClone(existingRecommendation);
     let item = existingRecommendation.item;
     let item_id;
-    if(type === "songs" || type === "artists" || type === "users"){
+    if(type === "songs" || type === "artists"){
         item_id = retrieveDatabaseID(item, type);
-    }else if (type === "playlists"){
-        item_id = item["playlist_id"];
     }else if (type === "albums") {
-        item_id = type["album_id"];
+        item_id = item["album_id"];
     }
     unresolvedExistingRec.item = {id: item_id, type: type};
     const newRecommendation = {
