@@ -404,7 +404,8 @@ export const submitRecommendation = async function (user_id: string, item: Song 
 export const modifyRecommendation = async (existingRecommendation, type, newDescription) => {
     // We need to unresolve the item to its id and type
     let unresolvedExistingRec = structuredClone(existingRecommendation);
-    unresolvedExistingRec.item = {id: hashString(existingRecommendation.item[`${type.slice(0,type.length-1)}_id`]), type: type};
+    const id = retrieveDatabaseID(existingRecommendation.item, type);
+    unresolvedExistingRec.item = {id: id, type: type};
     const newRecommendation = {
         ...unresolvedExistingRec,
         description: newDescription
