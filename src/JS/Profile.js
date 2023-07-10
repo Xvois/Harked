@@ -506,8 +506,8 @@ const SelectionModal = (props) => {
                                 inputProps={{maxLength: 200}}
                             />
                             <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '16px'}}>
-                                {!initialItem && (
-                                    <button className={'std-button'} type={'button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                {initialItem === null && (
+                                    <button className={'subtle-button'} type={'button'} onClick={() => setSelectedItem(null)}>Back</button>
                                 )}
                                 <button className={'subtle-button'} type={"button"} style={{marginLeft: 'auto'}} onClick={() => {
                                     if(!!initialItem) {

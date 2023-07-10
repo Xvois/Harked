@@ -447,7 +447,7 @@ select.dropdown {
     background: var(--bg-colour);
     color: var(--primary-colour);
     background: rgba(200, 200, 200, 0.5);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(30px) brightness(200%);
     border: 1px solid var(--secondary-colour);
     border-radius: 20px;
 }
