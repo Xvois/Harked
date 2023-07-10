@@ -70,6 +70,45 @@ code {
     background: var(--accent-colour);
 }
 
+.subtle-button {
+    align-content: center;
+    height: max-content;
+    font-family: "Inter Tight", sans-serif;
+    font-size: 12px;
+    text-decoration: none;
+    width: max-content;
+    color: var(--primary-colour);
+    background: rgba(125, 125, 125, 0.25);
+    border: none;
+    border-radius: 20px;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.subtle-button:hover {
+    background: rgba(125, 125, 125, 0.5);
+}
+
+.warning-button {
+    align-content: center;
+    height: max-content;
+    font-family: "Inter Tight", sans-serif;
+    font-size: 12px;
+    text-decoration: none;
+    width: max-content;
+    color: red;
+    background: none;
+    border: 1px solid red;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.warning-button:hover {
+    background: rgba(255, 0, 0, 0.5);
+}
+
 .centre {
     position: absolute;
     left: 50%;

@@ -14,11 +14,13 @@ import {
     getTrackRecommendations,
     hashString,
     isLoggedIn,
+    modifyRecommendation,
     onHydration,
     retrieveAllDatapoints,
     retrieveDatapoint,
     retrieveFollowers,
     retrieveLoggedUserID,
+    retrievePlaylistMetadata,
     retrievePlaylists,
     retrievePrevAllDatapoints,
     retrieveProfileData,
@@ -48,7 +50,6 @@ import {
 } from "./Analysis";
 import {handleAlternateLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
-import DeleteIcon from '@mui/icons-material/Delete';
 import {
     CommentSection,
     LoadingIndicator,
@@ -374,15 +375,19 @@ function ComparisonLink(props) {
 }
 
 const SelectionModal = (props) => {
-    const {showModal, setShowModal, setRecommendations, pageGlobalUserID} = props;
+    const {showModal, setShowModal, recommendations, setRecommendations, pageGlobalUserID, initialItem = null} = props;
 
     const [searchResults, setSearchResults] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(initialItem);
     const [processing, setProcessing] = useState(false);
     const searchRef = useRef('');
     const descriptionRef = useRef('');
     const typeChoices = ['songs', 'artists', 'albums'];
     const [type, setType] = useState(typeChoices[0]);
+
+    useEffect(() => {
+        setSelectedItem(initialItem);
+    }, [initialItem])
 
     useEffect(() => {
         const modal = document.getElementById('rec-modal');
@@ -403,7 +408,6 @@ const SelectionModal = (props) => {
 
     const handleSubmit = async () => {
         setProcessing(true);
-        let type = getItemType(selectedItem);
         let submissionItem = selectedItem;
         if (type === 'songs') {
             submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
@@ -419,18 +423,30 @@ const SelectionModal = (props) => {
         });
     }
 
+    const handleModify = async () => {
+        setProcessing(true);
+        const existingRecIndex = recommendations.findIndex(r => r.item[`${type.slice(0,type.length-1)}_id`] === selectedItem[`${type.slice(0,type.length-1)}_id`]);
+        const existingRec = recommendations[existingRecIndex];
+        await modifyRecommendation(existingRec, getItemType(initialItem), descriptionRef.current.value).then(() => {
+            setSearchResults(null);
+            setSelectedItem(null);
+            setShowModal(false);
+            setProcessing(false);
+            createEvent(53, pageGlobalUserID, existingRec.item, type);
+            retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
+        })
+    }
+
     return (
         <dialog autoFocus id={'rec-modal'}>
-            <div style={{position: 'absolute', top: '0', right: '0'}}>
-                <button className={'showcase-exit-button'} onClick={() => {setShowModal(false); setSearchResults(null)}}>x</button>
-            </div>
             {selectedItem === null ?
-                <div>
+                <div style={{justifyContent: 'right'}}>
+                    <button className={'showcase-exit-button'} onClick={() => {setSelectedItem(null); setShowModal(false); setSearchResults(null)}}>x</button>
                     <h3 style={{margin: 0}}>Type</h3>
                     <p style={{marginTop: 0}}>of item.</p>
                     <div id={'rec-type-wrapper'}>
                         {typeChoices.map(t => {
-                            return <button type={'button'} onClick={() => setType(t)} key={t}  className={'std-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {background: 'var(--bg-colour)', color: 'var(--primary-colour)', textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                            return <button type={'button'} onClick={() => setType(t)} key={t}  className={'subtle-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
                         })}
                     </div>
                     <h3 style={{marginBottom: 0}}>Search</h3>
@@ -473,11 +489,12 @@ const SelectionModal = (props) => {
                         )
                     }
                     <form>
+                        <button className={'showcase-exit-button'} id={'rec-details-exit'} onClick={() => {setSelectedItem(null); setShowModal(false); setSearchResults(null)}}>x</button>
                         <div style={{position: 'relative'}} className={'rec-details-img'}>
                             <img src={selectedItem.image} className={'backdrop-image'} />
                             <img src={selectedItem.image} className={'levitating-image'} />
                         </div>
-                        <div>
+                        <div style={{maxWidth: '300px'}}>
                             <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
                             <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}</p>
                             <StyledField
@@ -489,8 +506,18 @@ const SelectionModal = (props) => {
                                 inputProps={{maxLength: 200}}
                             />
                             <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '16px'}}>
-                                <button className={'std-button'} type={'button'} onClick={() => setSelectedItem(null)}>Back</button>
-                                <button className={'std-button'} type={"button"} onClick={handleSubmit}>Submit</button>
+                                {!initialItem && (
+                                    <button className={'std-button'} type={'button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                )}
+                                <button className={'subtle-button'} type={"button"} style={{marginLeft: 'auto'}} onClick={() => {
+                                    if(!!initialItem) {
+                                        handleModify();
+                                    }else {
+                                        handleSubmit();
+                                    }
+                                }}>
+                                    Submit
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -505,6 +532,8 @@ const ProfileRecommendations = (props) => {
     // Only songs and artists at the moment
     const [recs, setRecs] = useState([]);
     const [showSelection, setShowSelection] = useState(false);
+    const [initialItem, setInitialItem] = useState(null);
+    const [initialItemType, setInitialItemType] = useState(null);
 
 
     useEffect(() => {
@@ -517,6 +546,13 @@ const ProfileRecommendations = (props) => {
             createEvent(51, pageGlobalUserID, e.item, getItemType(e.item));
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecs(res));
         });
+    }
+
+    const handleEdit = (e) => {
+        const itemType = getItemType(e.item);
+        setInitialItem(e.item);
+        setInitialItemType(itemType);
+        setShowSelection(true);
     }
 
     return (
@@ -532,7 +568,7 @@ const ProfileRecommendations = (props) => {
                 {recs.length > 0 ?
                     recs.map(e => {
                         const type = getItemType(e.item);
-                        return <Recommendation key={e.id} rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete}/>
+                        return <Recommendation key={e.id} rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete} handleEdit={handleEdit}/>
                     })
                     :
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
@@ -541,16 +577,16 @@ const ProfileRecommendations = (props) => {
             {isOwnPage && (
                 <button className={'std-button'} style={{width: '100%', border: '1px solid var(--secondary-colour)'}}
                         onClick={() => setShowSelection(true)}>
-                    + Add recommendation
+                    New recommendation
                 </button>
             )}
-            <SelectionModal showModal={showSelection} setShowModal={setShowSelection} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
+            <SelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection} recommendations={recs} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
         </div>
     )
 }
 
 const Recommendation = (props) => {
-    const {rec, type, isOwnPage, handleDelete} = props;
+    const {rec, type, isOwnPage, handleDelete, handleEdit} = props;
     return (
         <div key={rec.id} style={{
             display: 'flex',
@@ -591,17 +627,11 @@ const Recommendation = (props) => {
                     </p>
                 )}
                 {isOwnPage && (
-                    <div style={{margin: 'auto 0 0 auto'}}>
-                        <button style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--accent-colour)',
-                            width: 'max-content',
-                            cursor: 'pointer',
-                            marginLeft: 'auto'
-                        }}
+                    <div style={{display: 'flex', margin: 'auto 0 0 auto', gap: '15px'}}>
+                        <button className={'subtle-button'} onClick={() => handleEdit(rec)}>Edit</button>
+                        <button className={'subtle-button'}
                                 onClick={() => handleDelete(rec)}>
-                            <DeleteIcon/>
+                            Delete
                         </button>
                     </div>
                 )}
@@ -741,6 +771,15 @@ const TopSongsOfArtists = (props) => {
 
 const PlaylistItem = function (props) {
     const {playlist} = props;
+
+    const [playlistMetadata, setPlaylistMetadata] = useState(null);
+
+    useEffect(() => {
+        if(playlist){
+            retrievePlaylistMetadata(playlist.playlist_id).then(res => setPlaylistMetadata(res));
+        }
+    }, [playlist])
+
     return (
         <div style={{
             display: 'flex',
@@ -752,9 +791,9 @@ const PlaylistItem = function (props) {
             width: 'max-content',
             gap: '15px'
         }}>
-            {playlist.images.length > 0 && (
+            {playlist.image && (
                 <img style={{width: '100px', height: '100px', objectFit: 'cover'}} alt={'playlist'}
-                     src={playlist.images[0].url}></img>
+                     src={playlist.image}></img>
             )}
             <div style={{
                 display: 'flex',
@@ -768,8 +807,8 @@ const PlaylistItem = function (props) {
                     margin: '0 0 5px 0',
                     borderBottom: '1px solid var(--secondary-colour)',
                 }}>{playlist.description}</p>
-                <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs</p>
-                <a href={`/playlist#${playlist.id}`} className={'std-button'} style={{marginTop: 'auto', marginLeft: 'auto'}}>Explore</a>
+                <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs {playlistMetadata && `· ${Object.keys(playlistMetadata.meta).length} annotation${Object.keys(playlistMetadata.meta).length !== 1 ? 's' : ''}`}</p>
+                <a href={`/playlist#${playlist.playlist_id}`} className={'subtle-button'} style={{marginTop: 'auto', marginLeft: 'auto'}}>Explore</a>
             </div>
         </div>
     )
@@ -963,7 +1002,7 @@ function PlaylistItemList(props) {
         }}>
             {playlists.slice(0,listLength).map(p => {
                 return (
-                    <PlaylistItem key={p.id} playlist={p}/>
+                    <PlaylistItem key={p.playlist_id} playlist={p}/>
                 )
             })}
             {playlists.length > listLength ?

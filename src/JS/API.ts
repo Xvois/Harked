@@ -360,8 +360,8 @@ export const deleteLocalData = async (collection, id) => {
     await pb.collection(collection).delete(id);
 }
 
-export const getLocalData = async (collection, filter = '', sort = '', page = 1, perPage = 50) => {
-    return (await pb.collection(collection).getList(page, perPage, {filter: filter, sort: sort}).catch(handleFetchException)).items;
+export const getLocalData = async (collection, filter = '', sort = '', page = 1, perPage = 50, autoCancel = true) => {
+    return (await pb.collection(collection).getList(page, perPage, {filter: filter, sort: sort, "$autoCancel": autoCancel}).catch(handleFetchException)).items;
 }
 
 export const getLocalDataByID = async (collection, id, expand = '') => {

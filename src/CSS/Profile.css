@@ -446,8 +446,18 @@ select.dropdown {
     min-width: 300px;
     background: var(--bg-colour);
     color: var(--primary-colour);
+    background: rgba(200, 200, 200, 0.5);
+    backdrop-filter: blur(20px);
     border: 1px solid var(--secondary-colour);
+    border-radius: 20px;
 }
+
+@media (prefers-color-scheme: dark) {
+    #rec-modal {
+        background: rgba(50, 50, 50, 0.5);
+    }
+}
+
 
 #rec-modal::backdrop {
     background: rgba(0, 0, 0, 0.5);
@@ -501,13 +511,36 @@ select.dropdown {
     color: var(--secondary-colour);
 }
 
+#rec-details-exit {
+    color: var(--bg-colour);
+    text-shadow: 0 0 10px var(--bg-colour);
+}
+
+@media (prefers-color-scheme: dark) {
+    #rec-details-exit {
+        color: var(--primary-colour);
+        text-shadow: 0 0 10px var(--primary-colour);
+    }
+}
+
 .rec-details-img {
-    width: max-content;
-    height: max-content;
+    width: 300px;
+    height: 300px;
     margin: auto;
     align-items: center;
     justify-content: center;
+    border-radius: 10px;
 }
+
+.rec-details-img > img {
+    width: 100%;
+    object-fit: cover;
+}
+
+.rec-details-img > .levitating-image {
+    border-radius: 10px;
+}
+
 
 .processing-indicator-wrapper {
     position: absolute;

@@ -34,6 +34,9 @@ export const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'inst
 // Get the display name of the list item.
 export const getLIName = function (data, maxLength = 30) {
     let result;
+    if(!data){
+        return null;
+    }
     if (data.hasOwnProperty('artist_id')) {
         result = data.name;
     } else if (data.hasOwnProperty('song_id')) {
@@ -388,10 +391,12 @@ export const getPlaylistAnalysis = (tracks) => {
 
     const notableTrends = [];
     for(const key of Object.keys(regressions)){
-        if(Math.abs(regressions[key]) > 0.05){
+        if(Math.abs(regressions[key]) > 0.1){
             notableTrends.push(key);
         }
     }
+
+    notableTrends.sort((a,b) => Math.abs(regressions[b]) - Math.abs(regressions[a]))
 
     /**
      * NOTABLE ANALYTICS CALCS
@@ -421,8 +426,10 @@ export const getItemType = (item) => {
     } else if (item.hasOwnProperty('song_id')) {
         return 'songs'
     } else if (item.hasOwnProperty('album_id')) {
-        return 'albums'
-    }else if (item.hasOwnProperty('user_id')){
+        return 'albums';
+    } else if(item.hasOwnProperty('playlist_id')){
+        return 'playlists';
+    } else if (item.hasOwnProperty('user_id')){
         return 'users'
     } else if (typeof item !== "object") {
         return 'genres'

@@ -400,6 +400,18 @@ export const submitRecommendation = async function (user_id: string, item: Song 
             break;
     }
 }
+
+export const modifyRecommendation = async (existingRecommendation, type, newDescription) => {
+    // We need to unresolve the item to its id and type
+    let unresolvedExistingRec = structuredClone(existingRecommendation);
+    unresolvedExistingRec.item = {id: hashString(existingRecommendation.item[`${type.slice(0,type.length-1)}_id`]), type: type};
+    const newRecommendation = {
+        ...unresolvedExistingRec,
+        description: newDescription
+    };
+    await updateLocalData("recommendations", newRecommendation, existingRecommendation.id);
+}
+
 /**
  * Will always return the database id for either a song, artist or album.
  * The type does not need to be specified and the id may **not** always be valid
@@ -408,8 +420,6 @@ export const submitRecommendation = async function (user_id: string, item: Song 
 export const retrieveDatabaseID = (item, type) => {
     if(type === "songs" || type === "artists"){
         return hashString(item[`${type.slice(0, type.length-1)}_id`]);
-    }else if (type === "albums") {
-        return item.album_id;
     } else if (type === "users") {
         // Assumes a user record is being submitted, otherwise it would
         // be impossible to know what the id was
@@ -418,6 +428,7 @@ export const retrieveDatabaseID = (item, type) => {
         throw new Error("Unknown type seen in retrieveDatabaseID.");
     }
 }
+
 
 /**
  * Creates an event in the database.
@@ -429,11 +440,15 @@ export const retrieveDatabaseID = (item, type) => {
  *
  *  1: Added recommendation
  *
+ *  2: Added annotations
+ *
  *  51-100 | Minor events
  *
  *  51: Removes recommendation
  *
  *  52: Follows user
+ *
+ *  53: Edit recommendation
  *
  *
  * @param event_ref_num
@@ -441,10 +456,17 @@ export const retrieveDatabaseID = (item, type) => {
  * @param item
  * @param item_type
  */
-export const createEvent = async function (event_ref_num : number, user_id : string, item : Artist | Song | Album | User, item_type : "artists" | "songs" | "albums" | "users") {
+export const createEvent = async function (event_ref_num : number, user_id : string, item : Artist | Song | Album | Playlist, item_type : "artists" | "songs" | "albums" | "users" | "playlists") {
     const user : User = await retrieveUser(user_id);
+    let item_id;
     console.log(item_type)
-    const item_id = retrieveDatabaseID(item, item_type);
+    if(item_type === "songs" || item_type === "artists" || item_type === "users"){
+        item_id = retrieveDatabaseID(item, item_type);
+    }else if (item_type === "playlists"){
+        item_id = item["playlist_id"];
+    }else if (item_type === "albums") {
+        item_id = item["album_id"];
+    }
     console.log({
         event_ref_num: event_ref_num,
         user_id: user_id,
@@ -491,11 +513,13 @@ export const retrieveEventsForUser = async function (user_id : string, page : nu
             case "users":
                 e.item = await getLocalDataByID("users", e.item.id);
                 break;
+            case "playlists":
+                e.item = await retrievePlaylist(e.item.id);
+                break;
             default:
                 throw new Error(`Unknown type of item in event ${e.id}`);
         }
     }
-    console.log(events)
     return events;
 }
 
@@ -655,7 +679,7 @@ export const retrieveSearchResults = async function (query: string, type: "artis
 /**
  * Returns an array of public non-collaborative playlists from a given user.
  * @param user_id
- * @returns {Promise<Array>}
+ * @returns {Promise<Array<Playlist>>>}
  */
 export const retrievePlaylists = async function (user_id: string) {
     // Fetch all playlists
@@ -691,9 +715,15 @@ export const retrievePlaylists = async function (user_id: string) {
         });
     });
 
+    playlists = playlists.map(p => formatPlaylist(p));
+
     return playlists;
 }
-
+/**
+ *
+ * @param playlist_id
+ * @returns Playlist
+ */
 export const retrievePlaylist = async function (playlist_id: string){
     let playlist = await fetchData(`playlists/${playlist_id}`);
 
@@ -718,18 +748,73 @@ export const retrievePlaylist = async function (playlist_id: string){
     const analytics = await batchAnalytics(playlist.tracks);
     playlist.tracks.map((t,i) => t.analytics = analytics[i]);
 
-    return playlist;
+    return formatPlaylist(playlist);
 }
+
+export interface PlaylistMetadata extends Record {
+    playlist_id: string,
+    meta: {},
+}
+
+/**
+ *
+ * @param playlist_id
+ * @returns PlaylistMetadata
+ */
+export const retrievePlaylistMetadata = async function (playlist_id: string){
+    return (await getLocalData("playlist_metadata", `playlist_id="${playlist_id}"`, undefined, undefined, undefined, false))[0];
+}
+
+export const addAnnotation = async function (user_id: string, playlist: Playlist, song_id: string, annotation: string){
+    if(user_id === null){
+        throw new Error("Null userID passed into addAnnotation!");
+    }
+    let returnValue;
+    let existingMeta = await retrievePlaylistMetadata(playlist.playlist_id);
+    if(existingMeta) {
+        let modifiedMeta = existingMeta;
+        modifiedMeta.meta[song_id] = annotation;
+        await updateLocalData("playlist_metadata", modifiedMeta, existingMeta.id);
+        returnValue = modifiedMeta;
+    }else{
+        let metaField = {};
+        metaField[song_id] = annotation;
+        const meta = {playlist_id: playlist.playlist_id, meta: metaField};
+        returnValue = meta;
+        await putLocalData("playlist_metadata", meta);
+        createEvent(2, user_id, playlist, "playlists")
+    }
+    return returnValue;
+}
+
+export const deleteAnnotation = async function (playlist: Playlist, song_id: string) {
+    let returnValue;
+    let existingMeta = await retrievePlaylistMetadata(playlist.playlist_id);
+    if(existingMeta){
+        if(Object.keys(existingMeta.meta).length <= 1){
+            await deleteLocalData("playlist_metadata", existingMeta.id);
+            returnValue = undefined;
+        }else{
+            let modifiedMeta = existingMeta;
+            delete modifiedMeta.meta[song_id];
+            await updateLocalData("playlist_metadata", modifiedMeta, existingMeta.id);
+            returnValue = modifiedMeta;
+        }
+    }
+    return returnValue;
+}
+
+
 
 
 /**
  * Formats a user object from spotify in to a formatted user object.
  * @returns User
  */
-export const formatUser = async function (user) {
+export const formatUser = function (user) {
     // Get our global user_id
     let pfp = null;
-    if (user.images.length > 0) {
+    if (user.images?.length > 0) {
         console.log(user);
         pfp = user.images[0].url;
     }
@@ -737,7 +822,6 @@ export const formatUser = async function (user) {
         user_id: user.id,
         username: user.display_name,
         profile_picture: pfp,
-        media: null,
     }
 }
 /**
@@ -1106,7 +1190,7 @@ export const formatArtist = (artist) => {
     }
 }
 /**
- *
+ * Formats a spotify album into an album object.
  * @param album
  * @returns Album
  */
@@ -1114,7 +1198,7 @@ const formatAlbum = (album) => {
     let image = null;
     if (album.hasOwnProperty("images")) {
         if (album.images[1] !== undefined) {
-            image = album.images[1].url
+            image = album.images[1].url;
         }
     }
     const artists = album.artists.map(a => formatArtist(a));
@@ -1124,6 +1208,47 @@ const formatAlbum = (album) => {
         name: album.name,
         image: image,
         link: album.external_urls.spotify
+    }
+}
+
+interface Playlist {
+    playlist_id: string,
+    image: string,
+    name: string,
+    description: string,
+    tracks: Array<Song>,
+    link: string,
+    followers: number
+    owner: User
+}
+
+/**
+ * Formats a spotify playlist into a playlist object.
+ * @param playlist
+ * @returns Playlist
+ */
+const formatPlaylist = (playlist) => {
+    let image = null;
+    if(playlist.hasOwnProperty("images")){
+        if(playlist.images[0] !== undefined){
+            image = playlist.images[0].url;
+        }
+    }
+    let tracks = [];
+    if(playlist.hasOwnProperty("tracks")){
+        tracks = playlist.tracks;
+    }else{
+        tracks = undefined;
+    }
+    return {
+        playlist_id: playlist.id,
+        image: image,
+        name: playlist.name,
+        description: playlist.description,
+        tracks: tracks,
+        link: playlist.external_urls.spotify,
+        followers: playlist.followers?.total,
+        owner: formatUser(playlist.owner),
     }
 }
 /**

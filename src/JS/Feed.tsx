@@ -16,10 +16,14 @@ function FeedObject(props : {event: UserEvent, index: number, maxEventsPerLoad: 
         switch (event.ref_num){
             case 1:
                 return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added the {itemType.slice(0, itemType.length-1)} <a href={event.item.link}>{getLIName(event.item)}</a> to their recommendations.</p>
+            case 2:
+                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added annotations to <a href={`/playlist#${event.item.playlist_id}`}>{event.item.name}</a>.</p>
             case 51:
                 return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has removed <a href={event.item.link}>{getLIName(event.item)}</a> from their recommendations.</p>
             case 52:
                 return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> followed <a href={`/profile#${event.item.user_id}`}>{event.item.username}</a>.</p>
+            case 53:
+                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has edited their recommendation for the {itemType.slice(0, itemType.length-1)} <a href={event.item.link}>{getLIName(event.item)}</a>.</p>
         }
     }
 
@@ -72,8 +76,11 @@ const Feed = () => {
 
         fetchData().then( (e : Array<UserEvent>) => {
             setEvents(e)
-            if(e.length < maxEventsPerLoad){
+            if(e.length <= maxEventsPerLoad){
+                console.info('Loaded all at once.')
                 setHasMore(false);
+            }else{
+                console.info('Feed is truncated and will attempt to load more on scroll.')
             }
         });
 
@@ -81,10 +88,12 @@ const Feed = () => {
 
     const fetchMoreEvents = async () => {
         if(hasMore){
+            console.info(`Fetching more! maxEventsPerLoad: ${maxEventsPerLoad} feedPage: ${feedPage}`)
             setIsLoading(true);
             const newEvents = await retrieveEventsForUser(user_id, feedPage + 1, maxEventsPerLoad);
             if(newEvents.length !== 0){
-                setFeedPage(feedPage+1);
+                const feedPageVal = feedPage;
+                setFeedPage(feedPageVal+1);
                 const totalEvents = events.concat(newEvents);
                 setEvents(totalEvents);
                 setIsLoading(false);

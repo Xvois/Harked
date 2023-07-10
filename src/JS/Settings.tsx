@@ -15,7 +15,7 @@ const SettingElement = (props : {name : string, value : string, button? : boolea
     return (
         <div className={'setting-element'} style={warning ? {background: 'rgba(255,0,0,0.1)'} : {}}>
             <p>{name}</p>
-            {button && <button style={warning ? {borderColor: 'red', color: 'red'} : {}} onClick={callback} className={'std-button'}>{value}</button>}
+            {button && <button onClick={callback} className={warning ? 'warning-button' : 'std-button'}>{value}</button>}
             {!button && <h4 style={{margin: '0'}}>{value}</h4>}
         </div>
     )

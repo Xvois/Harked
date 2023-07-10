@@ -24,7 +24,7 @@
     transition: 0.25s all ease;
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 650px) {
     .header {
         background: var(--bg-colour);
     }
