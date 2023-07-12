@@ -250,7 +250,8 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
                             />
                         </div>
                         <div style={{margin: "0 0 0 auto", width: "max-content"}}>
-                            <button className="std-button" style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} type={"submit"}>
+                            <button className="std-button"
+                                    style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} type={"submit"}>
                                 Submit
                             </button>
                         </div>

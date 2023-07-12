@@ -4,7 +4,7 @@ import {getItemType, getLIName} from "./Analysis";
 import "./../CSS/Feed.css"
 import {LoadingIndicator} from "./SharedComponents.tsx";
 
-function FeedObject(props : {user_id: string, event: UserEvent, index: number, maxEventsPerLoad: number}) {
+function FeedObject(props: { user_id: string, event: UserEvent, index: number, maxEventsPerLoad: number }) {
 
     const {user_id, event, index, maxEventsPerLoad} = props;
 
@@ -13,45 +13,72 @@ function FeedObject(props : {user_id: string, event: UserEvent, index: number, m
 
     const getDescription = () => {
         const itemType = getItemType(event.item);
-        switch (event.ref_num){
+        switch (event.ref_num) {
             case 1:
-                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added the {itemType.slice(0, itemType.length-1)} <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> to their recommendations.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'}
+                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                    added the {itemType.slice(0, itemType.length - 1)} <a className={'heavy-link'}
+                                                                          href={event.item.link}>{getLIName(event.item)}</a> to
+                    their recommendations.</p>
             case 2:
-                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added annotations to <a className={'heavy-link'} href={`/playlist#${event.item.playlist_id}`}>{event.item.name}</a>.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'}
+                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                    added annotations to <a className={'heavy-link'}
+                                            href={`/playlist#${event.item.playlist_id}`}>{event.item.name}</a>.</p>
             case 51:
-                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has removed <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> from their recommendations.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'}
+                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                    removed <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> from their
+                    recommendations.</p>
             case 52:
                 const targetPronoun = user_id === event.item.user_id ? 'you' : event.item.username;
-                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> followed <a className={'heavy-link'} href={`/profile#${event.item.user_id}`}>{targetPronoun}</a>.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'}
+                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> followed <a
+                    className={'heavy-link'} href={`/profile#${event.item.user_id}`}>{targetPronoun}</a>.</p>
             case 53:
-                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has edited their recommendation for the {itemType.slice(0, itemType.length-1)} <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a>.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'}
+                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                    edited their recommendation for the {itemType.slice(0, itemType.length - 1)} <a
+                        className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a>.</p>
         }
     }
 
     return (
-        <div className={event.ref_num < 51 ? 'major-feed-object' : 'minor-feed-object'} style={index !== 0 ? {borderTop: '1px solid var(--accent-colour)', animationDelay: `${ (index % maxEventsPerLoad) / 20}s`} : {animationDelay: `${index / 20}s`}}>
+        <div className={event.ref_num < 51 ? 'major-feed-object' : 'minor-feed-object'} style={index !== 0 ? {
+            borderTop: '1px solid var(--accent-colour)',
+            animationDelay: `${(index % maxEventsPerLoad) / 20}s`
+        } : {animationDelay: `${index / 20}s`}}>
             <div className={'feed-image'} style={{position: 'relative'}}>
-                <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.image} />
-                <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.image} />
+                <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.image}/>
+                <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.image}/>
             </div>
             <div>
-                {event.ref_num < 51 && <h3 style={{margin: '0 0 10px 0'}}><a style={{textDecoration: 'none', color: 'var(--primary-colour)'}} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a></h3>}
+                {event.ref_num < 51 && <h3 style={{margin: '0 0 10px 0'}}><a
+                    style={{textDecoration: 'none', color: 'var(--primary-colour)'}}
+                    href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a></h3>}
                 {getDescription()}
             </div>
-            <p style={{position: 'absolute', bottom: 0, right: 0, fontFamily: 'Lato, sans-serif', wordBreak: 'keep-all', color: 'var(--secondary-colour)'}}>
+            <p style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                fontFamily: 'Lato, sans-serif',
+                wordBreak: 'keep-all',
+                color: 'var(--secondary-colour)'
+            }}>
                 {time.value}{time.unit} ago
             </p>
         </div>
     )
 }
 
-function LoadingObject (props : {index : number}) {
+function LoadingObject(props: { index: number }) {
 
     const {index} = props;
 
     return (
         <div>
-            <div className="placeholder" >
+            <div className="placeholder">
                 <div className="animated-background" style={{animationDelay: `${index / 10}s`}}></div>
             </div>
         </div>
@@ -75,12 +102,12 @@ const Feed = () => {
             return await retrieveEventsForUser(user_id, feedPage, maxEventsPerLoad);
         }
 
-        fetchData().then( (e : Array<UserEvent>) => {
+        fetchData().then((e: Array<UserEvent>) => {
             setEvents(e)
-            if(e.length <= maxEventsPerLoad){
+            if (e.length <= maxEventsPerLoad) {
                 console.info('Loaded all at once.')
                 setHasMore(false);
-            }else{
+            } else {
                 console.info('Feed is truncated and will attempt to load more on scroll.')
             }
         });
@@ -88,17 +115,17 @@ const Feed = () => {
     }, [])
 
     const fetchMoreEvents = async () => {
-        if(hasMore){
+        if (hasMore) {
             console.info(`Fetching more! maxEventsPerLoad: ${maxEventsPerLoad} feedPage: ${feedPage}`)
             setIsLoading(true);
             const newEvents = await retrieveEventsForUser(user_id, feedPage + 1, maxEventsPerLoad);
-            if(newEvents.length !== 0){
+            if (newEvents.length !== 0) {
                 const feedPageVal = feedPage;
-                setFeedPage(feedPageVal+1);
+                setFeedPage(feedPageVal + 1);
                 const totalEvents = events.concat(newEvents);
                 setEvents(totalEvents);
                 setIsLoading(false);
-                if(newEvents.length < maxEventsPerLoad){
+                if (newEvents.length < maxEventsPerLoad) {
                     setHasMore(false);
                 }
             }
@@ -115,8 +142,7 @@ const Feed = () => {
     }
 
 
-
-    return  (
+    return (
         <div>
             <h1 style={{margin: '15px 0 0 0px'}}>Your feed.</h1>
             <p style={{margin: '0 0 15px 15px'}}>What the people you're following are up to.</p>
@@ -124,35 +150,47 @@ const Feed = () => {
                 {events !== null ?
                     events.length > 0 ?
                         <>
-                        {
-                            events.map((e,i) => {
-                                return <FeedObject key={e.id} user_id={user_id} event={e} index={i} maxEventsPerLoad={maxEventsPerLoad} />
-                            })
-                        }
-                        {hasMore ?
-                            isLoading ?
-                                <div style={{position: 'relative', marginTop: '50px'}}>
-                                    <LoadingIndicator />
-                                </div>
-                                :
-                                isError ?
-                                    <p style={{margin: 'auto', padding: '15px', borderTop: '1px solid var(--accent-colour)', color: 'red'}}>An error occurred loading your feed.</p>
-
+                            {
+                                events.map((e, i) => {
+                                    return <FeedObject key={e.id} user_id={user_id} event={e} index={i}
+                                                       maxEventsPerLoad={maxEventsPerLoad}/>
+                                })
+                            }
+                            {hasMore ?
+                                isLoading ?
+                                    <div style={{position: 'relative', marginTop: '50px'}}>
+                                        <LoadingIndicator/>
+                                    </div>
                                     :
-                                    <></>
-                            :
-                            <p style={{margin: 'auto', padding: '15px', borderTop: '1px solid var(--accent-colour)', color: 'var(--secondary-colour)'}}>You've reached the end of your feed.</p>
-                        }
+                                    isError ?
+                                        <p style={{
+                                            margin: 'auto',
+                                            padding: '15px',
+                                            borderTop: '1px solid var(--accent-colour)',
+                                            color: 'red'
+                                        }}>An error occurred loading your feed.</p>
+
+                                        :
+                                        <></>
+                                :
+                                <p style={{
+                                    margin: 'auto',
+                                    padding: '15px',
+                                    borderTop: '1px solid var(--accent-colour)',
+                                    color: 'var(--secondary-colour)'
+                                }}>You've reached the end of your feed.</p>
+                            }
                         </>
 
                         :
-                        <p style={{color: 'var(--secondary-colour)'}}>Looks like there's nothing to see here yet. <br /> Follow some more people and wait for them to get up to something!</p>
+                        <p style={{color: 'var(--secondary-colour)'}}>Looks like there's nothing to see here
+                            yet. <br/> Follow some more people and wait for them to get up to something!</p>
                     :
                     <>
-                        <LoadingObject index={0} key={0} />
-                        <LoadingObject index={1} key={1} />
-                        <LoadingObject index={2} key={2} />
-                        <LoadingObject index={3} key={3} />
+                        <LoadingObject index={0} key={0}/>
+                        <LoadingObject index={1} key={1}/>
+                        <LoadingObject index={2} key={2}/>
+                        <LoadingObject index={3} key={3}/>
                     </>
                 }
             </div>

@@ -2,8 +2,12 @@ import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {formatArtist, hashString, retrieveSongAnalytics} from "./HDM.ts";
 import {reAuthenticate} from "./Authentication";
+import LRUCache from 'lru-cache';
+
+const cache = new LRUCache({max: 500});
 
 const pb = new PocketBase("https://harked.fly.dev/");
+
 /**
  * Makes requests data from the Spotify from the
  * designated endpoint (path). The function returns an object containing the data it has received.
@@ -13,7 +17,7 @@ const pb = new PocketBase("https://harked.fly.dev/");
  */
 export async function fetchData(path, retryCount = 0) {
     try {
-        const { data } = await axios.get(`https://api.spotify.com/v1/${path}`, {
+        const {data} = await axios.get(`https://api.spotify.com/v1/${path}`, {
             headers: {
                 Authorization: `Bearer ${window.localStorage.getItem('access-token')}`
             },
@@ -177,7 +181,7 @@ const postSong = async (song) => {
         console.info('Song attempting to be posted already cached.');
         return;
     }
-    if(!song.hasOwnProperty('analytics') || Object.keys(song.analytics).length === 0){
+    if (!song.hasOwnProperty('analytics') || Object.keys(song.analytics).length === 0) {
         console.info(`Resolving analytics for a song (${song.song_id}) attempting to be posted.`);
         await retrieveSongAnalytics(song.song_id).then(res =>
             song.analytics = res
@@ -214,7 +218,6 @@ const postArtist = async (artist) => {
     await pb.collection('artists').create(artist).catch(handleCreationException);
     updateDatabaseCacheWithItems({artists: [artist]});
 }
-// TODO: MAKE UPDATE METHODS FOR ARTISTS
 
 
 const postGenre = async (genre) => {
@@ -361,7 +364,11 @@ export const deleteLocalData = async (collection, id) => {
 }
 
 export const getLocalData = async (collection, filter = '', sort = '', page = 1, perPage = 50, autoCancel = true) => {
-    return (await pb.collection(collection).getList(page, perPage, {filter: filter, sort: sort, "$autoCancel": autoCancel}).catch(handleFetchException)).items;
+    return (await pb.collection(collection).getList(page, perPage, {
+        filter: filter,
+        sort: sort,
+        "$autoCancel": autoCancel
+    }).catch(handleFetchException)).items;
 }
 
 export const getLocalDataByID = async (collection, id, expand = '') => {
@@ -414,17 +421,20 @@ export const getDatapoint = async (user_id, term, timeSens) => {
         filter = `owner.user_id="${user_id}"&&term="${term}"`;
     }
 
+    const expand = 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres';
+    const sort = '-created';
+
 
     return await pb.collection('datapoints').getFirstListItem(
         filter, {
-            expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
-            sort: '-created'
+            expand: expand,
+            sort: sort
         })
         .catch(err => {
             if (err.status === 404) {
                 console.info(`No datapoints for ${user_id} found for within the last week.`)
             } else (console.warn(err));
-        })
+        });
 }
 
 export const subscribe = (collection: string, record: string = '*', sideEffect: Function) => {

@@ -21,9 +21,6 @@ import {
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
 
-// TODO: REINSTATE CACHE WITH PROPER GUARD RAILS
-
-
 export interface Record {
     id: string,
     created: string,
@@ -98,7 +95,7 @@ export interface Song extends Record {
 export interface UserEvent extends Record {
     owner: User | string,
     ref_num: number
-    item: {id: string, type: string} | Album | Artist | Song | User,
+    item: { id: string, type: string } | Album | Artist | Song | User,
 }
 
 type Analytics = {
@@ -142,7 +139,6 @@ interface Album {
     link: string
 }
 
-
 export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
     if (inputString.length === 0) {
@@ -156,7 +152,6 @@ export function hashString(inputString) {
     const hex = hash.toString(16);
     return hex.padStart(15, '0').substring(0, 15);
 }
-
 
 
 /**
@@ -360,6 +355,8 @@ export const deleteComment = async function (comment_id: string) {
 }
 /**
  * Creates a recommendation for the target user on their page.
+ *
+ * **Has build in createEvent side-effect.**
  * @param user_id
  * @param item
  * @param type
@@ -401,15 +398,23 @@ export const submitRecommendation = async function (user_id: string, item: Song 
     }
     createEvent(1, user_id, item, type);
 }
-
-export const modifyRecommendation = async (user_id : string, existingRecommendation : Recommendation, type : "songs" | "artists" | "albums", newDescription : string) => {
+/**
+ * Modifies an existing recommendation with a new description.
+ *
+ * **Has build in createEvent side-effect.**
+ * @param user_id
+ * @param existingRecommendation
+ * @param type
+ * @param newDescription
+ */
+export const modifyRecommendation = async (user_id: string, existingRecommendation: Recommendation, type: "songs" | "artists" | "albums", newDescription: string) => {
     // We need to unresolve the item to its id and type
     let unresolvedExistingRec = structuredClone(existingRecommendation);
     let item = existingRecommendation.item;
     let item_id;
-    if(type === "songs" || type === "artists"){
+    if (type === "songs" || type === "artists") {
         item_id = retrieveDatabaseID(item, type);
-    }else if (type === "albums") {
+    } else if (type === "albums") {
         item_id = item["album_id"];
     }
     unresolvedExistingRec.item = {id: item_id, type: type};
@@ -428,13 +433,13 @@ export const modifyRecommendation = async (user_id : string, existingRecommendat
  * as it can be unresolved.
  */
 export const retrieveDatabaseID = (item, type) => {
-    if(type === "songs" || type === "artists"){
-        return hashString(item[`${type.slice(0, type.length-1)}_id`]);
+    if (type === "songs" || type === "artists") {
+        return hashString(item[`${type.slice(0, type.length - 1)}_id`]);
     } else if (type === "users") {
         // Assumes a user record is being submitted, otherwise it would
         // be impossible to know what the id was
         return item.id;
-    }else {
+    } else {
         throw new Error("Unknown type seen in retrieveDatabaseID.");
     }
 }
@@ -466,15 +471,15 @@ export const retrieveDatabaseID = (item, type) => {
  * @param item
  * @param item_type
  */
-export const createEvent = async function (event_ref_num : number, user_id : string, item : Artist | Song | Album | Playlist, item_type : "artists" | "songs" | "albums" | "users" | "playlists") {
-    const user : User = await retrieveUser(user_id);
+export const createEvent = async function (event_ref_num: number, user_id: string, item: Artist | Song | Album | Playlist, item_type: "artists" | "songs" | "albums" | "users" | "playlists") {
+    const user: User = await retrieveUser(user_id);
     let item_id;
     console.log(item_type)
-    if(item_type === "songs" || item_type === "artists" || item_type === "users"){
+    if (item_type === "songs" || item_type === "artists" || item_type === "users") {
         item_id = retrieveDatabaseID(item, item_type);
-    }else if (item_type === "playlists"){
+    } else if (item_type === "playlists") {
         item_id = item["playlist_id"];
-    }else if (item_type === "albums") {
+    } else if (item_type === "albums") {
         item_id = item["album_id"];
     }
     console.log({
@@ -490,10 +495,10 @@ export const createEvent = async function (event_ref_num : number, user_id : str
             ref_num: event_ref_num,
             item: {id: item_id, type: item_type}
         }
-        )
+    )
 }
-export const retrieveEventsForUser = async function (user_id : string, page : number = 1, eventsPerPage : number = 50) {
-    const following : Array<User> = await retrieveFollowing(user_id);
+export const retrieveEventsForUser = async function (user_id: string, page: number = 1, eventsPerPage: number = 50) {
+    const following: Array<User> = await retrieveFollowing(user_id);
     const followingMap = new Map();
     // Create map to reference user from their db id
     following.forEach(u => followingMap.set(u.id, u));
@@ -504,7 +509,7 @@ export const retrieveEventsForUser = async function (user_id : string, page : nu
     //const filter = `owner.user_id = "${user_id}"`;
     //const user = await getUser(user_id);
 
-    const events : Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
+    const events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
     for (const e of events) {
         e.owner = followingMap.get(e.owner);
         // TODO : REMOVE
@@ -604,27 +609,27 @@ export const milliToHighestOrder = function (milliseconds) {
     let calcVal = milliseconds / 1000;
     let unit = 's';
     // Minutes
-    if(calcVal > 60){
+    if (calcVal > 60) {
         calcVal /= 60;
         unit = 'm';
         // Hours
-        if(calcVal > 60){
+        if (calcVal > 60) {
             calcVal /= 60;
             unit = Math.trunc(calcVal) !== 1 ? 'hrs' : 'hr';
             // Days
-            if(calcVal > 24){
+            if (calcVal > 24) {
                 calcVal /= 24;
                 unit = 'd';
                 // Weeks
-                if(calcVal > 7){
+                if (calcVal > 7) {
                     calcVal /= 7;
                     unit = 'w';
                     // Months
-                    if(calcVal > 30){
+                    if (calcVal > 30) {
                         calcVal /= 30;
                         unit = 'm';
                         // Years
-                        if(calcVal > 12){
+                        if (calcVal > 12) {
                             calcVal /= 12;
                             unit = Math.trunc(calcVal) !== 1 ? 'yrs' : 'yr';
                         }
@@ -735,10 +740,10 @@ export const retrievePlaylists = async function (user_id: string) {
  * @param retrieveTracks
  * @returns Playlist
  */
-export const retrievePlaylist = async function (playlist_id: string, retrieveTracks: boolean = true){
+export const retrievePlaylist = async function (playlist_id: string, retrieveTracks: boolean = true) {
     let playlist = await fetchData(`playlists/${playlist_id}`);
 
-    if(retrieveTracks){
+    if (retrieveTracks) {
         const totalTracks = playlist.tracks.total;
         const numCalls = Math.ceil(totalTracks / 50);
         const promises: Array<Array<Song>> = [];
@@ -758,7 +763,7 @@ export const retrievePlaylist = async function (playlist_id: string, retrieveTra
 
         playlist.tracks = await Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null).map(t => formatSong(t)));
         const analytics = await batchAnalytics(playlist.tracks);
-        playlist.tracks.map((t,i) => t.analytics = analytics[i]);
+        playlist.tracks.map((t, i) => t.analytics = analytics[i]);
     }
 
     return formatPlaylist(playlist);
@@ -774,22 +779,30 @@ export interface PlaylistMetadata extends Record {
  * @param playlist_id
  * @returns PlaylistMetadata
  */
-export const retrievePlaylistMetadata = async function (playlist_id: string){
+export const retrievePlaylistMetadata = async function (playlist_id: string) {
     return (await getLocalData("playlist_metadata", `playlist_id="${playlist_id}"`, undefined, undefined, undefined, false))[0];
 }
-
-export const addAnnotation = async function (user_id: string, playlist: Playlist, song_id: string, annotation: string){
-    if(user_id === null){
+/**
+ * Adds an annotation to an item in a playlist.
+ *
+ * **Has build in createEvent side-effect.**
+ * @param user_id
+ * @param playlist
+ * @param song_id
+ * @param annotation
+ */
+export const addAnnotation = async function (user_id: string, playlist: Playlist, song_id: string, annotation: string) {
+    if (user_id === null) {
         throw new Error("Null userID passed into addAnnotation!");
     }
     let returnValue;
     let existingMeta = await retrievePlaylistMetadata(playlist.playlist_id);
-    if(existingMeta) {
+    if (existingMeta) {
         let modifiedMeta = existingMeta;
         modifiedMeta.meta[song_id] = annotation;
         await updateLocalData("playlist_metadata", modifiedMeta, existingMeta.id);
         returnValue = modifiedMeta;
-    }else{
+    } else {
         let metaField = {};
         metaField[song_id] = annotation;
         const meta = {playlist_id: playlist.playlist_id, meta: metaField};
@@ -803,11 +816,11 @@ export const addAnnotation = async function (user_id: string, playlist: Playlist
 export const deleteAnnotation = async function (playlist: Playlist, song_id: string) {
     let returnValue;
     let existingMeta = await retrievePlaylistMetadata(playlist.playlist_id);
-    if(existingMeta){
-        if(Object.keys(existingMeta.meta).length <= 1){
+    if (existingMeta) {
+        if (Object.keys(existingMeta.meta).length <= 1) {
             await deleteLocalData("playlist_metadata", existingMeta.id);
             returnValue = undefined;
-        }else{
+        } else {
             let modifiedMeta = existingMeta;
             delete modifiedMeta.meta[song_id];
             await updateLocalData("playlist_metadata", modifiedMeta, existingMeta.id);
@@ -816,8 +829,6 @@ export const deleteAnnotation = async function (playlist: Playlist, song_id: str
     }
     return returnValue;
 }
-
-
 
 
 /**
@@ -840,15 +851,15 @@ export const formatUser = function (user) {
  * Returns all the users that have a matching item in their most recent datapoints.
  */
 export const followingContentsSearch = async function (user_id: string, item: Artist | Song | string, type: 'artists' | 'songs' | 'genres') {
-    const following : Array<User> = await retrieveFollowing(user_id);
+    const following: Array<User> = await retrieveFollowing(user_id);
     const dpPromises = [];
     following.forEach((user: User) => {
         dpPromises.push(retrieveAllDatapoints(user.user_id));
     })
-    let dps : Array<Datapoint> = await Promise.all(dpPromises);
+    let dps: Array<Datapoint> = await Promise.all(dpPromises);
     dps = dps.flat().filter(d => d !== null);
     const ownerIDs = dps.filter(e => containsElement(item, e, type)).map(e => e.owner);
-    return following.filter(e => ownerIDs.some( (id : string) => id === e.id));
+    return following.filter(e => ownerIDs.some((id: string) => id === e.id));
 }
 
 /**
@@ -895,7 +906,16 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
         );
     }
 
+
     currDatapoint = formatDatapoint(currDatapoint);
+    if (currDatapoint !== null) {
+        const currTime = Date.now();
+        const createdTime = Date.parse(currDatapoint.created);
+        let TTL = (7 * 8.64e+7) - (currTime - createdTime);
+        if (TTL < 0) {
+            TTL = 8.64e+7 / 2;
+        }
+    }
     return currDatapoint;
 }
 
@@ -983,79 +1003,19 @@ const formatDatapoint = function (d: Datapoint) {
     d.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
     return d;
 };
-
-async function retrieveFromCache(cacheName, cacheKey) {
-    if ('caches' in window) {
-        const cacheStorage = await caches.open(cacheName);
-        const cachedResponse = await cacheStorage.match(cacheKey);
-
-        if (cachedResponse) {
-            const cachedData = await cachedResponse.json().catch(err => {
-                console.error('Cache retrieval failure:', err);
-                cacheStorage.delete(cacheKey);
-            });
-            if (cachedData) {
-                return cachedData;
-            }
-        }
-    }
-
-    return null;
-}
-
-async function cacheData(cacheName, cacheKey, data, maxAgeInSeconds = null) {
-    if ('caches' in window) {
-        const cacheStorage = await caches.open(cacheName);
-        const headers = new Headers();
-        if (maxAgeInSeconds !== null) {
-            headers.append('Cache-Control', `max-age=${maxAgeInSeconds}`);
-        }
-        const responseToCache = new Response(JSON.stringify(data), {
-            headers,
-        });
-        await cacheStorage.put(cacheKey, responseToCache);
-    }
-}
-
 export const retrieveLoggedUserID = async function () {
-    const cacheName = 'userIDCache';
-    const cacheKey = 'loggedUserID';
-
-    // Check if the result is in the cache
-    const cachedData = await retrieveFromCache(cacheName, cacheKey);
-    if (cachedData) {
-        return cachedData;
-    }
-
-    // If not in cache, make the API request
     const response = await fetchData('me');
-    const userID = response.id;
-
-    // Cache the result
-    await cacheData(cacheName, cacheKey, userID);
-
-    return userID;
+    return response.id;
 };
-
-export const retrieveUser = async function (user_id) {
-    const cacheName = 'userDataCache';
-    const cacheKey = `user_${user_id}`;
-
-    // Check if the result is in the cache
-    const cachedData = await retrieveFromCache(cacheName, cacheKey);
-    if (cachedData) {
-        return cachedData;
-    }
-
-    // If not in cache, make the API request
-    const userData = await getUser(user_id);
-
-    // Cache the result with max age of 10 hours
-    await cacheData(cacheName, cacheKey, userData, 36000);
-
-    return userData;
+/**
+ *
+ * @param user_id
+ * @returns User
+ */
+export const retrieveUser = async function (user_id: string) {
+    const response = await getUser(user_id);
+    return response;
 };
-
 
 
 function chunks(array, size) {
@@ -1108,7 +1068,7 @@ export const batchArtists = async (artist_ids: Array<string>) => {
     return artists;
 };
 
-export const deleteUser = async (user_id : string) => {
+export const deleteUser = async (user_id: string) => {
     const universal_id = hashString(user_id);
     const datapoints = await getLocalData('datapoints', `owner.user_id="${user_id}"`);
     const datapointPromises = datapoints.map(d => deleteLocalData('datapoints', d.id));
@@ -1127,25 +1087,6 @@ export const deleteUser = async (user_id : string) => {
     await Promise.all(connectedRecordsPromises);
     const user = await getUser(user_id);
     await deleteLocalData('users', user.id);
-}
-
-export const handleCacheReset = () => {
-    if ('caches' in window) {
-        const cacheTypes = ['userDataCache', 'datapointsCache', 'prevDatapointsCache', 'userIDCache'];
-        cacheTypes.forEach(t => {
-            caches.delete(t).then(success => {
-                if (success) {
-                    console.log(`Cache ${t} has been cleared.`);
-                } else {
-                    console.log(`Cache ${t} does not exist.`);
-                }
-            }).catch(error => {
-                console.error(`Error while clearing cache ${t}: ${error}`);
-            });
-        })
-    } else {
-        console.warn('The caches API is not supported in this browser.');
-    }
 }
 
 /**
@@ -1236,15 +1177,15 @@ interface Playlist {
  */
 const formatPlaylist = (playlist) => {
     let image = null;
-    if(playlist.hasOwnProperty("images")){
-        if(playlist.images[0] !== undefined){
+    if (playlist.hasOwnProperty("images")) {
+        if (playlist.images[0] !== undefined) {
             image = playlist.images[0].url;
         }
     }
     let tracks = [];
-    if(playlist.hasOwnProperty("tracks")){
+    if (playlist.hasOwnProperty("tracks")) {
         tracks = playlist.tracks;
-    }else{
+    } else {
         tracks = undefined;
     }
     return {
@@ -1278,7 +1219,8 @@ export const formatSong = (song) => {
         title: song.name,
         artists: artists,
         image: image,
-        link: song.external_urls.spotify,}
+        link: song.external_urls.spotify,
+    }
 }
 /**
  * Returns similar artists to the artist id passed in.
@@ -1359,7 +1301,7 @@ export const hydrateDatapoints = async function () {
     console.info("Posting datapoints...");
     // Create deep copy clone to prevent optimistic return
     // resolving in to references via the API
-    let postClone =  structuredClone(datapoints);
+    let postClone = structuredClone(datapoints);
     postHydration(postClone).then(() => {
         console.info("Hydration over.");
         console.timeEnd("Hydration."); // End the timer and display the elapsed time
@@ -1380,10 +1322,10 @@ const postHydration = async (datapoints) => {
  * @param user_id
  * @param callback
  */
-export const onHydration = async (user_id: string, callback : Function) => {
+export const onHydration = async (user_id: string, callback: Function) => {
     const user = await retrieveUser(user_id);
     const func = (e) => {
-        if(e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id){
+        if (e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id) {
             console.info("Hydration event noted!");
             callback();
             destroyOnHydration();

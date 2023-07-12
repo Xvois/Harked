@@ -67,7 +67,19 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
 
 const ShowcaseList = (props) => {
-    const {pageUser, possessive, playlists, allDatapoints, selectedDatapoint, selectedPrevDatapoint = null, type, start, end, term, isOwnPage} = props;
+    const {
+        pageUser,
+        possessive,
+        playlists,
+        allDatapoints,
+        selectedDatapoint,
+        selectedPrevDatapoint = null,
+        type,
+        start,
+        end,
+        term,
+        isOwnPage
+    } = props;
 
     return (
         <div className={'showcase-list-wrapper'}>
@@ -79,7 +91,8 @@ const ShowcaseList = (props) => {
                             allDatapoints={allDatapoints}
                             pageUser={pageUser} possesive={possessive} playlists={playlists} element={element}
                             index={index} selectedDatapoint={selectedDatapoint}
-                            selectedPrevDatapoint={selectedPrevDatapoint} type={type} term={term} isOwnPage={isOwnPage}/>
+                            selectedPrevDatapoint={selectedPrevDatapoint} type={type} term={term}
+                            isOwnPage={isOwnPage}/>
                     )
                 }
             })}
@@ -88,7 +101,19 @@ const ShowcaseList = (props) => {
 }
 
 const ShowcaseListItem = (props) => {
-    const {pageUser, possessive, element, index, allDatapoints, selectedDatapoint, selectedPrevDatapoint, playlists, type, term, isOwnPage} = props;
+    const {
+        pageUser,
+        possessive,
+        element,
+        index,
+        allDatapoints,
+        selectedDatapoint,
+        selectedPrevDatapoint,
+        playlists,
+        type,
+        term,
+        isOwnPage
+    } = props;
 
     const maxExpansion = 650;
     const secondExpansion = 300;
@@ -117,7 +142,7 @@ const ShowcaseListItem = (props) => {
         const {element, type} = props;
         const [recommendations, setRecommendations] = useState(null);
         useEffect(() => {
-            if(recommendations === null){
+            if (recommendations === null) {
                 generateRecommendations();
             }
         }, [])
@@ -149,44 +174,7 @@ const ShowcaseListItem = (props) => {
                 }
             }
         }
-        return (
-            <div style={{position: 'relative', textAlign: 'right'}} className={'analysis supplemental-content'}>
-                {recommendations ?
-                    <>
-                        <h3 style={{margin: '0'}}>Recommendations for</h3>
-                        <p style={{margin: '-5px 0 5px 0'}}>{getLIName(element)}</p>
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '17px'}}>
-                            {
-                                recommendations.slice(0, 4).map(e => {
-                                    return (
-                                        <div key={getLIName(e)} style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            cursor: 'pointer',
-                                            justifyContent: 'right',
-                                            alignItems: 'center',
-                                            gap: '5px'
-                                        }}>
-                                            <div>
-                                                <p style={{margin: 0}}>{getLIName(e)}</p>
-                                                <p style={{
-                                                    margin: 0,
-                                                    fontSize: '12px',
-                                                    color: 'var(--secondary-colour)'
-                                                }}>{getLIDescription(e)}</p>
-                                            </div>
-                                            <SpotifyLink link={e.link} simple/>
-                                        </div>
-                                    )
-                                })
-                            }
-                        </div>
-                    </>
-                    :
-                    <LoadingIndicator/>
-                }
-            </div>
-        )
+        return (<></>)
     }
 
     let changeMessage;
@@ -213,7 +201,8 @@ const ShowcaseListItem = (props) => {
             style={{color: 'var(--primary-colour)', animation: 'equals-animation 0.5s ease-out'}}
             fontSize={"small"}></ClearAllOutlinedIcon>
     } else if (selectedPrevDatapoint !== null) {
-        changeMessage = <FlareIcon style={{color: 'var(--primary-colour)', animation: 'fadeIn 0.5s ease-in'}} fontSize={"small"} />
+        changeMessage =
+            <FlareIcon style={{color: 'var(--primary-colour)', animation: 'fadeIn 0.5s ease-in'}} fontSize={"small"}/>
     }
 
     const analysis = getItemAnalysis(element, type, pageUser, selectedDatapoint, allDatapoints, term);
@@ -280,18 +269,22 @@ const ShowcaseListItem = (props) => {
                                 <div className={'analysis-wrapper'}>
                                     {
                                         type === 'songs' ?
-                                            <SongAnalysis song={element}/>
+                                            <SongAnalysis song={element}
+                                                          averageAnalytics={getAverageAnalytics(selectedDatapoint.top_songs)}/>
                                             :
                                             type === 'artists' ?
                                                 isLoggedIn() ?
-                                                    <ArtistAnalysis user_id={pageUser.user_id} artist={element} playlists={playlists} term={term} isOwnPage={isOwnPage}/>
+                                                    <ArtistAnalysis user_id={pageUser.user_id} artist={element}
+                                                                    playlists={playlists} term={term}
+                                                                    isOwnPage={isOwnPage}/>
                                                     :
                                                     <div className={'analysis'}
                                                          style={{textAlign: 'right', padding: '0px'}}>
                                                         <p>Log in to see {possessive} analysis
                                                             for {getLIName(element)}</p>
                                                         <button style={{width: 'max-content', marginLeft: 'auto'}}
-                                                                className={'std-button'} onClick={handleAlternateLogin}>Log-in
+                                                                className={'std-button'}
+                                                                onClick={handleAlternateLogin}>Log-in
                                                         </button>
                                                     </div>
                                                 :
@@ -305,12 +298,16 @@ const ShowcaseListItem = (props) => {
                             <></>
                         }
                     </div>
-                    <button className={'showcase-exit-button'} onClick={() => {setExpansion(minExpansion); setShowAnalytics(false)}}>x</button>
+                    <button className={'showcase-exit-button'} onClick={() => {
+                        setExpansion(minExpansion);
+                        setShowAnalytics(false)
+                    }}>x
+                    </button>
                 </>
                 :
                 <div className={"showcase-list-item-text"}>
                     <h2>{getLIName(element)}</h2>
-                    <div className={"showcase-list-item-text"} style={{display:'flex', flexDirection: 'row'}}>
+                    <div className={"showcase-list-item-text"} style={{display: 'flex', flexDirection: 'row'}}>
                         {changeMessage && (changeMessage)}
                         {changeMessage && getLIDescription(element) && (<p style={{padding: '0 5px'}}>·</p>)}
                         <p>{getLIDescription(element)}</p>
@@ -330,11 +327,20 @@ function ComparisonLink(props) {
     }, [])
 
     return (
-        <div style={{display: 'flex', flexDirection: 'row', gap: '15px', marginLeft: 'auto', height: 'max-content', flexGrow: '0', width: 'max-content'}}>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '15px',
+            marginLeft: 'auto',
+            height: 'max-content',
+            flexGrow: '0',
+            width: 'max-content'
+        }}>
             {simple ?
                 <a style={{height: 'max-content'}} href={`/compare#${loggedUserID}&${pageUser.user_id}`}>
-                    <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                                    diameter={50}/>
+                    <ValueIndicator
+                        value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
+                        diameter={50}/>
                 </a>
                 :
                 <>
@@ -342,11 +348,13 @@ function ComparisonLink(props) {
                         <h3 style={{margin: 0}}>Compare</h3>
                         <p style={{marginTop: 0}}>See how your stats stack up against {pageUser.username}'s.</p>
                         <div className={'terms-container'} style={{justifyContent: 'right'}}>
-                            <a href={`/compare#${loggedUserID}&${pageUser.user_id}`} className={'std-button'}>Compare</a>
+                            <a href={`/compare#${loggedUserID}&${pageUser.user_id}`}
+                               className={'std-button'}>Compare</a>
                         </div>
                     </div>
-                    <ValueIndicator value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
-                                    diameter={64.5}/>
+                    <ValueIndicator
+                        value={loggedDP === null ? (0) : (calculateSimilarity(loggedDP, longTermDP).overall)}
+                        diameter={64.5}/>
                 </>
             }
         </div>
@@ -370,9 +378,9 @@ const SelectionModal = (props) => {
 
     useEffect(() => {
         const modal = document.getElementById('rec-modal');
-        if(showModal){
+        if (showModal) {
             modal.showModal();
-        }else if(!showModal){
+        } else if (!showModal) {
             modal.close();
         }
     }, [showModal])
@@ -403,7 +411,7 @@ const SelectionModal = (props) => {
 
     const handleModify = async () => {
         setProcessing(true);
-        const existingRecIndex = recommendations.findIndex(r => r.item[`${type.slice(0,type.length-1)}_id`] === selectedItem[`${type.slice(0,type.length-1)}_id`]);
+        const existingRecIndex = recommendations.findIndex(r => r.item[`${type.slice(0, type.length - 1)}_id`] === selectedItem[`${type.slice(0, type.length - 1)}_id`]);
         const existingRec = recommendations[existingRecIndex];
         await modifyRecommendation(pageGlobalUserID, existingRec, getItemType(initialItem), descriptionRef.current.value).then(() => {
             setSearchResults(null);
@@ -418,12 +426,21 @@ const SelectionModal = (props) => {
         <dialog autoFocus id={'rec-modal'}>
             {selectedItem === null ?
                 <div style={{justifyContent: 'right'}}>
-                    <button id={'modal-exit-button'} onClick={() => {setShowModal(false); setSearchResults(null)}}>x</button>
+                    <button id={'modal-exit-button'} onClick={() => {
+                        setShowModal(false);
+                        setSearchResults(null)
+                    }}>x
+                    </button>
                     <h3 style={{margin: 0}}>Type</h3>
                     <p style={{marginTop: 0}}>of item.</p>
                     <div id={'rec-type-wrapper'}>
                         {typeChoices.map(t => {
-                            return <button type={'button'} onClick={() => setType(t)} key={t}  className={'subtle-button'} style={type === t ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', textTransform: 'capitalize'} : {textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
+                            return <button type={'button'} onClick={() => setType(t)} key={t}
+                                           className={'subtle-button'} style={type === t ? {
+                                background: 'var(--primary-colour)',
+                                color: 'var(--bg-colour)',
+                                textTransform: 'capitalize'
+                            } : {textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
                         })}
                     </div>
                     <h3 style={{marginBottom: 0}}>Search</h3>
@@ -436,7 +453,10 @@ const SelectionModal = (props) => {
                         inputProps={{maxLength: 100}}
                     />
                     <div style={{width: "max-content", marginLeft: 'auto'}}>
-                        <button type={'button'} onClick={handleSearch} style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} className={'std-button'}>Search</button>
+                        <button type={'button'} onClick={handleSearch}
+                                style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}}
+                                className={'std-button'}>Search
+                        </button>
                     </div>
                     {searchResults && (
                         <div id={'rec-search-results'}>
@@ -446,7 +466,8 @@ const SelectionModal = (props) => {
                                     <div key={getLIName(result) + index} style={{position: 'relative'}}>
                                         {index % 2 === 0 && <div className={'bg-element'}/>}
                                         <button onClick={() => setSelectedItem(result)} className={'rec-search-result'}>
-                                            <img alt={getLIName(result)} src={result.image} className={'levitating-image'} />
+                                            <img alt={getLIName(result)} src={result.image}
+                                                 className={'levitating-image'}/>
                                             <h4>{getLIName(result, 20)}</h4>
                                             <p>{getLIDescription(result, 20)}</p>
                                         </button>
@@ -454,22 +475,26 @@ const SelectionModal = (props) => {
                                 );
                             })}
                         </div>
-                        )
+                    )
                     }
                 </div>
                 :
                 <div>
                     {processing && (
                         <div className={'processing-indicator-wrapper'}>
-                            <LoadingIndicator />
+                            <LoadingIndicator/>
                         </div>
-                        )
+                    )
                     }
-                    <button id={'modal-exit-button'} onClick={() => {setShowModal(false); setSearchResults(null)}}>x</button>
+                    <button id={'modal-exit-button'} onClick={() => {
+                        setShowModal(false);
+                        setSearchResults(null)
+                    }}>x
+                    </button>
                     <form>
                         <div style={{position: 'relative'}} className={'rec-details-img'}>
-                            <img alt={'backdrop-image'} src={selectedItem.image} className={'backdrop-image'} />
-                            <img alt={getLIName(selectedItem)} src={selectedItem.image} className={'levitating-image'} />
+                            <img alt={'backdrop-image'} src={selectedItem.image} className={'backdrop-image'}/>
+                            <img alt={getLIName(selectedItem)} src={selectedItem.image} className={'levitating-image'}/>
                         </div>
                         <div style={{maxWidth: '300px'}}>
                             <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
@@ -482,17 +507,24 @@ const SelectionModal = (props) => {
                                 inputRef={descriptionRef}
                                 inputProps={{maxLength: 200}}
                             />
-                            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '16px'}}>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                marginTop: '16px'
+                            }}>
                                 {initialItem === null && (
-                                    <button className={'subtle-button'} type={'button'} onClick={() => setSelectedItem(null)}>Back</button>
+                                    <button className={'subtle-button'} type={'button'}
+                                            onClick={() => setSelectedItem(null)}>Back</button>
                                 )}
-                                <button className={'subtle-button'} type={"button"} style={{marginLeft: 'auto'}} onClick={() => {
-                                    if(!!initialItem) {
-                                        handleModify();
-                                    }else {
-                                        handleSubmit();
-                                    }
-                                }}>
+                                <button className={'subtle-button'} type={"button"} style={{marginLeft: 'auto'}}
+                                        onClick={() => {
+                                            if (!!initialItem) {
+                                                handleModify();
+                                            } else {
+                                                handleSubmit();
+                                            }
+                                        }}>
                                     Submit
                                 </button>
                             </div>
@@ -543,7 +575,8 @@ const ProfileRecommendations = (props) => {
                 {recs.length > 0 ?
                     recs.map(e => {
                         const type = getItemType(e.item);
-                        return <Recommendation key={e.id} rec={e} type={type} isOwnPage={isOwnPage} handleDelete={handleDelete} handleEdit={handleEdit}/>
+                        return <Recommendation key={e.id} rec={e} type={type} isOwnPage={isOwnPage}
+                                               handleDelete={handleDelete} handleEdit={handleEdit}/>
                     })
                     :
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
@@ -551,11 +584,15 @@ const ProfileRecommendations = (props) => {
             </div>
             {isOwnPage && (
                 <button className={'std-button'} style={{width: '100%', border: '1px solid var(--secondary-colour)'}}
-                        onClick={() => {setShowSelection(true); setInitialItem(null);}}>
+                        onClick={() => {
+                            setShowSelection(true);
+                            setInitialItem(null);
+                        }}>
                     New recommendation
                 </button>
             )}
-            <SelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection} recommendations={recs} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
+            <SelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection}
+                            recommendations={recs} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
         </div>
     )
 }
@@ -575,7 +612,8 @@ const Recommendation = (props) => {
             wordBreak: 'break-word'
         }}>
             <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'} style={{aspectRatio: '1', width: '125%', objectFit: 'cover'}}/>
+                <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'backdrop-image'}
+                     style={{aspectRatio: '1', width: '125%', objectFit: 'cover'}}/>
                 <img alt={`${getLIName(rec.item)}`} src={rec.item.image} className={'levitating-image'}
                      style={{aspectRatio: '1', width: '100%', objectFit: 'cover'}}/>
             </div>
@@ -623,11 +661,11 @@ const ArtistAnalysis = (props) => {
     const [showing, setShowing] = useState("albums");
 
     const switchShowing = () => {
-        if(showing === "albums"){
+        if (showing === "albums") {
             setShowing("following");
-        }else if(showing === "following"){
+        } else if (showing === "following") {
             setShowing("albums");
-        }else {
+        } else {
             console.warn("ArtistAnalysis 'showing' is invalid: ", showing);
         }
     }
@@ -635,10 +673,20 @@ const ArtistAnalysis = (props) => {
     useEffect(() => {
         const tracks = playlists.map(e => e.tracks).flat(1);
         getAlbumsWithTracks(artist.artist_id, tracks).then(
-            result => {setArtistsAlbumsWithLikedSongs(result); if(result.length === 0 && isOwnPage){setShowing("following")}}
+            result => {
+                setArtistsAlbumsWithLikedSongs(result);
+                if (result.length === 0 && isOwnPage) {
+                    setShowing("following")
+                }
+            }
         );
         followingContentsSearch(user_id, artist, "artists", term).then(
-            result => {setFollowingWithArtist(result); if(result.length === 0){setShowing("albums")}}
+            result => {
+                setFollowingWithArtist(result);
+                if (result.length === 0) {
+                    setShowing("albums")
+                }
+            }
         )
     }, [])
 
@@ -654,22 +702,22 @@ const ArtistAnalysis = (props) => {
                         <p style={{margin: '-5px 0 5px 0'}}>of {getLIName(artist)}</p>
                         {
                             orderedAlbums.length > 0 ?
-                            <>
+                                <>
 
-                                {
-                                    orderedAlbums.map(function (album) {
-                                        return <StatBlock key={album.id}
-                                                          name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
-                                                          description={`${album.saved_songs.length} saved songs.`}
-                                                          value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
-                                                          alignment={'left'}/>
-                                    })
-                                }
-                            </>
+                                    {
+                                        orderedAlbums.map(function (album) {
+                                            return <StatBlock key={album.id}
+                                                              name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
+                                                              description={`${album.saved_songs.length} saved songs.`}
+                                                              value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
+                                                              alignment={'left'}/>
+                                        })
+                                    }
+                                </>
 
-                            :
-                            <p style={{fontWeight: 'bold'}}>There are no saved songs from this
-                                artist on in any public playlists, so an analysis is not available.</p>
+                                :
+                                <p style={{fontWeight: 'bold'}}>There are no saved songs from this
+                                    artist on in any public playlists, so an analysis is not available.</p>
                         }
                     </>
 
@@ -685,15 +733,16 @@ const ArtistAnalysis = (props) => {
                                 <>
                                     <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
                                         {
-                                            followingWithArtist.slice(0,3).map(function (f) {
+                                            followingWithArtist.slice(0, 3).map(function (f) {
                                                 return (
-                                                    <a key={f.user_id} href={`/profile#${f.user_id}`} className={'heavy-link'}>
+                                                    <a key={f.user_id} href={`/profile#${f.user_id}`}
+                                                       className={'heavy-link'}>
                                                         <div className={'listed-user'}>
-                                                            <img src={f.profile_picture} />
+                                                            <img src={f.profile_picture}/>
                                                             <p>{f.username}</p>
                                                         </div>
                                                     </a>
-                                                    )
+                                                )
                                             })
                                         }
                                     </div>
@@ -704,15 +753,16 @@ const ArtistAnalysis = (props) => {
                         }
                     </>
             }
-            {followingWithArtist !== null && artistsAlbumsWithLikedSongs !== null && isOwnPage &&
-                <button className={'subtle-button'} style={{marginTop: 'auto'}} onClick={switchShowing}>Show {showing === "albums" ? 'following' : 'analysis'}</button>
+            {followingWithArtist !== null && artistsAlbumsWithLikedSongs !== null && isOwnPage && (showing === "following" ? artistsAlbumsWithLikedSongs.length > 0 : followingWithArtist.length > 0) &&
+                <button className={'subtle-button'} style={{marginTop: 'auto'}}
+                        onClick={switchShowing}>Show {showing === "albums" ? 'following' : 'analysis'}</button>
             }
         </div>
     )
 }
 
 const SongAnalysis = (props) => {
-    const song = props.song;
+    const {song, averageAnalytics} = props;
     const includedKeys = ['acousticness', 'energy', 'danceability', 'valence']
     if (song.hasOwnProperty("song_id")) {
         const analytics = song.analytics;
@@ -726,7 +776,8 @@ const SongAnalysis = (props) => {
                             if (includedKeys.findIndex(e => e === key) !== -1) {
                                 return <StatBlock key={key} name={translateAnalytics[key].name}
                                                   description={translateAnalytics[key].description}
-                                                  value={analytics[key] * 100} alignment={'left'}/>
+                                                  value={analytics[key] * 100} alignment={'left'}
+                                                  shadow={averageAnalytics[key] * 100}/>
                             }
                         })
                     }
@@ -801,7 +852,7 @@ const PlaylistItem = function (props) {
     const [playlistMetadata, setPlaylistMetadata] = useState(null);
 
     useEffect(() => {
-        if(playlist){
+        if (playlist) {
             retrievePlaylistMetadata(playlist.playlist_id).then(res => setPlaylistMetadata(res));
         }
     }, [playlist])
@@ -833,8 +884,12 @@ const PlaylistItem = function (props) {
                     margin: '0 0 5px 0',
                     borderBottom: '1px solid var(--secondary-colour)',
                 }}>{playlist.description}</p>
-                <p style={{margin: '0', opacity: '0.5'}}>{playlist.tracks.length} songs {playlistMetadata && `· ${Object.keys(playlistMetadata.meta).length} annotation${Object.keys(playlistMetadata.meta).length !== 1 ? 's' : ''}`}</p>
-                <a href={`/playlist#${playlist.playlist_id}`} className={'subtle-button'} style={{marginTop: 'auto', marginLeft: 'auto'}}>Explore</a>
+                <p style={{
+                    margin: '0',
+                    opacity: '0.5'
+                }}>{playlist.tracks.length} songs {playlistMetadata && `· ${Object.keys(playlistMetadata.meta).length} annotation${Object.keys(playlistMetadata.meta).length !== 1 ? 's' : ''}`}</p>
+                <a href={`/playlist#${playlist.playlist_id}`} className={'subtle-button'}
+                   style={{marginTop: 'auto', marginLeft: 'auto'}}>Explore</a>
             </div>
         </div>
     )
@@ -848,8 +903,12 @@ function TermSelection(props) {
             <p style={{marginTop: 0}}>Select the range of time to view information for.</p>
             <div className={'terms-container'}>
                 {terms.map((t, i) => {
-                    if(t !== null){
-                        return <button key={t} className={'std-button'} style={termIndex === i ? {background: 'var(--primary-colour)', color: 'var(--bg-colour)', flexGrow: '5'} : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
+                    if (t !== null) {
+                        return <button key={t} className={'std-button'} style={termIndex === i ? {
+                            background: 'var(--primary-colour)',
+                            color: 'var(--bg-colour)',
+                            flexGrow: '5'
+                        } : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
                             {translateTerm[t]}
                         </button>
                     }
@@ -860,8 +919,8 @@ function TermSelection(props) {
     );
 }
 
-function UserContainer(props){
-    const {windowWidth, user, followers, isLoggedUserFollowing , loggedUserID, isOwnPage, longTermDP} = props;
+function UserContainer(props) {
+    const {windowWidth, user, followers, isLoggedUserFollowing, loggedUserID, isOwnPage, longTermDP} = props;
 
     const ShareProfileButton = (props) => {
         const {simple = false} = props;
@@ -877,9 +936,9 @@ function UserContainer(props){
                 url: link
             }
             try {
-                if(navigator.canShare(content)){
+                if (navigator.canShare(content)) {
                     navigator.share(content).then(() => setCopied(true));
-                }else{
+                } else {
                     navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
                 }
             } catch (error) {
@@ -896,8 +955,10 @@ function UserContainer(props){
         return (
             <>
                 {simple === true ?
-                    <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)', cursor: 'pointer'}} onClick={handleShare}>
-                        <IosShareIcon fontSize={'small'} />
+                    <button
+                        style={{border: 'none', background: 'none', color: 'var(--primary-colour)', cursor: 'pointer'}}
+                        onClick={handleShare}>
+                        <IosShareIcon fontSize={'small'}/>
                     </button>
                     :
                     <button className={'std-button'} onClick={handleShare}>
@@ -917,10 +978,10 @@ function UserContainer(props){
     const [followerNumber, setFollowerNumber] = useState(followers.length);
 
     const handleFollowClick = () => {
-        if(!isFollowing){
+        if (!isFollowing) {
             setIsFollowing(true);
             const n = followerNumber;
-            setFollowerNumber(n+1);
+            setFollowerNumber(n + 1);
             followUser(loggedUserID, user.user_id).then(() => {
                 console.info('User followed!');
             }).catch((err) => {
@@ -928,10 +989,10 @@ function UserContainer(props){
                 setIsFollowing(false);
                 setFollowerNumber(n);
             })
-        }else{
+        } else {
             setIsFollowing(false);
             const n = followerNumber;
-            setFollowerNumber(n-1);
+            setFollowerNumber(n - 1);
             unfollowUser(loggedUserID, user.user_id).then(() => {
                 console.info('User unfollowed!');
             }).catch((err) => {
@@ -956,34 +1017,48 @@ function UserContainer(props){
             <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px', gap: '15px'}}>
                 {user.profile_picture && (
                     <div className={'profile-picture'}>
-                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture} style= {{height: '100%', width: '100%', objectFit: 'cover'}} />
+                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture}
+                             style={{height: '100%', width: '100%', objectFit: 'cover'}}/>
                     </div>
                 )}
                 <div className={'user-details'}>
                     <p style={{margin: '0'}}>Profile for</p>
                     <h2 style={{margin: '-5px 0 0 0', fontSize: '30px', wordBreak: 'keep-all'}}>
                         {user.username}
-                        <ShareProfileButton simple />
+                        <ShareProfileButton simple/>
                     </h2>
                     <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center'}}>
-                        <a href={`/followers#${user.user_id}`} style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}</a>
+                        <a href={`/followers#${user.user_id}`}
+                           style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span
+                            style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}
+                        </a>
                         {isLoggedIn() && !isOwnPage && (
-                            <button style={{border: 'none', background: 'none', alignItems: 'center', height: '20px', width: '20px', margin: '0', padding: '0', color: 'var(--primary-colour)', cursor: 'pointer'}}
+                            <button style={{
+                                border: 'none',
+                                background: 'none',
+                                alignItems: 'center',
+                                height: '20px',
+                                width: '20px',
+                                margin: '0',
+                                padding: '0',
+                                color: 'var(--primary-colour)',
+                                cursor: 'pointer'
+                            }}
                                     onClick={handleFollowClick}>
                                 {isFollowing ?
-                                    <CheckCircleOutlineIcon fontSize={'small'} />
+                                    <CheckCircleOutlineIcon fontSize={'small'}/>
                                     :
-                                    <AddCircleOutlineIcon fontSize={'small'} />
+                                    <AddCircleOutlineIcon fontSize={'small'}/>
                                 }
                             </button>
                         )}
                     </div>
                 </div>
                 <div className={'user-links'}>
-                    <SpotifyLink simple link={`https://open.spotify.com/user/${user.user_id}`} />
+                    <SpotifyLink simple link={`https://open.spotify.com/user/${user.user_id}`}/>
                     <div style={{marginTop: 'auto'}}>
                         {windowWidth < 700 && !isOwnPage && isLoggedIn() &&
-                            <ComparisonLink simple pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                            <ComparisonLink simple pageUser={user} loggedUserID={loggedUserID} longTermDP={longTermDP}/>
                         }
                     </div>
                 </div>
@@ -994,7 +1069,17 @@ function UserContainer(props){
 
 
 function TopContainer(props) {
-    const {pageUser, followers, isLoggedUserFollowing, isOwnPage, loggedUserID, longTermDP, terms, setTermIndex, termIndex} = props;
+    const {
+        pageUser,
+        followers,
+        isLoggedUserFollowing,
+        isOwnPage,
+        loggedUserID,
+        longTermDP,
+        terms,
+        setTermIndex,
+        termIndex
+    } = props;
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -1002,11 +1087,21 @@ function TopContainer(props) {
 
     return (
         <div>
-            <UserContainer windowWidth={windowWidth} user={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={longTermDP} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
-            <div style={{display: 'flex', flexDirection: 'row', marginTop: '25px', width: '100%', alignItems: 'left', gap: '15px'}}>
-                <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex} />
+            <UserContainer windowWidth={windowWidth} user={pageUser} followers={followers}
+                           isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage}
+                           loggedUserID={loggedUserID} longTermDP={longTermDP} terms={terms} setTermIndex={setTermIndex}
+                           termIndex={termIndex}/>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                marginTop: '25px',
+                width: '100%',
+                alignItems: 'left',
+                gap: '15px'
+            }}>
+                <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex}/>
                 {!isOwnPage && isLoggedIn() && windowWidth > 700 &&
-                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID} longTermDP={longTermDP} />
+                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID} longTermDP={longTermDP}/>
                 }
             </div>
         </div>
@@ -1026,17 +1121,23 @@ function PlaylistItemList(props) {
             gap: '10px',
             width: '100%'
         }}>
-            {playlists.slice(0,listLength).map(p => {
+            {playlists.slice(0, listLength).map(p => {
                 return (
                     <PlaylistItem key={p.playlist_id} playlist={p}/>
                 )
             })}
             {playlists.length > listLength ?
-                <button onClick={() => {setListLength(playlists.length)}} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}} className={'std-button'}>See more</button>
+                <button onClick={() => {
+                    setListLength(playlists.length)
+                }} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}}
+                        className={'std-button'}>See more</button>
                 :
                 (
                     playlists.length > 5 ?
-                        <button onClick={() => {setListLength(5)}} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}} className={'std-button'}>See less</button>
+                        <button onClick={() => {
+                            setListLength(5)
+                        }} style={{width: '100%', border: '1px solid var(--secondary-colour)', padding: '10px'}}
+                                className={'std-button'}>See less</button>
                         :
                         <></>
                 )
@@ -1192,10 +1293,10 @@ const Profile = () => {
                     console.error("Error loading page:", error);
                     // Handle errors appropriately
                 });
-            if(pageHash === "me"){
+            if (pageHash === "me") {
                 // Create onHydration to update page
                 // when hydration is fully complete
-                onHydration(loadID,() => {
+                onHydration(loadID, () => {
                     retrievePrevAllDatapoints(loadID, 1).then(function (datapoints) {
                         setAllPreviousDatapoints(datapoints);
                         setSelectedPrevDatapoint(datapoints[2]);
@@ -1228,7 +1329,10 @@ const Profile = () => {
                     <LoadingIndicator/>
                 :
                 <div className='wrapper'>
-                    <TopContainer pageUser={pageUser} followers={followers} isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage} loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms} setTermIndex={setTermIndex} termIndex={termIndex} />
+                    <TopContainer pageUser={pageUser} followers={followers}
+                                  isLoggedUserFollowing={isLoggedUserFollowing} isOwnPage={isOwnPage}
+                                  loggedUserID={loggedUserID} longTermDP={allDatapoints[2]} terms={terms}
+                                  setTermIndex={setTermIndex} termIndex={termIndex}/>
                     <div className={'simple-wrapper'}>
                         {simpleDatapoints.map(function (type) {
                             let description = '';
@@ -1265,7 +1369,8 @@ const Profile = () => {
                                     <ShowcaseList allDatapoints={allDatapoints} selectedDatapoint={selectedDatapoint}
                                                   selectedPrevDatapoint={selectedPrevDatapoint} pageUser={pageUser}
                                                   playlists={playlists} possessive={possessive}
-                                                  datapoint={selectedDatapoint} type={type} start={0} end={9} term={terms[termIndex]} isOwnPage={isOwnPage}/>
+                                                  datapoint={selectedDatapoint} type={type} start={0} end={9}
+                                                  term={terms[termIndex]} isOwnPage={isOwnPage}/>
                                     <div className={'section-footer'}>
                                         {type === 'songs' ?
                                             <div style={{textAlign: 'left'}}>
@@ -1331,12 +1436,14 @@ const Profile = () => {
                                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Playlists</h2>
                                     {isLoggedIn() ?
                                         <>
-                                            <p>A look at {possessive} public playlists, sorted by their number of songs.</p>
+                                            <p>A look at {possessive} public playlists, sorted by their number of
+                                                songs.</p>
                                         </>
                                         :
                                         <>
                                             <p>Viewing someone's playlists requires being logged in.</p>
-                                            <button className={'std-button'} onClick={handleAlternateLogin}>Log-in</button>
+                                            <button className={'std-button'} onClick={handleAlternateLogin}>Log-in
+                                            </button>
                                         </>
                                     }
                                 </div>
@@ -1362,7 +1469,7 @@ const Profile = () => {
                                             there aren't any public playlists.</p>
                                     </div>
                                     :
-                                    <PlaylistItemList playlists={playlists} />
+                                    <PlaylistItemList playlists={playlists}/>
                             }
                         </div>
                         <div className={'simple-instance'}>

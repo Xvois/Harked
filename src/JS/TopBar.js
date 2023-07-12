@@ -15,39 +15,46 @@ import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 const RedirectElement = (props) => {
     const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
     const link = (
-        <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href} >
+        <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href}>
             {icon}
             <p>{title}</p>
         </a>
-        );
+    );
     const button = (
-        <button onClick={callback} className={'redirect-element'} style={!concise ? {flexDirection: 'row', justifyContent: 'left', gap: '10px', flexGrow: '1', border: '1px solid var(--secondary-colour)', padding: '16.5px 14px'} : {}} href={href} >
+        <button onClick={callback} className={'redirect-element'} style={!concise ? {
+            flexDirection: 'row',
+            justifyContent: 'left',
+            gap: '10px',
+            flexGrow: '1',
+            border: '1px solid var(--secondary-colour)',
+            padding: '16.5px 14px'
+        } : {}} href={href}>
             {icon}
             <p>{title}</p>
         </button>
-        );
+    );
     const element = callback !== null ? button : link;
     return (
-            requiresLogIn ?
-                (
-                    isLoggedIn() ?
-                        element
-                        :
-                        <></>
-                )
-                :
-                (
-                    requiresLogOut ?
-                        (
-                            !isLoggedIn() ?
-                                element
-                                :
-                                <></>
-                        )
-                        :
-                        element
-                )
-        )
+        requiresLogIn ?
+            (
+                isLoggedIn() ?
+                    element
+                    :
+                    <></>
+            )
+            :
+            (
+                requiresLogOut ?
+                    (
+                        !isLoggedIn() ?
+                            element
+                            :
+                            <></>
+                    )
+                    :
+                    element
+            )
+    )
 }
 
 const TopBar = () => {
@@ -61,10 +68,10 @@ const TopBar = () => {
     const OpenMenuStyle = {...ShowBarStyle, height: '100vh', background: 'var(--bg-colour)'}
 
     useEffect(() => {
-        if(!window.pageYOffset){
+        if (!window.pageYOffset) {
             setShowBorder(true);
-        }else{
-            if(showBar){
+        } else {
+            if (showBar) {
                 setShowBorder(false);
             }
         }
@@ -72,36 +79,41 @@ const TopBar = () => {
 
     const redirects =
         [
-            {title: 'Profile', href: '/profile#me', icon: <PersonIcon fontSize={'medium'} />, requiresLogIn: true},
-            {title: 'Feed', href: '/feed', icon: <DynamicFeedIcon fontSize={'medium'} />, requiresLogIn: true},
-            {title: 'Settings', href: '/settings', icon: <Settings fontSize={'medium'} />, requiresLogIn: true},
-            {title: 'Login', callback: handleAlternateLogin, icon: <LoginIcon fontSize={'medium'} />, requiresLogOut: true}
+            {title: 'Profile', href: '/profile#me', icon: <PersonIcon fontSize={'medium'}/>, requiresLogIn: true},
+            {title: 'Feed', href: '/feed', icon: <DynamicFeedIcon fontSize={'medium'}/>, requiresLogIn: true},
+            {title: 'Settings', href: '/settings', icon: <Settings fontSize={'medium'}/>, requiresLogIn: true},
+            {
+                title: 'Login',
+                callback: handleAlternateLogin,
+                icon: <LoginIcon fontSize={'medium'}/>,
+                requiresLogOut: true
+            }
         ]
 
     const updateSize = () => {
         setWindowWidth(window.innerWidth);
-        if(window.innerWidth > 700 && isMenuOpen){
+        if (window.innerWidth > 700 && isMenuOpen) {
             setIsMenuOpen(false);
         }
     }
     window.addEventListener("resize", updateSize);
 
-    window.onscroll = function(e) {
+    window.onscroll = function (e) {
         // Show the bar if scrolling up or if at the top of the page
-        if(this.oldScroll > this.scrollY && document.body.scrollHeight > window.innerHeight){
-            if(!showBar){
+        if (this.oldScroll > this.scrollY && document.body.scrollHeight > window.innerHeight) {
+            if (!showBar) {
                 setShowBar(true);
             }
-        }else{
-            if(showBar && window.pageYOffset >= 77){
+        } else {
+            if (showBar && window.pageYOffset >= 77) {
                 setShowBar(false);
             }
         }
 
-        if(window.pageYOffset <= 77 && !isMenuOpen){
+        if (window.pageYOffset <= 77 && !isMenuOpen) {
             setShowBorder(true);
-        }else{
-            if(showBar){
+        } else {
+            if (showBar) {
                 setShowBorder(false);
             }
         }
@@ -121,24 +133,37 @@ const TopBar = () => {
                     {(windowWidth > 700) ?
                         <div className={'element-container'}>
                             <a id='logo' href={'/'}>
-                                <BlurOn fontSize={'large'} />
-                                <h1 style={{margin : '0'}}>Harked</h1>
+                                <BlurOn fontSize={'large'}/>
+                                <h1 style={{margin: '0'}}>Harked</h1>
                             </a>
                             {
                                 redirects.map(e => {
-                                    return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut} key={e.title} concise title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                    return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut}
+                                                            key={e.title} concise title={e.title} href={e.href}
+                                                            icon={e.icon} requiresLogIn={e.requiresLogIn}/>
                                 })
                             }
-                            <Search showSearchResults />
+                            <Search showSearchResults/>
                         </div>
                         :
-                        <div style={{alignItems: 'center', display: 'flex', flexDirection: 'row', width: '100%', height: '100%', justifyContent: 'space-between'}}>
+                        <div style={{
+                            alignItems: 'center',
+                            display: 'flex',
+                            flexDirection: 'row',
+                            width: '100%',
+                            height: '100%',
+                            justifyContent: 'space-between'
+                        }}>
                             <a id='logo' href={'/'}>
-                                <BlurOn fontSize={'large'} />
+                                <BlurOn fontSize={'large'}/>
                             </a>
-                            <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)'}} onClick={() => {const state = isMenuOpen; setIsMenuOpen(!state)}}>
-                                {!isMenuOpen && <MenuIcon fontSize={'medium'} />}
-                                {isMenuOpen && <CloseIcon fontSize={'medium'} />}
+                            <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)'}}
+                                    onClick={() => {
+                                        const state = isMenuOpen;
+                                        setIsMenuOpen(!state)
+                                    }}>
+                                {!isMenuOpen && <MenuIcon fontSize={'medium'}/>}
+                                {isMenuOpen && <CloseIcon fontSize={'medium'}/>}
                             </button>
                         </div>
 
@@ -149,10 +174,12 @@ const TopBar = () => {
                         <h2>Menu</h2>
                         {
                             redirects.map(e => {
-                                return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut} key={e.title} title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
+                                return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut}
+                                                        key={e.title} title={e.title} href={e.href} icon={e.icon}
+                                                        requiresLogIn={e.requiresLogIn}/>
                             })
                         }
-                        <Search width={'100%'} showSearchResults />
+                        <Search width={'100%'} showSearchResults/>
                     </div>
                 )}
             </div>

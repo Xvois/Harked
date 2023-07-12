@@ -46,6 +46,7 @@ export const handleAlternateLogin = async () => {
     });
     window.location = 'https://accounts.spotify.com/authorize?' + args;
 }
+
 export function reAuthenticate() {
     const url = new URL(window.location);
     const params = new URLSearchParams([
@@ -75,51 +76,50 @@ function Authentication() {
             const id = pb.authStore.model.id;
             const user = authData.meta.rawUser;
             window.localStorage.setItem('access-token', authData.meta.accessToken);
-            formatUser(user).then(function (fUser) {
-                // TODO: TEMP FIX
-                fUser.username = fUser.username.replace(' ', '-');
-                userExists(fUser.user_id).then(exists => {
-                    if (!exists) {
-                        pb.collection('users').update(id, fUser)
-                            .then(async () => {
-                                const hash = hashString(fUser.user_id);
-                                const followers = {id: hash, user: id, followers: []}
-                                const following = {id: hash, user: id, following: []}
-                                const settings = {id: hash, user: id, public: true}
-                                const profile_data = {id: hash, user: id}
-                                const profile_comments = {id: hash, owner: id, comments: []}
-                                const profile_recommendations = {id: hash, user: id, recommendations: []}
-                                await Promise.all(
-                                    [
-                                        putLocalData("user_followers", followers),
-                                        putLocalData("user_following", following),
-                                        putLocalData("settings", settings),
-                                        putLocalData("profile_data", profile_data),
-                                        // Automatically generate a comment section for the profile
-                                        putLocalData("comment_section", profile_comments),
-                                        putLocalData("profile_recommendations", profile_recommendations),
-                                    ]
-                                )
-                                redirect('/profile#me');
-                            }).catch((err) => {
-                            console.error('Error patching user: ', err);
-                            console.info('User: ', fUser);
-                            pb.collection('users').delete(id).then(() => {
-                                console.info('User successfully removed as a result.')
-                            }).catch((deletionError) => {
-                                console.error('Error subsequently deleting user: ', deletionError);
-                            });
-                        });
-                    } else {
-                        const redirectPath = window.localStorage.getItem("redirect");
-                        if (redirectPath) {
-                            window.localStorage.removeItem("redirect");
-                            redirect(redirectPath);
-                        } else {
+            let fUser = formatUser(user);
+            // TODO: TEMP FIX
+            fUser.username = fUser.username.replace(' ', '-');
+            userExists(fUser.user_id).then(exists => {
+                if (!exists) {
+                    pb.collection('users').update(id, fUser)
+                        .then(async () => {
+                            const hash = hashString(fUser.user_id);
+                            const followers = {id: hash, user: id, followers: []}
+                            const following = {id: hash, user: id, following: []}
+                            const settings = {id: hash, user: id, public: true}
+                            const profile_data = {id: hash, user: id}
+                            const profile_comments = {id: hash, owner: id, comments: []}
+                            const profile_recommendations = {id: hash, user: id, recommendations: []}
+                            await Promise.all(
+                                [
+                                    putLocalData("user_followers", followers),
+                                    putLocalData("user_following", following),
+                                    putLocalData("settings", settings),
+                                    putLocalData("profile_data", profile_data),
+                                    // Automatically generate a comment section for the profile
+                                    putLocalData("comment_section", profile_comments),
+                                    putLocalData("profile_recommendations", profile_recommendations),
+                                ]
+                            )
                             redirect('/profile#me');
-                        }
+                        }).catch((err) => {
+                        console.error('Error patching user: ', err);
+                        console.info('User: ', fUser);
+                        pb.collection('users').delete(id).then(() => {
+                            console.info('User successfully removed as a result.')
+                        }).catch((deletionError) => {
+                            console.error('Error subsequently deleting user: ', deletionError);
+                        });
+                    });
+                } else {
+                    const redirectPath = window.localStorage.getItem("redirect");
+                    if (redirectPath) {
+                        window.localStorage.removeItem("redirect");
+                        redirect(redirectPath);
+                    } else {
+                        redirect('/profile#me');
                     }
-                })
+                }
             })
         })
     }
@@ -160,7 +160,7 @@ function Authentication() {
         // Authenticate with pb
         const pb = new PocketBase("https://harked.fly.dev/");
         // Are we authed already?
-        if(!pb.authStore.isValid){
+        if (!pb.authStore.isValid) {
             console.warn('pb authStore is not valid')
             pb.collection('users').authWithOAuth2Code(
                 provider.name,
@@ -223,7 +223,7 @@ function Authentication() {
                 console.log("Failed to exchange code.\n" + err);
             });
         } else {
-            if(window.location.hash){
+            if (window.location.hash) {
                 CATCH_SPOTIFY_TOKEN()
             }
         }
@@ -232,7 +232,9 @@ function Authentication() {
     return (
         <div>
             <h2>Redirecting...</h2>
-            <p>Stuck on this page? <a style={{color: 'var(--primary-colour)'}} href={window.localStorage.getItem("redirect") ?? '/profile#me'}>Click here to redirect.</a></p>
+            <p>Stuck on this page? <a style={{color: 'var(--primary-colour)'}}
+                                      href={window.localStorage.getItem("redirect") ?? '/profile#me'}>Click here to
+                redirect.</a></p>
         </div>
     )
 }

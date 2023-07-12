@@ -5,7 +5,7 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {handleCacheReset, isLoggedIn} from './HDM.ts';
+import {isLoggedIn} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -15,15 +15,12 @@ function Homepage() {
     const [token, setToken] = useState("")
     const navigate = useNavigate();
     useEffect(() => {
-        // TEMP FOR CR TESTING TODO: REMOVE
-        handleCacheReset();
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
     }, [token])
 
 
     const handleLogOut = () => {
-        handleCacheReset();
         window.localStorage.clear();
         setToken("");
     }
@@ -58,7 +55,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    v1.3.12<span style={{color: 'var(--secondary-colour)'}}></span></p>
+                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.0</span></p>
             </div>
         </div>
     );

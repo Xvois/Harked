@@ -51,7 +51,8 @@ const FollowersComponent = () => {
         <div style={{display: 'flex', flexDirection: 'column'}}>
             <div style={{borderBottom: '1px solid var(--secondary-colour)', marginBottom: '15px'}}>
                 <h2 style={{fontSize: '1.5em', marginBottom: '0px'}}>
-                    Followers for <a style={{textDecoration: 'none', color: 'var(--primary-colour)'}} href={targetUser ? `/profile#${targetUser.user_id}` : ''}>{targetUser ? targetUser.username : 'Loading...'}</a>
+                    Followers for <a style={{textDecoration: 'none', color: 'var(--primary-colour)'}}
+                                     href={targetUser ? `/profile#${targetUser.user_id}` : ''}>{targetUser ? targetUser.username : 'Loading...'}</a>
                 </h2>
                 <p style={{color: 'var(--secondary-colour)', fontSize: '1.2em', marginBottom: '0', marginTop: '0'}}>
                     {followers.length} follower{followers.length !== 1 ? 's' : ''}
