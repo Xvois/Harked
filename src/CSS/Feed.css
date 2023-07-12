@@ -46,12 +46,6 @@
     margin: 0;
 }
 
-.feed-object-desc > a {
-    color: var(--primary-colour);
-    font-weight: bold;
-    text-decoration: none;
-}
-
 .placeholder {
     width: 100%;
     height: 156px;

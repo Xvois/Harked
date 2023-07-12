@@ -126,6 +126,7 @@
     align-content: center;
     align-items: center;
     align-self: center;
+    max-width: 70%;
     border-left: 1px solid var(--accent-colour);
 }
 
@@ -150,12 +151,28 @@
     min-width: 300px;
     background: var(--bg-colour);
     color: var(--primary-colour);
+    background: rgba(200, 200, 200, 0.5);
+    backdrop-filter: blur(30px) brightness(200%);
     border: 1px solid var(--secondary-colour);
 }
 
 #annotation-modal::backdrop {
     background: rgba(0, 0, 0, 0.5);
 }
+
+@media (prefers-color-scheme: dark) {
+    #annotation-modal {
+        background: rgba(50, 50, 50, 0.5);
+    }
+}
+
+#annotation-modal-button-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
 
 .playlist-analysis {
     margin-top: auto;

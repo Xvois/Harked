@@ -128,7 +128,7 @@ interface ProfileRecommendations extends Record {
 }
 
 interface Datapoint extends Record {
-    owner: User,
+    owner: User | string,
     top_songs: Array<Song> | Array<string>,
     top_artists: Array<Artist> | Array<string>,
     top_genres: Array<Genre> | Array<string>
@@ -399,9 +399,10 @@ export const submitRecommendation = async function (user_id: string, item: Song 
             await updateLocalData("profile_recommendations", newRecs_al, currRecommendations.id);
             break;
     }
+    createEvent(1, user_id, item, type);
 }
 
-export const modifyRecommendation = async (existingRecommendation, type, newDescription) => {
+export const modifyRecommendation = async (user_id : string, existingRecommendation : Recommendation, type : "songs" | "artists" | "albums", newDescription : string) => {
     // We need to unresolve the item to its id and type
     let unresolvedExistingRec = structuredClone(existingRecommendation);
     let item = existingRecommendation.item;
@@ -416,7 +417,9 @@ export const modifyRecommendation = async (existingRecommendation, type, newDesc
         ...unresolvedExistingRec,
         description: newDescription
     };
-    await updateLocalData("recommendations", newRecommendation, existingRecommendation.id);
+    await updateLocalData("recommendations", newRecommendation, existingRecommendation.id).then(() => {
+        createEvent(53, user_id, existingRecommendation.item, type);
+    });
 }
 
 /**
@@ -521,7 +524,7 @@ export const retrieveEventsForUser = async function (user_id : string, page : nu
                 e.item = await getLocalDataByID("users", e.item.id);
                 break;
             case "playlists":
-                e.item = await retrievePlaylist(e.item.id);
+                e.item = await retrievePlaylist(e.item.id, false);
                 break;
             default:
                 throw new Error(`Unknown type of item in event ${e.id}`);
@@ -729,31 +732,34 @@ export const retrievePlaylists = async function (user_id: string) {
 /**
  *
  * @param playlist_id
+ * @param retrieveTracks
  * @returns Playlist
  */
-export const retrievePlaylist = async function (playlist_id: string){
+export const retrievePlaylist = async function (playlist_id: string, retrieveTracks: boolean = true){
     let playlist = await fetchData(`playlists/${playlist_id}`);
 
-    const totalTracks = playlist.tracks.total;
-    const numCalls = Math.ceil(totalTracks / 50);
-    const promises: Array<Array<Song>> = [];
+    if(retrieveTracks){
+        const totalTracks = playlist.tracks.total;
+        const numCalls = Math.ceil(totalTracks / 50);
+        const promises: Array<Array<Song>> = [];
 
-    // Max of 50 songs per call, so they must be batched
-    for (let i = 0; i < numCalls; i++) {
-        const offset = i * 50;
-        const promise: Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
-            .then(response => response.items.map(e => e.track))
-            .catch(error => {
-                console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
-                return [];
-            });
+        // Max of 50 songs per call, so they must be batched
+        for (let i = 0; i < numCalls; i++) {
+            const offset = i * 50;
+            const promise: Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+                .then(response => response.items.map(e => e.track))
+                .catch(error => {
+                    console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
+                    return [];
+                });
 
-        promises.push(promise);
+            promises.push(promise);
+        }
+
+        playlist.tracks = await Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null).map(t => formatSong(t)));
+        const analytics = await batchAnalytics(playlist.tracks);
+        playlist.tracks.map((t,i) => t.analytics = analytics[i]);
     }
-
-    playlist.tracks = await Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null).map(t => formatSong(t)));
-    const analytics = await batchAnalytics(playlist.tracks);
-    playlist.tracks.map((t,i) => t.analytics = analytics[i]);
 
     return formatPlaylist(playlist);
 }
@@ -819,7 +825,6 @@ export const deleteAnnotation = async function (playlist: Playlist, song_id: str
  * @returns User
  */
 export const formatUser = function (user) {
-    // Get our global user_id
     let pfp = null;
     if (user.images?.length > 0) {
         console.log(user);
@@ -832,17 +837,18 @@ export const formatUser = function (user) {
     }
 }
 /**
- * Returns all the users that have a matching item for a given term.
+ * Returns all the users that have a matching item in their most recent datapoints.
  */
-export const followingContentsSearch = async function (user_id: string, item: Artist | Song | string, type: 'artists' | 'songs' | 'genres', term: 'short_term' | 'medium_term' | 'long_term') {
-    const following = await retrieveFollowing(user_id);
+export const followingContentsSearch = async function (user_id: string, item: Artist | Song | string, type: 'artists' | 'songs' | 'genres') {
+    const following : Array<User> = await retrieveFollowing(user_id);
     const dpPromises = [];
     following.forEach((user: User) => {
-        dpPromises.push(getDatapoint(user.user_id, term));
+        dpPromises.push(retrieveAllDatapoints(user.user_id));
     })
-    const dps = await Promise.all(dpPromises);
+    let dps : Array<Datapoint> = await Promise.all(dpPromises);
+    dps = dps.flat().filter(d => d !== null);
     const ownerIDs = dps.filter(e => containsElement(item, e, type)).map(e => e.owner);
-    return following.filter(e => ownerIDs.some(id => id === e.id));
+    return following.filter(e => ownerIDs.some( (id : string) => id === e.id));
 }
 
 /**
@@ -880,7 +886,7 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
         console.warn(err);
     })
     if (currDatapoint === undefined && timeSensitive) {
-        console.warn('Deprecated behaviour: Hydration is triggered by retrieveDatapoint method.')
+        console.warn('Deprecated behaviour: Hydration is triggered by retrieveDatapoint method, not retrieveAllDatapoints.')
         await hydrateDatapoints().then(async () =>
             currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
                 console.warn("Error retrieving datapoint: ");
@@ -910,29 +916,23 @@ export const retrieveAllDatapoints = async function (user_id) {
     const terms = ['short_term', 'medium_term', 'long_term'];
     let datapoints = [];
 
-    if(isLoggedIn()){
-        const loggedUserID = await retrieveLoggedUserID();
-        if(user_id === loggedUserID) {
-            if(validExists) {
-                for (const term of terms) {
-                    const datapoint = await retrieveDatapoint(user_id, term);
-                    datapoints.push(datapoint);
-                }
-            }else {
-                datapoints = await hydrateDatapoints();
-            }
-        }else{
-            for (const term of terms) {
-                const datapoint = await retrieveDatapoint(user_id, term);
-                datapoints.push(datapoint);
-            }
+    if (isLoggedIn() && user_id === await retrieveLoggedUserID() && validExists) {
+        // Retrieve datapoints for each term
+        for (const term of terms) {
+            const datapoint = await retrieveDatapoint(user_id, term);
+            datapoints.push(datapoint);
         }
-    }else{
+    } else if (isLoggedIn() && user_id === await retrieveLoggedUserID() && !validExists) {
+        // Hydrate datapoints
+        datapoints = await hydrateDatapoints();
+    } else {
+        // Retrieve datapoints for each term
         for (const term of terms) {
             const datapoint = await retrieveDatapoint(user_id, term);
             datapoints.push(datapoint);
         }
     }
+
 
     await enableAutoCancel();
 
@@ -1385,7 +1385,7 @@ export const onHydration = async (user_id: string, callback : Function) => {
     const func = (e) => {
         if(e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id){
             console.info("Hydration event noted!");
-            callback()
+            callback();
             destroyOnHydration();
         }
     }

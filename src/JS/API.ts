@@ -427,8 +427,8 @@ export const getDatapoint = async (user_id, term, timeSens) => {
         })
 }
 
-export const subscribe = (collection: string, record: string = '*', callback: Function) => {
-    pb.collection(collection).subscribe(record, callback);
+export const subscribe = (collection: string, record: string = '*', sideEffect: Function) => {
+    pb.collection(collection).subscribe(record, sideEffect);
 }
 
 export const unsubscribe = (collection: string, record: string = '*') => {

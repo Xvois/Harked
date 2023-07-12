@@ -4,9 +4,9 @@ import {getItemType, getLIName} from "./Analysis";
 import "./../CSS/Feed.css"
 import {LoadingIndicator} from "./SharedComponents.tsx";
 
-function FeedObject(props : {event: UserEvent, index: number, maxEventsPerLoad: number}) {
+function FeedObject(props : {user_id: string, event: UserEvent, index: number, maxEventsPerLoad: number}) {
 
-    const {event, index, maxEventsPerLoad} = props;
+    const {user_id, event, index, maxEventsPerLoad} = props;
 
     const milliDiff = Date.now() - Date.parse(event.created);
     const time = milliToHighestOrder(milliDiff);
@@ -15,15 +15,16 @@ function FeedObject(props : {event: UserEvent, index: number, maxEventsPerLoad: 
         const itemType = getItemType(event.item);
         switch (event.ref_num){
             case 1:
-                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added the {itemType.slice(0, itemType.length-1)} <a href={event.item.link}>{getLIName(event.item)}</a> to their recommendations.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added the {itemType.slice(0, itemType.length-1)} <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> to their recommendations.</p>
             case 2:
-                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added annotations to <a href={`/playlist#${event.item.playlist_id}`}>{event.item.name}</a>.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has added annotations to <a className={'heavy-link'} href={`/playlist#${event.item.playlist_id}`}>{event.item.name}</a>.</p>
             case 51:
-                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has removed <a href={event.item.link}>{getLIName(event.item)}</a> from their recommendations.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has removed <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> from their recommendations.</p>
             case 52:
-                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> followed <a href={`/profile#${event.item.user_id}`}>{event.item.username}</a>.</p>
+                const targetPronoun = user_id === event.item.user_id ? 'you' : event.item.username;
+                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> followed <a className={'heavy-link'} href={`/profile#${event.item.user_id}`}>{targetPronoun}</a>.</p>
             case 53:
-                return <p className={'feed-object-desc'}><a href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has edited their recommendation for the {itemType.slice(0, itemType.length-1)} <a href={event.item.link}>{getLIName(event.item)}</a>.</p>
+                return <p className={'feed-object-desc'}><a className={'heavy-link'} href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has edited their recommendation for the {itemType.slice(0, itemType.length-1)} <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a>.</p>
         }
     }
 
@@ -125,7 +126,7 @@ const Feed = () => {
                         <>
                         {
                             events.map((e,i) => {
-                                return <FeedObject key={e.id} event={e} index={i} maxEventsPerLoad={maxEventsPerLoad} />
+                                return <FeedObject key={e.id} user_id={user_id} event={e} index={i} maxEventsPerLoad={maxEventsPerLoad} />
                             })
                         }
                         {hasMore ?

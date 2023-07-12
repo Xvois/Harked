@@ -15,7 +15,7 @@ import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 const RedirectElement = (props) => {
     const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
     const link = (
-        <a className={'redirect-element'} style={!concise ? {flexDirection: 'row', justifyContent: 'left', gap: '10px', flexGrow: '1', border: '1px solid var(--secondary-colour)', padding: '16.5px 14px'} : {}} href={href} >
+        <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href} >
             {icon}
             <p>{title}</p>
         </a>
@@ -146,12 +146,13 @@ const TopBar = () => {
                 </div>
                 {isMenuOpen && (
                     <div className={'expanded-menu-container'}>
-                        <Search width={'100%'} showSearchResults />
+                        <h2>Menu</h2>
                         {
                             redirects.map(e => {
                                 return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut} key={e.title} title={e.title} href={e.href} icon={e.icon} requiresLogIn={e.requiresLogIn} />
                             })
                         }
+                        <Search width={'100%'} showSearchResults />
                     </div>
                 )}
             </div>

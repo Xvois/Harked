@@ -51,6 +51,12 @@ code {
     monospace;
 }
 
+.heavy-link {
+    text-decoration: none;
+    color: var(--primary-colour);
+    font-weight: bold;
+}
+
 .std-button {
     align-content: center;
     height: max-content;

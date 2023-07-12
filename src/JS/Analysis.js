@@ -1,5 +1,6 @@
 // noinspection SpellCheckingInspection
 import React from "react";
+import {capitalize} from "@mui/material";
 
 
 /**
@@ -22,7 +23,7 @@ export const translateAnalyticsLow = {
     danceability: { name: 'subtle', description: 'Music with a subtle rhythm.' },
     energy: { name: 'calm', description: 'Relaxed and calm music.' },
     instrumentalness: { name: 'vocal', description: 'Music that contains vocals.' },
-    liveness: { name: 'studio', description: 'Music that is recorded in a studio.' },
+    liveness: { name: 'studio recorded', description: 'Music that is recorded in a studio.' },
     loudness: { name: 'soft', description: 'Gentle and quiet music.' },
     valence: { name: 'negative', description: 'Music that feels downbeat.' },
     tempo: { name: 'low tempo', description: 'Music that moves at a moderate pace.' }
@@ -154,7 +155,7 @@ export const getAverageAnalytics = function (songs) {
         valence: 0,
         tempo: 0
     }
-    const validSongs = songs.filter(s => s.analytics.length !== 0);
+    const validSongs = songs.filter(s => s.hasOwnProperty("analytics") && s.analytics !== null);
     for (const song of validSongs) {
         Object.keys(translateAnalytics).forEach(key => {
             avgAnalytics[key] += song.analytics[key] / validSongs.length;
@@ -184,43 +185,6 @@ export const getItemIndexChange = function (item, index, type, comparisonDP) {
     return lastIndex - index;
 }
 
-export const getAllArtistAssociations = function () {
-    // noinspection SpellCheckingInspection
-    const memo = new Map();
-    return function (datapoint) {
-        if (memo.has(datapoint)) {
-            return memo.get(datapoint);
-        }
-        const songs = datapoint.top_songs;
-        const artists = datapoint.top_artists;
-        const genres = datapoint.top_genres;
-        let result = {};
-        analyticsMetrics.forEach(metric => {
-            let max = {artist: '', value: 0};
-            for (let i = 0; i < songs.length; i++) {
-                if (songs[i].analytics[metric] > max.value) {
-                    max.artist = songs[i].artists[0].name;
-                    max.value = songs[i].analytics[metric];
-                }
-            }
-            result = {
-                ...result,
-                [max.artist]: {theme: metric}
-            }
-        })
-        artists.forEach(artist => {
-            if (!!artist.genres && genres.includes(artist.genres[0])) {
-                result[artist.name] = {
-                    ...result[artist.name],
-                    genre: artist.genres[0]
-                }
-            }
-        })
-        memo.set(datapoint, result);
-        return result;
-    }
-};
-
 function getMaxValueAttribute(attributes) {
     const ignoredAttributes = ["key", "mode", "speechiness", "duration_ms", "time_signature", "tempo"];
 
@@ -241,64 +205,165 @@ function getMaxValueAttribute(attributes) {
     return maxAttribute;
 }
 
+function getMostInterestingAnalytic(analytics) {
+    const ignoredAttributes = ["key", "mode", "duration_ms", "time_signature", "tempo", "loudness"];
+    let max = Number.MIN_SAFE_INTEGER;
+    let maxAnalytic;
+    let min = Number.MAX_SAFE_INTEGER;
+    let minAnalytic;
 
-export const getItemAnalysis = function (item, type, user, datapoint, term) {
-    const memoFunc = getAllArtistAssociations(datapoint);
-    const artistAssociations = memoFunc(datapoint); // Call the artistAssociations function with the datapoint
-    let topMessage = '';
-    let secondMessage = '';
+    for (const key in analytics) {
+        if (typeof analytics[key] === 'number' && !ignoredAttributes.includes(key)) {
+            let value = analytics[key];
+            if(value > max){
+                max = value;
+                maxAnalytic = key;
+            }
+            if(value < min){
+                // Having a vocal / studio recorded song is not interesting
+                if(key !== "instrumentalness" && key !== "liveness"){
+                    min = value;
+                    minAnalytic = key;
+                }
+            }
+        }
+    }
+    if(max === 0){
+        return null;
+    }
+    console.log(maxAnalytic, max, minAnalytic, min);
+    if(max >= (1-min) || max > 0.8){
+        return {analytic: maxAnalytic, type: "high"}
+    }else if (max <= (1-min) || min < 0.2){
+        return {analytic: minAnalytic, type: "low"}
+    } else {
+        return null;
+    }
+}
+
+export const getItemAnalysis = function (item, type, user, selectedDatapoint, allDatapoints, term) {
     const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'your' : `${user.username}'s`;
-    // noinspection SpellCheckingInspection
-    const analyticsMetrics = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'valence', `tempo`];
+    const pronoun = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'you' : `${user.username}`;
     switch (type) {
         case "artists":
-            if (artistAssociations[`${item.name}`] === undefined) {
-                // If the artist doesn't have a genre analysis then we assume
-                // that they are not wildly popular.
-                topMessage += `${item.name} is a rare to see artist. They make ${possessive} profile quite unique.`
-            } else {
-                Object.keys(artistAssociations[item.name]).length > 1 ?
-                    topMessage += `${item.name} represents ${possessive} love for ${artistAssociations[item.name]["genre"]} and ${translateAnalytics[artistAssociations[item.name]["theme"]].name === 'tempo' ? 'high' : ''} ${translateAnalytics[artistAssociations[item.name]["theme"]].name} music.`
-                    :
-                    topMessage += `${item.name} is the artist that defines ${possessive} love for ${artistAssociations[item.name][Object.keys(artistAssociations[item.name])[0]]} music.`
+            const name = getLIName(item);
+            // Short to long term
+            const indexes = allDatapoints.map(d => {
+                return d.top_artists.findIndex(a => a.artist_id === item.artist_id);
+            });
+            console.log(name, indexes);
+            const associatedSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === item.artist_id));
+            const associatedSong = selectedDatapoint.top_songs[associatedSongIndex];
+            const allSongs = selectedDatapoint.top_songs.filter(s => s.artists.some(a => a.artist_id === item.artist_id));
+            const avgAnalytics = getAverageAnalytics(allSongs);
+            const intAnalytic = getMostInterestingAnalytic(avgAnalytics);
+            const transIntAnalytic = intAnalytic !== null ? (intAnalytic.type === "high" ? translateAnalytics[intAnalytic.analytic].name : translateAnalyticsLow[intAnalytic.analytic].name) : null;
+
+            // Construct first part of the analysis.
+            let firstPart;
+            switch (term) {
+                case "long_term":
+                    // If they haven't listened to them at all in the last month
+                    if (indexes[0] === -1) {
+                        firstPart = `${name} is still one of ${possessive} most listened to artists, although ${pronoun} has been listening to them significantly less than usual recently.`;
+
+                    }
+                    // If they have listened to less of them in the last month
+                    else if (indexes[0] > indexes[2]) {
+                        firstPart = `${capitalize(pronoun)} ${pronoun === 'you' ? 'have' : 'has'} listened to ${name} less recently due to exploring new sounds and artists.`;
+                    }
+                    // If they have listened to the same or more of them in the last month
+                    else {
+                        firstPart = `${capitalize(pronoun)} ${pronoun === 'you' ? 'have' : 'has'} been enjoying ${name}'s music more than ever before. With time they will climb up your top artists of all time.`;
+                    }
+                    break;
+                case "medium_term":
+                    // If they haven't listened to them at all in the medium term
+                    if (indexes[1] === -1) {
+                        firstPart = `${name} remains an influential figure in ${pronoun}'s recent music preferences, despite limited listening in the past 6 months.`;
+                    }
+                    // If they have listened to less of them in the medium term
+                    else if (indexes[1] > indexes[2] && indexes[2] !== -1) {
+                        firstPart = `${capitalize(pronoun)} ${pronoun === 'you' ? 'have' : 'has'} listened to ${name} less than usual in the past 6 months, but it still holds a significant place in ${possessive} overall listening time.`;
+                    }
+                    // If they have listened to more of them in the medium term
+                    else if (indexes[1] < indexes[2] && indexes[2] !== -1) {
+                        firstPart = `${capitalize(pronoun)} ${pronoun === 'you' ? 'have' : 'has'} been increasingly captivated by ${name}'s music in the past 6 months.`;
+                    }
+                    // If all indexes are the same
+                    else if (indexes[0] === indexes[1] && indexes[1] === indexes[2]) {
+                        firstPart = `In the last 6 months, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} maintained a consistent listening pattern for ${name}'s music.`;
+                    }
+                    // If they have listened to more or less of them in the short term compared to the medium term
+                    else if (indexes[0] !== indexes[1]) {
+                        if (indexes[0] < indexes[1]) {
+                            firstPart = `In the last month, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} been listening to ${name} more frequently than in the previous 6 months.`;
+                        } else {
+                            firstPart = `In the last month, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} explored other music, resulting in less time spent on ${name}'s tracks compared to the previous 6 months.`;
+                        }
+                    }
+
+                    break;
+                case "short_term":
+                    // If this artist is totally new to them
+                    if (indexes[1] === -1 && indexes[0] === -1) {
+                        firstPart = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} discovered ${name}'s music.`;
+                    }
+                    // If they have listened to less of this artist in the last 4 weeks than usual
+                    else if ((indexes[1] < indexes[0] && indexes[2] < indexes[0]) || (indexes[1] < indexes[0] && indexes[2] === -1)) {
+                        firstPart = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} listened to ${name}'s music less frequently than before.`;
+                    }
+                    // If they have listened to more than usual in the last 6 months, and more than the last 6 months in the last 4 weeks
+                    else if ((indexes[1] > indexes[0] && indexes[2] > indexes[1]) || (indexes[1] > indexes[0] && indexes[2] === -1)) {
+                        firstPart = `In the past 6 months and especially in the last 4 weeks, ${pronoun} has been increasingly captivated by ${name}'s music.`;
+                    }
+                    // If they have listened to less than the last 6 months average
+                    else if (indexes[0] > indexes[1] && indexes[1] !== 1) {
+                        firstPart = `Compared to the previous 6 months, ${pronoun} has listened to ${name} less frequently in the last 4 weeks.`;
+                    }
+                    // If they have listened to more than the last 6 months average and they are not yet on the top artists list but they are on their way to be
+                    else if (indexes[1] > indexes[0] && indexes[2] === -1) {
+                        firstPart = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} been increasingly drawn to ${name}'s music.`;
+                    }
+                    // If both indexes[0] and indexes[2] are less than indexes[1]
+                    else if (indexes[0] < indexes[1] && indexes[2] < indexes[1]) {
+                        firstPart = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} experienced a renewed appreciation for ${name}'s music.`;
+                    }
+                    // If both indexes[0] and indexes[2] are greater than indexes[1]
+                    else if (indexes[0] > indexes[1] && indexes[2] > indexes[1]) {
+                        firstPart = `In the last 4 weeks, ${pronoun}'s listening to ${name} has decreased compared to the previous 6 months, but it remains higher than the all-time average.`;
+                    }
+                    // If all indexes are the same
+                    else if (indexes[0] === indexes[1] && indexes[1] === indexes[2]) {
+                        firstPart = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} maintained a consistent listening pattern for ${name}'s music.`;
+                    }
+                    // If indexes[0] and indexes[1] are equal but less than indexes[2]
+                    else if (indexes[0] === indexes[1] && indexes[0] < indexes[2]) {
+                        firstPart = `Over the last 4 weeks and 6 months ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} been listening to ${name} consistently more than usual.`;
+                    }
+                    break;
             }
-            // The index of the song in the user's top songs list made by this artist.
-            const songIndex = datapoint.top_songs.findIndex((element) => element.artists[0].name === item.name);
-            if (songIndex !== -1) {
-                secondMessage += `"${datapoint.top_songs[songIndex].title}" by ${item.name} is Nº ${songIndex + 1} on ${possessive} top songs of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`
+            // Construct the second part of the analysis
+            let secondPart;
+            if(!!transIntAnalytic && !!associatedSong){
+                secondPart = <span>The songs {pronoun} listen{pronoun !== 'you' && 's'} to by {name} are predominantly {transIntAnalytic}, with {possessive} top song by them being <a className={'heavy-link'} href={associatedSong?.link}>{getLIName(associatedSong)}</a> at number {associatedSongIndex + 1} on {possessive} top songs of {term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.</span>
+            }else if (!transIntAnalytic && !!associatedSong){
+                secondPart = <span>{capitalize(possessive)} top song by them is <a className={'heavy-link'} href={associatedSong?.link}>{getLIName(associatedSong)}</a> at number {associatedSongIndex + 1} of {possessive} top songs on {term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.</span>
             }
-            break;
+            return (
+                <p>
+                    {firstPart}
+                    <br />
+                    <br />
+                    {secondPart}
+                </p>
+            )
         case "songs":
-            try {
-                let maxAnalytic = getMaxValueAttribute(item.analytics);
-                topMessage += `"${item.title}" highlights ${possessive} love for ${maxAnalytic === 'tempo' ? 'high' : ''} ${translateAnalytics[maxAnalytic].name} music and ${item.artists[0].name}.`
-                if (datapoint.top_artists.some((element) => element && element.name === item.artists[0].name)) {
-                    const index = datapoint.top_artists.findIndex((element) => element.name === item.artists[0].name);
-                    secondMessage += `${item.artists[0].name} is Nº ${index + 1} on ${possessive} top artists of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`
-                }
-            } catch (e) {
-                topMessage += "This song hasn't been analysed yet. Look back at another time to see this song's characteristics."
-            }
             break;
         case "genres":
-            let relatedArtists = getGenresRelatedArtists(item, datapoint.top_artists);
-            if (relatedArtists.length <= 0) {
-                topMessage = 'An error has occurred! There are no related artists for this genre.'
-            } else {
-                topMessage = `${possessive.slice(0, 1).toUpperCase() + possessive.slice(1, possessive.length)} love for ${item} is best described by ${possessive} time listening to ${relatedArtists[0].name}.`
-                if (relatedArtists.length > 1) {
-                    secondMessage = `It's also contributed to by ${relatedArtists.slice(1, 4).map(e => ' ' + e.name)}${relatedArtists.length > 4 ? (`, as well as ${relatedArtists.length - 4} other${relatedArtists.length > 5 ? 's' : ''}`) : ('')}.`
-                } else {
-                    secondMessage = ``
-                }
-            }
             break;
         default:
             console.warn("updateFocusMessage error: No focus type found.")
-    }
-    return {
-        header: topMessage,
-        subtitle: secondMessage
     }
 }
 
@@ -357,8 +422,9 @@ export const getPlaylistAnalysis = (tracks) => {
         }
         return rollingTotal;
     }
+    const tracksWithAnalytics = tracks.filter(t => t.hasOwnProperty("analytics") && t.analytics !== null);
     const playlistStandardDeviation = Math.sqrt(
-        tracks.reduce((accumulator, currentValue) => accumulator + getSquaredAnalyticsDiff(currentValue, avgAnalytics), 0) / tracks.length
+        tracksWithAnalytics.reduce((accumulator, currentValue) => accumulator + getSquaredAnalyticsDiff(currentValue, avgAnalytics), 0) / tracksWithAnalytics.length
     );
 
     /**
@@ -372,7 +438,7 @@ export const getPlaylistAnalysis = (tracks) => {
      **/
     const yVals = [];
 
-    for (let i = 1; i <= tracks.length; i++) {
+    for (let i = 1; i <= tracksWithAnalytics.length; i++) {
         yVals.push(i);
     }
 
@@ -386,7 +452,7 @@ export const getPlaylistAnalysis = (tracks) => {
     }
 
     for (const key of Object.keys(regressions)){
-        regressions[key] = regress(yVals, tracks.map(t => t.analytics[key])).slope;
+        regressions[key] = regress(yVals, tracksWithAnalytics.map(t => t.analytics[key])).slope;
     }
 
     const notableTrends = [];
@@ -402,20 +468,13 @@ export const getPlaylistAnalysis = (tracks) => {
      * NOTABLE ANALYTICS CALCS
      **/
 
-    const notableAnalytics = [];
-    for(const key of Object.keys(avgAnalytics)){
-        if(key !== "tempo" && key !== "loudness"){
-           if(avgAnalytics[key] > 0.7){
-               notableAnalytics.push(translateAnalytics[key]);
-           }else if(avgAnalytics[key] < 0.2){
-               notableAnalytics.push(translateAnalyticsLow[key]);
-           }
-        }
-    }
+    const notableAnalytic = getMostInterestingAnalytic(avgAnalytics);
+    console.log(notableAnalytic);
+    const vibe = notableAnalytic !== null ? ( notableAnalytic.type === 'high' ? translateAnalytics[notableAnalytic.analytic].name : translateAnalyticsLow[notableAnalytic.analytic].name ) : null;
 
     return {
         variability: playlistStandardDeviation,
-        notableAnalytics: notableAnalytics.map(a => a.name).join(', '),
+        vibe: vibe,
         trends: notableTrends.map(trend => { return {name: translateAnalytics[trend].name, slope: regressions[trend]} })
     }
 }

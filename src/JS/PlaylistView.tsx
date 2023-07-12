@@ -66,7 +66,7 @@ interface Playlist {
     uri: string;
 }
 
-const AddAnnotationModal = (props : {user_id : string | null, playlist : Playlist, targetSong : Song, playlistMetadata : PlaylistMetadata, setPlaylistMetadata : React.SetStateAction<PlaylistMetadata>, isOpen : boolean, setIsOpen : React.SetStateAction<boolean> }) => {
+const AnnotationModal = (props : {user_id : string | null, playlist : Playlist, targetSong : Song, playlistMetadata : PlaylistMetadata, setPlaylistMetadata : React.SetStateAction<PlaylistMetadata>, isOpen : boolean, setIsOpen : React.SetStateAction<boolean> }) => {
 
     const {user_id, playlist, targetSong, playlistMetadata, setPlaylistMetadata,  isOpen, setIsOpen} = props;
 
@@ -104,26 +104,31 @@ const AddAnnotationModal = (props : {user_id : string | null, playlist : Playlis
 
     return (
             <dialog autoFocus id={'annotation-modal'}>
-                <button onClick={() =>
+                <div>
+                    <h3>Write an annotation.</h3>
+                    <p>Describe the importance of this song in this playlist.</p>
+                </div>
+                <button id={'modal-exit-button'} onClick={() =>
                 {
                     setIsOpen(false);
                     const modal: HTMLDialogElement = document.getElementById('annotation-modal');
                     modal.close();
                 }
                 }
-                >Leave</button>
+                >x</button>
                 <StyledField
                     label={`Annotation`}
                     variant='outlined'
-                    rows={2}
                     multiline
                     inputRef={annotationRef}
                     inputProps={{maxLength: 100}}
                 />
-                <button className={'std-button'} onClick={submitAnnotation}>Submit</button>
-                {metadata?.meta[targetSong?.song_id] !== undefined && (
-                    <button className={'warning-button'} onClick={removeAnnotation}>Delete</button>
-                )}
+                <div id={'annotation-modal-button-wrapper'}>
+                    {metadata?.meta[targetSong?.song_id] !== undefined && (
+                        <button className={'subtle-button'} onClick={removeAnnotation}>Delete</button>
+                    )}
+                    <button style={{marginLeft: 'auto'}} className={'subtle-button'} onClick={submitAnnotation}>Submit</button>
+                </div>
             </dialog>
     )
 }
@@ -187,38 +192,45 @@ const Track = (props : {track : Song, index : number, isOwnPlaylist : boolean, a
                     }
                 </>
             }
-            {isOwnPlaylist && (
-                <>
-                    {windowWidth > 650 ?
-                        <button onClick={() => {setSelectedTrack(track); setIsOpen(true)}} style={annotation !== undefined ? {animation: 'none', opacity: '0.5', right: '2.5%'} : {}} className={'annotation-icon'}>
-                            {annotation === undefined ?
-                                <AddCommentOutlinedIcon fontSize={'medium'} />
+            {windowWidth > 650 ?
+                isOwnPlaylist &&
+                    <button onClick={() => {setSelectedTrack(track); setIsOpen(true)}} style={annotation !== undefined ? {animation: 'none', opacity: '0.5', right: '2.5%'} : {}} className={'annotation-icon'}>
+                        {annotation === undefined ?
+                            <AddCommentOutlinedIcon fontSize={'medium'} />
+                            :
+                            <EditIcon fontSize={'medium'} />
+                        }
+                    </button>
+                :
+                isOwnPlaylist ?
+                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'} onClick={() => {
+                        if(annotation === undefined){
+                            setSelectedTrack(track);
+                            setIsOpen(true);
+                        }else{
+                            // If there is a comment then show it
+                            setIsPresentingAnnotation(!isPresentingAnnotation);
+                        }
+                    }} >
+                        {annotation === undefined ?
+                            <AddCommentOutlinedIcon fontSize={'medium'} />
+                            :
+                            isPresentingAnnotation ?
+                                <CommentsDisabledIcon fontSize={'medium'} />
                                 :
-                                <EditIcon fontSize={'medium'} />
-                            }
-                        </button>
+                                <CommentIcon fontSize={'medium'} />
+                        }
+                    </button>
+                    :
+                    annotation !== undefined &&
+                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'} onClick={() => setIsPresentingAnnotation(!isPresentingAnnotation)}>
+                    {isPresentingAnnotation ?
+                        <CommentsDisabledIcon fontSize={'medium'} />
                         :
-                        <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'} onClick={() => {
-                            if(annotation === undefined){
-                                setSelectedTrack(track);
-                                setIsOpen(true);
-                            }else{
-                                // If there is a comment then show it
-                                setIsPresentingAnnotation(!isPresentingAnnotation);
-                            }
-                        }} >
-                            {annotation === undefined ?
-                                <AddCommentOutlinedIcon fontSize={'medium'} />
-                                :
-                                isPresentingAnnotation ?
-                                    <CommentsDisabledIcon fontSize={'medium'} />
-                                    :
-                                    <CommentIcon fontSize={'medium'} />
-                            }
-                        </button>
+                        <CommentIcon fontSize={'medium'} />
                     }
-                </>
-            )}
+                    </button>
+            }
         </div>
     )
 }
@@ -292,12 +304,12 @@ const PlaylistView = () => {
                                     }
                                 </p>
                             </div>
-                            {playlistAnalysis.notableAnalytics && (
+                            {playlistAnalysis.vibe && (
                                 <div className={'playlist-analysis-item'}>
                                     <NoiseAwareIcon fontSize={'medium'} />
                                     <p style={{fontWeight: 'bold'}}>Vibe: </p>
                                     <p style={{textTransform: 'capitalize'}}>
-                                        {playlistAnalysis.notableAnalytics}
+                                        {playlistAnalysis.vibe}
                                     </p>
                                 </div>
                             )}
@@ -324,7 +336,7 @@ const PlaylistView = () => {
                         let annotation = playlistMetadata?.meta[t.song_id];
                         return <Track key={t.song_id} windowWidth={windowWidth} setSelectedTrack={setSelectedTrack} track={t} index={i} isOwnPlaylist={isOwnPlaylist} annotation={annotation} setIsOpen={setIsModalOpen} />
                     })}
-                    <AddAnnotationModal user_id={loggedUserID} playlist={playlist} targetSong={selectedTrack} playlistMetadata={playlistMetadata} setPlaylistMetadata={setPlaylistMetadata} isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+                    <AnnotationModal user_id={loggedUserID} playlist={playlist} targetSong={selectedTrack} playlistMetadata={playlistMetadata} setPlaylistMetadata={setPlaylistMetadata} isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
                 </div>
             </div>
     )
