@@ -20,6 +20,7 @@ import {
     validDPExists
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
+import LRUCache from 'lru-cache';
 
 export interface Record {
     id: string,
@@ -138,6 +139,11 @@ interface Album {
     image: string,
     link: string
 }
+
+
+const dp_cache = new LRUCache<string, Datapoint, unknown>({
+    max: 100,
+});
 
 export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
@@ -882,6 +888,13 @@ export const isLoggedIn = function () {
  * @returns {Promise<*>} A datapoint object.
  */
 export const retrieveDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
+    const cacheID = `${user_id}_${term}`;
+    //console.log(`Has ${cacheID}: `, dp_cache.has(cacheID));
+    if(dp_cache.has(cacheID)){
+        console.log(`[Cache] Returning cached datapoint.`)
+        return dp_cache.get(cacheID);
+    }
+
     let timeSensitive = false;
     // Are we accessing the logged-in user?
     // [Unknowingly]
@@ -916,6 +929,7 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
             TTL = 8.64e+7 / 2;
         }
     }
+    dp_cache.set(cacheID, currDatapoint, {ttl: 1000000})
     return currDatapoint;
 }
 
@@ -1008,13 +1022,12 @@ export const retrieveLoggedUserID = async function () {
     return response.id;
 };
 /**
- *
+ * Mapping of getUser.
  * @param user_id
  * @returns User
  */
 export const retrieveUser = async function (user_id: string) {
-    const response = await getUser(user_id);
-    return response;
+    return await getUser(user_id);
 };
 
 
@@ -1101,14 +1114,15 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Arr
         return [];
     }
 
-    const albums = (await fetchData(`artists/${artistID}/albums`)).items;
+    let albums = (await fetchData(`artists/${artistID}/albums`)).items;
     const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
     const albumTracks = await Promise.all(albumPromises);
+    albums.forEach((a,i) => a.tracks = albumTracks[i].items);
 
 
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
-        const trackList: Array<Song> = albumTracks[i].items;
+        const trackList = album.tracks;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
         if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
             albumsWithTracks.push(album);

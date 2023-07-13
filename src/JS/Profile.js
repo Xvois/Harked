@@ -680,14 +680,16 @@ const ArtistAnalysis = (props) => {
                 }
             }
         );
-        followingContentsSearch(user_id, artist, "artists", term).then(
-            result => {
-                setFollowingWithArtist(result);
-                if (result.length === 0) {
-                    setShowing("albums")
+        if(isOwnPage){
+            followingContentsSearch(user_id, artist, "artists", term).then(
+                result => {
+                    setFollowingWithArtist(result);
+                    if (result.length === 0) {
+                        setShowing("albums")
+                    }
                 }
-            }
-        )
+            )
+        }
     }, [])
 
     const orderedAlbums = artistsAlbumsWithLikedSongs?.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);

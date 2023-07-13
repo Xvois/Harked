@@ -172,52 +172,51 @@ function Authentication() {
                 const id = pb.authStore.model.id;
                 const user = authData.meta.rawUser;
                 window.localStorage.setItem('access-token', authData.meta.accessToken);
-                formatUser(user).then(function (fUser) {
-                    // TODO: TEMP FIX
-                    fUser.username = fUser.username.replace(' ', '-');
-                    userExists(fUser.user_id).then(exists => {
-                        if (!exists) {
-                            pb.collection('users').update(id, fUser)
-                                .then(async () => {
-                                    const hash = hashString(fUser.user_id);
-                                    const followers = {id: hash, user: id, followers: []}
-                                    const following = {id: hash, user: id, following: []}
-                                    const settings = {id: hash, user: id, public: true}
-                                    const profile_data = {id: hash, user: id}
-                                    const profile_comments = {id: hash, owner: id, comments: []}
-                                    const profile_recommendations = {id: hash, user: id, recommendations: []}
-                                    await Promise.all(
-                                        [
-                                            putLocalData("user_followers", followers),
-                                            putLocalData("user_following", following),
-                                            putLocalData("settings", settings),
-                                            putLocalData("profile_data", profile_data),
-                                            // Automatically generate a comment section for the profile
-                                            putLocalData("comment_section", profile_comments),
-                                            putLocalData("profile_recommendations", profile_recommendations),
-                                        ]
-                                    )
-                                    redirect('/profile#me');
-                                }).catch((err) => {
-                                console.error('Error patching user: ', err);
-                                console.info('User: ', fUser);
-                                console.info('Username: ', fUser.username);
-                                pb.collection('users').delete(id).then(() => {
-                                    console.info('User successfully removed as a result.')
-                                }).catch((deletionError) => {
-                                    console.error('Error subsequently deleting user: ', deletionError);
-                                });
-                            });
-                        } else {
-                            const redirectPath = window.localStorage.getItem("redirect");
-                            if (redirectPath) {
-                                window.localStorage.removeItem("redirect");
-                                redirect(redirectPath);
-                            } else {
+                let fUser = formatUser(user)
+                // TODO: TEMP FIX
+                fUser.username = fUser.username.replace(' ', '-');
+                userExists(fUser.user_id).then(exists => {
+                    if (!exists) {
+                        pb.collection('users').update(id, fUser)
+                            .then(async () => {
+                                const hash = hashString(fUser.user_id);
+                                const followers = {id: hash, user: id, followers: []}
+                                const following = {id: hash, user: id, following: []}
+                                const settings = {id: hash, user: id, public: true}
+                                const profile_data = {id: hash, user: id}
+                                const profile_comments = {id: hash, owner: id, comments: []}
+                                const profile_recommendations = {id: hash, user: id, recommendations: []}
+                                await Promise.all(
+                                    [
+                                        putLocalData("user_followers", followers),
+                                        putLocalData("user_following", following),
+                                        putLocalData("settings", settings),
+                                        putLocalData("profile_data", profile_data),
+                                        // Automatically generate a comment section for the profile
+                                        putLocalData("comment_section", profile_comments),
+                                        putLocalData("profile_recommendations", profile_recommendations),
+                                    ]
+                                )
                                 redirect('/profile#me');
-                            }
+                            }).catch((err) => {
+                            console.error('Error patching user: ', err);
+                            console.info('User: ', fUser);
+                            console.info('Username: ', fUser.username);
+                            pb.collection('users').delete(id).then(() => {
+                                console.info('User successfully removed as a result.')
+                            }).catch((deletionError) => {
+                                console.error('Error subsequently deleting user: ', deletionError);
+                            });
+                        });
+                    } else {
+                        const redirectPath = window.localStorage.getItem("redirect");
+                        if (redirectPath) {
+                            window.localStorage.removeItem("redirect");
+                            redirect(redirectPath);
+                        } else {
+                            redirect('/profile#me');
                         }
-                    })
+                    }
                 })
             }).catch((err) => {
                 console.log("Failed to exchange code.\n" + err);
