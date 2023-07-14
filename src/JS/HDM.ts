@@ -517,15 +517,9 @@ export const retrieveEventsForUser = async function (user_id: string, page: numb
     const conditions = following.map(u => `owner.id = "${u.id}"`);
     const filter = conditions.join(" || ");
 
-    // TODO : REMOVE
-    //const filter = `owner.user_id = "${user_id}"`;
-    //const user = await getUser(user_id);
-
     const events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
     for (const e of events) {
         e.owner = followingMap.get(e.owner);
-        // TODO : REMOVE
-        //e.owner = user;
         switch (e.item.type) {
             case "albums":
                 const album = await fetchData(`albums/${e.item.id}`);

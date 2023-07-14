@@ -77,8 +77,8 @@ function Authentication() {
             const user = authData.meta.rawUser;
             window.localStorage.setItem('access-token', authData.meta.accessToken);
             let fUser = formatUser(user);
-            // TODO: TEMP FIX
-            fUser.username = fUser.username.replace(' ', '-');
+            // FIXME: TEMP FIX
+            fUser.username = fUser.username.replaceAll(' ', '-');
             userExists(fUser.user_id).then(exists => {
                 if (!exists) {
                     pb.collection('users').update(id, fUser)
@@ -173,8 +173,8 @@ function Authentication() {
                 const user = authData.meta.rawUser;
                 window.localStorage.setItem('access-token', authData.meta.accessToken);
                 let fUser = formatUser(user)
-                // TODO: TEMP FIX
-                fUser.username = fUser.username.replace(' ', '-');
+                // FIXME: TEMP FIX
+                fUser.username = fUser.username.replaceAll(' ', '-');
                 userExists(fUser.user_id).then(exists => {
                     if (!exists) {
                         pb.collection('users').update(id, fUser)
