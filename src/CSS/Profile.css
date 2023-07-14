@@ -226,11 +226,16 @@ select.dropdown {
     border: none;
     align-content: center;
     justify-content: center;
+    text-align: center;
 }
 
 .widget-button:hover {
     background: rgba(125, 125, 125, 0.1);
 }
+@media (hover: none) {
+    .widget-button:hover {}
+}
+
 
 .item-image {
     flex-shrink: 0;
