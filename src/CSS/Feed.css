@@ -46,7 +46,7 @@
     margin: 0;
 }
 
-.placeholder {
+.loading-object-instance {
     width: 100%;
     height: 156px;
 }
@@ -67,7 +67,7 @@
     animation-name: placeHolderShimmer;
     animation-timing-function: linear;
     background: darkgray;
-    background: linear-gradient(to right, var(--bg-colour) 15%, var(--primary-colour) 20%, var(--bg-colour) 50%);
+    background: linear-gradient(to right, transparent 15%, var(--primary-colour) 20%, transparent 50%);
     background-size: 500% 100%;
     background-position: 100% 0;
     height: 156px;

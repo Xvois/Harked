@@ -92,7 +92,8 @@ select.dropdown {
     position: relative;
     align-items: center;
     align-content: center;
-    border: 1px solid var(--secondary-colour);
+    background: rgba(125, 125, 125, 0.1);
+    border: 1px solid rgba(125, 125, 125, 0.75);
     will-change: height;
     cursor: pointer;
     transition: all 0.5s;
@@ -179,26 +180,56 @@ select.dropdown {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    height: 358px;
     width: 100%;
-    padding: 25px 0;
     align-items: center;
-    overflow: hidden;
 }
 
 .analysis-wrapper > div {
-    min-width: 200px;
+    height: 300px;
+    width: 0;
     margin: 0 25px;
     flex-grow: 1;
 }
 
-.analysis {
-    position: relative;
+.list-widget-wrapper {
     display: flex;
     flex-direction: column;
-    height: 275px;
-    max-width: 45%;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
     gap: 5px;
-    overflow: hidden;
+}
+
+.widget-item {
+    position: relative;
+    flex-grow: 1;
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    background: rgba(125, 125, 125, 0.05);
+    border: 1px solid rgba(125, 125, 125, 0.2);
+    font-size: 14px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.widget-button {
+    display: flex;
+    flex-direction: column;
+    font-family: "Inter Tight", sans-serif;
+    text-decoration: none;
+    height: 100%;
+    width: 100%;
+    color: var(--primary-colour);
+    background: none;
+    border: none;
+    align-content: center;
+    justify-content: center;
+}
+
+.widget-button:hover {
+    background: rgba(125, 125, 125, 0.1);
 }
 
 .item-image {
@@ -227,29 +258,8 @@ select.dropdown {
     z-index: 1;
 }
 
-.recommendations-wrapper {
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-}
-
-.recommendation {
-    margin-left: auto;
-    padding: 5px;
-    width: max-content;
-    text-decoration: none;
-    text-align: right;
-    color: var(--primary-colour);
-    border-top: 1px solid var(--secondary-colour);
-    transition: all 0.5s;
-}
-
-.recommendation:hover {
-    text-decoration: underline;
-}
-
 .levitating-image {
-    box-shadow: 0px 4px 16px rgba(17, 17, 26, 0.1), 0px 8px 24px rgba(17, 17, 26, 0.1), 0px 16px 56px rgba(17, 17, 26, 0.1);
+    box-shadow: 0 4px 16px rgba(17, 17, 26, 0.1), 0 8px 24px rgba(17, 17, 26, 0.1), 0 16px 56px rgba(17, 17, 26, 0.1);
 }
 
 .backdrop-image {
@@ -278,11 +288,18 @@ select.dropdown {
     flex-direction: column;
     width: 200px;
     gap: 15px;
+    background: rgba(125, 125, 125, 0.1);
+    border: 1px solid rgba(125, 125, 125, 0.75);
 }
 
 #genre-breakdown-instance > h3 {
     text-transform: uppercase;
     font-size: 16px;
+}
+
+#song-analysis-average > div {
+    background: rgba(125, 125, 125, 0.1);
+    border: 1px solid rgba(125, 125, 125, 0.75);
 }
 
 .stat-block {
@@ -313,13 +330,13 @@ select.dropdown {
     position: relative;
     height: 5px;
     width: var(--val);
-
-    background-color: var(--primary-colour);
+    background: var(--primary-colour);
     border-radius: 10px;
-    transition: all 0.5s ease-out;
+    transition: width 0.5s ease-out;
 
     animation: expand 1s ease;
 }
+
 
 
 @keyframes expand {
@@ -465,8 +482,8 @@ select.dropdown {
     background: var(--bg-colour);
     color: var(--primary-colour);
     background: rgba(200, 200, 200, 0.5);
+    border: 1px solid rgba(200, 200, 200, 0.75);
     backdrop-filter: blur(30px) brightness(200%);
-    border: 1px solid var(--secondary-colour);
 }
 
 
@@ -487,6 +504,7 @@ select.dropdown {
 @media (prefers-color-scheme: dark) {
     #rec-modal {
         background: rgba(50, 50, 50, 0.5);
+        border: 1px solid rgba(100, 100, 100, 0.75);
     }
 }
 
@@ -590,8 +608,8 @@ select.dropdown {
         opacity: 0;
     }
 
-    .analysis {
-        max-width: 100%;
+    .list-widget-wrapper {
+        padding: 20px 0;
     }
 
     #showcase-rec-button {

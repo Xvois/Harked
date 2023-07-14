@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {milliToHighestOrder, retrieveEventsForUser, retrieveLoggedUserID, UserEvent} from "./HDM.ts";
 import {getItemType, getLIName} from "./Analysis";
 import "./../CSS/Feed.css"
-import {LoadingIndicator} from "./SharedComponents.tsx";
+import {LoadingIndicator, LoadingObject} from "./SharedComponents.tsx";
 
 function FeedObject(props: { user_id: string, event: UserEvent, index: number, maxEventsPerLoad: number }) {
 
@@ -68,19 +68,6 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
             }}>
                 {time.value}{time.unit} ago
             </p>
-        </div>
-    )
-}
-
-function LoadingObject(props: { index: number }) {
-
-    const {index} = props;
-
-    return (
-        <div>
-            <div className="placeholder">
-                <div className="animated-background" style={{animationDelay: `${index / 10}s`}}></div>
-            </div>
         </div>
     )
 }
@@ -187,10 +174,7 @@ const Feed = () => {
                             yet. <br/> Follow some more people and wait for them to get up to something!</p>
                     :
                     <>
-                        <LoadingObject index={0} key={0}/>
-                        <LoadingObject index={1} key={1}/>
-                        <LoadingObject index={2} key={2}/>
-                        <LoadingObject index={3} key={3}/>
+                        <LoadingObject num={7} />
                     </>
                 }
             </div>

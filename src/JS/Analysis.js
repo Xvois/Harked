@@ -240,6 +240,72 @@ function getMostInterestingAttribute(analytics) {
     }
 }
 
+export const getTopInterestingAnalytics = (analytics, number) => {
+    let analyticsCopy = structuredClone(analytics);
+    const intAnalytics = [];
+    const ignoredAttributes = ["key", "mode", "duration_ms", "time_signature", "tempo", "loudness", "speechiness"];
+
+    for (let i = 0; i < number; i++) {
+        let max = Number.MIN_SAFE_INTEGER;
+        let maxAnalytic;
+        let min = Number.MAX_SAFE_INTEGER;
+        let minAnalytic;
+
+        for (const key in analyticsCopy) {
+            if (typeof analyticsCopy[key] === 'number' && !ignoredAttributes.includes(key)) {
+                let value = analyticsCopy[key];
+                if (value > max) {
+                    max = value;
+                    maxAnalytic = key;
+                }
+                if (value < min) {
+                    // Having a vocal / studio recorded song is not interesting
+                    if (key !== "instrumentalness" && key !== "liveness") {
+                        min = value;
+                        minAnalytic = key;
+                    }
+                }
+            }
+        }
+
+        if (max >= (1 - min)) {
+            intAnalytics.push(maxAnalytic);
+            delete analyticsCopy[maxAnalytic];
+        } else if (max <= (1 - min)) {
+            intAnalytics.push(minAnalytic);
+            delete analyticsCopy[minAnalytic];
+        }
+    }
+
+    return intAnalytics;
+}
+
+function getOrdinalSuffix(number) {
+    const suffixes = ["th", "st", "nd", "rd"];
+    const lastDigit = number % 10;
+    const lastTwoDigits = number % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        return "th";
+    }
+
+    return suffixes[lastDigit] || "th";
+}
+
+function getMostFittingGenre(song) {
+    const allGenres = song.artists.flatMap(artist => artist.genres || []);
+    if (allGenres.length === 0) {
+        return "obscure";
+    }
+
+    const genreCounts = allGenres.reduce((counts, genre) => {
+        counts[genre] = (counts[genre] || 0) + 1;
+        return counts;
+    }, {});
+    // Most frequent genre
+    return Object.keys(genreCounts).reduce((a, b) => (genreCounts[a] > genreCounts[b] ? a : b));
+}
+
 export const getItemAnalysis = function (item, type, user, selectedDatapoint, allDatapoints, term) {
     const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'your' : `${user.username}'s`;
     const pronoun = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'you' : `${user.username}`;
@@ -338,6 +404,10 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
                     else if (indexes[0] === indexes[1] && indexes[0] < indexes[2]) {
                         firstPartArtist = `Over the last 4 weeks and 6 months ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} been listening to ${name} consistently more than usual.`;
                     }
+                    // If indexes[0] and indexes[1] are equal but less than indexes[2]
+                    else if (indexes[0] === indexes[1] && indexes[0] > indexes[2]) {
+                        firstPartArtist = `Over the last 4 weeks and 6 months ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} been listening to ${name} consistently less than usual.`;
+                    }
                     break;
             }
             // Construct the second part of the analysis
@@ -366,20 +436,96 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
             let firstPartSong;
             if (hasAnalytics) {
                 let analyticsCopy = item.analytics;
-                const interestingAttribute = getMostInterestingAttribute(analyticsCopy);
-                if (interestingAttribute !== null) {
-                    firstPartSong = `This ${interestingAttribute.name} song by ${getLIDescription(item)} is epic!`;
+                const interestingAnalytics = getTopInterestingAnalytics(analyticsCopy, 2);
+                const translated = interestingAnalytics.map(a => analyticsCopy[a] > 0.3 ? translateAnalytics[a].name : translateAnalyticsLow[a].name).join(', ');
+                const artistIndex = selectedDatapoint.top_artists.findIndex(a => item.artists[0].artist_id === a.artist_id);
+                firstPartSong = `This ${translated} song by ${getLIDescription(item)} is emblematic of ${possessive} love for ${getMostFittingGenre(item)} music.`;
+
+                // Find the artist's position in the top artists list for the current term
+                const artistPosition = artistIndex !== -1 ? artistIndex + 1 : null;
+                let secondPartSong = '';
+                if (artistPosition) {
+                    const artistName = getLIName(item.artists[0]);
+                    secondPartSong = `It's worth noting that ${artistName} holds the ${artistPosition}${getOrdinalSuffix(artistPosition)} position in ${possessive} top artists list ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`;
                 }
+
+                return (
+                    <p>
+                        {firstPartSong}
+                        <br/>
+                        <br/>
+                        {secondPartSong}
+                    </p>
+                );
             } else {
-                firstPartSong = `The song hasn't been analysed yet.`;
+                firstPartSong = `The song hasn't been analyzed yet.`;
+                return (
+                    <p>
+                        {firstPartSong}
+                    </p>
+                );
             }
+        case "genres":
+            const genreName = getLIName(item);
+
+        function calculatePopularityTrend(genrePopularity) {
+            const trendValues = genrePopularity.filter(index => index !== null);
+
+            if (trendValues.length > 1) {
+                const firstIndex = trendValues[0];
+                const lastIndex = trendValues[trendValues.length - 1];
+
+                if (lastIndex > firstIndex) {
+                    return "increasing";
+                } else if (lastIndex < firstIndex) {
+                    return "decreasing";
+                }
+            }
+
+            return "consistent";
+        }
+
+            // Analyze the popularity of the genre across different terms
+            const genrePopularity = allDatapoints.map(datapoint => {
+                const genreIndex = datapoint.top_genres.findIndex(genre => genre === item);
+                return genreIndex !== -1 ? genreIndex + 1 : null;
+            });
+
+            // Determine the trend of the genre's popularity
+            const popularityTrend = calculatePopularityTrend(genrePopularity);
+
+            let genreAnalysis = "";
+
+            if (popularityTrend === "increasing") {
+                genreAnalysis = `${capitalize(pronoun)} have been increasingly drawn to ${genreName} music over time, making it one of ${pronoun === 'you' ? 'your' : `${possessive}`} top genres in the ${term} term.`;
+            } else if (popularityTrend === "decreasing") {
+                genreAnalysis = `${capitalize(pronoun)} have been listening to ${genreName} music less frequently over time, but it still holds a significant place in ${pronoun === 'you' ? 'your' : `${possessive}`} overall music preferences.`;
+            } else {
+                genreAnalysis = `Although ${pronoun} may have experienced fluctuations in ${pronoun === 'you' ? 'your' : `${possessive}`} listening preferences for ${genreName} music over time, it remains an influential genre for ${pronoun === 'you' ? 'your' : `${possessive}`} music taste.`;
+            }
+
+            // Find the top artists associated with the genre
+            const genreArtists = selectedDatapoint.top_artists.filter(artist => artist.genres?.some(genre => genre === item));
+            const topArtistLinks = genreArtists.slice(0, 4).map((artist, index) => (
+                <a key={getLIName(artist) + index} className="heavy-link" href={artist.link}>
+                    {getLIName(artist)}{index !== 3 && ', '}
+                </a>
+            ));
+            const remainingArtistCount = Math.max(0, genreArtists.length - 4);
+
+            let artistAnalysis = "";
+            if (genreArtists.length > 0) {
+                artistAnalysis = <span>{pronoun === 'you' ? 'Your' : `${possessive}`} favorite artists in this genre include {topArtistLinks}{remainingArtistCount > 0 ? ` and ${remainingArtistCount} more.` : '.'}</span>;
+            }
+
             return (
                 <p>
-                    {firstPartSong}
+                    {genreAnalysis}
+                    <br/>
+                    <br/>
+                    {artistAnalysis}
                 </p>
-            )
-        case "genres":
-            break;
+            );
         default:
             console.warn("updateFocusMessage error: No focus type found.")
     }

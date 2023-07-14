@@ -47,7 +47,9 @@ import {
     getItemType,
     getLIDescription,
     getLIName,
-    translateAnalytics
+    getTopInterestingAnalytics,
+    translateAnalytics,
+    translateAnalyticsLow
 } from "./Analysis";
 import {handleAlternateLogin} from "./Authentication";
 import LockIcon from '@mui/icons-material/Lock';
@@ -58,7 +60,7 @@ import {
     SpotifyLink,
     StatBlock,
     StyledField,
-    ValueIndicator
+    ValueIndicator,
 } from "./SharedComponents.tsx";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -69,7 +71,6 @@ const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term
 const ShowcaseList = (props) => {
     const {
         pageUser,
-        possessive,
         playlists,
         allDatapoints,
         selectedDatapoint,
@@ -89,7 +90,7 @@ const ShowcaseList = (props) => {
                         <ShowcaseListItem
                             key={type === 'genres' ? element : element[`${type.slice(0, type.length - 1)}_id`]}
                             allDatapoints={allDatapoints}
-                            pageUser={pageUser} possesive={possessive} playlists={playlists} element={element}
+                            pageUser={pageUser} playlists={playlists} element={element}
                             index={index} selectedDatapoint={selectedDatapoint}
                             selectedPrevDatapoint={selectedPrevDatapoint} type={type} term={term}
                             isOwnPage={isOwnPage}/>
@@ -115,7 +116,7 @@ const ShowcaseListItem = (props) => {
         isOwnPage
     } = props;
 
-    const maxExpansion = 650;
+    const maxExpansion = 660;
     const secondExpansion = 300;
     const minExpansion = 77;
 
@@ -174,7 +175,34 @@ const ShowcaseListItem = (props) => {
                 }
             }
         }
-        return (<></>)
+        return (
+            <div className={`list-widget-wrapper supplemental-content`}>
+                {recommendations ?
+                    <>
+                        <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
+                            <div className={'widget-button'}>
+                                <p style={{margin: 0}}>Recommendations for</p>
+                                <h3 style={{margin: 0}}>{getLIName(element)}</h3>
+                            </div>
+                        </div>
+                        {
+                            recommendations.slice(0,3).map((r,i) => {
+                                return (
+                                    <div key={getLIName(r)} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
+                                        <a href={r.link} className={'widget-button'}>
+                                            <h4 style={{margin: 0}}>{getLIName(r)}</h4>
+                                            <p style={{margin: 0}}>{getLIDescription(r)}</p>
+                                        </a>
+                                    </div>
+                                )
+                            })
+                        }
+                    </>
+                    :
+                    <div className={'placeholder'} style={{width: '100%', height: '100%'}} />
+                }
+            </div>
+        )
     }
 
     let changeMessage;
@@ -265,7 +293,7 @@ const ShowcaseListItem = (props) => {
                         </div>
                         {showAnalytics ?
                             <>
-                                <hr style={{width: '95%', border: '1px solid var(--secondary-colour)'}}/>
+                                <hr style={{width: '95%', margin: 0, border: '1px solid rgba(125, 125, 125, 0.2)'}}/>
                                 <div className={'analysis-wrapper'}>
                                     {
                                         type === 'songs' ?
@@ -273,20 +301,9 @@ const ShowcaseListItem = (props) => {
                                                           averageAnalytics={getAverageAnalytics(selectedDatapoint.top_songs)}/>
                                             :
                                             type === 'artists' ?
-                                                isLoggedIn() ?
-                                                    <ArtistAnalysis user_id={pageUser.user_id} artist={element}
-                                                                    playlists={playlists} term={term}
-                                                                    isOwnPage={isOwnPage}/>
-                                                    :
-                                                    <div className={'analysis'}
-                                                         style={{textAlign: 'right', padding: '0px'}}>
-                                                        <p>Log in to see {possessive} analysis
-                                                            for {getLIName(element)}</p>
-                                                        <button style={{width: 'max-content', marginLeft: 'auto'}}
-                                                                className={'std-button'}
-                                                                onClick={handleAlternateLogin}>Log-in
-                                                        </button>
-                                                    </div>
+                                                <ArtistAnalysis user_id={pageUser.user_id} artist={element}
+                                                                playlists={playlists} term={term}
+                                                                isOwnPage={isOwnPage} possessive={possessive}/>
                                                 :
                                                 <></>
                                     }
@@ -557,20 +574,27 @@ const ProfileRecommendations = (props) => {
     }
 
     const handleEdit = (e) => {
-        const itemType = getItemType(e.item);
         setInitialItem(e.item);
         setShowSelection(true);
     }
 
     return (
-        <div style={{width: '100%'}}>
+        <div style={{width: '100%', position: 'relative'}}>
+            {isOwnPage && (
+                <button className={'subtle-button'}
+                        onClick={() => {
+                            setShowSelection(true);
+                            setInitialItem(null);
+                        }}>
+                    New
+                </button>
+            )}
             <div style={{
                 display: 'flex',
                 flexDirection: 'row',
                 gap: '15px',
                 flexWrap: 'wrap',
                 margin: '16px 0',
-                position: 'relative',
             }}>
                 {recs.length > 0 ?
                     recs.map(e => {
@@ -582,15 +606,6 @@ const ProfileRecommendations = (props) => {
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
                 }
             </div>
-            {isOwnPage && (
-                <button className={'std-button'} style={{width: '100%', border: '1px solid var(--secondary-colour)'}}
-                        onClick={() => {
-                            setShowSelection(true);
-                            setInitialItem(null);
-                        }}>
-                    New recommendation
-                </button>
-            )}
             <SelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection}
                             recommendations={recs} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
         </div>
@@ -605,7 +620,8 @@ const Recommendation = (props) => {
             flexDirection: 'row',
             flexGrow: '1',
             gap: '15px',
-            border: '1px solid var(--secondary-colour)',
+            background: 'rgba(125, 125, 125, 0.1)',
+            border: '1px solid rgba(125, 125, 125, 0.75)',
             padding: '15px',
             width: 'max-content',
             overflow: 'hidden',
@@ -658,6 +674,8 @@ const ArtistAnalysis = (props) => {
 
     const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState(null);
     const [followingWithArtist, setFollowingWithArtist] = useState(null);
+    const [orderedAlbums, setOrderedAlbums] = useState(null);
+    const [isReady, setIsReady] = useState(false);
     const [showing, setShowing] = useState("albums");
 
     const switchShowing = () => {
@@ -674,7 +692,9 @@ const ArtistAnalysis = (props) => {
         const tracks = playlists.map(e => e.tracks).flat(1);
         getAlbumsWithTracks(artist.artist_id, tracks).then(
             result => {
+                console.log(result);
                 setArtistsAlbumsWithLikedSongs(result);
+                setOrderedAlbums(result.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4));
                 if (result.length === 0 && isOwnPage) {
                     setShowing("following")
                 }
@@ -690,74 +710,76 @@ const ArtistAnalysis = (props) => {
                 }
             )
         }
-    }, [])
+    }, [playlists])
 
-    const orderedAlbums = artistsAlbumsWithLikedSongs?.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4);
+    useEffect(() => {
+        if(isOwnPage){
+            setIsReady(followingWithArtist && artistsAlbumsWithLikedSongs);
+        }else{
+            setIsReady(!!artistsAlbumsWithLikedSongs);
+        }
+    }, [followingWithArtist, artistsAlbumsWithLikedSongs])
+
     return (
-        <div className={'analysis'}>
-            {showing === "albums" ?
-                artistsAlbumsWithLikedSongs === null ?
-                    <LoadingIndicator/>
-                    :
+        <div className={`list-widget-wrapper`}>
+            {isReady ?
+                    showing === "albums" ?
                     <>
-                        <h3 style={{margin: '0'}}>Analysis</h3>
-                        <p style={{margin: '-5px 0 5px 0'}}>of {getLIName(artist)}</p>
-                        {
-                            orderedAlbums.length > 0 ?
-                                <>
-
-                                    {
-                                        orderedAlbums.map(function (album) {
-                                            return <StatBlock key={album.id}
-                                                              name={album.name.length > 35 ? album.name.slice(0, 35) + '...' : album.name}
-                                                              description={`${album.saved_songs.length} saved songs.`}
-                                                              value={(album.saved_songs.length / orderedAlbums[0].saved_songs.length) * 100}
-                                                              alignment={'left'}/>
-                                        })
-                                    }
-                                </>
-
-                                :
-                                <p style={{fontWeight: 'bold'}}>There are no saved songs from this
-                                    artist on in any public playlists, so an analysis is not available.</p>
-                        }
-                    </>
-
-                :
-                followingWithArtist === null ?
-                    <LoadingIndicator/>
-                    :
-                    <>
-                        <h3 style={{margin: '0'}}>Following</h3>
-                        <p style={{margin: '-5px 0 5px 0'}}>that listen to {getLIName(artist)}</p>
-                        {
-                            followingWithArtist.length > 0 ?
-                                <>
-                                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                                        {
-                                            followingWithArtist.slice(0, 3).map(function (f) {
-                                                return (
-                                                    <a key={f.user_id} href={`/profile#${f.user_id}`}
-                                                       className={'heavy-link'}>
-                                                        <div className={'listed-user'}>
-                                                            <img src={f.profile_picture}/>
-                                                            <p>{f.username}</p>
-                                                        </div>
-                                                    </a>
-                                                )
-                                            })
-                                        }
+                        <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
+                            <button className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
+                                <p style={{margin: 0}}>Most listened to albums by</p>
+                                <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
+                            </button>
+                        </div>
+                        {orderedAlbums.length > 0 ?
+                            orderedAlbums.map((a,i) => {
+                                return (
+                                    <div key={getLIName(a)} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
+                                        <a href={a.link} className={'widget-button'}>
+                                            <h4 style={{margin: 0}}>{getLIName(a)}</h4>
+                                            <p style={{margin: 0}}>{a.saved_songs.length} saved song{a.saved_songs.length === 1 ? '' : 's'}</p>
+                                        </a>
                                     </div>
-                                </>
-
-                                :
-                                <p style={{fontWeight: 'bold'}}>No-one you follow listens to this person!</p>
+                                )
+                            })
+                            :
+                            <div className={'widget-item'} style={{animationDelay: `0.1s`}}>
+                                <div className={'widget-button'}>
+                                    <h4 style={{margin: 0}}>An analysis is not available.</h4>
+                                    <p style={{margin: 0}}>No public playlists with this artist found on this profile.</p>
+                                </div>
+                            </div>
                         }
                     </>
-            }
-            {followingWithArtist !== null && artistsAlbumsWithLikedSongs !== null && isOwnPage && (showing === "following" ? artistsAlbumsWithLikedSongs.length > 0 : followingWithArtist.length > 0) &&
-                <button className={'subtle-button'} style={{marginTop: 'auto'}}
-                        onClick={switchShowing}>Show {showing === "albums" ? 'following' : 'analysis'}</button>
+                    :
+                    <>
+                        <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
+                            <button className={'widget-button'} onClick={switchShowing}>
+                                <p style={{margin: 0}}>Following that listen to</p>
+                                <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
+                            </button>
+                        </div>
+                        {followingWithArtist.length > 0 ?
+                            followingWithArtist.map((u,i) => {
+                                return (
+                                    <div key={u.user_id} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
+                                        <a href={`/profile#${u.user_id}`} className={'widget-button'}>
+                                            <h4 style={{margin: 0}}>{u.username}</h4>
+                                        </a>
+                                    </div>
+                                )
+                            })
+                            :
+                            <div className={'widget-item'} style={{animationDelay: `0.1s`}}>
+                                <div className={'widget-button'}>
+                                    <h4 style={{margin: 0}}>No following listen to ths artist.</h4>
+                                    <p style={{margin: 0}}>Try following more people for them to come up here.</p>
+                                </div>
+                            </div>
+                        }
+                    </>
+                :
+                <div className={'placeholder'} style={{width: '100%', height: '100%'}} />
             }
         </div>
     )
@@ -765,21 +787,35 @@ const ArtistAnalysis = (props) => {
 
 const SongAnalysis = (props) => {
     const {song, averageAnalytics} = props;
-    const includedKeys = ['acousticness', 'energy', 'danceability', 'valence']
+    const includedKeys = getTopInterestingAnalytics(averageAnalytics, 3);
     if (song.hasOwnProperty("song_id")) {
         const analytics = song.analytics;
         if (!!analytics) {
             return (
-                <div className={'analysis'} style={{textAlign: 'left'}}>
-                    <h3 style={{margin: '0'}}>Analysis</h3>
-                    <p style={{margin: '-5px 0 5px 0'}}>of {getLIName(song)}</p>
+                <div className={'list-widget-wrapper'}>
+                    <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
+                        <button className={'widget-button'}>
+                            <p style={{margin: 0}}>Analysis of</p>
+                            <h3 style={{margin: 0}}>{getLIName(song)}</h3>
+                        </button>
+                    </div>
                     {
                         Object.keys(translateAnalytics).map(function (key) {
                             if (includedKeys.findIndex(e => e === key) !== -1) {
-                                return <StatBlock key={key} name={translateAnalytics[key].name}
-                                                  description={translateAnalytics[key].description}
-                                                  value={analytics[key] * 100} alignment={'left'}
-                                                  shadow={averageAnalytics[key] * 100}/>
+                                const rawAnalytic = analytics[key];
+                                const translated = rawAnalytic < 0.3 ? translateAnalyticsLow[key] : translateAnalytics[key];
+                                const val = rawAnalytic < 0.3 ? 1-rawAnalytic : rawAnalytic;
+                                const shadow = rawAnalytic < 0.3 ? 1-averageAnalytics[key] : averageAnalytics[key];
+                                return (
+                                    <div key={key} className={'widget-item'} >
+                                        <div style={{transform: `scale(${206/221})`, padding: '15px'}}>
+                                            <StatBlock name={translated.name}
+                                                       description={translated.description}
+                                                       value={val * 100} alignment={'left'}
+                                                       shadow={shadow * 100}/>
+                                        </div>
+                                    </div>
+                                )
                             }
                         })
                     }
@@ -793,7 +829,7 @@ const SongAnalysisAverage = (props) => {
     const {selectedDatapoint} = props;
     const average = getAverageAnalytics(selectedDatapoint.top_songs);
     return (
-        <div className={'block-wrapper'}>
+        <div className={'block-wrapper'} id={'song-analysis-average'}>
             {Object.keys(translateAnalytics).map(function (key) {
                 if (key !== "loudness") {
                     return <StatBlock key={key} name={translateAnalytics[key].name}
@@ -837,7 +873,7 @@ const TopSongsOfArtists = (props) => {
                 if (topSongIndex > -1) {
                     return (
                         <div key={artist.artist_id} className={'stat-block'}
-                             style={{padding: '15px', border: '1px solid var(--secondary-colour)'}}>
+                             style={{padding: '15px', background: 'rgba(125, 125, 125, 0.1)', border: '1px solid rgba(125, 125, 125, 0.75)'}}>
                             <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
                             <p style={{margin: '0'}}>{artist.name}</p>
                         </div>
@@ -864,7 +900,8 @@ const PlaylistItem = function (props) {
             display: 'flex',
             flexDirection: 'row',
             flexGrow: '1',
-            border: '1px solid var(--secondary-colour)',
+            background: 'rgba(125, 125, 125, 0.1)',
+            border: '1px solid rgba(125, 125, 125, 0.75)',
             padding: '10px',
             fontFamily: 'Inter Tight',
             width: 'max-content',
@@ -1186,6 +1223,7 @@ const Profile = () => {
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
+        window.scrollTo(0, 0);
         window.location.reload()
     });
 
@@ -1370,7 +1408,7 @@ const Profile = () => {
                                     </div>
                                     <ShowcaseList allDatapoints={allDatapoints} selectedDatapoint={selectedDatapoint}
                                                   selectedPrevDatapoint={selectedPrevDatapoint} pageUser={pageUser}
-                                                  playlists={playlists} possessive={possessive}
+                                                  playlists={playlists}
                                                   datapoint={selectedDatapoint} type={type} start={0} end={9}
                                                   term={terms[termIndex]} isOwnPage={isOwnPage}/>
                                     <div className={'section-footer'}>

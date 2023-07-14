@@ -136,14 +136,20 @@ interface Album {
     album_id: string,
     artists: string,
     name: string,
+    tracks: Array<Song>,
     image: string,
-    link: string
+    link: string,
+    saved_songs?: Array<Song>
 }
 
 
 const dp_cache = new LRUCache<string, Datapoint, unknown>({
     max: 100,
 });
+
+const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
+
+let me = undefined;
 
 export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
@@ -921,15 +927,7 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
 
 
     currDatapoint = formatDatapoint(currDatapoint);
-    if (currDatapoint !== null) {
-        const currTime = Date.now();
-        const createdTime = Date.parse(currDatapoint.created);
-        let TTL = (7 * 8.64e+7) - (currTime - createdTime);
-        if (TTL < 0) {
-            TTL = 8.64e+7 / 2;
-        }
-    }
-    dp_cache.set(cacheID, currDatapoint, {ttl: 1000000})
+    dp_cache.set(cacheID, currDatapoint )
     return currDatapoint;
 }
 
@@ -1018,8 +1016,10 @@ const formatDatapoint = function (d: Datapoint) {
     return d;
 };
 export const retrieveLoggedUserID = async function () {
-    const response = await fetchData('me');
-    return response.id;
+    if(!me){
+        me = await fetchData('me');
+    }
+    return me.id;
 };
 /**
  * Mapping of getUser.
@@ -1114,20 +1114,30 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Arr
         return [];
     }
 
-    let albums = (await fetchData(`artists/${artistID}/albums`)).items;
-    const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
-    const albumTracks = await Promise.all(albumPromises);
-    albums.forEach((a,i) => a.tracks = albumTracks[i].items);
+    let albums;
 
+    if(albums_cache.has(artistID)){
+        console.log('[Cache] Returning cached albums.')
+        albums = albums_cache.get(artistID);
+    }else{
+        albums = (await fetchData(`artists/${artistID}/albums`)).items;
+        const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
+        const albumTracks = await Promise.all(albumPromises);
+        albums.forEach((a,i) => {
+            a.tracks = albumTracks[i].items;
+            albums_cache.set(artistID, albums);
+        });
+    }
 
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
         const trackList = album.tracks;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
         if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
-            albumsWithTracks.push(album);
+            albumsWithTracks.push(formatAlbum(album));
         }
     }
+
     return albumsWithTracks;
 }
 
@@ -1169,7 +1179,9 @@ const formatAlbum = (album) => {
         artists: artists,
         name: album.name,
         image: image,
-        link: album.external_urls.spotify
+        link: album.external_urls.spotify,
+        saved_songs: album.saved_songs,
+        tracks: album.tracks
     }
 }
 
@@ -1196,7 +1208,7 @@ const formatPlaylist = (playlist) => {
             image = playlist.images[0].url;
         }
     }
-    let tracks = [];
+    let tracks: any[];
     if (playlist.hasOwnProperty("tracks")) {
         tracks = playlist.tracks;
     } else {

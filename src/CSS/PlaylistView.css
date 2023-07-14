@@ -152,8 +152,8 @@
     background: var(--bg-colour);
     color: var(--primary-colour);
     background: rgba(200, 200, 200, 0.5);
+    border: 1px solid rgba(200, 200, 200, 0.75);
     backdrop-filter: blur(30px) brightness(200%);
-    border: 1px solid var(--secondary-colour);
 }
 
 #annotation-modal::backdrop {
@@ -163,6 +163,7 @@
 @media (prefers-color-scheme: dark) {
     #annotation-modal {
         background: rgba(50, 50, 50, 0.5);
+        border: 1px solid rgba(100, 100, 100, 0.75);
     }
 }
 
