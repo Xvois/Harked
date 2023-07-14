@@ -107,6 +107,7 @@ export const PageError = (props: { icon: ReactJSXElement, description: string, e
 
 export const StyledField = styled(TextField)({
     "& .MuiInputBase-root": {
+        background: 'rgba(125, 125, 125, 0.1)',
         color: 'var(--primary-colour)'
     },
     '& .MuiInput-underline': {
@@ -120,16 +121,16 @@ export const StyledField = styled(TextField)({
     },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderColor: 'var(--secondary-colour)',
+            borderColor: 'rgba(125, 125, 125, 0.2)',
             borderRadius: `0px`,
             borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
         '&:hover fieldset': {
-            borderColor: 'var(--secondary-colour)',
+            borderColor: 'rgba(125, 125, 125, 0.2)',
         },
         '&.Mui-focused fieldset': {
-            borderColor: 'var(--secondary-colour)',
+            borderColor: 'rgba(125, 125, 125, 0.2)',
             borderWidth: '1px',
             transition: `all 0.1s ease-in`
         },
@@ -269,7 +270,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
                         </div>
                         <div style={{margin: "0 0 0 auto", width: "max-content"}}>
                             <button className="std-button"
-                                    style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} type={"button"} onClick={handleSubmit}>
+                                    style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} type={"button"} onClick={handleSubmit}>
                                 Submit
                             </button>
                         </div>

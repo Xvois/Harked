@@ -170,17 +170,19 @@ const TopBar = () => {
                     }
                 </div>
                 {isMenuOpen && (
-                    <div className={'expanded-menu-container'}>
-                        <h2>Menu</h2>
-                        {
-                            redirects.map(e => {
-                                return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut}
-                                                        key={e.title} title={e.title} href={e.href} icon={e.icon}
-                                                        requiresLogIn={e.requiresLogIn}/>
-                            })
-                        }
-                        <Search width={'100%'} showSearchResults/>
-                    </div>
+                    <>
+                        <h1 style={{margin: '20px auto 0 auto'}}>Menu</h1>
+                        <div className={'expanded-menu-container'}>
+                            {
+                                redirects.map(e => {
+                                    return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut}
+                                                            key={e.title} title={e.title} href={e.href} icon={e.icon}
+                                                            requiresLogIn={e.requiresLogIn}/>
+                                })
+                            }
+                            <Search width={'100%'} showSearchResults/>
+                        </div>
+                    </>
                 )}
             </div>
         </header>
