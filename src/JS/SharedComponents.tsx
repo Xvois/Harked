@@ -29,7 +29,7 @@ export const StatBlock = (props: {
             <div className={'stat-bar'}
                  style={{
                      '--val': `${value}%`,
-                     marginLeft: `${alignment === 'right' ? 'auto' : ''}`
+                     marginLeft: `${alignment === 'right' ? 'auto' : ''}`,
                  } as React.CSSProperties}></div>
             {shadow ?
                 <div className={'stat-bar'}
@@ -43,8 +43,26 @@ export const StatBlock = (props: {
                 :
                 <></>
             }
-
             <p style={{textAlign: alignment}}>{description}</p>
+        </div>
+    )
+}
+
+export function LoadingObject(props: { num: number, height? : number }) {
+
+    const {num, height = 156} = props;
+
+    const arr = [];
+
+    for(let i = 0; i < num; i++) {
+        arr.push(i);
+    }
+
+    return (
+        <div style={{width: '100%', height: '100%'}}>
+            <div className="loading-object-instance">
+                {arr.map(i => <div className="animated-background" key={`loading_object_${i}`} style={{animationDelay: `${i / 10}s`, height: `${height}px`}}></div>)}
+            </div>
         </div>
     )
 }
@@ -229,7 +247,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
         <>
             {isLoggedIn() && (
                 <div className="comment-submit-field">
-                    <form noValidate autoComplete="off" onSubmit={handleSubmit}>
+                    <form noValidate autoComplete="off">
                         <div
                             onKeyDown={(e) => {
                                 if (e.keyCode === 13 && !e.shiftKey) {
@@ -250,7 +268,8 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
                             />
                         </div>
                         <div style={{margin: "0 0 0 auto", width: "max-content"}}>
-                            <button className="std-button" style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} type={"submit"}>
+                            <button className="std-button"
+                                    style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}} type={"button"} onClick={handleSubmit}>
                                 Submit
                             </button>
                         </div>

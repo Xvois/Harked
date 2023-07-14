@@ -14,12 +14,13 @@ import {
     postDatapoint,
     putLocalData,
     songsToRefIDs,
-    updateLocalData
+    subscribe,
+    unsubscribe,
+    updateLocalData,
+    validDPExists
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
-
-// TODO: REINSTATE CACHE WITH PROPER GUARD RAILS
-
+import LRUCache from 'lru-cache';
 
 export interface Record {
     id: string,
@@ -83,13 +84,19 @@ interface Artist extends Record {
     genres: Array<string> | Array<Genre>
 }
 
-interface Song extends Record {
+export interface Song extends Record {
     song_id: string,
     title: string,
     artists: Array<Artist> | Array<string>,
     link: string,
     image: string,
     analytics: Analytics
+}
+
+export interface UserEvent extends Record {
+    owner: User | string,
+    ref_num: number
+    item: { id: string, type: string } | Album | Artist | Song | User,
 }
 
 type Analytics = {
@@ -119,12 +126,30 @@ interface ProfileRecommendations extends Record {
 }
 
 interface Datapoint extends Record {
-    owner: User,
+    owner: User | string,
     top_songs: Array<Song> | Array<string>,
     top_artists: Array<Artist> | Array<string>,
     top_genres: Array<Genre> | Array<string>
 }
 
+interface Album {
+    album_id: string,
+    artists: string,
+    name: string,
+    tracks: Array<Song>,
+    image: string,
+    link: string,
+    saved_songs?: Array<Song>
+}
+
+
+const dp_cache = new LRUCache<string, Datapoint, unknown>({
+    max: 100,
+});
+
+const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
+
+let me = undefined;
 
 export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
@@ -139,7 +164,6 @@ export function hashString(inputString) {
     const hex = hash.toString(16);
     return hex.padStart(15, '0').substring(0, 15);
 }
-
 
 
 /**
@@ -170,6 +194,8 @@ export const followsUser = async function (primaryUserID: string, targetUserID: 
 
 /**
  * Will make the primary user follow the target user.
+ *
+ * **Has a built-in event creation side effect.**
  * @param primaryUserID
  * @param targetUserID
  */
@@ -185,6 +211,7 @@ export const followUser = async function (primaryUserID: string, targetUserID: s
         primaryObj.following.push(targetObj.user);
         // Update the primary user's data to show they are following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
+        getUser(targetUserID).then(targetUser => createEvent(52, primaryUserID, targetUser, "users"));
         // Update the target user's data to show they are being followed by the primary user
         await getLocalDataByID("user_followers", hashString(targetUserID)).then(res => {
             let item = res;
@@ -340,12 +367,14 @@ export const deleteComment = async function (comment_id: string) {
 }
 /**
  * Creates a recommendation for the target user on their page.
+ *
+ * **Has build in createEvent side-effect.**
  * @param user_id
  * @param item
  * @param type
  * @param description
  */
-export const submitRecommendation = async function (user_id: string, item: Song | Artist, type: "songs" | "artists", description: string) {
+export const submitRecommendation = async function (user_id: string, item: Song | Artist | Album, type: "songs" | "artists" | "albums", description: string) {
     const id = hashString(getLIName(item) + description + user_id);
     let currRecommendations: ProfileRecommendations = await getLocalDataByID("profile_recommendations", hashString(user_id));
     if (currRecommendations.recommendations === null) {
@@ -371,9 +400,151 @@ export const submitRecommendation = async function (user_id: string, item: Song 
             const newRecs_s = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
             await updateLocalData("profile_recommendations", newRecs_s, currRecommendations.id);
             break;
+        case 'albums':
+            const albumItemObj = {id: item.album_id, type: type};
+            const albumRecommendation = {id: id, item: albumItemObj, description: description};
+            await putLocalData("recommendations", albumRecommendation);
+            const newRecs_al = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
+            await updateLocalData("profile_recommendations", newRecs_al, currRecommendations.id);
+            break;
     }
-
+    createEvent(1, user_id, item, type);
 }
+/**
+ * Modifies an existing recommendation with a new description.
+ *
+ * **Has build in createEvent side-effect.**
+ * @param user_id
+ * @param existingRecommendation
+ * @param type
+ * @param newDescription
+ */
+export const modifyRecommendation = async (user_id: string, existingRecommendation: Recommendation, type: "songs" | "artists" | "albums", newDescription: string) => {
+    // We need to unresolve the item to its id and type
+    let unresolvedExistingRec = structuredClone(existingRecommendation);
+    let item = existingRecommendation.item;
+    let item_id;
+    if (type === "songs" || type === "artists") {
+        item_id = retrieveDatabaseID(item, type);
+    } else if (type === "albums") {
+        item_id = item["album_id"];
+    }
+    unresolvedExistingRec.item = {id: item_id, type: type};
+    const newRecommendation = {
+        ...unresolvedExistingRec,
+        description: newDescription
+    };
+    await updateLocalData("recommendations", newRecommendation, existingRecommendation.id).then(() => {
+        createEvent(53, user_id, existingRecommendation.item, type);
+    });
+}
+
+/**
+ * Will always return the database id for either a song, artist or album.
+ * The type does not need to be specified and the id may **not** always be valid
+ * as it can be unresolved.
+ */
+export const retrieveDatabaseID = (item, type) => {
+    if (type === "songs" || type === "artists") {
+        return hashString(item[`${type.slice(0, type.length - 1)}_id`]);
+    } else if (type === "users") {
+        // Assumes a user record is being submitted, otherwise it would
+        // be impossible to know what the id was
+        return item.id;
+    } else {
+        throw new Error("Unknown type seen in retrieveDatabaseID.");
+    }
+}
+
+
+/**
+ * Creates an event in the database.
+ *
+ * An event is any action that another user following the target user will be notified about.
+ *  The event reference number is a reference to the type of event triggered.
+ *
+ *  1-50 | Major events
+ *
+ *  1: Added recommendation
+ *
+ *  2: Added annotations
+ *
+ *  51-100 | Minor events
+ *
+ *  51: Removes recommendation
+ *
+ *  52: Follows user
+ *
+ *  53: Edit recommendation
+ *
+ *
+ * @param event_ref_num
+ * @param user_id
+ * @param item
+ * @param item_type
+ */
+export const createEvent = async function (event_ref_num: number, user_id: string, item: Artist | Song | Album | Playlist, item_type: "artists" | "songs" | "albums" | "users" | "playlists") {
+    const user: User = await retrieveUser(user_id);
+    let item_id;
+    console.log(item_type)
+    if (item_type === "songs" || item_type === "artists" || item_type === "users") {
+        item_id = retrieveDatabaseID(item, item_type);
+    } else if (item_type === "playlists") {
+        item_id = item["playlist_id"];
+    } else if (item_type === "albums") {
+        item_id = item["album_id"];
+    }
+    console.log({
+        event_ref_num: event_ref_num,
+        user_id: user_id,
+        item: item,
+        item_type: item_type,
+        item_id: item_id
+    });
+    await putLocalData("events",
+        {
+            owner: user.id,
+            ref_num: event_ref_num,
+            item: {id: item_id, type: item_type}
+        }
+    )
+}
+export const retrieveEventsForUser = async function (user_id: string, page: number = 1, eventsPerPage: number = 50) {
+    const following: Array<User> = await retrieveFollowing(user_id);
+    const followingMap = new Map();
+    // Create map to reference user from their db id
+    following.forEach(u => followingMap.set(u.id, u));
+    const conditions = following.map(u => `owner.id = "${u.id}"`);
+    const filter = conditions.join(" || ");
+
+    const events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
+    for (const e of events) {
+        e.owner = followingMap.get(e.owner);
+        switch (e.item.type) {
+            case "albums":
+                const album = await fetchData(`albums/${e.item.id}`);
+                e.item = formatAlbum(album);
+                break;
+            case "songs":
+                e.item = await getLocalDataByID("songs", e.item.id, "artists");
+                break;
+            case "artists":
+                e.item = await getLocalDataByID("artists", e.item.id, "genres");
+                break;
+            case "users":
+                e.item = await getLocalDataByID("users", e.item.id);
+                break;
+            case "playlists":
+                e.item = await retrievePlaylist(e.item.id, false);
+                break;
+            default:
+                throw new Error(`Unknown type of item in event ${e.id}`);
+        }
+    }
+    return events;
+}
+
+
 /**
  * Deletes a profile recommendation.
  * @param rec_id
@@ -429,19 +600,63 @@ export const retrieveProfileRecommendations = async function (user_id: string) {
             let song: Song = await getLocalDataByID("songs", e.item.id, "artists");
             song.artists = song.expand.artists;
             e.item = song;
+        } else if (e.item.type === "albums") {
+            let album: Album = await fetchData(`albums/${e.item.id}`);
+            album = formatAlbum(album);
+            e.item = album;
         } else {
             throw new Error("Unknown type fetched from profile recommendations.");
         }
     }
     return recs;
 }
+
+export const milliToHighestOrder = function (milliseconds) {
+    let calcVal = milliseconds / 1000;
+    let unit = 's';
+    // Minutes
+    if (calcVal > 60) {
+        calcVal /= 60;
+        unit = 'm';
+        // Hours
+        if (calcVal > 60) {
+            calcVal /= 60;
+            unit = Math.trunc(calcVal) !== 1 ? 'hrs' : 'hr';
+            // Days
+            if (calcVal > 24) {
+                calcVal /= 24;
+                unit = 'd';
+                // Weeks
+                if (calcVal > 7) {
+                    calcVal /= 7;
+                    unit = 'w';
+                    // Months
+                    if (calcVal > 30) {
+                        calcVal /= 30;
+                        unit = 'm';
+                        // Years
+                        if (calcVal > 12) {
+                            calcVal /= 12;
+                            unit = Math.trunc(calcVal) !== 1 ? 'yrs' : 'yr';
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return {
+        value: Math.trunc(calcVal),
+        unit: unit
+    }
+}
+
 /**
  * Returns the results of a query of a certain type.
  * @param query
  * @param type
  * @returns Artist | Song
  */
-export const retrieveSearchResults = async function (query: string, type: "artists" | "songs") {
+export const retrieveSearchResults = async function (query: string, type: "artists" | "songs" | "albums") {
     let typeParam;
     switch (type) {
         case 'artists':
@@ -449,6 +664,9 @@ export const retrieveSearchResults = async function (query: string, type: "artis
             break;
         case 'songs':
             typeParam = 'track';
+            break;
+        case 'albums':
+            typeParam = 'album'
             break;
         default:
             typeParam = null;
@@ -471,7 +689,10 @@ export const retrieveSearchResults = async function (query: string, type: "artis
         data.tracks = data.tracks.map(t => formatSong(t));
         returnValue = data.tracks;
     } else {
-        console.warn('No type identified for', data);
+        data = data.albums.items
+        data = data.map(a => formatAlbum(a));
+        console.log(data)
+        returnValue = data;
     }
     return returnValue;
 }
@@ -479,7 +700,7 @@ export const retrieveSearchResults = async function (query: string, type: "artis
 /**
  * Returns an array of public non-collaborative playlists from a given user.
  * @param user_id
- * @returns {Promise<Array>}
+ * @returns {Promise<Array<Playlist>>>}
  */
 export const retrievePlaylists = async function (user_id: string) {
     // Fetch all playlists
@@ -515,7 +736,104 @@ export const retrievePlaylists = async function (user_id: string) {
         });
     });
 
+    playlists = playlists.map(p => formatPlaylist(p));
+
     return playlists;
+}
+/**
+ *
+ * @param playlist_id
+ * @param retrieveTracks
+ * @returns Playlist
+ */
+export const retrievePlaylist = async function (playlist_id: string, retrieveTracks: boolean = true) {
+    let playlist = await fetchData(`playlists/${playlist_id}`);
+
+    if (retrieveTracks) {
+        const totalTracks = playlist.tracks.total;
+        const numCalls = Math.ceil(totalTracks / 50);
+        const promises: Array<Array<Song>> = [];
+
+        // Max of 50 songs per call, so they must be batched
+        for (let i = 0; i < numCalls; i++) {
+            const offset = i * 50;
+            const promise: Array<Song> = fetchData(`playlists/${playlist.id}/tracks?limit=50&offset=${offset}`)
+                .then(response => response.items.map(e => e.track))
+                .catch(error => {
+                    console.error(`Failed to retrieve tracks for playlist ${playlist.id}. Error: ${error}`);
+                    return [];
+                });
+
+            promises.push(promise);
+        }
+
+        playlist.tracks = await Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null).map(t => formatSong(t)));
+        const analytics = await batchAnalytics(playlist.tracks);
+        playlist.tracks.map((t, i) => t.analytics = analytics[i]);
+    }
+
+    return formatPlaylist(playlist);
+}
+
+export interface PlaylistMetadata extends Record {
+    playlist_id: string,
+    meta: {},
+}
+
+/**
+ *
+ * @param playlist_id
+ * @returns PlaylistMetadata
+ */
+export const retrievePlaylistMetadata = async function (playlist_id: string) {
+    return (await getLocalData("playlist_metadata", `playlist_id="${playlist_id}"`, undefined, undefined, undefined, false))[0];
+}
+/**
+ * Adds an annotation to an item in a playlist.
+ *
+ * **Has build in createEvent side-effect.**
+ * @param user_id
+ * @param playlist
+ * @param song_id
+ * @param annotation
+ */
+export const addAnnotation = async function (user_id: string, playlist: Playlist, song_id: string, annotation: string) {
+    if (user_id === null) {
+        throw new Error("Null userID passed into addAnnotation!");
+    }
+    let returnValue;
+    let existingMeta = await retrievePlaylistMetadata(playlist.playlist_id);
+    if (existingMeta) {
+        let modifiedMeta = existingMeta;
+        modifiedMeta.meta[song_id] = annotation;
+        await updateLocalData("playlist_metadata", modifiedMeta, existingMeta.id);
+        returnValue = modifiedMeta;
+    } else {
+        let metaField = {};
+        metaField[song_id] = annotation;
+        const meta = {playlist_id: playlist.playlist_id, meta: metaField};
+        returnValue = meta;
+        await putLocalData("playlist_metadata", meta);
+        createEvent(2, user_id, playlist, "playlists")
+    }
+    return returnValue;
+}
+
+export const deleteAnnotation = async function (playlist: Playlist, song_id: string) {
+    let returnValue;
+    let existingMeta = await retrievePlaylistMetadata(playlist.playlist_id);
+    if (existingMeta) {
+        if (Object.keys(existingMeta.meta).length <= 1) {
+            await deleteLocalData("playlist_metadata", existingMeta.id);
+            returnValue = undefined;
+        } else {
+            let modifiedMeta = existingMeta;
+            delete modifiedMeta.meta[song_id];
+            await updateLocalData("playlist_metadata", modifiedMeta, existingMeta.id);
+            returnValue = modifiedMeta;
+        }
+    }
+    return returnValue;
 }
 
 
@@ -523,10 +841,9 @@ export const retrievePlaylists = async function (user_id: string) {
  * Formats a user object from spotify in to a formatted user object.
  * @returns User
  */
-export const formatUser = async function (user) {
-    // Get our global user_id
+export const formatUser = function (user) {
     let pfp = null;
-    if (user.images.length > 0) {
+    if (user.images?.length > 0) {
         console.log(user);
         pfp = user.images[0].url;
     }
@@ -534,21 +851,21 @@ export const formatUser = async function (user) {
         user_id: user.id,
         username: user.display_name,
         profile_picture: pfp,
-        media: null,
     }
 }
 /**
- * Returns all the users that have a matching item for a given term.
+ * Returns all the users that have a matching item in their most recent datapoints.
  */
-export const followingContentsSearch = async function (user_id: string, item: Artist | Song | string, type: 'artists' | 'songs' | 'genres', term: 'short_term' | 'medium_term' | 'long_term') {
-    const following = await retrieveFollowing(user_id);
+export const followingContentsSearch = async function (user_id: string, item: Artist | Song | string, type: 'artists' | 'songs' | 'genres') {
+    const following: Array<User> = await retrieveFollowing(user_id);
     const dpPromises = [];
     following.forEach((user: User) => {
-        dpPromises.push(getDatapoint(user.user_id, term));
+        dpPromises.push(retrieveAllDatapoints(user.user_id));
     })
-    const dps = await Promise.all(dpPromises);
+    let dps: Array<Datapoint> = await Promise.all(dpPromises);
+    dps = dps.flat().filter(d => d !== null);
     const ownerIDs = dps.filter(e => containsElement(item, e, type)).map(e => e.owner);
-    return following.filter(e => ownerIDs.some(id => id === e.id));
+    return following.filter(e => ownerIDs.some((id: string) => id === e.id));
 }
 
 /**
@@ -571,6 +888,13 @@ export const isLoggedIn = function () {
  * @returns {Promise<*>} A datapoint object.
  */
 export const retrieveDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
+    const cacheID = `${user_id}_${term}`;
+    //console.log(`Has ${cacheID}: `, dp_cache.has(cacheID));
+    if(dp_cache.has(cacheID)){
+        console.log(`[Cache] Returning cached datapoint.`)
+        return dp_cache.get(cacheID);
+    }
+
     let timeSensitive = false;
     // Are we accessing the logged-in user?
     // [Unknowingly]
@@ -586,6 +910,7 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
         console.warn(err);
     })
     if (currDatapoint === undefined && timeSensitive) {
+        console.warn('Deprecated behaviour: Hydration is triggered by retrieveDatapoint method, not retrieveAllDatapoints.')
         await hydrateDatapoints().then(async () =>
             currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
                 console.warn("Error retrieving datapoint: ");
@@ -594,16 +919,10 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
         );
     }
 
-    currDatapoint = formatDatapoint(currDatapoint);
-    return currDatapoint;
-}
 
-export function getAllIndexes(arr, val) {
-    let indexes = [], i;
-    for (i = 0; i < arr.length; i++)
-        if (arr[i] === val)
-            indexes.push(i);
-    return indexes;
+    currDatapoint = formatDatapoint(currDatapoint);
+    dp_cache.set(cacheID, currDatapoint )
+    return currDatapoint;
 }
 
 export const retrievePrevDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
@@ -616,69 +935,30 @@ export const retrievePrevDatapoint = async function (user_id: string, term: "sho
 }
 
 
-const formatDatapoint = function (d: Datapoint) {
-    if (d === null || d === undefined) {
-        return null;
-    }
-    // Turn relation ids into the actual arrays / records themselves using
-    // pocketbase's expand property
-    d.top_artists = d.expand.top_artists;
-    d.top_songs = d.expand.top_songs;
-    d.top_genres = d.expand.top_genres.map(e => e.genre);
-    d.top_artists.map(e => e.genres = e.expand.genres?.map(g => g.genre));
-    d.top_songs.map(e => e.artists = e.expand.artists);
-    d.top_songs.map(e => e.artists.map(a => a.genres = a.expand.genres?.map(g => g.genre)));
-    // Delete redundant expansions
-    delete d.expand;
-    d.top_artists.forEach(e => delete e.expand);
-    d.top_songs.forEach(e => delete e.expand);
-    d.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
-    return d;
-};
-
-async function retrieveFromCache(cacheName, cacheKey) {
-    if ('caches' in window) {
-        const cacheStorage = await caches.open(cacheName);
-        const cachedResponse = await cacheStorage.match(cacheKey);
-
-        if (cachedResponse) {
-            const cachedData = await cachedResponse.json().catch(err => {
-                console.error('Cache retrieval failure:', err);
-                cacheStorage.delete(cacheKey);
-            });
-            if (cachedData) {
-                return cachedData;
-            }
-        }
-    }
-
-    return null;
-}
-
-async function cacheData(cacheName, cacheKey, data, maxAgeInSeconds = null) {
-    if ('caches' in window) {
-        const cacheStorage = await caches.open(cacheName);
-        const headers = new Headers();
-        if (maxAgeInSeconds !== null) {
-            headers.append('Cache-Control', `max-age=${maxAgeInSeconds}`);
-        }
-        const responseToCache = new Response(JSON.stringify(data), {
-            headers,
-        });
-        await cacheStorage.put(cacheKey, responseToCache);
-    }
-}
-
 export const retrieveAllDatapoints = async function (user_id) {
 
     await disableAutoCancel();
+    const validExists = await validDPExists(user_id, 'long_term');
     const terms = ['short_term', 'medium_term', 'long_term'];
-    const datapoints = [];
+    let datapoints = [];
 
-    for (const term of terms) {
-        const datapoint = await retrieveDatapoint(user_id, term);
-        datapoints.push(datapoint);
+    if (isLoggedIn() && user_id === await retrieveLoggedUserID() && validExists) {
+        // Retrieve datapoints for each term
+        for (const term of terms) {
+            const datapoint = await retrieveDatapoint(user_id, term);
+            datapoints.push(datapoint);
+        }
+    } else if (isLoggedIn() && user_id === await retrieveLoggedUserID() && !validExists) {
+        // Hydrate datapoints
+        datapoints = await hydrateDatapoints();
+    } else {
+        // Retrieve datapoints for each term
+        for (const term of terms) {
+            const datapoint = await retrieveDatapoint(user_id, term);
+            datapoints.push(datapoint);
+        }
     }
+
 
     await enableAutoCancel();
 
@@ -701,45 +981,48 @@ export const retrievePrevAllDatapoints = async function (user_id) {
     return datapoints;
 };
 
+
+export function getAllIndexes(arr, val) {
+    let indexes = [], i;
+    for (i = 0; i < arr.length; i++)
+        if (arr[i] === val)
+            indexes.push(i);
+    return indexes;
+}
+
+const formatDatapoint = function (d: Datapoint) {
+    if (d === null || d === undefined) {
+        return null;
+    }
+    // Turn relation ids into the actual arrays / records themselves using
+    // pocketbase's expand property
+    d.top_artists = d.expand.top_artists;
+    d.top_songs = d.expand.top_songs;
+    d.top_genres = d.expand.top_genres.map(e => e.genre);
+    d.top_artists.map(e => e.genres = e.expand.genres?.map(g => g.genre));
+    d.top_songs.map(e => e.artists = e.expand.artists);
+    d.top_songs.map(e => e.artists.map(a => a.genres = a.expand.genres?.map(g => g.genre)));
+    // Delete redundant expansions
+    delete d.expand;
+    d.top_artists.forEach(e => delete e.expand);
+    d.top_songs.forEach(e => delete e.expand);
+    d.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
+    return d;
+};
 export const retrieveLoggedUserID = async function () {
-    const cacheName = 'userIDCache';
-    const cacheKey = 'loggedUserID';
-
-    // Check if the result is in the cache
-    const cachedData = await retrieveFromCache(cacheName, cacheKey);
-    if (cachedData) {
-        return cachedData;
+    if(!me){
+        me = await fetchData('me');
     }
-
-    // If not in cache, make the API request
-    const response = await fetchData('me');
-    const userID = response.id;
-
-    // Cache the result
-    await cacheData(cacheName, cacheKey, userID);
-
-    return userID;
+    return me.id;
 };
-
-export const retrieveUser = async function (user_id) {
-    const cacheName = 'userDataCache';
-    const cacheKey = `user_${user_id}`;
-
-    // Check if the result is in the cache
-    const cachedData = await retrieveFromCache(cacheName, cacheKey);
-    if (cachedData) {
-        return cachedData;
-    }
-
-    // If not in cache, make the API request
-    const userData = await getUser(user_id);
-
-    // Cache the result with max age of 10 hours
-    await cacheData(cacheName, cacheKey, userData, 36000);
-
-    return userData;
+/**
+ * Mapping of getUser.
+ * @param user_id
+ * @returns User
+ */
+export const retrieveUser = async function (user_id: string) {
+    return await getUser(user_id);
 };
-
 
 
 function chunks(array, size) {
@@ -792,7 +1075,7 @@ export const batchArtists = async (artist_ids: Array<string>) => {
     return artists;
 };
 
-export const deleteUser = async (user_id : string) => {
+export const deleteUser = async (user_id: string) => {
     const universal_id = hashString(user_id);
     const datapoints = await getLocalData('datapoints', `owner.user_id="${user_id}"`);
     const datapointPromises = datapoints.map(d => deleteLocalData('datapoints', d.id));
@@ -813,25 +1096,6 @@ export const deleteUser = async (user_id : string) => {
     await deleteLocalData('users', user.id);
 }
 
-export const handleCacheReset = () => {
-    if ('caches' in window) {
-        const cacheTypes = ['userDataCache', 'datapointsCache', 'prevDatapointsCache', 'userIDCache'];
-        cacheTypes.forEach(t => {
-            caches.delete(t).then(success => {
-                if (success) {
-                    console.log(`Cache ${t} has been cleared.`);
-                } else {
-                    console.log(`Cache ${t} does not exist.`);
-                }
-            }).catch(error => {
-                console.error(`Error while clearing cache ${t}: ${error}`);
-            });
-        })
-    } else {
-        console.warn('The caches API is not supported in this browser.');
-    }
-}
-
 /**
  * Returns any albums from a given that contain the tracks given.
  * @param artistID
@@ -844,19 +1108,30 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Arr
         return [];
     }
 
-    const albums = (await fetchData(`artists/${artistID}/albums`)).items;
-    const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
-    const albumTracks = await Promise.all(albumPromises);
+    let albums;
 
+    if(albums_cache.has(artistID)){
+        console.log('[Cache] Returning cached albums.')
+        albums = albums_cache.get(artistID);
+    }else{
+        albums = (await fetchData(`artists/${artistID}/albums`)).items;
+        const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
+        const albumTracks = await Promise.all(albumPromises);
+        albums.forEach((a,i) => {
+            a.tracks = albumTracks[i].items;
+            albums_cache.set(artistID, albums);
+        });
+    }
 
     for (let i = 0; i < albums.length; i++) {
         const album = albums[i];
-        const trackList: Array<Song> = albumTracks[i].items;
+        const trackList = album.tracks;
         album["saved_songs"] = trackList.filter((t1) => tracks.some(t2 => t1.id === t2.song_id));
         if (album["saved_songs"].length > 0 && !albumsWithTracks.some((item) => item["saved_songs"].length === album["saved_songs"].length && item.name === album.name)) {
-            albumsWithTracks.push(album);
+            albumsWithTracks.push(formatAlbum(album));
         }
     }
+
     return albumsWithTracks;
 }
 
@@ -881,6 +1156,70 @@ export const formatArtist = (artist) => {
     }
 }
 /**
+ * Formats a spotify album into an album object.
+ * @param album
+ * @returns Album
+ */
+const formatAlbum = (album) => {
+    let image = null;
+    if (album.hasOwnProperty("images")) {
+        if (album.images[1] !== undefined) {
+            image = album.images[1].url;
+        }
+    }
+    const artists = album.artists.map(a => formatArtist(a));
+    return {
+        album_id: album.id,
+        artists: artists,
+        name: album.name,
+        image: image,
+        link: album.external_urls.spotify,
+        saved_songs: album.saved_songs,
+        tracks: album.tracks
+    }
+}
+
+interface Playlist {
+    playlist_id: string,
+    image: string,
+    name: string,
+    description: string,
+    tracks: Array<Song>,
+    link: string,
+    followers: number
+    owner: User
+}
+
+/**
+ * Formats a spotify playlist into a playlist object.
+ * @param playlist
+ * @returns Playlist
+ */
+const formatPlaylist = (playlist) => {
+    let image = null;
+    if (playlist.hasOwnProperty("images")) {
+        if (playlist.images[0] !== undefined) {
+            image = playlist.images[0].url;
+        }
+    }
+    let tracks: any[];
+    if (playlist.hasOwnProperty("tracks")) {
+        tracks = playlist.tracks;
+    } else {
+        tracks = undefined;
+    }
+    return {
+        playlist_id: playlist.id,
+        image: image,
+        name: playlist.name,
+        description: playlist.description,
+        tracks: tracks,
+        link: playlist.external_urls.spotify,
+        followers: playlist.followers?.total,
+        owner: formatUser(playlist.owner),
+    }
+}
+/**
  * Formats a spotify song in to a song object.
  * @param song
  * @returns Song
@@ -900,7 +1239,8 @@ export const formatSong = (song) => {
         title: song.name,
         artists: artists,
         image: image,
-        link: song.external_urls.spotify,}
+        link: song.external_urls.spotify,
+    }
 }
 /**
  * Returns similar artists to the artist id passed in.
@@ -931,10 +1271,15 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
 
 /**
  * Creates a datapoint for each term for the logged-in user and posts them
- * to the database using postDatapoint.
+ * to the database using postDatapoint
+ *
+ * **The hydration will optimistically return the datapoints prior to
+ * posting.**
+ * @returns {[short_term : Datapoint, medium_term : Datapoint, long_term : Datapoint]}
  */
 export const hydrateDatapoints = async function () {
     console.time("Hydration."); // Start a timer for performance measurement
+    console.time("Compilation")
     const terms = ['short_term', 'medium_term', 'long_term'];
     const loggedUserID = await retrieveLoggedUserID();
     const datapoints = [];
@@ -972,17 +1317,51 @@ export const hydrateDatapoints = async function () {
 
         datapoints.push(datapoint);
     }
-
+    console.timeEnd("Compilation");
     console.info("Posting datapoints...");
+    // Create deep copy clone to prevent optimistic return
+    // resolving in to references via the API
+    let postClone = structuredClone(datapoints);
+    postHydration(postClone).then(() => {
+        console.info("Hydration over.");
+        console.timeEnd("Hydration."); // End the timer and display the elapsed time
+    });
+    return datapoints;
+};
+
+const postHydration = async (datapoints) => {
     for (const datapoint of datapoints) {
         await postDatapoint(datapoint).then(() => {
             console.info(datapoint.term + " success!");
         });
     }
-
-    console.info("Hydration over.");
-    console.timeEnd("Hydration."); // End the timer and display the elapsed time
-};
+}
+/**
+ * Runs the argument callback function as a side effect of a successful
+ * hydration by the argument user_id.
+ * @param user_id
+ * @param callback
+ */
+export const onHydration = async (user_id: string, callback: Function) => {
+    const user = await retrieveUser(user_id);
+    const func = (e) => {
+        if (e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id) {
+            console.info("Hydration event noted!");
+            callback();
+            destroyOnHydration();
+        }
+    }
+    await subscribe("datapoints", "*", func);
+}
+/**
+ * Destroys the onHydration subscription.
+ *
+ * **Should be called after a successful call of the
+ * callback for the onHydration event.**
+ */
+const destroyOnHydration = async () => {
+    await unsubscribe("datapoints", "*");
+}
 
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.

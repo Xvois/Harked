@@ -24,7 +24,7 @@
     transition: 0.25s all ease;
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 650px) {
     .header {
         background: var(--bg-colour);
     }
@@ -70,13 +70,32 @@
     border: none;
 }
 
-
 .redirect-element p {
     margin: 0;
     font-size: 12px;
     font-family: 'Inter Tight', sans-serif;
     font-weight: 200;
     text-transform: uppercase;
+}
+
+.redirect-expanded {
+    flex-grow: 1;
+    height: max-content;
+    justify-content: left;
+    font-family: "Inter Tight", sans-serif;
+    font-size: 12px;
+    text-decoration: none;
+    color: var(--primary-colour);
+    background: rgba(125, 125, 125, 0.25);
+    border: none;
+    padding: 5px 30px 5px 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+
+.redirect-expanded:hover {
+    background: rgba(125, 125, 125, 0.5);
 }
 
 .search-bar-container {

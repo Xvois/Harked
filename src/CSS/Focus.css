@@ -21,7 +21,6 @@
 }
 
 .play-wrapper > p {
-    font-family: "Inter Tight", sans-serif;
     font-weight: bold;
     font-size: 20px;
     text-transform: uppercase;
@@ -63,7 +62,6 @@
 
     font-size: 20px;
     font-weight: 600;
-    font-family: 'Inter Tight', sans-serif;
 
     text-align: justify;
 }
@@ -110,6 +108,5 @@
 }
 
 .artist-analysis-title {
-    font-family: "Inter Tight", sans-serif;
     margin: 0 auto 0 auto;
 }
