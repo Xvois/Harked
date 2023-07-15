@@ -470,9 +470,9 @@ const SelectionModal = (props) => {
                         inputProps={{maxLength: 100}}
                     />
                     <div style={{width: "max-content", marginLeft: 'auto'}}>
-                        <button type={'button'} onClick={handleSearch}
-                                style={{borderColor: 'var(--secondary-colour)', borderTop: 'none'}}
-                                className={'std-button'}>Search
+                        <button className="std-button"
+                                style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} type={"button"} onClick={handleSearch}>
+                            Submit
                         </button>
                     </div>
                     {searchResults && (
@@ -726,10 +726,10 @@ const ArtistAnalysis = (props) => {
                     showing === "albums" ?
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <button className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
+                            <div className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
                                 <p style={{margin: 0}}>Most listened to albums by</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
-                            </button>
+                            </div>
                         </div>
                         {orderedAlbums.length > 0 ?
                             orderedAlbums.map((a,i) => {
@@ -754,10 +754,10 @@ const ArtistAnalysis = (props) => {
                     :
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <button className={'widget-button'} onClick={switchShowing}>
+                            <div className={'widget-button'} onClick={switchShowing}>
                                 <p style={{margin: 0}}>Following that listen to</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
-                            </button>
+                            </div>
                         </div>
                         {followingWithArtist.length > 0 ?
                             followingWithArtist.map((u,i) => {
@@ -793,11 +793,11 @@ const SongAnalysis = (props) => {
         if (!!analytics) {
             return (
                 <div className={'list-widget-wrapper'}>
-                    <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                        <button className={'widget-button'}>
+                    <div className={'widget-item'}>
+                        <div className={'widget-button'}>
                             <p style={{margin: 0}}>Analysis of</p>
                             <h3 style={{margin: 0}}>{getLIName(song)}</h3>
-                        </button>
+                        </div>
                     </div>
                     {
                         Object.keys(translateAnalytics).map(function (key) {
