@@ -91,7 +91,7 @@ const Feed = () => {
 
         fetchData().then((e: Array<UserEvent>) => {
             setEvents(e)
-            if (e.length <= maxEventsPerLoad) {
+            if (e.length < maxEventsPerLoad) {
                 console.info('Loaded all at once.')
                 setHasMore(false);
             } else {
