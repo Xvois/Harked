@@ -1520,8 +1520,18 @@ const Profile = () => {
                                         textTransform: 'uppercase'
                                     }}>{possessive}</p>
                                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Recommendations</h2>
-                                    <p><span style={{textTransform: 'capitalize'}}>{possessive}</span> artists and songs
-                                        that are recommended to others.</p>
+                                    {isLoggedIn() ?
+                                        <>
+                                            <p><span style={{textTransform: 'capitalize'}}>{possessive}</span> artists and songs
+                                                that are recommended to others.</p>
+                                        </>
+                                        :
+                                        <>
+                                            <p>Viewing someone's recommendations requires being logged in.</p>
+                                            <button className={'std-button'} onClick={handleAlternateLogin}>Log-in
+                                            </button>
+                                        </>
+                                    }
                                 </div>
                             </div>
                             <div style={{
@@ -1531,7 +1541,9 @@ const Profile = () => {
                                 gap: '10px',
                                 width: '100%'
                             }}>
-                                <ProfileRecommendations pageGlobalUserID={pageGlobalUserID} isOwnPage={isOwnPage}/>
+                                {isLoggedIn() &&
+                                    <ProfileRecommendations pageGlobalUserID={pageGlobalUserID} isOwnPage={isOwnPage}/>
+                                }
                             </div>
                         </div>
                         <div className={'simple-instance'}>
