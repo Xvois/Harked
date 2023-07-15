@@ -696,6 +696,7 @@ const ArtistAnalysis = (props) => {
         const tracks = playlists.map(e => e.tracks).flat(1);
         getAlbumsWithTracks(artist.artist_id, tracks).then(
             result => {
+                console.log(result);
                 setArtistsAlbumsWithLikedSongs(result);
                 setOrderedAlbums(result.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4));
                 if (result.length === 0 && isOwnPage) {
@@ -875,20 +876,16 @@ const GenreBreakdown = (props) => {
     };
 
     return (
-        false ?
-                <div id={'genre-breakdown'}>
-                    <select defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
-                        {selectedDatapoint.top_genres.slice(0,9).map(g => {
-                            return <option key={g} value={g}>{g}</option>
-                        })}
-                    </select>
-                    <div id={'genre-chart-wrapper'}>
-                        <Doughnut data={data} updateMode={"show"} />
-                    </div>
-                </div>
-                :
-                <p style={{fontWeight: 'bold'}}>This is being reworked! Stay tuned.</p>
-
+        <div id={'genre-breakdown'}>
+            <select defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
+                {selectedDatapoint.top_genres.slice(0,9).map(g => {
+                   return <option key={g} value={g}>{g}</option>
+                })}
+            </select>
+            <div id={'genre-chart-wrapper'}>
+                <Doughnut data={data} updateMode={"show"} />
+            </div>
+        </div>
     )
 }
 
