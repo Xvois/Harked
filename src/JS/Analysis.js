@@ -313,9 +313,11 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
     switch (type) {
         case "artists":
             // Short to long term
-            const indexes = allDatapoints.map(d => {
-                return d.top_artists.findIndex(a => a.artist_id === item.artist_id);
+            let indexes = allDatapoints.map(d => {
+                return d?.top_artists.findIndex(a => a.artist_id === item.artist_id);
             });
+            // If any null datapoints, assume -1 index result
+            indexes.map(i => i === null ? -1 : i);
             const associatedSongIndex = selectedDatapoint.top_songs.findIndex(s => s.artists.some(a => a.artist_id === item.artist_id));
             const associatedSong = selectedDatapoint.top_songs[associatedSongIndex];
             const allSongs = selectedDatapoint.top_songs.filter(s => s.artists.some(a => a.artist_id === item.artist_id));
@@ -487,8 +489,8 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
 
             // Analyze the popularity of the genre across different terms
             const genrePopularity = allDatapoints.map(datapoint => {
-                const genreIndex = datapoint.top_genres.findIndex(genre => genre === item);
-                return genreIndex !== -1 ? genreIndex + 1 : null;
+                const genreIndex = datapoint?.top_genres.findIndex(genre => genre === item);
+                return genreIndex !== -1 && genreIndex !== null ? genreIndex + 1 : null;
             });
 
             // Determine the trend of the genre's popularity
