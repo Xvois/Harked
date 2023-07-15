@@ -20,7 +20,7 @@
     background: none;
     backdrop-filter: blur(15px);
     padding: 10px 25px;
-    border-bottom: 1px solid var(--secondary-colour);
+    border-bottom: 1px solid var(--transparent-border-colour);
     transition: 0.25s all ease;
 }
 
@@ -83,8 +83,8 @@
     flex-grow: 1;
     height: max-content;
     min-width: 100px;
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.2);
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
     padding: 5px 30px 5px 30px;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -122,13 +122,13 @@
     color: var(--primary-colour);
     text-decoration: none;
     text-transform: none;
-    background: rgba(125, 125, 125, 0.1);
+    background: var(--transparent-colour);
     backdrop-filter: blur(10px);
     flex-grow: 1;
     padding: 15px;
-    border-left: 1px solid rgba(125, 125, 125, 0.2);
-    border-bottom: 1px solid rgba(125, 125, 125, 0.2);
-    border-right: 1px solid rgba(125, 125, 125, 0.2);
+    border-left: 1px solid var(--transparent-border-colour);
+    border-bottom: 1px solid var(--transparent-border-colour);
+    border-right: 1px solid var(--transparent-border-colour);
 }
 
 .result-title {

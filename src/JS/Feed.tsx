@@ -46,11 +46,10 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
     return (
         <div className={event.ref_num < 51 ? 'major-feed-object' : 'minor-feed-object'} style={index !== 0 ? {
             borderTop: '1px solid var(--accent-colour)',
-            animationDelay: `${(index % maxEventsPerLoad) / 20}s`
-        } : {animationDelay: `${index / 20}s`}}>
+        } : {}}>
             <div className={'feed-image'} style={{position: 'relative'}}>
-                <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.image}/>
-                <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.image}/>
+                <img loading={"lazy"} alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.image}/>
+                <img loading={"lazy"} alt={getLIName(event.item)} className={'levitating-image'} src={event.item.image}/>
             </div>
             <div>
                 {event.ref_num < 51 && <h3 style={{margin: '0 0 10px 0'}}><a

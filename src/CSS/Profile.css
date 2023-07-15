@@ -92,8 +92,8 @@ select.dropdown {
     position: relative;
     align-items: center;
     align-content: center;
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.75);
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
     will-change: height;
     cursor: pointer;
     transition: all 0.5s;
@@ -154,7 +154,7 @@ select.dropdown {
 }
 
 .listed-user:hover {
-    background: rgba(125, 125, 125, 0.2);
+    background: var(--transparent-border-colour);
 }
 
 .listed-user > img {
@@ -208,7 +208,7 @@ select.dropdown {
     max-width: 100%;
     text-align: center;
     background: rgba(125, 125, 125, 0.05);
-    border: 1px solid rgba(125, 125, 125, 0.2);
+    border: 1px solid var(--transparent-border-colour);
     font-size: 14px;
     opacity: 0;
     animation: fadeIn 0.5s ease forwards;
@@ -231,7 +231,7 @@ select.dropdown {
 }
 
 .widget-button:hover {
-    background: rgba(125, 125, 125, 0.1);
+    background: var(--transparent-colour);
 }
 @media (hover: none) {
     .widget-button:hover {}
@@ -289,23 +289,11 @@ select.dropdown {
     padding: 15px;
 }
 
-#genre-breakdown-instance {
+#genre-chart-wrapper {
     display: flex;
-    flex-direction: column;
-    width: 200px;
-    gap: 15px;
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.75);
-}
-
-#genre-breakdown-instance > h3 {
-    text-transform: uppercase;
-    font-size: 16px;
-}
-
-#song-analysis-average > div {
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.75);
+    justify-content: center;
+    width: 100%;
+    max-height: 500px;
 }
 
 .stat-block {
@@ -651,7 +639,8 @@ select.dropdown {
     padding: 15px;
     word-break: break-word;
     overflow: hidden;
-    border: 1px solid var(--secondary-colour);
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
     animation: fadeIn 0.1s ease-in-out;
 }
 

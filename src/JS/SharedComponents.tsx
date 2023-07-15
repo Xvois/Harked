@@ -5,6 +5,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
 import {styled, TextField} from "@mui/material";
 
+
 export const StatBlock = (props: {
     name: string,
     description: string,
@@ -230,6 +231,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
     const handleSubmit = () => {
         submitComment(loggedUserID, sectionID, valueRef.current.value)
             .then((c) => {
+                c.created = new Date();
                 const newComments = comments.concat([c]);
                 setComments(newComments);
             })

@@ -21,6 +21,8 @@ body {
     --primary-colour: #191919;
     --secondary-colour: #83867E;
     --accent-colour: #b9a38a;
+    --transparent-colour: rgba(125, 125, 125, 0.1);
+    --transparent-border-colour: rgba(125, 125, 125, 0.2);
     color: var(--primary-colour);
     background: var(--bg-colour);
 }
