@@ -633,6 +633,7 @@ select.dropdown {
 
     #genre-breakdown {
         width: 100%;
+        flex-direction: column;
         justify-content: center;
     }
 }
