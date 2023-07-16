@@ -163,7 +163,10 @@ export const validateUser = () => {
         retrieveLoggedUserID()
             .then(userID => {
                 return userExists(userID);
-            })
+            }).catch(err => {
+                console.error('Error retrieving loggedUserID.', err);
+                window.localStorage.clear();
+        })
             .then(exists => {
                 if (!exists) {
                     // Log them out
