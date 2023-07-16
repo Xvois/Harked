@@ -160,19 +160,28 @@ let me = undefined;
  */
 export const validateUser = () => {
     if (isLoggedIn()) {
-        retrieveLoggedUserID()
-            .then(userID => {
-                return userExists(userID);
-            }).catch(err => {
+        if(me === undefined){
+            retrieveLoggedUserID()
+                .then(userID => {
+                    return userExists(userID);
+                }).catch(err => {
                 console.error('Error retrieving loggedUserID.', err);
                 window.localStorage.clear();
-        })
-            .then(exists => {
+            })
+                .then(exists => {
+                    if (!exists) {
+                        // Log them out
+                        window.localStorage.clear();
+                    }
+                });
+        }else{
+            userExists(me.id).then(exists => {
                 if (!exists) {
                     // Log them out
                     window.localStorage.clear();
                 }
-            });
+            })
+        }
     }
 };
 
