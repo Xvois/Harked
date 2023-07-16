@@ -1284,6 +1284,8 @@ export const hydrateDatapoints = async function () {
     const loggedUserID = await retrieveLoggedUserID();
     const datapoints = [];
 
+    const artist_cache = {};
+
     for (const term of terms) {
         console.info("Hydrating: " + term);
         let datapoint = {
@@ -1311,10 +1313,27 @@ export const hydrateDatapoints = async function () {
 
         // Add all the artists
         datapoint.top_artists = top_artists.map(a => formatArtist(a));
+        // Add artists to artist cache.
+        top_artists.forEach(a => artist_cache[a.artist_id] = a);
 
         datapoint.top_genres = calculateTopGenres(top_artists);
-        console.log(datapoint);
 
+        // Add genres and images to artists in songs
+        const unresolvedIDs = [];
+        datapoint.top_songs.forEach(s => {
+            s.artists.forEach(a => {
+                if(!artist_cache[a.artist_id]) {
+                    unresolvedIDs.push(a.artist_id);
+                }
+            })
+        });
+        if(unresolvedIDs.length > 0){
+            const resolvedArtists = await batchArtists(unresolvedIDs);
+            resolvedArtists.forEach(a => artist_cache[a.artist_id] = a);
+        }
+        for(let song of datapoint.top_songs){
+            song.artists = song.artists.map(a => artist_cache[a.artist_id]);
+        }
         datapoints.push(datapoint);
     }
     console.timeEnd("Compilation");
@@ -1322,6 +1341,7 @@ export const hydrateDatapoints = async function () {
     // Create deep copy clone to prevent optimistic return
     // resolving in to references via the API
     let postClone = structuredClone(datapoints);
+    console.log(datapoints);
     postHydration(postClone).then(() => {
         console.info("Hydration over.");
         console.timeEnd("Hydration."); // End the timer and display the elapsed time

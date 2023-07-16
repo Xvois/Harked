@@ -1342,7 +1342,7 @@ const Profile = () => {
                         setSelectedPrevDatapoint(datapoints[2]);
                         console.info("Previous datapoints retrieved!");
                         console.log(datapoints);
-                    })
+                    });
                 })
             }
         })

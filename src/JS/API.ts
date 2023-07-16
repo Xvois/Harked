@@ -146,17 +146,26 @@ let databaseCache = {
     songs: [],
     genres: []
 };
-// TODO: This could become very expensive with time
-const updateDatabaseCache = async () => {
+/**
+ *
+ * @param targets
+ */
+const updateDatabaseCache = async (targets: [string] | [string, string] | [string, string, string]) => {
     let p = [];
-    p.push(await pb.collection('artists').getFullList());
-    p.push(await pb.collection('songs').getFullList());
-    p.push(await pb.collection('genres').getFullList());
+    if(targets.includes('artists')){
+        p[0] = await pb.collection('artists').getFullList();
+    }
+    if(targets.includes('songs')){
+        p[1] = await pb.collection('songs').getFullList();
+    }
+    if(targets.includes('genres')){
+        p[2] = await pb.collection('genres').getFullList();
+    }
     let cache = await Promise.all(p);
     databaseCache = {
-        artists: cache[0],
-        songs: cache[1],
-        genres: cache[2]
+        artists: !!cache[0] ? cache[0] : [],
+        songs: !!cache[1] ? cache[1] : [],
+        genres: !!cache[2] ? cache[2] : [],
     }
 }
 const updateDatabaseCacheWithItems = (items) => {
@@ -231,7 +240,7 @@ const postGenre = async (genre) => {
 
 export const artistsToRefIDs = async (artists) => {
     if (databaseCache.artists.length === 0) {
-        await updateDatabaseCache();
+        await updateDatabaseCache(['artists']);
     }
     let ids = [];
     const artistIDs = artists.map(e => e.artist_id);
@@ -251,7 +260,7 @@ export const artistsToRefIDs = async (artists) => {
 
 export const genresToRefIDs = async (genres) => {
     if (databaseCache.genres.length === 0) {
-        await updateDatabaseCache();
+        await updateDatabaseCache(['artists']);
     }
     let ids = [];
     // Genres are added as an array of strings, but stored in cache as having their string and id
@@ -271,8 +280,9 @@ export const genresToRefIDs = async (genres) => {
     return ids;
 }
 export const songsToRefIDs = async (songs) => {
+    console.log(databaseCache);
     if (databaseCache.songs.length === 0) {
-        await updateDatabaseCache();
+        await updateDatabaseCache(['songs']);
     }
     const existingSongIDs = new Set(databaseCache.songs.map((song) => song.song_id));
     const ids = [];
@@ -309,8 +319,6 @@ export const validDPExists = async (user_id, term) => {
 
 
 export const postDatapoint = async (datapoint) => {
-    // Disable auto-cancellation to avoid the script being canceled during async operations.
-    pb.autoCancellation(false);
     console.info('Posting datapoint.')
 
     const valid_exists = await validDPExists(datapoint.user_id, datapoint.term);
@@ -320,8 +328,6 @@ export const postDatapoint = async (datapoint) => {
         console.info(valid_exists)
         return;
     }
-
-    await updateDatabaseCache();
 
     // Convert top genres, songs, artists and the owner to their respective IDs.
     console.time('artistsToRefIDs');
@@ -342,9 +348,6 @@ export const postDatapoint = async (datapoint) => {
     console.log(datapoint);
 
     await pb.collection('datapoints').create(datapoint).catch(handleCreationException)
-
-    // Re-enable auto-cancellation.
-    pb.autoCancellation(true);
 }
 
 const getUserRecordID = async (user_id) => {
