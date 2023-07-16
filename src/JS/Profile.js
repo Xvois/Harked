@@ -875,20 +875,16 @@ const GenreBreakdown = (props) => {
     };
 
     return (
-        false ?
-                <div id={'genre-breakdown'}>
-                    <select defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
-                        {selectedDatapoint.top_genres.slice(0,9).map(g => {
-                            return <option key={g} value={g}>{g}</option>
-                        })}
-                    </select>
-                    <div id={'genre-chart-wrapper'}>
-                        <Doughnut data={data} updateMode={"show"} />
-                    </div>
+            <div id={'genre-breakdown'}>
+                <select defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
+                    {selectedDatapoint.top_genres.slice(0,9).map(g => {
+                        return <option key={g} value={g}>{g}</option>
+                    })}
+                </select>
+                <div id={'genre-chart-wrapper'}>
+                    <Doughnut data={data} updateMode={"show"} />
                 </div>
-                :
-                <p style={{fontWeight: 'bold'}}>This is being reworked! Stay tuned.</p>
-
+            </div>
     )
 }
 
