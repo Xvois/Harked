@@ -1,5 +1,12 @@
 import {useEffect, useState} from "react";
-import {changeSettings, deleteUser, retrieveLoggedUserID, retrieveSettings, retrieveUser} from "./HDM.ts";
+import {
+    changeSettings,
+    deleteUser,
+    handleCacheReset,
+    retrieveLoggedUserID,
+    retrieveSettings,
+    retrieveUser
+} from "./HDM.ts";
 import "./../CSS/Settings.css"
 
 

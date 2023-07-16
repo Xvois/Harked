@@ -260,7 +260,7 @@ export const artistsToRefIDs = async (artists) => {
 
 export const genresToRefIDs = async (genres) => {
     if (databaseCache.genres.length === 0) {
-        await updateDatabaseCache(['artists']);
+        await updateDatabaseCache(['genres']);
     }
     let ids = [];
     // Genres are added as an array of strings, but stored in cache as having their string and id

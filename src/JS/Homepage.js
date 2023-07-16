@@ -5,7 +5,7 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn} from './HDM.ts';
+import {isLoggedIn, validateUser} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {useNavigate} from "react-router-dom";
@@ -17,6 +17,7 @@ function Homepage() {
     useEffect(() => {
         setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
+        validateUser();
     }, [token])
 
 

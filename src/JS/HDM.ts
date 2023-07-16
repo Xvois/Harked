@@ -5,6 +5,7 @@ import {
     disableAutoCancel,
     enableAutoCancel,
     fetchData,
+    getAllUserIDs,
     getDatapoint,
     getDelayedDatapoint,
     getFullLocalData,
@@ -20,6 +21,7 @@ import {
     validDPExists
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
+import {handleAlternateLogin} from './Authentication'
 import LRUCache from 'lru-cache';
 
 export interface Record {
@@ -150,6 +152,47 @@ const dp_cache = new LRUCache<string, Datapoint, unknown>({
 const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
 
 let me = undefined;
+/**
+ * Ensures that if the user is logged in then they have a valid
+ * token as well as a valid entry in the database.
+ *
+ * Used to prevent the case where the entry in the database is removed
+ * but a client stays logged in to that account. If the function is run in this
+ * case then they will go through the login flow again.
+ */
+export const validateUser = () => {
+    if (isLoggedIn()) {
+        retrieveLoggedUserID()
+            .then(userID => {
+                return userExists(userID);
+            })
+            .then(exists => {
+                if (!exists) {
+                    handleAlternateLogin();
+                }
+            });
+    }
+};
+
+
+export const handleCacheReset = () => {
+    if ('caches' in window) {
+        const cacheTypes = ['datapoints'];
+        cacheTypes.forEach(t => {
+            caches.delete(t).then(success => {
+                if (success) {
+                    console.log(`Cache ${t} has been cleared.`);
+                } else {
+                    console.log(`Cache ${t} does not exist.`);
+                }
+            }).catch(error => {
+                console.error(`Error while clearing cache ${t}: ${error}`);
+            });
+        })
+    } else {
+        console.warn('The caches API is not supported in this browser.');
+    }
+}
 
 export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
