@@ -101,7 +101,7 @@ const AnnotationViewModal = (props: {
             }
             >x
             </button>
-            {targetSong &&
+            {targetSong && metadata &&
                 <p>{metadata.meta[targetSong.song_id]}</p>
             }
             <div id={'annotation-editor-modal-button-wrapper'}>
