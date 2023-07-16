@@ -53,6 +53,12 @@ code {
     monospace;
 }
 
+option {
+    font-family: "Inter Tight", sans-serif;
+    color: var(--bg-colour);
+    background: var(--transparent-colour);
+}
+
 .bg-element {
     position: absolute;
     top: 0;

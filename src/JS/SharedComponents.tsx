@@ -1,5 +1,4 @@
 import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
-import DeleteIcon from "@mui/icons-material/Delete";
 import React, {useEffect, useRef, useState} from "react";
 /* @ts-ignore */
 import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
@@ -230,7 +229,9 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
     const handleSubmit = () => {
         submitComment(loggedUserID, sectionID, valueRef.current.value)
             .then((c) => {
-                const newComments = comments.concat([c]);
+                const date = new Date();
+                const formattedComment = {...c, created: date};
+                const newComments = comments.concat([formattedComment]);
                 setComments(newComments);
             })
             .catch((err) => {
@@ -313,16 +314,14 @@ function CommentInstance(props: { item: Comment, onDelete: any, isDeletable: boo
             {isDeletable && (
                 <button
                     style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--accent-colour)",
                         width: "max-content",
                         cursor: "pointer",
                         marginLeft: "auto"
                     }}
                     onClick={handleDelete}
+                    className={'subtle-button'}
                 >
-                    <DeleteIcon/>
+                    Delete
                 </button>
             )}
         </div>

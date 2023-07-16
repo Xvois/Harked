@@ -21,7 +21,6 @@ import {
     validDPExists
 } from "./API.ts";
 import {containsElement, getLIName} from "./Analysis";
-import {handleAlternateLogin} from './Authentication'
 import LRUCache from 'lru-cache';
 
 export interface Record {
@@ -154,11 +153,10 @@ const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
 let me = undefined;
 /**
  * Ensures that if the user is logged in then they have a valid
- * token as well as a valid entry in the database.
+ * token as well as a valid entry in the database. If not they are logged out.
  *
  * Used to prevent the case where the entry in the database is removed
- * but a client stays logged in to that account. If the function is run in this
- * case then they will go through the login flow again.
+ * but a client stays logged in to that account.
  */
 export const validateUser = () => {
     if (isLoggedIn()) {
@@ -168,8 +166,8 @@ export const validateUser = () => {
             })
             .then(exists => {
                 if (!exists) {
-                    window.localStorage.removeItem('pocketbase_auth');
-                    handleAlternateLogin();
+                    // Log them out
+                    window.localStorage.clear();
                 }
             });
     }

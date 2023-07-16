@@ -13,10 +13,10 @@ import "./../CSS/Settings.css"
 const SettingElement = (props: { name: string, value: string, button?: boolean, callback?, warning?: boolean }) => {
     const {name, value, button = false, callback, warning} = props;
     return (
-        <div className={'setting-element'} style={warning ? {background: 'rgba(255,0,0,0.1)'} : {}}>
+        <div className={'setting-element'}>
             <p>{name}</p>
             {button &&
-                <button onClick={callback} className={warning ? 'warning-button' : 'std-button'}>{value}</button>}
+                <button onClick={callback} className={'subtle-button'}>{value}</button>}
             {!button && <h4 style={{margin: '0'}}>{value}</h4>}
         </div>
     )
@@ -51,13 +51,15 @@ export const Settings = () => {
     }
 
     const handleDeleteUser = () => {
-        deleteUser(user.user_id).then(() => {
-            handleCacheReset();
-            window.localStorage.clear();
-            window.location.href = '/';
-        }).catch(err => {
-            console.error('Error deleting user: ', err);
-        });
+        if(window.confirm("Are you sure you want to delete your account?")){
+            deleteUser(user.user_id).then(() => {
+                handleCacheReset();
+                window.localStorage.clear();
+                window.location.href = '/';
+            }).catch(err => {
+                console.error('Error deleting user: ', err);
+            });
+        }
     }
 
     return user && settings && (

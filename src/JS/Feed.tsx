@@ -44,6 +44,7 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
     }
 
     return (
+        event.owner && event.item &&
         <div className={event.ref_num < 51 ? 'major-feed-object' : 'minor-feed-object'} style={index !== 0 ? {
             borderTop: '1px solid var(--accent-colour)',
             animationDelay: `${(index % maxEventsPerLoad) / 20}s`
@@ -132,7 +133,7 @@ const Feed = () => {
     return (
         <div>
             <h1 style={{margin: '15px 0 0 0px'}}>Your feed.</h1>
-            <p style={{margin: '0 0 15px 15px'}}>What the people you're following are up to.</p>
+            <p style={{margin: '0 0 15px 0'}}>What the people you're following are up to.</p>
             <div className={'feed-wrapper'}>
                 {events !== null ?
                     events.length > 0 ?
@@ -170,7 +171,7 @@ const Feed = () => {
                         </>
 
                         :
-                        <p style={{color: 'var(--secondary-colour)'}}>Looks like there's nothing to see here
+                        <p style={{fontWeight: 'bold'}}>Looks like there's nothing to see here
                             yet. <br/> Follow some more people and wait for them to get up to something!</p>
                     :
                     <>

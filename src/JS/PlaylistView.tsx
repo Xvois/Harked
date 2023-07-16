@@ -11,13 +11,9 @@ import {
 import {LoadingIndicator, StyledField} from "./SharedComponents.tsx";
 import {getLIDescription, getLIName, getPlaylistAnalysis} from "./Analysis"
 import "./../CSS/PlaylistView.css"
-import CommentIcon from '@mui/icons-material/Comment';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
 import TimelineIcon from '@mui/icons-material/Timeline';
-import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
-import CommentsDisabledIcon from '@mui/icons-material/CommentsDisabled';
-import EditIcon from '@mui/icons-material/Edit';
 
 interface Playlist {
     collaborative: boolean;
@@ -66,7 +62,59 @@ interface Playlist {
     uri: string;
 }
 
-const AnnotationModal = (props: {
+const AnnotationViewModal = (props: {
+    targetSong: Song,
+    playlistMetadata: PlaylistMetadata,
+    isOwnPlaylist: boolean,
+    isOpen: boolean,
+    setIsOpen: React.SetStateAction<boolean>,
+    setIsEditorOpen: React.SetStateAction<boolean>
+}) => {
+    
+    const {targetSong, playlistMetadata, isOwnPlaylist, isOpen, setIsOpen, setIsEditorOpen} = props;
+    const [metadata, setMetadata] = useState(playlistMetadata);
+    useEffect(() => {
+        const modal: HTMLDialogElement = document.getElementById('annotation-viewer-modal');
+        if (isOpen) {
+            modal.showModal();
+        } else {
+            modal.close();
+        }
+    }, [isOpen])
+
+    useEffect(() => {
+        console.log(playlistMetadata);
+        setMetadata(playlistMetadata);
+    }, [playlistMetadata])
+
+    return (
+        <dialog autoFocus id={'annotation-viewer-modal'}>
+            <div>
+                <h3 style={{margin: 0}}>Annotation for</h3>
+                <p style={{margin: 0}}>{getLIName(targetSong, 50)}</p>
+            </div>
+            <button id={'modal-exit-button'} onClick={() => {
+                setIsOpen(false);
+                const modal: HTMLDialogElement = document.getElementById('annotation-viewer-modal');
+                modal.close();
+            }
+            }
+            >x
+            </button>
+            {targetSong &&
+                <p>{metadata.meta[targetSong.song_id]}</p>
+            }
+            <div id={'annotation-editor-modal-button-wrapper'}>
+                {isOwnPlaylist && (
+                    <button className={'subtle-button'} onClick={() => {setIsOpen(false); setIsEditorOpen(true)}}>Edit</button>
+                )}
+            </div>
+        </dialog>
+    )
+}
+                             
+
+const AnnotationEditModal = (props: {
     user_id: string | null,
     playlist: Playlist,
     targetSong: Song,
@@ -82,7 +130,7 @@ const AnnotationModal = (props: {
     const [metadata, setMetadata] = useState(playlistMetadata);
 
     useEffect(() => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-modal');
+        const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
         if (isOpen) {
             modal.showModal();
         } else {
@@ -95,7 +143,7 @@ const AnnotationModal = (props: {
     }, [playlistMetadata])
 
     const submitAnnotation = () => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-modal');
+        const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
         addAnnotation(user_id, playlist, targetSong.song_id, annotationRef.current.value).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
@@ -103,7 +151,7 @@ const AnnotationModal = (props: {
     }
 
     const removeAnnotation = () => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-modal');
+        const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
         deleteAnnotation(playlist, targetSong.song_id).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
@@ -111,14 +159,14 @@ const AnnotationModal = (props: {
     }
 
     return (
-        <dialog autoFocus id={'annotation-modal'}>
+        <dialog autoFocus id={'annotation-editor-modal'}>
             <div>
                 <h3>Write an annotation.</h3>
                 <p>Describe the importance of this song in this playlist.</p>
             </div>
             <button id={'modal-exit-button'} onClick={() => {
                 setIsOpen(false);
-                const modal: HTMLDialogElement = document.getElementById('annotation-modal');
+                const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
                 modal.close();
             }
             }
@@ -149,29 +197,26 @@ const Track = (props: {
     isOwnPlaylist: boolean,
     annotation: string | undefined,
     setSelectedTrack: Function,
-    setIsOpen: Function,
+    setIsEditorOpen: Function,
+    setIsViewerOpen: Function,
     windowWidth: number
 }) => {
 
-    const {track, index, isOwnPlaylist, annotation, setSelectedTrack, setIsOpen, windowWidth} = props;
-
-    const [isPresentingAnnotation, setIsPresentingAnnotation] = useState(false);
-
-    // Ensure it is not stuck presenting annotation
-    // if screen width is increased
-    useEffect(() => {
-        if (windowWidth > 650 && isPresentingAnnotation) {
-            setIsPresentingAnnotation(false);
-        }
-    }, [windowWidth])
+    const {track, index, isOwnPlaylist, annotation, setSelectedTrack, setIsEditorOpen, setIsViewerOpen, windowWidth} = props;
 
     return (
         <div className={'track-wrapper'}>
             {index % 2 === 0 && <div className={'bg-element'}/>}
             <p className={'track-number'}>{index + 1}.</p>
-
-            {isPresentingAnnotation ?
-                <div className={'annotation'} style={{marginLeft: 0, display: 'flex', gap: '5px'}}>
+            <div style={{position: 'relative'}} className={'track-img-wrapper'}>
+                <img className={'track-img'} src={track.image} alt={track.title}/>
+            </div>
+            <div className={'track-text'}>
+                <h3>{getLIName(track)}</h3>
+                <p>{getLIDescription(track)}</p>
+            </div>
+            {annotation !== undefined ?
+                <div className={'annotation supplemental-content'}>
                     <p>
                         <em>
                             <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
@@ -179,88 +224,44 @@ const Track = (props: {
                             <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
                         </em>
                     </p>
-                    {isOwnPlaylist && (
-                        <button onClick={() => {
-                            setSelectedTrack(track);
-                            setIsOpen(true)
-                        }} style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--primary-colour)',
-                            opacity: '0.5',
-                            height: '22px'
-                        }}>
-                            <EditIcon fontSize={'small'}/>
-                        </button>
-                    )}
                 </div>
                 :
-                <>
-                    <div style={{position: 'relative'}} className={'track-img-wrapper'}>
-                        <img className={'track-img'} src={track.image} alt={track.title}/>
-                    </div>
-                    <div className={'track-text'}>
-                        <h3>{getLIName(track)}</h3>
-                        <p>{getLIDescription(track)}</p>
-                    </div>
-                    {annotation !== undefined ?
-                        <div className={'annotation supplemental-content'}>
-                            <p>
-                                <em>
-                                    <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
-                                    {annotation}
-                                    <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
-                                </em>
-                            </p>
-                        </div>
-                        :
-                        <></>
-                    }
-                </>
+                <></>
             }
             {windowWidth > 650 ?
                 isOwnPlaylist &&
                 <button onClick={() => {
                     setSelectedTrack(track);
-                    setIsOpen(true)
+                    setIsEditorOpen(true)
                 }} style={annotation !== undefined ? {animation: 'none', opacity: '0.5', right: '2.5%'} : {}}
-                        className={'annotation-icon'}>
+                        className={'annotation-icon subtle-button'}>
                     {annotation === undefined ?
-                        <AddCommentOutlinedIcon fontSize={'medium'}/>
+                        'Add annotation'
                         :
-                        <EditIcon fontSize={'medium'}/>
+                        'Edit annotation'
                     }
                 </button>
                 :
                 isOwnPlaylist ?
-                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'}
+                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon subtle-button'}
                             onClick={() => {
+                                setSelectedTrack(track);
                                 if (annotation === undefined) {
-                                    setSelectedTrack(track);
-                                    setIsOpen(true);
+                                    setIsEditorOpen(true);
                                 } else {
-                                    // If there is a comment then show it
-                                    setIsPresentingAnnotation(!isPresentingAnnotation);
+                                    setIsViewerOpen(true);
                                 }
                             }}>
                         {annotation === undefined ?
-                            <AddCommentOutlinedIcon fontSize={'medium'}/>
+                            '+'
                             :
-                            isPresentingAnnotation ?
-                                <CommentsDisabledIcon fontSize={'medium'}/>
-                                :
-                                <CommentIcon fontSize={'medium'}/>
+                            'View'
                         }
                     </button>
                     :
                     annotation !== undefined &&
-                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'}
-                            onClick={() => setIsPresentingAnnotation(!isPresentingAnnotation)}>
-                        {isPresentingAnnotation ?
-                            <CommentsDisabledIcon fontSize={'medium'}/>
-                            :
-                            <CommentIcon fontSize={'medium'}/>
-                        }
+                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'} onClick={() => setIsViewerOpen(true)}>
+                            View annotation
                     </button>
             }
         </div>
@@ -276,7 +277,8 @@ const PlaylistView = () => {
     const [playlistAnalysis, setPlaylistAnalysis] = useState(null);
     const [playlistMetadata, setPlaylistMetadata] = useState(null);
     const [isOwnPlaylist, setIsOwnPlaylist] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
+    const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
     const [selectedTrack, setSelectedTrack] = useState(null);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -375,11 +377,12 @@ const PlaylistView = () => {
                         let annotation = playlistMetadata?.meta[t.song_id];
                         return <Track key={t.song_id} windowWidth={windowWidth} setSelectedTrack={setSelectedTrack}
                                       track={t} index={i} isOwnPlaylist={isOwnPlaylist} annotation={annotation}
-                                      setIsOpen={setIsModalOpen}/>
+                                      setIsEditorOpen={setIsEditorModalOpen} setIsViewerOpen={setIsViewerModalOpen}/>
                     })}
-                    <AnnotationModal user_id={loggedUserID} playlist={playlist} targetSong={selectedTrack}
-                                     playlistMetadata={playlistMetadata} setPlaylistMetadata={setPlaylistMetadata}
-                                     isOpen={isModalOpen} setIsOpen={setIsModalOpen}/>
+                    <AnnotationEditModal user_id={loggedUserID} playlist={playlist} targetSong={selectedTrack}
+                                         playlistMetadata={playlistMetadata} setPlaylistMetadata={setPlaylistMetadata}
+                                         isOpen={isEditorModalOpen} setIsOpen={setIsEditorModalOpen}/>
+                    <AnnotationViewModal targetSong={selectedTrack} playlistMetadata={playlistMetadata} isOwnPlaylist={isOwnPlaylist} isOpen={isViewerModalOpen} setIsOpen={setIsViewerModalOpen} setIsEditorOpen={setIsEditorModalOpen} />
                 </div>
             </div>
     )

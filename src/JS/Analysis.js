@@ -371,7 +371,7 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
                     break;
                 case "short_term":
                     // If this artist is totally new to them
-                    if (indexes[1] === -1 && indexes[0] === -1) {
+                    if (indexes[2] === -1 && indexes[1] === -1) {
                         firstPartArtist = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} discovered ${name}'s music.`;
                     }
                     // If they have listened to less of this artist in the last 4 weeks than usual
@@ -448,7 +448,7 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
                 let secondPartSong = '';
                 if (artistPosition) {
                     const artistName = getLIName(item.artists[0]);
-                    secondPartSong = `It's worth noting that ${artistName} holds the ${artistPosition}${getOrdinalSuffix(artistPosition)} position in ${possessive} top artists list ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`;
+                    secondPartSong = `${artistName} holds the ${artistPosition}${getOrdinalSuffix(artistPosition)} position in ${possessive} top artists of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`;
                 }
 
                 return (
@@ -499,7 +499,7 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
             let genreAnalysis = "";
 
             if (popularityTrend === "increasing") {
-                genreAnalysis = `${capitalize(pronoun)} have been increasingly drawn to ${genreName} music over time, making it one of ${pronoun === 'you' ? 'your' : `${possessive}`} top genres in the ${term} term.`;
+                genreAnalysis = `${capitalize(pronoun)} have been increasingly drawn to ${genreName} music over time, making it one of ${pronoun === 'you' ? 'your' : `${possessive}`} top genres of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')}.`;
             } else if (popularityTrend === "decreasing") {
                 genreAnalysis = `${capitalize(pronoun)} have been listening to ${genreName} music less frequently over time, but it still holds a significant place in ${pronoun === 'you' ? 'your' : `${possessive}`} overall music preferences.`;
             } else {

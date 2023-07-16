@@ -93,7 +93,7 @@ select.dropdown {
     align-items: center;
     align-content: center;
     background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.75);
+    border: 1px solid rgba(125, 125, 125, 0.5);
     will-change: height;
     cursor: pointer;
     transition: all 0.5s;
@@ -285,27 +285,35 @@ select.dropdown {
 
 .block-wrapper > div {
     flex-grow: 1;
-    border: 1px solid var(--secondary-colour);
+    background: var(--transparent-colour);
+    border: 1px solid rgba(125,125,125,0.5);
     padding: 15px;
 }
 
-#genre-breakdown-instance {
+#genre-breakdown-wrapper {
     display: flex;
     flex-direction: column;
-    width: 200px;
-    gap: 15px;
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.75);
+    gap: 20px;
 }
 
-#genre-breakdown-instance > h3 {
-    text-transform: uppercase;
-    font-size: 16px;
+#genre-breakdown {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
 }
 
-#song-analysis-average > div {
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.75);
+#genre-select {
+    font-family: "Inter Tight", sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: -4px;
+    margin-bottom: 10px;
+    width: max-content;
+    color: var(--primary-colour);
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
 }
 
 .stat-block {
@@ -621,6 +629,12 @@ select.dropdown {
     #showcase-rec-button {
         display: none;
     }
+
+
+    #genre-breakdown {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 .term-buttons {
@@ -651,7 +665,8 @@ select.dropdown {
     padding: 15px;
     word-break: break-word;
     overflow: hidden;
-    border: 1px solid var(--secondary-colour);
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
     animation: fadeIn 0.1s ease-in-out;
 }
 

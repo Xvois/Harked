@@ -5,7 +5,6 @@ import './../CSS/Profile.css';
 import {
     createEvent,
     deleteRecommendation,
-    destroyOnHydration,
     followingContentsSearch,
     followsUser,
     followUser,
@@ -127,6 +126,7 @@ const ShowcaseListItem = (props) => {
     const [expansion, setExpansion] = useState(index === 0 ? (type === 'genres' ? secondExpansion : maxExpansion) : minExpansion);
     const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genres' && isLoggedIn()) : false);
     const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
+
 
     useEffect(() => {
         setExpansion(index === 0 ? (type === 'genres' || !isLoggedIn() ? secondExpansion : maxExpansion) : minExpansion)
@@ -253,6 +253,7 @@ const ShowcaseListItem = (props) => {
                 <>
                     <div className={"showcase-list-item-expanded"}>
                         <div className={'item-top-element'}>
+                            {window.innerWidth > 650 &&
                             <div className={'item-image supplemental-content'}>
                                 <img alt={'decorative blur'} src={image} className={'backdrop-image'} style={{
                                     width: '100%',
@@ -267,6 +268,7 @@ const ShowcaseListItem = (props) => {
                                     animation: 'fadeIn 0.25s'
                                 }}/>
                             </div>
+                            }
                             <div className={'item-description'}>
                                 <div style={{
                                     display: 'flex',
@@ -729,10 +731,10 @@ const ArtistAnalysis = (props) => {
                     showing === "albums" ?
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <button className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
+                            <div className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
                                 <p style={{margin: 0}}>Most listened to albums by</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
-                            </button>
+                            </div>
                         </div>
                         {orderedAlbums.length > 0 ?
                             orderedAlbums.map((a,i) => {
@@ -757,10 +759,10 @@ const ArtistAnalysis = (props) => {
                     :
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <button className={'widget-button'} onClick={switchShowing}>
+                            <div className={'widget-button'} onClick={switchShowing}>
                                 <p style={{margin: 0}}>Following that listen to</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
-                            </button>
+                            </div>
                         </div>
                         {followingWithArtist.length > 0 ?
                             followingWithArtist.map((u,i) => {
@@ -797,10 +799,10 @@ const SongAnalysis = (props) => {
             return (
                 <div className={'list-widget-wrapper'}>
                     <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                        <button className={'widget-button'}>
+                        <div className={'widget-button'}>
                             <p style={{margin: 0}}>Analysis of</p>
                             <h3 style={{margin: 0}}>{getLIName(song)}</h3>
-                        </button>
+                        </div>
                     </div>
                     {
                         Object.keys(translateAnalytics).map(function (key) {
@@ -845,8 +847,57 @@ const SongAnalysisAverage = (props) => {
 }
 
 const GenreBreakdown = (props) => {
-    const {selectedDatapoint, number} = props;
+    const {selectedDatapoint, pageUser, allDatapoints, term} = props;
     const [selectedGenre, setSelectedGenre] = useState(selectedDatapoint.top_genres[0]);
+    // Custom CSS variables don't work in the data attribute so this is my workaround.
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    const [bgColor, setBgColor] = useState(
+        darkModePreference.matches ?
+            [
+                'rgba(255, 255, 255, 0.1)',
+                'rgba(255, 255, 255, 0.2)',
+                'rgba(255, 255, 255, 0.3)',
+                'rgba(255, 255, 255, 0.4)',
+                'rgba(255, 255, 255, 0.3)',
+                'rgba(255, 255, 255, 0.2)',
+            ]
+            :
+            [
+                'rgba(0, 0, 0, 0.1)',
+                'rgba(0, 0, 0, 0.2)',
+                'rgba(0, 0, 0, 0.3)',
+                'rgba(0, 0, 0, 0.4)',
+                'rgba(0, 0, 0, 0.3)',
+                'rgba(0, 0, 0, 0.2)',
+            ]
+    );
+    darkModePreference.addEventListener("change", e => {
+        if(e.matches){
+            setBgColor(
+                [
+                    'rgba(200, 200, 200, 0.1)',
+                    'rgba(200, 200, 200, 0.2)',
+                    'rgba(200, 200, 200, 0.3)',
+                    'rgba(200, 200, 200, 0.4)',
+                    'rgba(200, 200, 200, 0.3)',
+                    'rgba(200, 200, 200, 0.2)',
+                ]
+            )
+        }else{
+            setBgColor(
+                [
+                    'rgba(125, 125, 125, 0.1)',
+                    'rgba(125, 125, 125, 0.2)',
+                    'rgba(125, 125, 125, 0.3)',
+                    'rgba(125, 125, 125, 0.4)',
+                    'rgba(125, 125, 125, 0.3)',
+                    'rgba(125, 125, 125, 0.2)',
+                ]
+            )
+        }
+    })
+
+
 
 
     const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === selectedGenre) : false);
@@ -861,30 +912,44 @@ const GenreBreakdown = (props) => {
         setSelectedGenre(e.target.value);
     }
 
-
     const data = {
         labels: artists.map(a => getLIName(a)),
         datasets: [{
             label: `Percentage contribution to ${selectedGenre}`,
             data: percentages,
-            backgroundColor: [
-
-            ],
+            backgroundColor: bgColor,
             hoverOffset: 4
         }]
     };
 
+    const options = {
+        borderColor: 'rgba(125, 125, 125, 0.2)',
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+
     return (
-            <div id={'genre-breakdown'}>
-                <select defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
+        <div id={'genre-breakdown-wrapper'}>
+            <div style={{display: 'flex', justifyContent: 'center'}}>
+                <select style={{margin: 0}} id={'genre-select'} defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
                     {selectedDatapoint.top_genres.slice(0,9).map(g => {
                         return <option key={g} value={g}>{g}</option>
                     })}
                 </select>
+            </div>
+            <div id={'genre-breakdown'}>
                 <div id={'genre-chart-wrapper'}>
-                    <Doughnut data={data} updateMode={"show"} />
+                    <Doughnut options={options} data={data} updateMode={"show"} />
+                </div>
+                <div className={'item-description'} style={{height: 'max-content', padding: '15px', background: 'var(--transparent-colour)', border: '1px solid var(--transparent-border-colour)', maxWidth: '400px'}}>
+                    {getItemAnalysis(selectedGenre, "genres", pageUser, selectedDatapoint, allDatapoints, term)}
                 </div>
             </div>
+        </div>
+
     )
 }
 
@@ -897,7 +962,7 @@ const TopSongsOfArtists = (props) => {
                 if (topSongIndex > -1) {
                     return (
                         <div key={artist.artist_id} className={'stat-block'}
-                             style={{padding: '15px', background: 'rgba(125, 125, 125, 0.1)', border: '1px solid rgba(125, 125, 125, 0.75)'}}>
+                             style={{padding: '15px', background: 'var(--transparent-colour)', border: '1px solid rgba(125, 125, 125, 0.5)'}}>
                             <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
                             <p style={{margin: '0'}}>{artist.name}</p>
                         </div>
@@ -1483,7 +1548,7 @@ const Profile = () => {
                                                     }}>for each genre</p>
                                                     <p>The distribution of artists that contribute most to {possessive} listening time
                                                         in each of {possessive} top 10 genres.</p>
-                                                    <GenreBreakdown selectedDatapoint={selectedDatapoint} number={5}/>
+                                                    <GenreBreakdown selectedDatapoint={selectedDatapoint} pageUser={pageUser} allDatapoints={allDatapoints} term={terms[termIndex]}/>
                                                 </div>
                                         }
                                     </div>

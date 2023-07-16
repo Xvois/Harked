@@ -113,20 +113,18 @@
     opacity: 0;
     right: 2.5%;
     cursor: pointer;
-    border: none;
-    background: none;
     color: var(--primary-colour);
 }
 
 
 .annotation {
     position: relative;
+    max-width: 400px;
     height: max-content;
-    margin: auto 7.5% auto auto;
+    margin: auto 25% auto auto;
     align-content: center;
     align-items: center;
     align-self: center;
-    max-width: 70%;
     border-left: 1px solid var(--accent-colour);
 }
 
@@ -146,7 +144,7 @@
     }
 }
 
-#annotation-modal {
+#annotation-editor-modal {
     height: max-content;
     min-width: 300px;
     background: var(--bg-colour);
@@ -156,12 +154,33 @@
     backdrop-filter: blur(30px) brightness(200%);
 }
 
-#annotation-modal::backdrop {
+#annotation-editor-modal::backdrop {
     background: rgba(0, 0, 0, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
-    #annotation-modal {
+    #annotation-editor-modal {
+        background: rgba(50, 50, 50, 0.5);
+        border: 1px solid rgba(100, 100, 100, 0.75);
+    }
+}
+
+#annotation-viewer-modal {
+    height: max-content;
+    min-width: 300px;
+    background: var(--bg-colour);
+    color: var(--primary-colour);
+    background: rgba(200, 200, 200, 0.5);
+    border: 1px solid rgba(200, 200, 200, 0.75);
+    backdrop-filter: blur(30px) brightness(200%);
+}
+
+#annotation-viewer-modal::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+    #annotation-viewer-modal {
         background: rgba(50, 50, 50, 0.5);
         border: 1px solid rgba(100, 100, 100, 0.75);
     }
