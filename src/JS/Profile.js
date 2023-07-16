@@ -696,7 +696,6 @@ const ArtistAnalysis = (props) => {
         const tracks = playlists.map(e => e.tracks).flat(1);
         getAlbumsWithTracks(artist.artist_id, tracks).then(
             result => {
-                console.log(result);
                 setArtistsAlbumsWithLikedSongs(result);
                 setOrderedAlbums(result.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4));
                 if (result.length === 0 && isOwnPage) {
