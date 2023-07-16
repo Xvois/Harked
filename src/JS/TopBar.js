@@ -13,7 +13,10 @@ import {handleAlternateLogin} from "./Authentication";
 import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 
 const RedirectElement = (props) => {
-    const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
+    const {title, href, icon, loggedIn, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
+
+
+
     const link = (
         <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href}>
             {icon}
@@ -21,14 +24,7 @@ const RedirectElement = (props) => {
         </a>
     );
     const button = (
-        <button onClick={callback} className={'redirect-element'} style={!concise ? {
-            flexDirection: 'row',
-            justifyContent: 'left',
-            gap: '10px',
-            flexGrow: '1',
-            border: '1px solid var(--secondary-colour)',
-            padding: '16.5px 14px'
-        } : {}} href={href}>
+        <button onClick={callback} className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`}>
             {icon}
             <p>{title}</p>
         </button>
@@ -37,7 +33,7 @@ const RedirectElement = (props) => {
     return (
         requiresLogIn ?
             (
-                isLoggedIn() ?
+                loggedIn ?
                     element
                     :
                     <></>
@@ -46,7 +42,7 @@ const RedirectElement = (props) => {
             (
                 requiresLogOut ?
                     (
-                        !isLoggedIn() ?
+                        !loggedIn ?
                             element
                             :
                             <></>
@@ -62,6 +58,7 @@ const TopBar = () => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [showBar, setShowBar] = useState(true);
     const [showBorder, setShowBorder] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
     const ShowBarStyle = (showBorder ? {borderBottom: 'none'} : {})
     const HideBarStyle = {height: '0px', opacity: '0', overflow: 'hidden', pointerEvents: 'none'};
@@ -138,7 +135,7 @@ const TopBar = () => {
                             </a>
                             {
                                 redirects.map(e => {
-                                    return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut}
+                                    return <RedirectElement loggedIn={loggedIn} callback={e.callback} requiresLogOut={e.requiresLogOut}
                                                             key={e.title} concise title={e.title} href={e.href}
                                                             icon={e.icon} requiresLogIn={e.requiresLogIn}/>
                                 })
