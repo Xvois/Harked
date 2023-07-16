@@ -13,9 +13,8 @@ import {handleAlternateLogin} from "./Authentication";
 import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 
 const RedirectElement = (props) => {
-    const {title, href, icon, loggedIn, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
-
-
+    const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
+    const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
     const link = (
         <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href}>
@@ -33,7 +32,7 @@ const RedirectElement = (props) => {
     return (
         requiresLogIn ?
             (
-                loggedIn ?
+                isLoggedIn() ?
                     element
                     :
                     <></>
@@ -42,7 +41,7 @@ const RedirectElement = (props) => {
             (
                 requiresLogOut ?
                     (
-                        !loggedIn ?
+                        !isLoggedIn() ?
                             element
                             :
                             <></>
@@ -58,7 +57,6 @@ const TopBar = () => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     const [showBar, setShowBar] = useState(true);
     const [showBorder, setShowBorder] = useState(false);
-    const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
     const ShowBarStyle = (showBorder ? {borderBottom: 'none'} : {})
     const HideBarStyle = {height: '0px', opacity: '0', overflow: 'hidden', pointerEvents: 'none'};
@@ -135,7 +133,7 @@ const TopBar = () => {
                             </a>
                             {
                                 redirects.map(e => {
-                                    return <RedirectElement loggedIn={loggedIn} callback={e.callback} requiresLogOut={e.requiresLogOut}
+                                    return <RedirectElement callback={e.callback} requiresLogOut={e.requiresLogOut}
                                                             key={e.title} concise title={e.title} href={e.href}
                                                             icon={e.icon} requiresLogIn={e.requiresLogIn}/>
                                 })
