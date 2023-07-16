@@ -159,9 +159,10 @@ function Authentication() {
 
         // Authenticate with pb
         const pb = new PocketBase("https://harked.fly.dev/");
+        console.log(pb.authStore);
         // Are we authed already?
         if (!pb.authStore.isValid) {
-            console.warn('pb authStore is not valid')
+            console.info('pb authStore is not valid')
             pb.collection('users').authWithOAuth2Code(
                 provider.name,
                 code,
@@ -222,6 +223,7 @@ function Authentication() {
                 console.log("Failed to exchange code.\n" + err);
             });
         } else {
+            console.info('Attempting to catch spotify token.')
             if (window.location.hash) {
                 CATCH_SPOTIFY_TOKEN()
             }

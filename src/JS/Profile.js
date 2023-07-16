@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import './../CSS/Profile.css';
 import {
     createEvent,
@@ -65,6 +65,10 @@ import {
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import {ArcElement, Chart as ChartJS, Legend, Tooltip} from "chart.js";
+import {Doughnut} from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const translateTerm = {short_term: '4 weeks', medium_term: '6 months', long_term: 'All time'}
 
@@ -472,7 +476,7 @@ const SelectionModal = (props) => {
                     <div style={{width: "max-content", marginLeft: 'auto'}}>
                         <button className="std-button"
                                 style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} type={"button"} onClick={handleSearch}>
-                            Submit
+                            Search
                         </button>
                     </div>
                     {searchResults && (
@@ -692,7 +696,6 @@ const ArtistAnalysis = (props) => {
         const tracks = playlists.map(e => e.tracks).flat(1);
         getAlbumsWithTracks(artist.artist_id, tracks).then(
             result => {
-                console.log(result);
                 setArtistsAlbumsWithLikedSongs(result);
                 setOrderedAlbums(result.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4));
                 if (result.length === 0 && isOwnPage) {
@@ -726,10 +729,10 @@ const ArtistAnalysis = (props) => {
                     showing === "albums" ?
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <div className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
+                            <button className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
                                 <p style={{margin: 0}}>Most listened to albums by</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
-                            </div>
+                            </button>
                         </div>
                         {orderedAlbums.length > 0 ?
                             orderedAlbums.map((a,i) => {
@@ -754,10 +757,10 @@ const ArtistAnalysis = (props) => {
                     :
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <div className={'widget-button'} onClick={switchShowing}>
+                            <button className={'widget-button'} onClick={switchShowing}>
                                 <p style={{margin: 0}}>Following that listen to</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
-                            </div>
+                            </button>
                         </div>
                         {followingWithArtist.length > 0 ?
                             followingWithArtist.map((u,i) => {
@@ -793,11 +796,11 @@ const SongAnalysis = (props) => {
         if (!!analytics) {
             return (
                 <div className={'list-widget-wrapper'}>
-                    <div className={'widget-item'}>
-                        <div className={'widget-button'}>
+                    <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
+                        <button className={'widget-button'}>
                             <p style={{margin: 0}}>Analysis of</p>
                             <h3 style={{margin: 0}}>{getLIName(song)}</h3>
-                        </div>
+                        </button>
                     </div>
                     {
                         Object.keys(translateAnalytics).map(function (key) {
@@ -843,24 +846,49 @@ const SongAnalysisAverage = (props) => {
 
 const GenreBreakdown = (props) => {
     const {selectedDatapoint, number} = props;
+    const [selectedGenre, setSelectedGenre] = useState(selectedDatapoint.top_genres[0]);
+
+
+    const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === selectedGenre) : false);
+    const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
+    const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
+    const percentages = [];
+    for(let i = 0; i < artists.length; i++){
+        percentages.push((artistWeights[i] / totalWeights) * 100);
+    }
+
+    const handleSelect = (e) => {
+        setSelectedGenre(e.target.value);
+    }
+
+
+    const data = {
+        labels: artists.map(a => getLIName(a)),
+        datasets: [{
+            label: `Percentage contribution to ${selectedGenre}`,
+            data: percentages,
+            backgroundColor: [
+
+            ],
+            hoverOffset: 4
+        }]
+    };
+
     return (
-        <div className={'block-wrapper'} style={{flexWrap: 'wrap'}}>
-            {selectedDatapoint.top_genres.slice(0, number).map((genre) => {
-                const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false);
-                const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
-                const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
-                return (
-                    <div key={genre} id={'genre-breakdown-instance'}>
-                        <h3 style={{margin: '0'}}>{genre}</h3>
-                        {artists.slice(0, 5).map((a, artistIndex) => {
-                            const percentage = (artistWeights[artistIndex] / totalWeights) * 100;
-                            return <StatBlock key={a.artist_id} name={a.name}
-                                              description={`${Math.round(percentage)}%`} value={percentage}/>
+        false ?
+                <div id={'genre-breakdown'}>
+                    <select defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
+                        {selectedDatapoint.top_genres.slice(0,9).map(g => {
+                            return <option key={g} value={g}>{g}</option>
                         })}
+                    </select>
+                    <div id={'genre-chart-wrapper'}>
+                        <Doughnut data={data} updateMode={"show"} />
                     </div>
-                )
-            })}
-        </div>
+                </div>
+                :
+                <p style={{fontWeight: 'bold'}}>This is being reworked! Stay tuned.</p>
+
     )
 }
 
@@ -1223,8 +1251,8 @@ const Profile = () => {
 
     // Reload when attempting to load a new page
     window.addEventListener("hashchange", () => {
+        window.location.reload();
         window.scrollTo(0, 0);
-        window.location.reload()
     });
 
 
@@ -1342,7 +1370,7 @@ const Profile = () => {
                         setSelectedPrevDatapoint(datapoints[2]);
                         console.info("Previous datapoints retrieved!");
                         console.log(datapoints);
-                    });
+                    })
                 })
             }
         })
@@ -1446,7 +1474,7 @@ const Profile = () => {
                                                 </div>
 
                                                 :
-                                                <div style={{textAlign: 'left'}}>
+                                                <div style={{textAlign: 'left', width: '100%'}}>
                                                     <p style={{
                                                         margin: '16px 0 0 0',
                                                         textTransform: 'uppercase'
@@ -1457,8 +1485,8 @@ const Profile = () => {
                                                         margin: '0 0 16px 0',
                                                         textTransform: 'uppercase'
                                                     }}>for each genre</p>
-                                                    <p>The artists that contribute most to {possessive} listening time
-                                                        in each of {possessive} top 5 genres.</p>
+                                                    <p>The distribution of artists that contribute most to {possessive} listening time
+                                                        in each of {possessive} top 10 genres.</p>
                                                     <GenreBreakdown selectedDatapoint={selectedDatapoint} number={5}/>
                                                 </div>
                                         }
@@ -1489,13 +1517,7 @@ const Profile = () => {
                                 </div>
                             </div>
                             {!isLoggedIn() ?
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    fontFamily: 'Inter Tight',
-                                }}>
-
-                                </div>
+                                <></>
                                 :
                                 playlists.length < 1 ?
                                     <div style={{

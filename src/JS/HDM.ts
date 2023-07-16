@@ -168,6 +168,7 @@ export const validateUser = () => {
             })
             .then(exists => {
                 if (!exists) {
+                    window.localStorage.removeItem('pocketbase_auth');
                     handleAlternateLogin();
                 }
             });

@@ -17,10 +17,10 @@ body {
     sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    --bg-colour: #F3EFE0;
-    --primary-colour: #191919;
+    --bg-colour: whitesmoke;
+    --primary-colour: #110E09;
     --secondary-colour: #83867E;
-    --accent-colour: #b9a38a;
+    --accent-colour: #666666;
     color: var(--primary-colour);
     background: var(--bg-colour);
 }
@@ -28,9 +28,9 @@ body {
 @media (prefers-color-scheme: dark) {
     body {
         --bg-colour: #110E09;
-        --primary-colour: #FFEDD4;
+        --primary-colour: whitesmoke;
         --secondary-colour: #83867E;
-        --accent-colour: #a19485;
+        --accent-colour: #BABABA;
     }
 }
 
