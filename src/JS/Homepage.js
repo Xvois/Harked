@@ -6,24 +6,19 @@
  */
 
 import {isLoggedIn, validateUser} from './HDM.ts';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import './../CSS/Homepage.css';
-import {useNavigate} from "react-router-dom";
 import {handleAlternateLogin} from "./Authentication";
 
 function Homepage() {
-    const [token, setToken] = useState("")
-    const navigate = useNavigate();
     useEffect(() => {
-        setToken(window.localStorage.getItem("token"))
         document.title = "Harked"
         validateUser();
-    }, [token])
+    }, [])
 
 
     const handleLogOut = () => {
         window.localStorage.clear();
-        setToken("");
     }
 
     let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";

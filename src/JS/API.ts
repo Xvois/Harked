@@ -390,6 +390,10 @@ export const getFullLocalData = async (collection, filter = '') => {
     return await pb.collection(collection).getFullList(filter).catch(handleFetchException);
 }
 
+export const getAuthData = () => {
+    return pb.authStore;
+}
+
 
 export const getDelayedDatapoint = async (user_id, term, delay) => {
     const dps = await pb.collection("datapoints").getFullList({

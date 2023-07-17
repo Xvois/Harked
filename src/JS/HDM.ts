@@ -6,6 +6,7 @@ import {
     enableAutoCancel,
     fetchData,
     getAllUserIDs,
+    getAuthData,
     getDatapoint,
     getDelayedDatapoint,
     getFullLocalData,
@@ -150,40 +151,22 @@ const dp_cache = new LRUCache<string, Datapoint, unknown>({
 const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
 
 let me = undefined;
-/**
- * Ensures that if the user is logged in then they have a valid
- * token as well as a valid entry in the database. If not they are logged out.
- *
- * Used to prevent the case where the entry in the database is removed
- * but a client stays logged in to that account.
- */
-export const validateUser = () => {
-    if (isLoggedIn()) {
-        if(me === undefined){
-            retrieveLoggedUserID()
-                .then(userID => {
-                    return userExists(userID);
-                }).catch(err => {
-                console.error('Error retrieving loggedUserID.', err);
-                window.localStorage.clear();
-            })
-                .then(exists => {
-                    if (!exists) {
-                        // Log them out
-                        window.localStorage.clear();
-                    }
-                });
+
+export const validateUser = async () => {
+    if(window.localStorage.getItem("pocketbase_auth")){
+        console.info('Validating user...');
+        const authData = JSON.parse(window.localStorage.getItem("pocketbase_auth"));
+        const user = authData.model;
+        const exists = !!(await getLocalDataByID("users", user.id));
+        if(!exists){
+            console.warn('User invalid. Logging out...');
+            window.localStorage.clear();
+            window.location.href = '/';
         }else{
-            userExists(me.id).then(exists => {
-                if (!exists) {
-                    // Log them out
-                    window.localStorage.clear();
-                }
-            })
+            console.info('User is valid.')
         }
     }
-};
-
+}
 
 export const handleCacheReset = () => {
     if ('caches' in window) {
