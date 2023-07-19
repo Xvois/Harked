@@ -1,4 +1,3 @@
-import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 import React, {useEffect, useRef, useState} from "react";
 /* @ts-ignore */
 import {Comment, deleteComment, isLoggedIn, retrieveComments, retrieveLoggedUserID, submitComment, User} from "./HDM.ts"
@@ -90,17 +89,20 @@ export const SpotifyLink = (props: { link: string, simple?: boolean }) => {
     )
 }
 
-export const PageError = (props: { icon: ReactJSXElement, description: string, errCode?: string }) => {
-    const {icon, description, errCode} = props;
-    console.log(props);
+export const PageError = (props: { description: string, errCode?: string }) => {
+    const {description, errCode} = props;
     return (
-        <div className="centre" style={{textAlign: 'center', width: '75%'}}>
-            {icon}
-            <h1>{description}</h1>
-            {errCode && (
-                <p>ERR CODE: {errCode}</p>
-            )}
-        </div>
+        !!description ?
+            <div className="page-error centre">
+                <h1 style={{margin: 0}}>Uh oh...</h1>
+                <p>{description}</p>
+                {errCode && (
+                    <p style={{fontSize: '12px'}}>ERR CODE: {errCode}</p>
+                )}
+                <a style={{color: 'var(--primary-colour)'}} href={'/'}>Take me home</a>
+            </div>
+            :
+            <></>
     )
 }
 

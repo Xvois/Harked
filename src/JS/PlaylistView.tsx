@@ -2,13 +2,14 @@ import React, {useEffect, useRef, useState} from "react";
 import {
     addAnnotation,
     deleteAnnotation,
+    isLoggedIn,
     PlaylistMetadata,
     retrieveLoggedUserID,
     retrievePlaylist,
     retrievePlaylistMetadata,
     Song
 } from "./HDM.ts";
-import {LoadingIndicator, StyledField} from "./SharedComponents.tsx";
+import {LoadingIndicator, PageError, StyledField} from "./SharedComponents.tsx";
 import {getLIDescription, getLIName, getPlaylistAnalysis} from "./Analysis"
 import "./../CSS/PlaylistView.css"
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
@@ -281,6 +282,8 @@ const PlaylistView = () => {
     const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
     const [selectedTrack, setSelectedTrack] = useState(null);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [isError, setIsError] = useState(false);
+    const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
 
     const updateSize = () => {
         setWindowWidth(window.innerWidth);
@@ -289,17 +292,27 @@ const PlaylistView = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const p: Playlist = await retrievePlaylist(playlist_id);
-            const metadata = await retrievePlaylistMetadata(playlist_id);
-            const userID = await retrieveLoggedUserID();
-            if (p.owner.user_id === userID) {
-                setIsOwnPlaylist(true);
-                console.info('Is own playlist.')
+            if(isLoggedIn()){
+                const p: Playlist = await retrievePlaylist(playlist_id);
+                if(!p){
+                    setIsError(true);
+                    setErrorDetails({description: "This playlist doesn't seem to exist.", errCode: "id_fetch_failed"});
+                }else{
+                    const metadata = await retrievePlaylistMetadata(playlist_id);
+                    const userID = await retrieveLoggedUserID();
+                    if (p.owner.user_id === userID) {
+                        setIsOwnPlaylist(true);
+                        console.info('Is own playlist.')
+                    }
+                    setLoggedUserID(userID);
+                    setPlaylist(p);
+                    setPlaylistAnalysis(getPlaylistAnalysis(p.tracks));
+                    setPlaylistMetadata(metadata);
+                }
+            }else{
+                setIsError(true);
+                setErrorDetails({description: "You must be logged in to use Harked's playlist viewer."});
             }
-            setLoggedUserID(userID);
-            setPlaylist(p);
-            setPlaylistAnalysis(getPlaylistAnalysis(p.tracks));
-            setPlaylistMetadata(metadata);
         }
 
         fetchData();
@@ -307,8 +320,11 @@ const PlaylistView = () => {
     }, [])
 
     return (
-        playlist === null ?
-            <LoadingIndicator/>
+        playlist === null || isError ?
+            isError ?
+                <PageError description={errorDetails.description} errCode={errorDetails.errCode} />
+                :
+                <LoadingIndicator/>
             :
             <div className={'playlist-view-wrapper'}>
                 <div className={'playlist-view-header'}>

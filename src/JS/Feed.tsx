@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
-import {milliToHighestOrder, retrieveEventsForUser, retrieveLoggedUserID, UserEvent} from "./HDM.ts";
+import {isLoggedIn, milliToHighestOrder, retrieveEventsForUser, retrieveLoggedUserID, UserEvent} from "./HDM.ts";
 import {getItemType, getLIName} from "./Analysis";
 import "./../CSS/Feed.css"
-import {LoadingIndicator, LoadingObject} from "./SharedComponents.tsx";
+import {LoadingIndicator, LoadingObject, PageError} from "./SharedComponents.tsx";
 
 function FeedObject(props: { user_id: string, event: UserEvent, index: number, maxEventsPerLoad: number }) {
 
@@ -81,6 +81,7 @@ const Feed = () => {
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
+    const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
     const maxEventsPerLoad = 20;
 
     useEffect(() => {
@@ -90,15 +91,20 @@ const Feed = () => {
             return await retrieveEventsForUser(user_id, feedPage, maxEventsPerLoad);
         }
 
-        fetchData().then((e: Array<UserEvent>) => {
-            setEvents(e)
-            if (e.length < maxEventsPerLoad) {
-                console.info('Loaded all at once.')
-                setHasMore(false);
-            } else {
-                console.info('Feed is truncated and will attempt to load more on scroll.')
-            }
-        });
+        if(isLoggedIn()){
+            fetchData().then((e: Array<UserEvent>) => {
+                setEvents(e)
+                if (e.length < maxEventsPerLoad) {
+                    console.info('Loaded all at once.')
+                    setHasMore(false);
+                } else {
+                    console.info('Feed is truncated and will attempt to load more on scroll.')
+                }
+            });
+        }else{
+            setIsError(true);
+            setErrorDetails({description: "Viewing the feed requires being logged in."});
+        }
 
     }, [])
 
@@ -121,9 +127,10 @@ const Feed = () => {
     }
 
     window.onscroll = () => {
-        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight && isLoggedIn()) {
             fetchMoreEvents().catch(err => {
                 setIsError(true);
+                setErrorDetails({description: "There was a critical error fetching more events.", errCode: "fetchMoreEvents_failure"})
                 console.error('Error fetching more events: ', err);
             });
         }
@@ -131,55 +138,58 @@ const Feed = () => {
 
 
     return (
-        <div>
-            <h1 style={{margin: '15px 0 0 0px'}}>Your feed.</h1>
-            <p style={{margin: '0 0 15px 0'}}>What the people you're following are up to.</p>
-            <div className={'feed-wrapper'}>
-                {events !== null ?
-                    events.length > 0 ?
-                        <>
-                            {
-                                events.map((e, i) => {
-                                    return <FeedObject key={e.id} user_id={user_id} event={e} index={i}
-                                                       maxEventsPerLoad={maxEventsPerLoad}/>
-                                })
-                            }
-                            {hasMore ?
-                                isLoading ?
-                                    <div style={{position: 'relative', marginTop: '50px'}}>
-                                        <LoadingIndicator/>
-                                    </div>
-                                    :
-                                    isError ?
-                                        <p style={{
-                                            margin: 'auto',
-                                            padding: '15px',
-                                            borderTop: '1px solid var(--accent-colour)',
-                                            color: 'red'
-                                        }}>An error occurred loading your feed.</p>
-
+        isError ?
+            <PageError description={errorDetails.description} errCode={errorDetails.errCode} />
+            :
+            <div>
+                <h1 style={{margin: '15px 0 0 0px'}}>Your feed.</h1>
+                <p style={{margin: '0 0 15px 0'}}>What the people you're following are up to.</p>
+                <div className={'feed-wrapper'}>
+                    {events !== null ?
+                        events.length > 0 ?
+                            <>
+                                {
+                                    events.map((e, i) => {
+                                        return <FeedObject key={e.id} user_id={user_id} event={e} index={i}
+                                                           maxEventsPerLoad={maxEventsPerLoad}/>
+                                    })
+                                }
+                                {hasMore ?
+                                    isLoading ?
+                                        <div style={{position: 'relative', marginTop: '50px'}}>
+                                            <LoadingIndicator/>
+                                        </div>
                                         :
-                                        <></>
-                                :
-                                <p style={{
-                                    margin: 'auto',
-                                    padding: '15px',
-                                    borderTop: '1px solid var(--accent-colour)',
-                                    color: 'var(--secondary-colour)'
-                                }}>You've reached the end of your feed.</p>
-                            }
-                        </>
+                                        isError ?
+                                            <p style={{
+                                                margin: 'auto',
+                                                padding: '15px',
+                                                borderTop: '1px solid var(--accent-colour)',
+                                                color: 'red'
+                                            }}>An error occurred loading your feed.</p>
 
+                                            :
+                                            <></>
+                                    :
+                                    <p style={{
+                                        margin: 'auto',
+                                        padding: '15px',
+                                        borderTop: '1px solid var(--accent-colour)',
+                                        color: 'var(--secondary-colour)'
+                                    }}>You've reached the end of your feed.</p>
+                                }
+                            </>
+
+                            :
+                            <p style={{fontWeight: 'bold'}}>Looks like there's nothing to see here
+                                yet. <br/> Follow some more people and wait for them to get up to something!</p>
                         :
-                        <p style={{fontWeight: 'bold'}}>Looks like there's nothing to see here
-                            yet. <br/> Follow some more people and wait for them to get up to something!</p>
-                    :
-                    <>
-                        <LoadingObject num={7} />
-                    </>
-                }
+                        <>
+                            <LoadingObject num={7} />
+                        </>
+                    }
+                </div>
             </div>
-        </div>
     )
 
 }

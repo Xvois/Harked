@@ -209,12 +209,16 @@ export function hashString(inputString) {
  * @param targetUserID
  */
 export const followsUser = async function (primaryUserID: string, targetUserID: string) {
-    // If both are the same we can simply return false as a user cannot follow themself.
+    // If both are the same we can simply return false as a user cannot follow themselves.
     if (primaryUserID === targetUserID) {
         return false;
     }
     let follows = false;
     const targetUser: User = await getUser(targetUserID);
+    if(!targetUser){
+        console.warn('Null value returned from followsUser.');
+        return null;
+    }
     // Get who the primary user follows
     await getLocalData("user_following", `user.user_id="${primaryUserID}"`)
         .then((res: FollowingRecord) => {
@@ -783,7 +787,11 @@ export const retrievePlaylists = async function (user_id: string) {
  * @returns Playlist
  */
 export const retrievePlaylist = async function (playlist_id: string, retrieveTracks: boolean = true) {
-    let playlist = await fetchData(`playlists/${playlist_id}`);
+    let playlist = await fetchData(`playlists/${playlist_id}`).catch(err => console.warn(err));
+
+    if(!playlist){
+        return null;
+    }
 
     if (retrieveTracks) {
         const totalTracks = playlist.tracks.total;

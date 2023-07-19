@@ -159,3 +159,10 @@ option {
     }
 }
 
+.page-error {
+    align-items: center;
+    text-align: center;
+    padding: 50px;
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
+}

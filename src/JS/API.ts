@@ -39,7 +39,7 @@ export async function fetchData(path, retryCount = 0) {
                 return null;
             }
         } else {
-            alert(err);
+            console.error(err);
         }
     }
 }

@@ -30,12 +30,12 @@ import {
     retrieveSongAnalytics,
     retrieveUser,
     submitRecommendation,
-    unfollowUser
+    unfollowUser,
+    userExists
 } from './HDM.ts';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
-import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
 import FlareIcon from '@mui/icons-material/Flare';
 import {
     calculateSimilarity,
@@ -51,7 +51,6 @@ import {
     translateAnalyticsLow
 } from "./Analysis";
 import {handleAlternateLogin} from "./Authentication";
-import LockIcon from '@mui/icons-material/Lock';
 import {
     CommentSection,
     LoadingIndicator,
@@ -1305,9 +1304,8 @@ const Profile = () => {
     // If something happens that doesn't allow a user to load the page
     // then an error is passed. These states are passed in to the PageError object
     // and then shown on the page.
-    // The icon should be a MUI icon component.
     const [isError, setIsError] = useState(false);
-    const [errorDetails, setErrorDetails] = useState({icon: null, description: null, errCode: null});
+    const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
 
 
     // Reload when attempting to load a new page
@@ -1368,11 +1366,19 @@ const Profile = () => {
                         if (indexes.length === 3) {
                             console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.");
                             setIsError(true);
-                            setErrorDetails({
-                                icon: <ReportGmailerrorredIcon fontSize={'large'}/>,
-                                description: 'We do not have enough information about this user to generate a profile for them.',
-                                errCode: 'complete_term_elimination'
-                            });
+                            userExists(loadID).then(exists => {
+                                if(exists){
+                                    setErrorDetails({
+                                        description: 'We do not have enough information about this user to generate a profile for them.',
+                                        errCode: 'complete_term_elimination'
+                                    });
+                                }else{
+                                    setErrorDetails({
+                                        description: "This user isn't on Harked yet so you can't view their profile.",
+                                    });
+                                }
+                            })
+
                         }
                         let termsCopy = terms;
                         indexes.forEach(i => termsCopy[i] = null);
@@ -1395,7 +1401,6 @@ const Profile = () => {
                         console.info("LOCKED PAGE", settings);
                         setIsError(true);
                         setErrorDetails({
-                            icon: <LockIcon fontSize={'large'}/>,
                             description: 'This profile is private.'
                         });
                     }
