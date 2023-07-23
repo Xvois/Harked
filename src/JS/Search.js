@@ -10,7 +10,7 @@ const Results = (props) => {
             {/* Render search results */}
             {searchResults.slice(0, 5).map(result => {
                 return (
-                    <a className='result' href={`/profile#${result.user_id}`} key={result.user_id}>
+                    <a className='result' href={`/profile/${result.user_id}`} key={result.user_id}>
                         <div className='result-title'>
                             <h2>{result.username}</h2>
                         </div>
@@ -71,10 +71,9 @@ const Search = (props) => {
             {/* SearchBar component */}
             <form autoComplete={"off"}>
                 <StyledField
-                    className='search-bar'
+                    placeholder={'Search'}
                     inputProps={{className: `search-label`}}
                     onChange={(event) => handleSearch(event.target.value)}
-                    label="Search"
                 />
             </form>
             {!!searchResults && (

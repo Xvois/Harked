@@ -84,7 +84,7 @@ function Authentication() {
             window.localStorage.removeItem("redirect");
             redirect(redirectPath);
         } else {
-            redirect('/profile#me');
+            redirect('/profile/me');
         }
     }
 
@@ -144,7 +144,7 @@ function Authentication() {
                                         putLocalData("profile_recommendations", profile_recommendations),
                                     ]
                                 )
-                                redirect('/profile#me', true);
+                                redirect('/profile/me', true);
                             }).catch((err) => {
                             console.error('Error patching user: ', err);
                             console.info('User: ', fUser);
@@ -161,7 +161,7 @@ function Authentication() {
                             window.localStorage.removeItem("redirect");
                             redirect(redirectPath, true);
                         } else {
-                            redirect('/profile#me', true);
+                            redirect('/profile/me', true);
                         }
                     }
                 })
@@ -180,7 +180,7 @@ function Authentication() {
         <div>
             <h2>Redirecting...</h2>
             <p>Stuck on this page? <a style={{color: 'var(--primary-colour)'}}
-                                      href={window.localStorage.getItem("redirect") ?? '/profile#me'}>Click here to
+                                      href={window.localStorage.getItem("redirect") ?? '/profile/me'}>Click here to
                 redirect.</a></p>
         </div>
     )

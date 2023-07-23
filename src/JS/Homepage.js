@@ -9,6 +9,7 @@ import {isLoggedIn, validateUser} from './HDM.ts';
 import {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
 import {handleAlternateLogin} from "./Authentication";
+import {Link} from "react-router-dom";
 
 function Homepage() {
 
@@ -41,21 +42,18 @@ function Homepage() {
                     {!loggedIn ?
                         <>
                             <button className="std-button" onClick={handleAlternateLogin}>Login with Spotify</button>
-                            <a className="std-button" href={'/profile#sonn-gb'}>View a sample profile</a>
+                            <Link className="std-button" to={'/profile/sonn-gb'}>View a sample profile</Link>
                         </>
                         :
                         <>
-                            <a className="std-button" href={`profile#me`}>Explore your profile</a>
+                            <Link className={'std-button'} to={"/profile/me"}>Explore your profile</Link>
+                            <Link className={'std-button'} to={"/reviews/me"}>[Beta] Reviews</Link>
+                            <button className={"std-button"} onClick={handleLogOut}>Log-out</button>
                         </>
-                    }
-                    {loggedIn ?
-                        <button className={"std-button"} onClick={handleLogOut}>Log-out</button>
-                        :
-                        <></>
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.3</span></p>
+                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.4</span></p>
             </div>
         </div>
     );

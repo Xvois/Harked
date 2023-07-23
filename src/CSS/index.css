@@ -27,6 +27,21 @@ body {
     background: var(--bg-colour);
 }
 
+
+dialog {
+    height: max-content;
+    min-width: 300px;
+    background: var(--bg-colour);
+    color: var(--primary-colour);
+    background: rgba(200, 200, 200, 0.5);
+    border: 1px solid rgba(200, 200, 200, 0.75);
+    backdrop-filter: blur(30px) brightness(200%);
+}
+
+dialog::backdrop{
+    background: rgba(0, 0, 0, 0.5);
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         --bg-colour: #110E09;
@@ -34,7 +49,12 @@ body {
         --secondary-colour: #83867E;
         --accent-colour: #BABABA;
     }
+    dialog {
+        background: rgba(50, 50, 50, 0.5);
+        border: 1px solid rgba(100, 100, 100, 0.75);
+    }
 }
+
 
 @media screen and (max-width: 700px) {
     body {

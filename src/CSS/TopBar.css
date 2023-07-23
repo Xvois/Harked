@@ -48,7 +48,7 @@
 
 .expanded-menu-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     width: 100%;
     gap: 5px;
@@ -62,27 +62,23 @@
     justify-content: center;
     min-width: max-content;
     flex-grow: 1;
-    font-size: 20px;
     color: var(--primary-colour);
     text-decoration: none;
     cursor: pointer;
+
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    text-transform: uppercase;
 
     background: none;
     border: none;
 }
 
-.redirect-element p {
-    margin: 0;
-    font-size: 12px;
-    font-family: 'Inter Tight', sans-serif;
-    font-weight: 200;
-    text-transform: uppercase;
-}
 
 .redirect-expanded {
     flex-grow: 1;
-    height: max-content;
-    min-width: 100px;
+    height: 40px;
     background: rgba(125, 125, 125, 0.1);
     border: 1px solid rgba(125, 125, 125, 0.2);
     padding: 5px 30px 5px 30px;

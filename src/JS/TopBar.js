@@ -2,15 +2,12 @@
 
 import React, {useEffect, useState} from 'react';
 import './../CSS/TopBar.css';
-import PersonIcon from '@mui/icons-material/Person';
 import Search from "./Search"
 import {isLoggedIn} from "./HDM.ts";
-import {BlurOn, Settings} from "@mui/icons-material";
+import {BlurOn} from "@mui/icons-material";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import LoginIcon from '@mui/icons-material/Login';
 import {handleAlternateLogin} from "./Authentication";
-import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 
 const RedirectElement = (props) => {
     const {title, href, icon, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
@@ -18,14 +15,12 @@ const RedirectElement = (props) => {
 
     const link = (
         <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href}>
-            {icon}
-            <p>{title}</p>
+            {title}
         </a>
     );
     const button = (
         <button onClick={callback} className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`}>
-            {icon}
-            <p>{title}</p>
+            {title}
         </button>
     );
     const element = callback !== null ? button : link;
@@ -74,13 +69,12 @@ const TopBar = () => {
 
     const redirects =
         [
-            {title: 'Profile', href: '/profile#me', icon: <PersonIcon fontSize={'medium'}/>, requiresLogIn: true},
-            {title: 'Feed', href: '/feed', icon: <DynamicFeedIcon fontSize={'medium'}/>, requiresLogIn: true},
-            {title: 'Settings', href: '/settings', icon: <Settings fontSize={'medium'}/>, requiresLogIn: true},
+            {title: 'Profile', href: '/profile/me', requiresLogIn: true},
+            {title: 'Feed', href: '/feed', requiresLogIn: true},
+            {title: 'Settings', href: '/settings', requiresLogIn: true},
             {
                 title: 'Login',
                 callback: handleAlternateLogin,
-                icon: <LoginIcon fontSize={'medium'}/>,
                 requiresLogOut: true
             }
         ]

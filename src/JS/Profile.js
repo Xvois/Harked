@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import {
     createEvent,
@@ -25,7 +25,6 @@ import {
     retrievePrevAllDatapoints,
     retrieveProfileData,
     retrieveProfileRecommendations,
-    retrieveSearchResults,
     retrieveSettings,
     retrieveSongAnalytics,
     retrieveUser,
@@ -55,9 +54,9 @@ import {
     CommentSection,
     LoadingIndicator,
     PageError,
+    SelectionModal,
     SpotifyLink,
     StatBlock,
-    StyledField,
     ValueIndicator,
 } from "./SharedComponents.tsx";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -65,6 +64,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import {ArcElement, Chart as ChartJS, Legend, Tooltip} from "chart.js";
 import {Doughnut} from "react-chartjs-2";
+import {useParams} from "react-router-dom";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -383,180 +383,39 @@ function ComparisonLink(props) {
     )
 }
 
-const SelectionModal = (props) => {
+const RecommendationSelectionModal = (props) => {
     const {showModal, setShowModal, recommendations, setRecommendations, pageGlobalUserID, initialItem = null} = props;
 
-    const [searchResults, setSearchResults] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(initialItem);
-    const [processing, setProcessing] = useState(false);
-    const searchRef = useRef('');
-    const descriptionRef = useRef('');
-    const typeChoices = ['songs', 'artists', 'albums'];
-    const [type, setType] = useState(typeChoices[0]);
-
-    useEffect(() => {
-        setSelectedItem(initialItem);
-    }, [initialItem])
-
-    useEffect(() => {
-        const modal = document.getElementById('rec-modal');
-        if (showModal) {
-            modal.showModal();
-        } else if (!showModal) {
-            modal.close();
-        }
-    }, [showModal])
-
-    const handleSearch = () => {
-        if (searchRef.current !== null && searchRef.current !== undefined && searchRef.current.value !== '') {
-            retrieveSearchResults(searchRef.current.value, type).then(res => {
-                setSearchResults(res);
-            });
-        }
-    }
-
-    const handleSubmit = async () => {
-        setProcessing(true);
+    const handleSubmit = async (selectedItem, type, descriptionRef) => {
         let submissionItem = selectedItem;
         if (type === 'songs') {
             submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
         }
-        console.log(submissionItem)
         await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
-            setSearchResults(null);
-            setSelectedItem(null);
-            setShowModal(false);
-            setProcessing(false);
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
         });
     }
 
-    const handleModify = async () => {
-        setProcessing(true);
+    const handleModify = async (selectedItem, type, descriptionRef) => {
         const existingRecIndex = recommendations.findIndex(r => r.item[`${type.slice(0, type.length - 1)}_id`] === selectedItem[`${type.slice(0, type.length - 1)}_id`]);
         const existingRec = recommendations[existingRecIndex];
-        await modifyRecommendation(pageGlobalUserID, existingRec, getItemType(initialItem), descriptionRef.current.value).then(() => {
-            setSearchResults(null);
-            setSelectedItem(null);
-            setShowModal(false);
-            setProcessing(false);
+        await modifyRecommendation(pageGlobalUserID, existingRec, type, descriptionRef.current.value).then(() => {
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
         })
     }
 
     return (
-        <dialog autoFocus id={'rec-modal'}>
-            {selectedItem === null ?
-                <div style={{justifyContent: 'right'}}>
-                    <button id={'modal-exit-button'} onClick={() => {
-                        setShowModal(false);
-                        setSearchResults(null)
-                    }}>x
-                    </button>
-                    <h3 style={{margin: 0}}>Type</h3>
-                    <p style={{marginTop: 0}}>of item.</p>
-                    <div id={'rec-type-wrapper'}>
-                        {typeChoices.map(t => {
-                            return <button type={'button'} onClick={() => setType(t)} key={t}
-                                           className={'subtle-button'} style={type === t ? {
-                                background: 'var(--primary-colour)',
-                                color: 'var(--bg-colour)',
-                                textTransform: 'capitalize'
-                            } : {textTransform: 'capitalize'}}>{t.slice(0, t.length - 1)}</button>
-                        })}
-                    </div>
-                    <h3 style={{marginBottom: 0}}>Search</h3>
-                    <p style={{marginTop: 0}}>for an item to recommend.</p>
-                    <StyledField
-                        placeholder={`Search for ${type}`}
-                        variant='outlined'
-                        rows={1}
-                        inputRef={searchRef}
-                        inputProps={{maxLength: 100}}
-                    />
-                    <div style={{width: "max-content", marginLeft: 'auto'}}>
-                        <button className="std-button"
-                                style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} type={"button"} onClick={handleSearch}>
-                            Search
-                        </button>
-                    </div>
-                    {searchResults && (
-                        <div id={'rec-search-results'}>
-                            {/* Render search results */}
-                            {searchResults.slice(0, 5).map((result, index) => {
-                                return (
-                                    <div key={getLIName(result) + index} style={{position: 'relative'}}>
-                                        {index % 2 === 0 && <div className={'bg-element'}/>}
-                                        <button onClick={() => setSelectedItem(result)} className={'rec-search-result'}>
-                                            <img alt={getLIName(result)} src={result.image}
-                                                 className={'levitating-image'}/>
-                                            <h4>{getLIName(result, 20)}</h4>
-                                            <p>{getLIDescription(result, 20)}</p>
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )
-                    }
-                </div>
-                :
-                <div>
-                    {processing && (
-                        <div className={'processing-indicator-wrapper'}>
-                            <LoadingIndicator/>
-                        </div>
-                    )
-                    }
-                    <button id={'modal-exit-button'} onClick={() => {
-                        setShowModal(false);
-                        setSearchResults(null)
-                    }}>x
-                    </button>
-                    <form>
-                        <div style={{position: 'relative'}} className={'rec-details-img'}>
-                            <img alt={'backdrop-image'} src={selectedItem.image} className={'backdrop-image'}/>
-                            <img alt={getLIName(selectedItem)} src={selectedItem.image} className={'levitating-image'}/>
-                        </div>
-                        <div style={{maxWidth: '300px'}}>
-                            <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
-                            <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}</p>
-                            <StyledField
-                                placeholder={`Why are you recommending this?`}
-                                variant='outlined'
-                                multiline
-                                rows={3}
-                                inputRef={descriptionRef}
-                                inputProps={{maxLength: 200}}
-                            />
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                marginTop: '16px'
-                            }}>
-                                {initialItem === null && (
-                                    <button className={'subtle-button'} type={'button'}
-                                            onClick={() => setSelectedItem(null)}>Back</button>
-                                )}
-                                <button className={'subtle-button'} type={"button"} style={{marginLeft: 'auto'}}
-                                        onClick={() => {
-                                            if (!!initialItem) {
-                                                handleModify();
-                                            } else {
-                                                handleSubmit();
-                                            }
-                                        }}>
-                                    Submit
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            }
-        </dialog>
+        <SelectionModal
+            showModal={showModal}
+            setShowModal={setShowModal}
+            onModify={handleModify}
+            onSubmit={handleSubmit}
+            modifyTarget={initialItem}
+            description
+        />
     )
 }
+
 
 const ProfileRecommendations = (props) => {
     const {pageGlobalUserID, isOwnPage} = props;
@@ -611,7 +470,7 @@ const ProfileRecommendations = (props) => {
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
                 }
             </div>
-            <SelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection}
+            <RecommendationSelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection}
                             recommendations={recs} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
         </div>
     )
@@ -1015,7 +874,7 @@ const PlaylistItem = function (props) {
                     margin: '0',
                     opacity: '0.5'
                 }}>{playlist.tracks.length} songs {playlistMetadata && `· ${Object.keys(playlistMetadata.meta).length} annotation${Object.keys(playlistMetadata.meta).length !== 1 ? 's' : ''}`}</p>
-                <a href={`/playlist#${playlist.playlist_id}`} className={'subtle-button'}
+                <a href={`/playlist/${playlist.playlist_id}`} className={'subtle-button'}
                    style={{marginTop: 'auto', marginLeft: 'auto'}}>Explore</a>
             </div>
         </div>
@@ -1275,8 +1134,8 @@ function PlaylistItemList(props) {
 
 const Profile = () => {
 
-    const simpleDatapoints = ["artists", "songs", "genres"]
-    const pageHash = window.location.hash.split("#")[1];
+    const simpleDatapoints = ["artists", "songs", "genres"];
+    const pageID = (useParams()).id;
 
     const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
     // The datapoint that is selected for viewing
@@ -1326,24 +1185,24 @@ const Profile = () => {
                 console.log('Context is of logged in user.')
                 await retrieveLoggedUserID().then(id => {
                     // Are we on our page and don't know it?
-                    if (id === pageHash) {
-                        window.location = 'profile#me';
+                    if (id === pageID) {
+                        window.location.href = '/profile/me'
                         // Are we on our own page and know it?
-                    } else if (pageHash === 'me') {
+                    } else if (pageID === 'me') {
                         setIsOwnPage(true);
                         loadID = id;
                         setPageGlobalUserID(id);
                         // Are we on someone else's page?
                     } else {
-                        followsUser(id, pageHash).then(f => setIsLoggedUserFollowing(f));
-                        loadID = pageHash;
-                        setPageGlobalUserID(pageHash);
+                        followsUser(id, pageID).then(f => setIsLoggedUserFollowing(f));
+                        loadID = pageID;
+                        setPageGlobalUserID(pageID);
                         setLoggedUserID(id);
                     }
                 })
             } else {
-                setPageGlobalUserID(pageHash)
-                loadID = pageHash;
+                setPageGlobalUserID(pageID)
+                loadID = pageID;
             }
             return loadID;
         }
@@ -1353,7 +1212,7 @@ const Profile = () => {
                 retrieveUser(loadID).then(function (user) {
                     setPageUser(user);
                     retrieveFollowers(user.user_id).then(f => setFollowers(f));
-                    if (pageHash !== 'me') {
+                    if (pageID !== 'me') {
                         setPossessive(user.username + "'s");
                     } else {
                         setPossessive("your");
@@ -1397,7 +1256,7 @@ const Profile = () => {
                 }),
                 retrieveSettings(loadID).then(function (s) {
                     setSettings(s);
-                    if (!s.public && pageHash !== 'me') {
+                    if (!s.public && pageID !== 'me') {
                         console.info("LOCKED PAGE", settings);
                         setIsError(true);
                         setErrorDetails({
@@ -1427,7 +1286,7 @@ const Profile = () => {
                     console.error("Error loading page:", error);
                     // Handle errors appropriately
                 });
-            if (pageHash === "me") {
+            if (pageID === "me") {
                 // Create onHydration to update page
                 // when hydration is fully complete
                 onHydration(loadID, () => {

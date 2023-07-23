@@ -490,19 +490,7 @@ select.dropdown {
     margin: 0 0 5px 0;
 }
 
-#rec-modal {
-    height: max-content;
-    min-width: 300px;
-    background: var(--bg-colour);
-    color: var(--primary-colour);
-    background: rgba(200, 200, 200, 0.5);
-    border: 1px solid rgba(200, 200, 200, 0.75);
-    backdrop-filter: blur(30px) brightness(200%);
-}
-
-
-
-#modal-exit-button {
+.modal-exit-button {
     position: absolute;
     right: 0;
     top: 0;
@@ -515,17 +503,6 @@ select.dropdown {
     border: none;
 }
 
-@media (prefers-color-scheme: dark) {
-    #rec-modal {
-        background: rgba(50, 50, 50, 0.5);
-        border: 1px solid rgba(100, 100, 100, 0.75);
-    }
-}
-
-
-#rec-modal::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-}
 
 #rec-type-wrapper {
     display: flex;

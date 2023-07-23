@@ -78,7 +78,7 @@ interface Genre extends Record {
     genre: string
 }
 
-interface Artist extends Record {
+export interface Artist extends Record {
     artist_id: string,
     name: string,
     image: string,
@@ -134,7 +134,7 @@ interface Datapoint extends Record {
     top_genres: Array<Genre> | Array<string>
 }
 
-interface Album {
+export interface Album {
     album_id: string,
     artists: string,
     name: string,
@@ -149,6 +149,8 @@ const dp_cache = new LRUCache<string, Datapoint, unknown>({
 });
 
 const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
+
+const user_cache = new LRUCache<string, User, unknown>({max: 100});
 
 let me = undefined;
 
@@ -383,7 +385,6 @@ export const submitComment = async function (user_id: string, section_id: string
             parent: parent,
             content: content
         };
-        console.log(comment)
         await putLocalData("comments", comment);
 
         let profileComments = await getLocalDataByID("comment_section", section_id);
@@ -408,7 +409,7 @@ export const deleteComment = async function (comment_id: string) {
 /**
  * Creates a recommendation for the target user on their page.
  *
- * **Has build in createEvent side-effect.**
+ * **Has built in createEvent side-effect.**
  * @param user_id
  * @param item
  * @param type
@@ -453,7 +454,7 @@ export const submitRecommendation = async function (user_id: string, item: Song 
 /**
  * Modifies an existing recommendation with a new description.
  *
- * **Has build in createEvent side-effect.**
+ * **Has built in createEvent side-effect.**
  * @param user_id
  * @param existingRecommendation
  * @param type
@@ -477,6 +478,79 @@ export const modifyRecommendation = async (user_id: string, existingRecommendati
     await updateLocalData("recommendations", newRecommendation, existingRecommendation.id).then(() => {
         createEvent(53, user_id, existingRecommendation.item, type);
     });
+}
+/**
+ * Submits a review from the target user.
+ *
+ * **Has built in createEvent side-effect.**
+ * @param user_id
+ * @param item
+ * @param type
+ * @param rating
+ * @param description
+ */
+export const submitReview = async (user_id: string, item: Artist | Song | Album, type: "artists" | "songs" | "albums", rating: number, description: string) => {
+    const user: User = await retrieveUser(user_id);
+    const id = hashString(getLIName(item) + description + user_id);
+    switch (type) {
+        case 'artists':
+            const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
+            const artistItemObj = {type: type, id: artistRefID}
+            const artistReview = {id: id, owner: user.id, item: artistItemObj, rating: rating, description: description};
+            await putLocalData("reviews", artistReview).then(() => {createEvent(3, user_id, item, type)});
+            return artistReview;
+        case 'songs':
+            const [songRefID]: Array<string> = await songsToRefIDs([item]);
+            const songItemObj = {type: type, id: songRefID}
+            const songReview = {id: id, owner: user.id, item: songItemObj, rating: rating, description: description};
+            await putLocalData("reviews", songReview).then(() => {createEvent(3, user_id, item, type)});
+            return songReview;
+        case 'albums':
+            const albumItemObj = {id: item.album_id, type: type};
+            const albumReview = {id: id, owner: user.id, item: albumItemObj, rating: rating, description: description};
+            await putLocalData("reviews", albumReview).then(() => {createEvent(3, user_id, item, type)});
+            return albumReview;
+    }
+}
+/**
+ * Retrieves all reviews from a user.
+ * @param user_id
+ */
+export const retrieveReviews = async (user_id: string) => {
+    let reviews = await getLocalData("reviews", `owner.user_id="${user_id}"`, "-created");
+
+    if (reviews === undefined) {
+        return [];
+    }
+
+    // Resolve all the items in the recommendations
+    for (let i = 0; i < reviews.length; i++) {
+        let e = reviews[i];
+        if (e.item.type === "artists") {
+            let artist: Artist = await getLocalDataByID("artists", e.item.id, "genres");
+            artist.genres = artist.expand.genres;
+            if (artist.genres !== undefined) {
+                artist.genres = artist.genres.map(e => e.genre);
+            }
+            e.item = artist;
+        } else if (e.item.type === "songs") {
+            let song: Song = await getLocalDataByID("songs", e.item.id, "artists");
+            song.artists = song.expand.artists;
+            e.item = song;
+        } else if (e.item.type === "albums") {
+            let album: Album = await fetchData(`albums/${e.item.id}`);
+            album = formatAlbum(album);
+            e.item = album;
+        } else {
+            throw new Error("Unknown type fetched from reviews.");
+        }
+    }
+
+    return reviews;
+}
+
+export const deleteReview = async (id) => {
+    await deleteLocalData("reviews", id);
 }
 
 /**
@@ -509,6 +583,8 @@ export const retrieveDatabaseID = (item, type) => {
  *
  *  2: Added annotations
  *
+ *  3: Added review
+ *
  *  51-100 | Minor events
  *
  *  51: Removes recommendation
@@ -524,6 +600,7 @@ export const retrieveDatabaseID = (item, type) => {
  * @param item_type
  */
 export const createEvent = async function (event_ref_num: number, user_id: string, item: Artist | Song | Album | Playlist, item_type: "artists" | "songs" | "albums" | "users" | "playlists") {
+    await disableAutoCancel();
     const user: User = await retrieveUser(user_id);
     let item_id;
     console.log(item_type)
@@ -548,6 +625,7 @@ export const createEvent = async function (event_ref_num: number, user_id: strin
             item: {id: item_id, type: item_type}
         }
     )
+    await enableAutoCancel();
 }
 export const retrieveEventsForUser = async function (user_id: string, page: number = 1, eventsPerPage: number = 50) {
     const following: Array<User> = await retrieveFollowing(user_id);
@@ -623,6 +701,7 @@ export const retrieveAllPublicUsers = async function () {
 export const retrieveProfileRecommendations = async function (user_id: string) {
     const data = await getLocalDataByID("profile_recommendations", hashString(user_id), "recommendations");
     let recs: Array<Recommendation> = data.expand.recommendations;
+
     if (recs === undefined) {
         return [];
     }
@@ -694,9 +773,10 @@ export const milliToHighestOrder = function (milliseconds) {
  * Returns the results of a query of a certain type.
  * @param query
  * @param type
+ * @param limit
  * @returns Artist | Song
  */
-export const retrieveSearchResults = async function (query: string, type: "artists" | "songs" | "albums") {
+export const retrieveSearchResults = async function (query: string, type: "artists" | "songs" | "albums", limit : number = 10) {
     let typeParam;
     switch (type) {
         case 'artists':
@@ -714,7 +794,7 @@ export const retrieveSearchResults = async function (query: string, type: "artis
     let params = new URLSearchParams([
         ["q", query],
         ["type", typeParam],
-        ["limit", 10]
+        ["limit", limit]
     ]);
 
     let data = await fetchData(`search?${params}`);
@@ -1060,12 +1140,18 @@ export const retrieveLoggedUserID = async function () {
     return me.id;
 };
 /**
- * Mapping of getUser.
+ * Mapping of getUser with caching.
  * @param user_id
  * @returns User
  */
 export const retrieveUser = async function (user_id: string) {
-    return await getUser(user_id);
+    if(user_cache.has(user_id)){
+        return user_cache.get(user_id);
+    }else{
+        const user = await getUser(user_id);
+        user_cache.set(user_id, user);
+        return user;
+    }
 };
 
 

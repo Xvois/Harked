@@ -15,6 +15,7 @@ import "./../CSS/PlaylistView.css"
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
 import TimelineIcon from '@mui/icons-material/Timeline';
+import {useParams} from "react-router-dom";
 
 interface Playlist {
     collaborative: boolean;
@@ -94,7 +95,7 @@ const AnnotationViewModal = (props: {
                 <h3 style={{margin: 0}}>Annotation for</h3>
                 <p style={{margin: 0}}>{getLIName(targetSong, 50)}</p>
             </div>
-            <button id={'modal-exit-button'} onClick={() => {
+            <button className={'modal-exit-button'} onClick={() => {
                 setIsOpen(false);
                 const modal: HTMLDialogElement = document.getElementById('annotation-viewer-modal');
                 modal.close();
@@ -271,7 +272,7 @@ const Track = (props: {
 
 
 const PlaylistView = () => {
-    const playlist_id = window.location.hash.split("#")[1];
+    const playlist_id = (useParams()).id;
 
     const [loggedUserID, setLoggedUserID] = useState(null);
     const [playlist, setPlaylist] = useState(null);

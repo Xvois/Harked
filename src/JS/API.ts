@@ -73,13 +73,11 @@ export const deleteData = (path) => {
 
 
 /**
- * Sends a GET HTTP request to the PRDB, fetching the user associated to the global user ID
- * and returning an object in response.
+ * Gets the first list item with a matching user id.
  * @param user_id The user's global user ID.
  * @returns {Promise<*>} A user object.
  */
 export const getUser = async (user_id) => {
-    console.log('Getting: ' + user_id)
     return await pb.collection('users').getFirstListItem(`user_id="${user_id}"`)
         .catch(
             function (err) {
@@ -146,10 +144,6 @@ let databaseCache = {
     songs: [],
     genres: []
 };
-/**
- *
- * @param targets
- */
 const updateDatabaseCache = async (targets: [string] | [string, string] | [string, string, string]) => {
     let p = [];
     if(targets.includes('artists')){
@@ -179,7 +173,6 @@ const updateDatabaseCacheWithItems = (items) => {
         databaseCache.genres = databaseCache.genres.concat(items.genres);
     }
 }
-
 
 const postSong = async (song) => {
     if (!song.song_id || !song.id) {

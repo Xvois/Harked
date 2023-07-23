@@ -16,28 +16,33 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
         switch (event.ref_num) {
             case 1:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
                     added the {itemType.slice(0, itemType.length - 1)} <a className={'heavy-link'}
                                                                           href={event.item.link}>{getLIName(event.item)}</a> to
                     their recommendations.</p>
             case 2:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
                     added annotations to <a className={'heavy-link'}
-                                            href={`/playlist#${event.item.playlist_id}`}>{event.item.name}</a>.</p>
+                                            href={`/playlist/${event.item.playlist_id}`}>{event.item.name}</a>.</p>
+            case 3:
+                return <p className={'feed-object-desc'}><a className={'heavy-link'}
+                                                                href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a>
+                has reviewed <a className={'heavy-link'}
+                href={event.item.link}>{event.item.name}</a>.</p>
             case 51:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
                     removed <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> from their
                     recommendations.</p>
             case 52:
                 const targetPronoun = user_id === event.item.user_id ? 'you' : event.item.username;
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> followed <a
-                    className={'heavy-link'} href={`/profile#${event.item.user_id}`}>{targetPronoun}</a>.</p>
+                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> followed <a
+                    className={'heavy-link'} href={`/profile/${event.item.user_id}`}>{targetPronoun}</a>.</p>
             case 53:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
                     edited their recommendation for the {itemType.slice(0, itemType.length - 1)} <a
                         className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a>.</p>
         }
@@ -48,7 +53,7 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
         <div className={event.ref_num < 51 ? 'major-feed-object' : 'minor-feed-object'} style={index !== 0 ? {
             borderTop: '1px solid var(--accent-colour)',
             animationDelay: `${(index % maxEventsPerLoad) / 20}s`
-        } : {animationDelay: `${index / 20}s`}}>
+        } : {}}>
             <div className={'feed-image'} style={{position: 'relative'}}>
                 <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.image}/>
                 <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.image}/>
