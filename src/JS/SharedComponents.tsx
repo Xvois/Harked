@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useRef, useState} from "react";
+import {ReactElement, SetStateAction, useEffect, useRef, useState} from "react";
 /* @ts-ignore */
 import {
     Album,
@@ -17,6 +17,9 @@ import {Rating, styled, TextField} from "@mui/material";
 import {getLIDescription, getLIName} from "./Analysis"
 
 export const StyledRating = styled(Rating)({
+    '& .MuiRating-iconEmpty': {
+        color: 'var(--secondary-colour)',
+    },
     '& .MuiRating-iconFilled': {
         color: 'var(--primary-colour)',
     },
@@ -307,7 +310,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
                     comments.map((c) => {
                         const ownComment = isLoggedIn() ? loggedUserID === c.user.user_id : false;
                         return <CommentInstance key={c.id} item={c} onDelete={handleDelete}
-                                                isDeletable={ownComment || isAdmin}/>;
+                                                isDeletable={ownComment || isAdmin} canReply/>;
                     })
                 ) : (
                     <p style={{color: "var(--secondary-colour)"}}>Looks like there aren't any comments yet.</p>
@@ -365,15 +368,15 @@ function CommentInstance(props: { item: Comment, onDelete: any, isDeletable: boo
 export const SimpleModal = (props: {
     id: string,
     showModal: boolean,
-    setShowModal: React.SetStateAction<boolean>,
+    setShowModal: React.Dispatch<SetStateAction<boolean>>,
     children: ReactElement
 }) => {
 
     const {id, showModal, setShowModal, children} = props;
 
     useEffect(() => {
-        const modal = document.getElementById(id);
-        if (showModal) {
+        const modal = document.getElementById(id) as HTMLDialogElement;
+        if (showModal && modal) {
             modal.showModal();
         } else if (!showModal) {
             modal.close();
@@ -390,7 +393,7 @@ export const SimpleModal = (props: {
 
 export const SelectionModal = (props: {
     showModal: boolean,
-    setShowModal: React.SetStateAction<boolean>,
+    setShowModal: React.Dispatch<SetStateAction<boolean>>,
     onSubmit: Function,
     onModify?: Function,
     modifyTarget?: Song | Artist | Album,
@@ -413,7 +416,7 @@ export const SelectionModal = (props: {
     }, [modifyTarget])
 
     useEffect(() => {
-        const modal = document.getElementById('rec-modal');
+        const modal = document.getElementById('rec-modal') as HTMLDialogElement;
         if (showModal) {
             modal.showModal();
         } else if (!showModal) {
@@ -513,19 +516,22 @@ export const SelectionModal = (props: {
                             <h2 style={{marginBottom: 0}}>{getLIName(selectedItem)}</h2>
                             <p style={{marginTop: 0}}>{getLIDescription(selectedItem)}</p>
                             {rating &&
-                                <StyledRating
-                                    name="text-feedback"
-                                    value={stars}
-                                    onChange={(event, newValue) => {
-                                        console.log(newValue);
-                                        setStars(newValue);
-                                    }}
-                                    precision={0.5}
+                                <div style={{marginBottom: '16px'}}>
+                                    <StyledRating
+                                        name="text-feedback"
+                                        value={stars}
+                                        onChange={(event, newValue) => {
+                                            console.log(newValue);
+                                            setStars(newValue);
+                                        }}
+                                        precision={0.5}
                                     />
+                                </div>
                             }
                             {description &&
                             <StyledField
                                 variant='outlined'
+                                placeholder={'Write your thoughts'}
                                 multiline
                                 rows={3}
                                 inputRef={descriptionRef}

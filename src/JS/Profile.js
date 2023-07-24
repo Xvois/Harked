@@ -707,6 +707,7 @@ const SongAnalysisAverage = (props) => {
 const GenreBreakdown = (props) => {
     const {selectedDatapoint, pageUser, allDatapoints, term} = props;
     const [selectedGenre, setSelectedGenre] = useState(selectedDatapoint.top_genres[0]);
+
     // Custom CSS variables don't work in the data attribute so this is my workaround.
     const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
     const [bgColor, setBgColor] = useState(
@@ -754,9 +755,6 @@ const GenreBreakdown = (props) => {
             )
         }
     })
-
-
-
 
     const artists = selectedDatapoint.top_artists.filter(a => a.genres ? a.genres.some(g => g === selectedGenre) : false);
     const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));

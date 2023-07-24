@@ -14,12 +14,12 @@ const RedirectElement = (props) => {
     const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
     const link = (
-        <a className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`} href={href}>
+        <a className={'subtle-button'} href={href}>
             {title}
         </a>
     );
     const button = (
-        <button onClick={callback} className={'redirect-element' + ` ${!concise && 'redirect-expanded'}`}>
+        <button className={'subtle-button'}>
             {title}
         </button>
     );

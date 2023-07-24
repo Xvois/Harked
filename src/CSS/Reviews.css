@@ -7,6 +7,18 @@
     gap: 15px;
 }
 
+.mod-section {
+    display: flex;
+    position: relative;
+
+    gap: 15px;
+
+    margin-bottom: 15px;
+
+    overflow: hidden;
+
+}
+
 .review-wrapper {
     display: flex;
     flex-direction: column;
@@ -31,6 +43,11 @@
     .review-wrapper:hover {
         filter: saturate(200%) brightness(130%);
         transform: scale(105%);
+    }
+}
+
+@media (hover: none) {
+    .review-wrapper:hover {
     }
 }
 

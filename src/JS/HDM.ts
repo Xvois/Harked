@@ -31,6 +31,13 @@ export interface Record {
     expand?: any
 }
 
+export interface Review extends Record {
+    description: string,
+    item: Artist | Song | Album | {id: string, type: string},
+    owner: string,
+    rating: number
+}
+
 export interface User extends Record {
     username: string,
     email: string,

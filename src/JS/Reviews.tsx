@@ -1,15 +1,12 @@
 import {useParams} from "react-router-dom";
-import {useEffect, useRef, useState} from "react";
+import {SetStateAction, useEffect, useRef, useState} from "react";
 import {
-    Album,
-    Artist,
     deleteReview,
-    Record,
     retrieveLoggedUserID,
     retrieveReviews,
     retrieveSearchResults,
     retrieveUser,
-    Song,
+    Review,
     submitReview,
     User
 } from "./HDM.ts";
@@ -23,18 +20,24 @@ import {
     ValueIndicator
 } from "./SharedComponents.tsx";
 import {getItemType, getLIDescription, getLIName} from "./Analysis";
-import {capitalize} from "@mui/material";
+import {capitalize, Checkbox, FormControlLabel, FormGroup} from "@mui/material";
 import "./../CSS/Reviews.css";
+import {Bar} from "react-chartjs-2";
+import {BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip,} from 'chart.js';
+import StarIcon from '@mui/icons-material/Star';
 
-interface Review extends Record {
-    description: string,
-    item: Artist | Song | Album | {id: string, type: string},
-    owner: string,
-    rating: number
-}
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
-const ReviewsList = (props: {reviews: Array<Review>, isOwnPage: boolean, setReviews: React.SetStateAction<Array<Review>>}) => {
-    const {reviews, isOwnPage, setReviews} = props;
+
+const ReviewsList = (props: {reviews: Array<Review>, isOwnPage: boolean, setReviews: React.Dispatch<SetStateAction<Array<Review>>>, orderFunc: Function, includedTypes: Array<string>}) => {
+    const {reviews, isOwnPage, setReviews, orderFunc, includedTypes} = props;
 
     const handleDelete = (e) => {
         if(window.confirm(`Are you sure you want to delete your review of ${getLIName(e.item)}?`)) {
@@ -45,11 +48,10 @@ const ReviewsList = (props: {reviews: Array<Review>, isOwnPage: boolean, setRevi
         }
     }
 
-
     return (
         <div className={'review-list'}>
             {
-                reviews.map((r,i) => {
+                reviews.filter(r => includedTypes.includes(getItemType(r.item))).sort((a,b) => orderFunc(a,b)).map((r) => {
                     return <ReviewItem key={r.id} review={r} isOwnPage={isOwnPage} handleDelete={handleDelete} />
                 })
             }
@@ -61,6 +63,7 @@ const ReviewItem = (props : {review: Review, isOwnPage: boolean, handleDelete: F
     const {review, isOwnPage, handleDelete} = props;
 
     const created = new Date(review.created);
+    const edited = new Date(review.updated)
     const type = getItemType(review.item);
 
 
@@ -80,9 +83,14 @@ const ReviewItem = (props : {review: Review, isOwnPage: boolean, handleDelete: F
                     />
                 </div>
                 <div style={{display: "flex", justifyContent: 'space-between', alignItems: 'end', width: '100%'}}>
-                    <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Reviewed on <br/> {created.toDateString()}</p>
+                    <div>
+                        {created.getTime() !== edited.getTime() &&
+                            <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Edited last on <br/> {edited.toDateString()}</p>
+                        }
+                        <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Reviewed on <br/> {created.toDateString()}</p>
+                    </div>
                     {isOwnPage && review.id &&
-                        <button style={{zIndex: '2'}} className={'subtle-button'} onClick={() => handleDelete(review)}>Delete</button>
+                        <button className={'subtle-button'} onClick={() => handleDelete(review)}>Delete</button>
                     }
                 </div>
             </div>
@@ -97,7 +105,7 @@ const CreateRecommendationForm = (props: {user_id: string, reviews, setReviews})
 
     const handleSubmit = async (selectedItem, type, description, rating) => {
         await submitReview(user_id, selectedItem, type, rating, description);
-        const newReview = {item: selectedItem, rating: rating, description: description, created: new Date()}
+        const newReview = {item: selectedItem, rating: rating, description: description, created: new Date(), modified: new Date()}
         setReviews([newReview, ...reviews]);
     }
 
@@ -115,16 +123,106 @@ const CreateRecommendationForm = (props: {user_id: string, reviews, setReviews})
     )
 }
 
-const UserDetails = (props : {user: User}) => {
-    const {user} = props;
+const RatingDistribution = (props: {reviews: Array<Review>}) => {
+    const {reviews} = props;
+    let distribution = [];
+    let labels = [];
+    for(let i = 0; i <= 5; i += 0.5){
+        distribution[i * 2] = 0;
+        labels.push(`${i}`);
+    }
+    reviews.forEach(review => {
+        distribution[review.rating * 2]++;
+    })
+    // Custom CSS variables don't work in the data attribute so this is my workaround.
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    const [bgColor, setBgColor] = useState(
+        darkModePreference.matches ?
+            [
+                'whitesmoke',
+            ]
+            :
+            [
+                '#110E09',
+            ]
+    );
+    darkModePreference.addEventListener("change", e => {
+        if(e.matches){
+            setBgColor(
+                [
+                    'whitesmoke',
+                ]
+            )
+        }else{
+            setBgColor(
+                [
+                    '#110E09',
+                ]
+            )
+        }
+    })
+    console.log(distribution);
+
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'Ratings',
+            data: distribution,
+            backgroundColor: bgColor,
+            borderWidth: 1
+        }]
+    };
+
+    const options = {
+        categoryPercentage: 1.0,
+        barPercentage: 1.0,
+        barThickness: 'flex',
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                display: false,
+            },
+            y: {
+              display: false,
+            }
+        }
+    };
 
     return (
-        <div>
-            <p style={{margin: 0}}>Reviews from</p>
-            <a href={`/profile/${user.user_id}`} className={'heavy-link'} style={{margin: 0, fontSize: '48px'}}>{user.username}</a>
+        <div style={{display: 'flex', alignItems: 'end', maxWidth: '100%', height: '200px', overflow: 'hidden'}}>
+            <StarIcon fontSize={'small'} />
+            <Bar data={data} options={options} />
+            <StarIcon fontSize={'small'} />
+            <StarIcon fontSize={'small'} />
+            <StarIcon fontSize={'small'} />
+            <StarIcon fontSize={'small'} />
+            <StarIcon fontSize={'small'} />
         </div>
     )
 }
+
+const UserDetails = (props : {user: User, possessive: string, reviews: Array<Review>}) => {
+    const {user, possessive, reviews} = props;
+
+    return (
+        <div>
+            <div>
+                <p style={{margin: 0}}>Reviews from</p>
+                <h2 style={{margin: 0, fontSize: '48px'}}>{user.username}</h2>
+                <a className={'subtle-button'} href={`/profile/${user.user_id}`}>View profile</a>
+            </div>
+            <div>
+                <p>asdjsaidunasidnasi</p>
+                <RatingDistribution reviews={reviews} />
+            </div>
+        </div>
+    )
+}
+
 
 const ImportForm = (props: {user_id: string, setReviews}) => {
     const {user_id, setReviews} = props;
@@ -267,28 +365,111 @@ const Reviews = () => {
 
     }, []);
 
+    const [includedTypes, setIncludedTypes] = useState(['artists', 'songs', 'albums']);
+    const [orderFunc, setOrderFunc] = useState(() => (a,b) => newestFunc(a,b));
+    // Ordering functions
+    const newestFunc = (a, b) => b.created - a.created;
+    const oldestFunc = (a, b) => a.created - b.created;
+    const highestRatingFunc = (a, b) => b.rating - a.rating;
+    const lowestRatingFunc = (a, b) => a.rating - b.rating;
+
+    function handleFilterChange(e) {
+        if(e.target.checked){
+            const modified = [...includedTypes, e.target.name];
+            setIncludedTypes(modified);
+        }else{
+            const modified = includedTypes.filter(t => t !== e.target.name);
+            setIncludedTypes(modified);
+        }
+    }
+
+    function handleOrderChange(e) {
+        switch (e.target.value) {
+            case "newest":
+                setOrderFunc(() => (a,b) => newestFunc(a,b));
+                break;
+            case "oldest":
+                setOrderFunc(() => (a,b) => oldestFunc(a,b));
+                break;
+            case "highestRating":
+                setOrderFunc(() => (a,b) => highestRatingFunc(a,b));
+                break;
+            case "lowestRating":
+                setOrderFunc(() => (a,b) => lowestRatingFunc(a,b));
+                break;
+        }
+    }
+
     return (
         isError ?
                 <PageError description={errorDetails.description} errCode={errorDetails.errCode} />
                 :
                 pageUser ?
                     <div>
-                        <UserDetails user={pageUser} />
+                        <UserDetails user={pageUser} possessive={possessive} reviews={reviews} />
                         <div className={'section-header'} style={{marginBottom: '15px'}}>
                             <div style={{maxWidth: '400px'}}>
                                 <p style={{
                                     margin: '16px 0 0 0',
-                                    textTransform: 'uppercase'
+                                    textTransform: 'uppercase',
                                 }}>{possessive}</p>
                                 <h2 style={{margin: '0', textTransform: 'uppercase'}}>Review overview</h2>
                                 <p>A look at all of {possessive} reviews. Click on any one of them to explore.</p>
-                                <div style={{display: 'flex', gap: '15px'}}>
-                                    <CreateRecommendationForm user_id={pageUser.user_id} reviews={reviews} setReviews={setReviews} />
-                                    <ImportForm user_id={pageUser.user_id} setReviews={setReviews} />
+                                {isOwnPage &&
+                                    <div style={{display: 'flex', gap: '15px'}}>
+                                        <CreateRecommendationForm user_id={pageUser.user_id} reviews={reviews} setReviews={setReviews} />
+                                        <ImportForm user_id={pageUser.user_id} setReviews={setReviews} />
+                                    </div>
+                                }
+                            </div>
+                            <div className={'mod-section'}>
+                                <div>
+                                    <p>Item types</p>
+                                    <FormGroup>
+                                        <FormControlLabel
+                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"albums"}
+                                                               sx={{
+                                                                   color: 'var(--secondary-colour)',
+                                                                   '&.Mui-checked': {
+                                                                       color: 'var(--primary-colour)',
+                                                                   },
+                                                               }}
+                                            />}
+                                            label="Albums" />
+                                        <FormControlLabel
+                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"artists"}
+                                                               sx={{
+                                                                   color: 'var(--secondary-colour)',
+                                                                   '&.Mui-checked': {
+                                                                       color: 'var(--primary-colour)',
+                                                                   },
+                                                               }}
+                                            />}
+                                            label="Artists" />
+                                        <FormControlLabel
+                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"songs"}
+                                                               sx={{
+                                                                   color: 'var(--secondary-colour)',
+                                                                   '&.Mui-checked': {
+                                                                       color: 'var(--primary-colour)',
+                                                                   },
+                                                               }}
+                                            />}
+                                            label="Songs" />
+                                    </FormGroup>
+                                </div>
+                                <div>
+                                    <p>Order</p>
+                                    <select defaultValue={"newest"} onChange={handleOrderChange}>
+                                        <option value={"newest"}>Newest</option>
+                                        <option value={"oldest"}>Oldest</option>
+                                        <option value={"highestRating"}>Highest rating</option>
+                                        <option value={"lowestRating"}>Lowest rating</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                        <ReviewsList reviews={reviews} isOwnPage={isOwnPage} setReviews={setReviews} />
+                        <ReviewsList reviews={reviews} isOwnPage={isOwnPage} setReviews={setReviews} orderFunc={orderFunc} includedTypes={includedTypes} />
                     </div>
                     :
                     <LoadingIndicator />
