@@ -81,8 +81,8 @@ code {
 
 option {
     font-family: "Inter Tight", sans-serif;
-    color: var(--bg-colour);
-    background: var(--transparent-colour);
+    color: var(--primary-colour);
+    background: var(--bg-colour);
 }
 
 select {

@@ -1478,6 +1478,17 @@ const Profile = () => {
                                 }
                             </div>
                         </div>
+                        <div className={'section-header'}>
+                            <div>
+                                <p style={{
+                                    margin: '16px 0 0 0',
+                                    textTransform: 'uppercase'
+                                }}>{possessive}</p>
+                                <h2 style={{margin: '0', textTransform: 'uppercase'}}>Reviews</h2>
+                                <p>Have a look at {possessive} reviews on albums, artists and songs.</p>
+                                <a className={'subtle-button'} href={`/reviews/${pageUser.user_id}`}>View</a>
+                            </div>
+                        </div>
                         <div className={'simple-instance'}>
                             <div className={'section-header'}>
                                 <div style={{maxWidth: '400px'}}>
@@ -1496,7 +1507,7 @@ const Profile = () => {
                                 gap: '10px',
                                 width: '100%'
                             }}>
-                                <CommentSection sectionID={hashString(pageGlobalUserID)} isAdmin={isOwnPage}/>
+                                <CommentSection sectionID={hashString(pageGlobalUserID)} owner={pageUser} isAdmin={isOwnPage}/>
                             </div>
                         </div>
                     </div>

@@ -14,6 +14,7 @@ import Followers from "./JS/Followers";
 import Feed from "./JS/Feed.tsx";
 import PlaylistView from "./JS/PlaylistView.tsx";
 import Reviews from "./JS/Reviews.tsx";
+import Review from "./JS/Review.tsx";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -30,6 +31,7 @@ root.render(
                 <Route path="/feed" element={<Feed/>}/>
                 <Route path="/playlist/:id" element={<PlaylistView/>}/>
                 <Route path="/reviews/:id" element={<Reviews/>}/>
+                <Route path="/review/:id" element={<Review />}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>

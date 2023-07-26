@@ -253,9 +253,9 @@ export function ValueIndicator(props: { value: number, diameter?: number }) {
     )
 }
 
-export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
+export function CommentSection(props: { sectionID: string, owner: User, isAdmin: boolean }) {
     // An admin will be able to delete all comments in the comment section
-    const {sectionID, isAdmin} = props;
+    const {sectionID, owner, isAdmin} = props;
     const [comments, setComments] = useState([]);
     const [loggedUserID, setLoggedUserID] = useState(null)
     const valueRef = useRef(null); // Creating a reference for TextField Component
@@ -271,7 +271,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
     }, [])
 
     const handleSubmit = () => {
-        submitComment(loggedUserID, sectionID, valueRef.current.value)
+        submitComment(loggedUserID, owner.id, sectionID, valueRef.current.value)
             .then((c) => {
                 const date = new Date();
                 const formattedComment = {...c, created: date};
@@ -363,13 +363,6 @@ function CommentInstance(props: { item: Comment, onDelete: any, isDeletable: boo
                     width: "max-content",
                     marginLeft: "auto"
                 }}>
-                {canReply && (
-                    <button
-                        onClick={handleDelete}
-                        className={'subtle-button'}>
-                        Reply
-                    </button>
-                )}
                 {isDeletable && (
                     <button
                         onClick={handleDelete}

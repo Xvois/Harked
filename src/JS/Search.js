@@ -98,6 +98,7 @@ const Search = (props) => {
                     '&.MuiInput-root': {
                         width: '200px',
                         borderRadius: '20px',
+                        flexGrow: '1',
                         color: 'var(--primary-colour)',
                         background: 'rgba(125, 125, 125, 0.25)',
                         border: 'none',
