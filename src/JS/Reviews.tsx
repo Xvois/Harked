@@ -69,7 +69,7 @@ const ReviewItem = (props : {review: Review, isOwnPage: boolean, handleDelete: F
 
     return (
         <div className={'review-wrapper'} style={{position: 'relative', width: 'max-content'}}>
-            <a style={{position: 'absolute', width: '100%', height: '85%', top: 0, left: 0}} href={`/review/some_id`} />
+            <a style={{position: 'absolute', width: '100%', height: '85%', top: 0, left: 0}} href={`/review/${review.id}`} />
             <img style={{width: '100%', height: '150px', objectFit: 'cover', bottom: 0}} className={'backdrop-image'} alt={getLIName(review.item)} src={review.item.image} />
             <div className={'review-heading'}>
                 <div>
