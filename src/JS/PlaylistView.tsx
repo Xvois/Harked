@@ -7,61 +7,27 @@ import {
     retrieveLoggedUserID,
     retrievePlaylist,
     retrievePlaylistMetadata,
-    Song
+    Song,
+    User
 } from "./HDM.ts";
-import {LoadingIndicator, PageError, StyledField} from "./SharedComponents.tsx";
+import {LoadingIndicator, PageError} from "./SharedComponents.tsx";
 import {getLIDescription, getLIName, getPlaylistAnalysis} from "./Analysis"
 import "./../CSS/PlaylistView.css"
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import {useParams} from "react-router-dom";
+import {Textarea} from "@mui/joy";
 
 interface Playlist {
-    collaborative: boolean;
-    description: string;
-    external_urls: {
-        spotify: string;
-    };
-    followers: {
-        href: null | string;
-        total: number;
-    };
-    href: string;
-    id: string;
-    images: {
-        height: null | number;
-        url: string;
-        width: null | number;
-    }[];
-    name: string;
-    owner: {
-        display_name: string;
-        external_urls: {
-            spotify: string;
-        };
-        href: string;
-        id: string;
-        type: string;
-        uri: string;
-    };
-    primary_color: null | string;
-    public: boolean;
-    snapshot_id: string;
-    tracks: {
-        song_id: string;
-        title: string;
-        artists: {
-            artist_id: string;
-            name: string;
-            image: null | string;
-            link: string;
-        }[];
-        image: string;
-        link: string;
-    }[];
-    type: string;
-    uri: string;
+    playlist_id: string,
+    image: string,
+    name: string,
+    description: string,
+    tracks: Array<Song>,
+    link: string,
+    followers: number,
+    owner: User,
 }
 
 const AnnotationViewModal = (props: {
@@ -97,7 +63,7 @@ const AnnotationViewModal = (props: {
             </div>
             <button className={'modal-exit-button'} onClick={() => {
                 setIsOpen(false);
-                const modal: HTMLDialogElement = document.getElementById('annotation-viewer-modal');
+                const modal = document.getElementById('annotation-viewer-modal') as HTMLDialogElement;
                 modal.close();
             }
             }
@@ -132,7 +98,7 @@ const AnnotationEditModal = (props: {
     const [metadata, setMetadata] = useState(playlistMetadata);
 
     useEffect(() => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
+        const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
         if (isOpen) {
             modal.showModal();
         } else {
@@ -145,7 +111,7 @@ const AnnotationEditModal = (props: {
     }, [playlistMetadata])
 
     const submitAnnotation = () => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
+        const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
         addAnnotation(user_id, playlist, targetSong.song_id, annotationRef.current.value).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
@@ -153,7 +119,7 @@ const AnnotationEditModal = (props: {
     }
 
     const removeAnnotation = () => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
+        const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
         deleteAnnotation(playlist, targetSong.song_id).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
@@ -168,19 +134,13 @@ const AnnotationEditModal = (props: {
             </div>
             <button id={'modal-exit-button'} onClick={() => {
                 setIsOpen(false);
-                const modal: HTMLDialogElement = document.getElementById('annotation-editor-modal');
+                const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
                 modal.close();
             }
             }
             >x
             </button>
-            <StyledField
-                label={`Annotation`}
-                variant='outlined'
-                multiline
-                inputRef={annotationRef}
-                inputProps={{maxLength: 100}}
-            />
+            <Textarea />
             <div id={'annotation-modal-button-wrapper'}>
                 {metadata?.meta[targetSong?.song_id] !== undefined && (
                     <button className={'subtle-button'} onClick={removeAnnotation}>Delete</button>
@@ -312,7 +272,7 @@ const PlaylistView = () => {
                 }
             }else{
                 setIsError(true);
-                setErrorDetails({description: "You must be logged in to use Harked's playlist viewer."});
+                setErrorDetails({description: "You must be logged in to use Harked's playlist viewer.", errCode: null});
             }
         }
 
@@ -331,10 +291,10 @@ const PlaylistView = () => {
                 <div className={'playlist-view-header'}>
                     <div style={{position: 'relative', width: '250px', flexShrink: 0}}
                          className={'supplemental-content'}>
-                        <img className={'backdrop-image'}
+                        <img alt={'decorative-blur'} className={'backdrop-image'}
                              style={{width: '100%', height: '100%', aspectRatio: '1', objectFit: 'cover'}}
                              src={playlist.image}/>
-                        <img className={'levitating-image'}
+                        <img alt={'playlist-art'} className={'levitating-image'}
                              style={{width: '100%', height: '100%', aspectRatio: '1', objectFit: 'cover'}}
                              src={playlist.image}/>
                     </div>

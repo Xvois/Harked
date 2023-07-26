@@ -93,7 +93,7 @@
 }
 
 .track-wrapper:hover > .annotation-icon {
-    animation: fromRight 0.25s ease-out forwards;
+    opacity: 0.5;
 }
 
 @media (hover: none) {

@@ -1,5 +1,5 @@
 import {useParams} from "react-router-dom";
-import {SetStateAction, useEffect, useRef, useState} from "react";
+import React, {SetStateAction, useEffect, useRef, useState} from "react";
 import {
     deleteReview,
     retrieveLoggedUserID,
@@ -104,9 +104,15 @@ const CreateRecommendationForm = (props: {user_id: string, reviews, setReviews})
     const [showModal, setShowModal] = useState(false);
 
     const handleSubmit = async (selectedItem, type, description, rating) => {
-        await submitReview(user_id, selectedItem, type, rating, description);
-        const newReview = {item: selectedItem, rating: rating, description: description, created: new Date(), modified: new Date()}
-        setReviews([newReview, ...reviews]);
+        await submitReview(user_id, selectedItem, type, rating, description)
+            .then(() => {
+                const newReview = {item: selectedItem, rating: rating, description: description, created: new Date(), updated: new Date()}
+                setReviews([newReview, ...reviews]);
+            })
+            .catch((e) => {
+                console.error(e);
+            });
+
     }
 
     return (
@@ -161,7 +167,6 @@ const RatingDistribution = (props: {reviews: Array<Review>}) => {
             )
         }
     })
-    console.log(distribution);
 
     const data = {
         labels: labels,
@@ -193,9 +198,11 @@ const RatingDistribution = (props: {reviews: Array<Review>}) => {
     };
 
     return (
-        <div style={{display: 'flex', alignItems: 'end', maxWidth: '100%', height: '200px', overflow: 'hidden'}}>
+        <div style={{display: 'flex', alignItems: 'end', maxWidth: '100%'}}>
             <StarIcon fontSize={'small'} />
-            <Bar data={data} options={options} />
+            <div style={{width: '200px'}}>
+                <Bar data={data} options={options} />
+            </div>
             <StarIcon fontSize={'small'} />
             <StarIcon fontSize={'small'} />
             <StarIcon fontSize={'small'} />
@@ -215,8 +222,7 @@ const UserDetails = (props : {user: User, possessive: string, reviews: Array<Rev
                 <h2 style={{margin: 0, fontSize: '48px'}}>{user.username}</h2>
                 <a className={'subtle-button'} href={`/profile/${user.user_id}`}>View profile</a>
             </div>
-            <div>
-                <p>asdjsaidunasidnasi</p>
+            <div style={{width: 'max-content', marginLeft: 'auto'}}>
                 <RatingDistribution reviews={reviews} />
             </div>
         </div>
@@ -224,7 +230,7 @@ const UserDetails = (props : {user: User, possessive: string, reviews: Array<Rev
 }
 
 
-const ImportForm = (props: {user_id: string, setReviews}) => {
+const ImportForm = (props: {user_id: string, setReviews: React.Dispatch<SetStateAction<Array<Review>>>}) => {
     const {user_id, setReviews} = props;
     const [completed, setCompleted] = useState(0);
     const [numOfItems, setNumOfItems] = useState(undefined);
@@ -315,12 +321,17 @@ const ImportForm = (props: {user_id: string, setReviews}) => {
                         <p>Track ratings will not be imported.</p>
                         <p style={{fontWeight: 'bold'}}>This should only ever be done once.</p>
                         <StyledField
-                            variant='outlined'
-                            multiline
+                            fullWidth
                             inputRef={tableRef}
-                            rows={5}
+                            rows={4}
+                            multiline
                         />
-                        <button className={'subtle-button'} style={{marginLeft: 'auto'}} onClick={importFromRYM}>Import</button>
+                        <div style={{display: 'flex', justifyContent: 'right'}}>
+                            <button className="std-button"
+                                    style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} onClick={importFromRYM}>
+                                Import
+                            </button>
+                        </div>
                     </div>
                 }
             </SimpleModal>
@@ -366,12 +377,12 @@ const Reviews = () => {
     }, []);
 
     const [includedTypes, setIncludedTypes] = useState(['artists', 'songs', 'albums']);
-    const [orderFunc, setOrderFunc] = useState(() => (a,b) => newestFunc(a,b));
+    const [orderFunc, setOrderFunc] = useState(() => (a: Review, b: Review) => newestFunc(a,b));
     // Ordering functions
-    const newestFunc = (a, b) => b.created - a.created;
-    const oldestFunc = (a, b) => a.created - b.created;
-    const highestRatingFunc = (a, b) => b.rating - a.rating;
-    const lowestRatingFunc = (a, b) => a.rating - b.rating;
+    const newestFunc = (a: Review, b: Review) => (new Date(b.created)).getTime() - (new Date(a.created)).getTime();
+    const oldestFunc = (a: Review, b: Review) => (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+    const highestRatingFunc = (a: Review, b: Review) => b.rating - a.rating;
+    const lowestRatingFunc = (a: Review, b: Review) => a.rating - b.rating;
 
     function handleFilterChange(e) {
         if(e.target.checked){
@@ -386,16 +397,16 @@ const Reviews = () => {
     function handleOrderChange(e) {
         switch (e.target.value) {
             case "newest":
-                setOrderFunc(() => (a,b) => newestFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => newestFunc(a,b));
                 break;
             case "oldest":
-                setOrderFunc(() => (a,b) => oldestFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => oldestFunc(a,b));
                 break;
             case "highestRating":
-                setOrderFunc(() => (a,b) => highestRatingFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => highestRatingFunc(a,b));
                 break;
             case "lowestRating":
-                setOrderFunc(() => (a,b) => lowestRatingFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => lowestRatingFunc(a,b));
                 break;
         }
     }
@@ -423,6 +434,15 @@ const Reviews = () => {
                                 }
                             </div>
                             <div className={'mod-section'}>
+                                <div>
+                                    <p>Order</p>
+                                    <select defaultValue={"newest"} onChange={handleOrderChange}>
+                                        <option value={"newest"}>Newest</option>
+                                        <option value={"oldest"}>Oldest</option>
+                                        <option value={"highestRating"}>Highest rating</option>
+                                        <option value={"lowestRating"}>Lowest rating</option>
+                                    </select>
+                                </div>
                                 <div>
                                     <p>Item types</p>
                                     <FormGroup>
@@ -457,15 +477,6 @@ const Reviews = () => {
                                             />}
                                             label="Songs" />
                                     </FormGroup>
-                                </div>
-                                <div>
-                                    <p>Order</p>
-                                    <select defaultValue={"newest"} onChange={handleOrderChange}>
-                                        <option value={"newest"}>Newest</option>
-                                        <option value={"oldest"}>Oldest</option>
-                                        <option value={"highestRating"}>Highest rating</option>
-                                        <option value={"lowestRating"}>Lowest rating</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>

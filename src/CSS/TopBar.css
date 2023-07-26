@@ -17,10 +17,10 @@
     display: flex;
     flex-direction: column;
     height: max-content;
-    background: none;
-    backdrop-filter: blur(15px);
     padding: 10px 25px;
-    border-bottom: 1px solid var(--secondary-colour);
+
+    backdrop-filter: blur(20px);
+
     transition: 0.25s all ease;
 }
 
@@ -51,88 +51,52 @@
 .expanded-menu-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
-    width: 100%;
-    gap: 5px;
-    margin-top: 20px;
-}
-
-.redirect-element {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    max-width: 100px;
-    min-width: max-content;
-    flex-grow: 1;
-    color: var(--primary-colour);
-    text-decoration: none;
-    cursor: pointer;
-
-    margin: 0;
-    font-size: 16px;
-    font-weight: 400;
-    text-transform: uppercase;
-
-    background: none;
-    border: none;
-}
-
-
-.redirect-expanded {
-    flex-grow: 1;
-    height: 40px;
-    background: rgba(125, 125, 125, 0.1);
-    border: 1px solid rgba(125, 125, 125, 0.2);
-    padding: 5px 30px 5px 30px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-
-.redirect-expanded:hover {
-    background: rgba(125, 125, 125, 0.5);
-}
-
-.search-bar-container {
-    position: relative;
-    height: max-content;
-    justify-content: center;
-    background: var(--bg-colour);
-}
-
-.MuiFormControl-root {
+    gap: 20px;
     width: 100%;
+    margin: 20px 0;
+}
+
+.expanded-wrap-box {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.expanded-wrap-box > a {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.expanded-wrap-box > button {
+    text-align: center;
+    flex-grow: 1;
 }
 
 .results {
+    position: absolute;
+    top: 50px;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    position: absolute;
+    width: 200px;
+    border: 1px solid rgba(125, 125, 125, 0.25);
+    border-radius: 10px;
+    backdrop-filter: blur(20px);
+    animation: fadeIn 0.2s ease;
 }
 
 .result {
-    position: relative;
-    display: flex;
-    align-items: center;
-    text-align: center;
-    gap: 15px;
-    color: var(--primary-colour);
-    text-decoration: none;
-    text-transform: none;
-    background: rgba(125, 125, 125, 0.1);
-    backdrop-filter: blur(10px);
     flex-grow: 1;
     padding: 15px;
-    border-left: 1px solid rgba(125, 125, 125, 0.2);
-    border-bottom: 1px solid rgba(125, 125, 125, 0.2);
-    border-right: 1px solid rgba(125, 125, 125, 0.2);
+    text-decoration: none;
+    color: white;
+    background: var(--transparent-colour);
 }
 
 .result-title {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: baseline;
     gap: 5px;
 }
@@ -146,6 +110,7 @@
 }
 
 .result-title > p {
+    color: var(--secondary-colour);
     font-size: 10px;
     margin: 0;
 }

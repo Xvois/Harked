@@ -504,19 +504,34 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
             const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
             const artistItemObj = {type: type, id: artistRefID}
             const artistReview = {id: id, owner: user.id, item: artistItemObj, rating: rating, description: description};
-            await putLocalData("reviews", artistReview).then(() => {createEvent(3, user_id, item, type)});
-            return artistReview;
+            try {
+                await putLocalData("reviews", artistReview).then(() => {createEvent(3, user_id, item, type)});
+                break;
+            }
+            catch (e) {
+                throw new Error("Failed to submit review.", e);
+            }
         case 'songs':
             const [songRefID]: Array<string> = await songsToRefIDs([item]);
             const songItemObj = {type: type, id: songRefID}
             const songReview = {id: id, owner: user.id, item: songItemObj, rating: rating, description: description};
-            await putLocalData("reviews", songReview).then(() => {createEvent(3, user_id, item, type)});
-            return songReview;
+            try {
+                await putLocalData("reviews", songReview).then(() => {createEvent(3, user_id, item, type)});
+                break;
+            }
+            catch (e) {
+                throw new Error("Failed to submit review.", e);
+            }
         case 'albums':
             const albumItemObj = {id: item.album_id, type: type};
             const albumReview = {id: id, owner: user.id, item: albumItemObj, rating: rating, description: description};
-            await putLocalData("reviews", albumReview).then(() => {createEvent(3, user_id, item, type)});
-            return albumReview;
+            try {
+                await putLocalData("reviews", albumReview).then(() => {createEvent(3, user_id, item, type)});
+                break;
+            }
+            catch (e) {
+                throw new Error("Failed to submit review.", e);
+            }
     }
 }
 /**
@@ -1245,7 +1260,7 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Arr
         return [];
     }
 
-    let albums;
+    let albums : Array<Album>;
 
     if(albums_cache.has(artistID)){
         console.log('[Cache] Returning cached albums.')

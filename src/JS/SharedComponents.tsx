@@ -1,5 +1,4 @@
 import {ReactElement, SetStateAction, useEffect, useRef, useState} from "react";
-/* @ts-ignore */
 import {
     Album,
     Artist,
@@ -13,8 +12,66 @@ import {
     submitComment,
     User
 } from "./HDM.ts"
-import {Rating, styled, TextField} from "@mui/material";
+import {Rating, Select, styled, TextField} from "@mui/material";
 import {getLIDescription, getLIName} from "./Analysis"
+
+export const StyledField = styled(TextField)({
+    "& .MuiInputBase-root": {
+        background: 'rgba(125, 125, 125, 0.1)',
+        color: 'var(--primary-colour)'
+    },
+    '& .MuiInput-underline': {
+        color: `var(--secondary-colour)`,
+    },
+    '& .MuiFormLabel-root.Mui-disabled': {
+        color: `var(--secondary-colour)`,
+    },
+    '& .MuiInput-underline:after': {
+        borderBottomColor: 'var(--accent-colour)',
+    },
+    '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+            borderColor: 'rgba(125, 125, 125, 0.2)',
+            borderRadius: `0px`,
+            borderWidth: '1px',
+            transition: `all 0.1s ease-in`
+        },
+        '&:hover fieldset': {
+            borderColor: 'rgba(125, 125, 125, 0.2)',
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: 'rgba(125, 125, 125, 0.2)',
+            borderWidth: '1px',
+            transition: `all 0.1s ease-in`
+        },
+    },
+    '& label.Mui-focused': {
+        color: 'var(--primary-colour)',
+        fontFamily: 'Inter Tight, sans-serif',
+    },
+    '& .MuiFormLabel-root': {
+        color: 'var(--primary-colour)',
+        marginLeft: `5px`,
+        fontFamily: 'Inter Tight, sans-serif',
+    },
+});
+
+export const StyledSelect = styled(Select)({
+    "& .MuiSelect-select": {
+        background: 'rgba(125, 125, 125, 0.1)',
+        color: 'var(--primary-colour)'
+    },
+    "& .MuiSelect-icon": {
+        color: 'var(--primary-colour)'
+    },
+    "& .MuiSelect-outlined": {
+        border: '1px solid rgba(125, 125, 125, 0.25)',
+        '& .Mui-focused': {
+            border: '1px solid rgba(125, 125, 125, 1)',
+        }
+    },
+})
+
 
 export const StyledRating = styled(Rating)({
     '& .MuiRating-iconEmpty': {
@@ -131,46 +188,6 @@ export const PageError = (props: { description: string, errCode?: string }) => {
     )
 }
 
-export const StyledField = styled(TextField)({
-    "& .MuiInputBase-root": {
-        background: 'rgba(125, 125, 125, 0.1)',
-        color: 'var(--primary-colour)'
-    },
-    '& .MuiInput-underline': {
-        color: `var(--secondary-colour)`,
-    },
-    '& .MuiFormLabel-root.Mui-disabled': {
-        color: `var(--secondary-colour)`,
-    },
-    '& .MuiInput-underline:after': {
-        borderBottomColor: 'var(--accent-colour)',
-    },
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            borderColor: 'rgba(125, 125, 125, 0.2)',
-            borderRadius: `0px`,
-            borderWidth: '1px',
-            transition: `all 0.1s ease-in`
-        },
-        '&:hover fieldset': {
-            borderColor: 'rgba(125, 125, 125, 0.2)',
-        },
-        '&.Mui-focused fieldset': {
-            borderColor: 'rgba(125, 125, 125, 0.2)',
-            borderWidth: '1px',
-            transition: `all 0.1s ease-in`
-        },
-    },
-    '& label.Mui-focused': {
-        color: 'var(--primary-colour)',
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-    '& .MuiFormLabel-root': {
-        color: 'var(--primary-colour)',
-        marginLeft: `5px`,
-        fontFamily: 'Inter Tight, sans-serif',
-    },
-});
 
 export function LoadingIndicator() {
     return (
@@ -286,6 +303,7 @@ export function CommentSection(props: { sectionID: string, isAdmin: boolean }) {
                             }}
                         >
                             <StyledField
+                                fullWidth
                                 id="outlined-textarea"
                                 label="Comment"
                                 placeholder="Write your thoughts"
@@ -462,6 +480,7 @@ export const SelectionModal = (props: {
                     <h3 style={{marginBottom: 0}}>Search</h3>
                     <p style={{marginTop: 0}}>for an item.</p>
                     <StyledField
+                        fullWidth
                         placeholder={`Search for ${type}`}
                         variant='outlined'
                         rows={1}
@@ -529,13 +548,13 @@ export const SelectionModal = (props: {
                                 </div>
                             }
                             {description &&
-                            <StyledField
-                                variant='outlined'
-                                placeholder={'Write your thoughts'}
-                                multiline
-                                rows={3}
-                                inputRef={descriptionRef}
-                            />
+                                <StyledField
+                                    fullWidth
+                                    variant='outlined'
+                                    multiline
+                                    rows={3}
+                                    inputRef={descriptionRef}
+                                />
                             }
                             <div style={{
                                 display: 'flex',

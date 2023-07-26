@@ -6,10 +6,8 @@
  */
 
 import {isLoggedIn, validateUser} from './HDM.ts';
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './../CSS/Homepage.css';
-import {handleAlternateLogin} from "./Authentication";
-import {Link} from "react-router-dom";
 
 function Homepage() {
 
@@ -26,35 +24,8 @@ function Homepage() {
         setLoggedIn(false);
     }
 
-    let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
-    let welcomeMessage = "Just click log-in to get started exploring your Spotify profile in a new light. None of your log-in information is shared with us.";
-
     return (
         <div className='homepage-container'>
-            <div className='top-container'>
-                {loggedIn ?
-                    <h1 className="main-text">Welcome.</h1>
-                    :
-                    <h1 className="main-text">Harked</h1>
-                }
-                <p className='under-text'>{isLoggedIn() ? exploreMessage : welcomeMessage}</p>
-                <div className={'button-wrapper'}>
-                    {!loggedIn ?
-                        <>
-                            <button className="std-button" onClick={handleAlternateLogin}>Login with Spotify</button>
-                            <Link className="std-button" to={'/profile/sonn-gb'}>View a sample profile</Link>
-                        </>
-                        :
-                        <>
-                            <Link className={'std-button'} to={"/profile/me"}>Explore your profile</Link>
-                            <Link className={'std-button'} to={"/reviews/me"}>[Beta] Reviews</Link>
-                            <button className={"std-button"} onClick={handleLogOut}>Log-out</button>
-                        </>
-                    }
-                </div>
-                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.4</span></p>
-            </div>
         </div>
     );
 }
