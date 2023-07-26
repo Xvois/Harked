@@ -1,31 +1,59 @@
+
+
+
+.main-text {
+    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 5ex;
+    margin: 0;
+}
+
+.button-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+
+.top-container {
+    padding: 25px;
+}
+
+.container {
+    margin: 50px;
+}
+
+.auth-button {
+    text-decoration: none;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 20px;
+    color: var(--primary-colour);
+    width: max-content;
+    padding: 5px 30px 5px 30px;
+    transition: all 0.1s ease-out;
+    border: 1px solid grey;
+    background-color: #343434;
+}
+
+.auth-button:hover {
+    background-color: rgb(112, 112, 112);
+    cursor: pointer;
+}
+
+.under-text {
+    font-size: 16px;
+    margin: 0;
+}
+
+.error-message {
+    margin-left: 20px;
+    color: red;
+    text-decoration: underline;
+}
+
 .homepage-container {
     display: flex;
     flex-direction: column;
-
-}
-
-.homepage-header {
-    text-align: center;
-}
-
-.homepage-item {
-    display: flex;
-    flex-direction: column;
-
-    height: 300px;
-    justify-content: center;
-
-    padding: 25px 50px;
-
-    border: 1px solid var(--transparent-border-colour)
-
-}
-
-.right-aligned {
-    align-items: end;
-    text-align: right;
-}
-
-.emphasised-text {
-    color: var(--accent-colour)
 }
