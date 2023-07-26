@@ -55,6 +55,8 @@
 
 @media (hover: none) {
     .review-wrapper:hover {
+        filter: saturate(100%);
+        transform: scale(100%);
     }
 }
 
