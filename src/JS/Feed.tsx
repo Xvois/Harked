@@ -27,7 +27,7 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
                                             href={`/playlist/${event.item.playlist_id}`}>{event.item.name}</a>.</p>
             case 3:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                                href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a>
+                                                                href={`/reviews/${event.owner.user_id}`}>{event.owner.username}</a>
                 has reviewed <a className={'heavy-link'}
                 href={event.item.link}>{event.item.name}</a>.</p>
             case 51:
@@ -186,8 +186,8 @@ const Feed = () => {
                             </>
 
                             :
-                            <p style={{fontWeight: 'bold'}}>Looks like there's nothing to see here
-                                yet. <br/> Follow some more people and wait for them to get up to something!</p>
+                            <p style={{color: 'var(--secondary-colour)'}}>Looks like there's nothing to see here
+                                yet. <br/> <br/> Follow some more people and wait for them to get up to something!</p>
                         :
                         <>
                             <LoadingObject num={7} />

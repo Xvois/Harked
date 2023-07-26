@@ -381,7 +381,7 @@ export const retrieveComments = async function (section_id: string) {
  * @param parent
  * @returns Comment }
  */
-export const submitComment = async function (user_id: string, section_id: string, content: string, parent: Comment = null) {
+export const submitComment = async function (user_id: string, owner_record_id: string, section_id: string, content: string, parent: Comment = null) {
     try {
         const user: User = await retrieveUser(user_id);
         // Just a random, valid, and unique ID.
@@ -394,10 +394,16 @@ export const submitComment = async function (user_id: string, section_id: string
         };
         await putLocalData("comments", comment);
 
-        let profileComments = await getLocalDataByID("comment_section", section_id);
-        profileComments.comments.push(commentID);
+        try {
+            let record = await getLocalDataByID("comment_section", section_id);
+            record.comments.push(commentID);
+            await updateLocalData("comment_section", record, record.id);
+        } catch (error) {
+            console.log(error);
+            await putLocalData("comment_section", {id: section_id, owner: owner_record_id, comments: [comment.id]})
+        }
 
-        await updateLocalData("comment_section", profileComments, profileComments.id);
+
 
         return {...comment, user: user};
     } catch (error) {
@@ -504,19 +510,34 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
             const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
             const artistItemObj = {type: type, id: artistRefID}
             const artistReview = {id: id, owner: user.id, item: artistItemObj, rating: rating, description: description};
-            await putLocalData("reviews", artistReview).then(() => {createEvent(3, user_id, item, type)});
-            return artistReview;
+            try {
+                await putLocalData("reviews", artistReview).then(() => {createEvent(3, user_id, item, type)});
+                break;
+            }
+            catch (e) {
+                throw new Error("Failed to submit review.", e);
+            }
         case 'songs':
             const [songRefID]: Array<string> = await songsToRefIDs([item]);
             const songItemObj = {type: type, id: songRefID}
             const songReview = {id: id, owner: user.id, item: songItemObj, rating: rating, description: description};
-            await putLocalData("reviews", songReview).then(() => {createEvent(3, user_id, item, type)});
-            return songReview;
+            try {
+                await putLocalData("reviews", songReview).then(() => {createEvent(3, user_id, item, type)});
+                break;
+            }
+            catch (e) {
+                throw new Error("Failed to submit review.", e);
+            }
         case 'albums':
             const albumItemObj = {id: item.album_id, type: type};
             const albumReview = {id: id, owner: user.id, item: albumItemObj, rating: rating, description: description};
-            await putLocalData("reviews", albumReview).then(() => {createEvent(3, user_id, item, type)});
-            return albumReview;
+            try {
+                await putLocalData("reviews", albumReview).then(() => {createEvent(3, user_id, item, type)});
+                break;
+            }
+            catch (e) {
+                throw new Error("Failed to submit review.", e);
+            }
     }
 }
 /**
@@ -554,6 +575,34 @@ export const retrieveReviews = async (user_id: string) => {
     }
 
     return reviews;
+}
+
+export const retrieveReview = async (id: string) => {
+    let review = await getLocalDataByID("reviews", id, "owner");
+    if(review === undefined) {
+        return null;
+    }
+    review.owner = review.expand.owner;
+    if (review.item.type === "artists") {
+        let artist: Artist = await getLocalDataByID("artists", review.item.id, "genres");
+        artist.genres = artist.expand.genres;
+        if (artist.genres !== undefined) {
+            artist.genres = artist.genres.map(e => e.genre);
+        }
+        review.item = artist;
+    } else if (review.item.type === "songs") {
+        let song: Song = await getLocalDataByID("songs", review.item.id, "artists");
+        song.artists = song.expand.artists;
+        review.item = song;
+    } else if (review.item.type === "albums") {
+        let album: Album = await fetchData(`albums/${review.item.id}`);
+        album = formatAlbum(album);
+        review.item = album;
+    } else {
+        throw new Error("Unknown type fetched from review.");
+    }
+
+    return review;
 }
 
 export const deleteReview = async (id) => {
@@ -1245,7 +1294,7 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Arr
         return [];
     }
 
-    let albums;
+    let albums : Array<Album>;
 
     if(albums_cache.has(artistID)){
         console.log('[Cache] Returning cached albums.')

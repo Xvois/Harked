@@ -1,5 +1,4 @@
 // noinspection JSValidateTypes
-
 import {useCallback, useEffect, useState} from 'react';
 import './../CSS/Profile.css';
 import {
@@ -371,7 +370,7 @@ function ComparisonLink(props) {
                         <p style={{marginTop: 0}}>See how your stats stack up against {pageUser.username}'s.</p>
                         <div className={'terms-container'} style={{justifyContent: 'right'}}>
                             <a href={`/compare#${loggedUserID}&${pageUser.user_id}`}
-                               className={'std-button'}>Compare</a>
+                               className={'subtle-button'}>Compare</a>
                         </div>
                     </div>
                     <ValueIndicator
@@ -626,7 +625,7 @@ const ArtistAnalysis = (props) => {
                             followingWithArtist.map((u,i) => {
                                 return (
                                     <div key={u.user_id} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
-                                        <a href={`/profile#${u.user_id}`} className={'widget-button'}>
+                                        <a href={`/profile/${u.user_id}`} className={'widget-button'}>
                                             <h4 style={{margin: 0}}>{u.username}</h4>
                                         </a>
                                     </div>
@@ -886,16 +885,12 @@ function TermSelection(props) {
             <h3 style={{margin: 0}}>Time frame</h3>
             <p style={{marginTop: 0}}>Select the range of time to view information for.</p>
             <div className={'terms-container'}>
-                {terms.map((t, i) => {
-                    if (t !== null) {
-                        return <button key={t} className={'std-button'} style={termIndex === i ? {
-                            background: 'var(--primary-colour)',
-                            color: 'var(--bg-colour)',
-                            flexGrow: '5'
-                        } : {background: 'none', flexGrow: '1'}} onClick={() => setTermIndex(i)}>
-                            {translateTerm[t]}
-                        </button>
-                    }
+                {terms.map((t,i) => {
+                    return <button type={'button'} onClick={() => setTermIndex(i)} key={t}
+                                   className={'subtle-button'} style={terms[termIndex] === t ? {
+                        background: 'var(--primary-colour)',
+                        color: 'var(--bg-colour)',
+                    } : {}}>{terms[i] === 'long_term' ? 'All time' : (terms[i] === 'medium_term' ? '6 months' : '4 weeks')}</button>
                 })}
             </div>
         </div>
@@ -909,7 +904,7 @@ function UserContainer(props) {
     const ShareProfileButton = (props) => {
         const {simple = false} = props;
         const origin = (new URL(window.location)).origin;
-        const link = `${origin}/profile#${user.user_id}`;
+        const link = `${origin}/profile/{user.user_id}`;
 
         const [copied, setCopied] = useState(false);
 
@@ -923,11 +918,11 @@ function UserContainer(props) {
                 if (navigator.canShare(content)) {
                     navigator.share(content).then(() => setCopied(true));
                 } else {
-                    navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
+                    navigator.clipboard.writeText(`${origin}/profile/${user.user_id}`).then(() => setCopied(true));
                 }
             } catch (error) {
                 console.warn('Web Share API not supported. Copying to clipboard.', error);
-                navigator.clipboard.writeText(`${origin}/profile#${user.user_id}`).then(() => setCopied(true));
+                navigator.clipboard.writeText(`${origin}/profile/${user.user_id}`).then(() => setCopied(true));
             }
 
         }
@@ -1165,13 +1160,6 @@ const Profile = () => {
     const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
 
 
-    // Reload when attempting to load a new page
-    window.addEventListener("hashchange", () => {
-        window.location.reload();
-        window.scrollTo(0, 0);
-    });
-
-
     const loadPage = useCallback(() => {
 
         // Resolve logged user's information
@@ -1395,7 +1383,6 @@ const Profile = () => {
                                                     <TopSongsOfArtists selectedDatapoint={selectedDatapoint}
                                                                        number={10}/>
                                                 </div>
-
                                                 :
                                                 <div style={{textAlign: 'left', width: '100%'}}>
                                                     <p style={{
@@ -1491,6 +1478,17 @@ const Profile = () => {
                                 }
                             </div>
                         </div>
+                        <div className={'section-header'}>
+                            <div>
+                                <p style={{
+                                    margin: '16px 0 0 0',
+                                    textTransform: 'uppercase'
+                                }}>{possessive}</p>
+                                <h2 style={{margin: '0', textTransform: 'uppercase'}}>Reviews</h2>
+                                <p>Have a look at {possessive} reviews on albums, artists and songs.</p>
+                                <a className={'subtle-button'} href={`/reviews/${pageUser.user_id}`}>View</a>
+                            </div>
+                        </div>
                         <div className={'simple-instance'}>
                             <div className={'section-header'}>
                                 <div style={{maxWidth: '400px'}}>
@@ -1509,7 +1507,7 @@ const Profile = () => {
                                 gap: '10px',
                                 width: '100%'
                             }}>
-                                <CommentSection sectionID={hashString(pageGlobalUserID)} isAdmin={isOwnPage}/>
+                                <CommentSection sectionID={hashString(pageGlobalUserID)} owner={pageUser} isAdmin={isOwnPage}/>
                             </div>
                         </div>
                     </div>

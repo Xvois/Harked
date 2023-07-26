@@ -1,7 +1,8 @@
 import {useParams} from "react-router-dom";
-import {SetStateAction, useEffect, useRef, useState} from "react";
+import React, {SetStateAction, useEffect, useRef, useState} from "react";
 import {
     deleteReview,
+    isLoggedIn,
     retrieveLoggedUserID,
     retrieveReviews,
     retrieveSearchResults,
@@ -24,7 +25,6 @@ import {capitalize, Checkbox, FormControlLabel, FormGroup} from "@mui/material";
 import "./../CSS/Reviews.css";
 import {Bar} from "react-chartjs-2";
 import {BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip,} from 'chart.js';
-import StarIcon from '@mui/icons-material/Star';
 
 ChartJS.register(
     CategoryScale,
@@ -69,7 +69,9 @@ const ReviewItem = (props : {review: Review, isOwnPage: boolean, handleDelete: F
 
     return (
         <div className={'review-wrapper'} style={{position: 'relative', width: 'max-content'}}>
-            <a style={{position: 'absolute', width: '100%', height: '85%', top: 0, left: 0}} href={`/review/some_id`} />
+            {review.id &&
+                <a style={{position: 'absolute', width: '100%', height: '85%', top: 0, left: 0}} href={`/review/${review.id}`} />
+            }
             <img style={{width: '100%', height: '150px', objectFit: 'cover', bottom: 0}} className={'backdrop-image'} alt={getLIName(review.item)} src={review.item.image} />
             <div className={'review-heading'}>
                 <div>
@@ -81,9 +83,12 @@ const ReviewItem = (props : {review: Review, isOwnPage: boolean, handleDelete: F
                         value={review.rating}
                         precision={0.5}
                     />
+                    {review.description &&
+                        <p style={{whiteSpace: 'pre-line', maxHeight: '140px', overflow: 'hidden', marginBottom: 0}}>{review.description.length > 170 ? review.description.slice(0,170) + "..." : review.description}</p>
+                    }
                 </div>
                 <div style={{display: "flex", justifyContent: 'space-between', alignItems: 'end', width: '100%'}}>
-                    <div>
+                    <div style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>
                         {created.getTime() !== edited.getTime() &&
                             <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Edited last on <br/> {edited.toDateString()}</p>
                         }
@@ -104,9 +109,15 @@ const CreateRecommendationForm = (props: {user_id: string, reviews, setReviews})
     const [showModal, setShowModal] = useState(false);
 
     const handleSubmit = async (selectedItem, type, description, rating) => {
-        await submitReview(user_id, selectedItem, type, rating, description);
-        const newReview = {item: selectedItem, rating: rating, description: description, created: new Date(), modified: new Date()}
-        setReviews([newReview, ...reviews]);
+        await submitReview(user_id, selectedItem, type, rating, description)
+            .then(() => {
+                const newReview = {item: selectedItem, rating: rating, description: description, created: new Date(), updated: new Date()}
+                setReviews([newReview, ...reviews]);
+            })
+            .catch((e) => {
+                console.error(e);
+            });
+
     }
 
     return (
@@ -161,7 +172,6 @@ const RatingDistribution = (props: {reviews: Array<Review>}) => {
             )
         }
     })
-    console.log(distribution);
 
     const data = {
         labels: labels,
@@ -193,38 +203,40 @@ const RatingDistribution = (props: {reviews: Array<Review>}) => {
     };
 
     return (
-        <div style={{display: 'flex', alignItems: 'end', maxWidth: '100%', height: '200px', overflow: 'hidden'}}>
-            <StarIcon fontSize={'small'} />
-            <Bar data={data} options={options} />
-            <StarIcon fontSize={'small'} />
-            <StarIcon fontSize={'small'} />
-            <StarIcon fontSize={'small'} />
-            <StarIcon fontSize={'small'} />
-            <StarIcon fontSize={'small'} />
+        <div style={{display: 'flex', alignItems: 'end', maxWidth: '100%'}}>
+            <div style={{width: '200px'}}>
+                <Bar data={data} options={options} />
+            </div>
         </div>
     )
 }
 
-const UserDetails = (props : {user: User, possessive: string, reviews: Array<Review>}) => {
-    const {user, possessive, reviews} = props;
+const UserDetails = (props : {user: User, possessive: string, reviews: Array<Review>, isOwnPage: boolean}) => {
+    const {user, possessive, reviews, isOwnPage} = props;
 
     return (
-        <div>
-            <div>
-                <p style={{margin: 0}}>Reviews from</p>
-                <h2 style={{margin: 0, fontSize: '48px'}}>{user.username}</h2>
-                <a className={'subtle-button'} href={`/profile/${user.user_id}`}>View profile</a>
-            </div>
-            <div>
-                <p>asdjsaidunasidnasi</p>
-                <RatingDistribution reviews={reviews} />
+        <div className='user-container' style={{marginBottom: '25px'}}>
+            <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px', gap: '15px'}}>
+                {user.profile_picture && (
+                    <div className={'profile-picture'}>
+                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture}
+                             style={{height: '100%', width: '100%', objectFit: 'cover'}}/>
+                    </div>
+                )}
+                <div className={'user-details'}>
+                    <p style={{margin: '0 0 -5px 0'}}>Reviews from</p>
+                    <a className={'heavy-link'} href={`/profile/${user.user_id}`} style={{ fontSize: '30px', wordBreak: 'keep-all'}}>
+                        {user.username}
+                    </a>
+                    <p style={{margin: 0}}><span style={{fontWeight: 'bold'}}>{reviews.length}</span> reviews</p>
+                </div>
             </div>
         </div>
     )
 }
 
 
-const ImportForm = (props: {user_id: string, setReviews}) => {
+const ImportForm = (props: {user_id: string, setReviews: React.Dispatch<SetStateAction<Array<Review>>>}) => {
     const {user_id, setReviews} = props;
     const [completed, setCompleted] = useState(0);
     const [numOfItems, setNumOfItems] = useState(undefined);
@@ -300,7 +312,7 @@ const ImportForm = (props: {user_id: string, setReviews}) => {
 
     return (
         <>
-            <button className={'subtle-button'} onClick={() => setIsOpen(true)}>Import ratings from RateYourMusic</button>
+            <button className={'subtle-button'} onClick={() => setIsOpen(true)}>Import ratings from RYM</button>
             <SimpleModal id={'import-modal'} showModal={isOpen} setShowModal={setIsOpen}>
                 {processing ?
                     <div style={{height: '400px'}}>
@@ -315,12 +327,17 @@ const ImportForm = (props: {user_id: string, setReviews}) => {
                         <p>Track ratings will not be imported.</p>
                         <p style={{fontWeight: 'bold'}}>This should only ever be done once.</p>
                         <StyledField
-                            variant='outlined'
-                            multiline
+                            fullWidth
                             inputRef={tableRef}
-                            rows={5}
+                            rows={4}
+                            multiline
                         />
-                        <button className={'subtle-button'} style={{marginLeft: 'auto'}} onClick={importFromRYM}>Import</button>
+                        <div style={{display: 'flex', justifyContent: 'right'}}>
+                            <button className="std-button"
+                                    style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} onClick={importFromRYM}>
+                                Import
+                            </button>
+                        </div>
                     </div>
                 }
             </SimpleModal>
@@ -337,14 +354,22 @@ const Reviews = () => {
     const [isError, setIsError] = useState(false);
     const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
 
+
+
     useEffect(() => {
         const fetchData = async () => {
             let user_id = pageID;
-            console.log(pageID);
+            let loggedID = undefined;
+            if(isLoggedIn()){
+                loggedID = await retrieveLoggedUserID();
+                if(loggedID === user_id){
+                    window.location.href = '/reviews/me';
+                }
+            }
 
             if(pageID === "me"){
                 setPossessive('your');
-                user_id = await retrieveLoggedUserID();
+                user_id = loggedID;
             }
             const u : User = await retrieveUser(user_id);
             if(!u){
@@ -366,12 +391,12 @@ const Reviews = () => {
     }, []);
 
     const [includedTypes, setIncludedTypes] = useState(['artists', 'songs', 'albums']);
-    const [orderFunc, setOrderFunc] = useState(() => (a,b) => newestFunc(a,b));
+    const [orderFunc, setOrderFunc] = useState(() => (a: Review, b: Review) => newestFunc(a,b));
     // Ordering functions
-    const newestFunc = (a, b) => b.created - a.created;
-    const oldestFunc = (a, b) => a.created - b.created;
-    const highestRatingFunc = (a, b) => b.rating - a.rating;
-    const lowestRatingFunc = (a, b) => a.rating - b.rating;
+    const newestFunc = (a: Review, b: Review) => (new Date(b.created)).getTime() - (new Date(a.created)).getTime();
+    const oldestFunc = (a: Review, b: Review) => (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+    const highestRatingFunc = (a: Review, b: Review) => b.rating - a.rating;
+    const lowestRatingFunc = (a: Review, b: Review) => a.rating - b.rating;
 
     function handleFilterChange(e) {
         if(e.target.checked){
@@ -386,16 +411,16 @@ const Reviews = () => {
     function handleOrderChange(e) {
         switch (e.target.value) {
             case "newest":
-                setOrderFunc(() => (a,b) => newestFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => newestFunc(a,b));
                 break;
             case "oldest":
-                setOrderFunc(() => (a,b) => oldestFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => oldestFunc(a,b));
                 break;
             case "highestRating":
-                setOrderFunc(() => (a,b) => highestRatingFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => highestRatingFunc(a,b));
                 break;
             case "lowestRating":
-                setOrderFunc(() => (a,b) => lowestRatingFunc(a,b));
+                setOrderFunc(() => (a: Review, b: Review) => lowestRatingFunc(a,b));
                 break;
         }
     }
@@ -406,8 +431,8 @@ const Reviews = () => {
                 :
                 pageUser ?
                     <div>
-                        <UserDetails user={pageUser} possessive={possessive} reviews={reviews} />
-                        <div className={'section-header'} style={{marginBottom: '15px'}}>
+                        <UserDetails user={pageUser} possessive={possessive} reviews={reviews} isOwnPage={isOwnPage} />
+                        <div className={'section-header review-section-heading'} style={{marginBottom: '15px'}}>
                             <div style={{maxWidth: '400px'}}>
                                 <p style={{
                                     margin: '16px 0 0 0',
@@ -422,54 +447,61 @@ const Reviews = () => {
                                     </div>
                                 }
                             </div>
-                            <div className={'mod-section'}>
-                                <div>
-                                    <p>Item types</p>
-                                    <FormGroup>
-                                        <FormControlLabel
-                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"albums"}
-                                                               sx={{
-                                                                   color: 'var(--secondary-colour)',
-                                                                   '&.Mui-checked': {
-                                                                       color: 'var(--primary-colour)',
-                                                                   },
-                                                               }}
-                                            />}
-                                            label="Albums" />
-                                        <FormControlLabel
-                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"artists"}
-                                                               sx={{
-                                                                   color: 'var(--secondary-colour)',
-                                                                   '&.Mui-checked': {
-                                                                       color: 'var(--primary-colour)',
-                                                                   },
-                                                               }}
-                                            />}
-                                            label="Artists" />
-                                        <FormControlLabel
-                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"songs"}
-                                                               sx={{
-                                                                   color: 'var(--secondary-colour)',
-                                                                   '&.Mui-checked': {
-                                                                       color: 'var(--primary-colour)',
-                                                                   },
-                                                               }}
-                                            />}
-                                            label="Songs" />
-                                    </FormGroup>
+                            {false &&
+                                <div className={'mod-section'}>
+                                    <div>
+                                        <p>Order</p>
+                                        <select defaultValue={"newest"} onChange={handleOrderChange}>
+                                            <option value={"newest"}>Newest</option>
+                                            <option value={"oldest"}>Oldest</option>
+                                            <option value={"highestRating"}>Highest rating</option>
+                                            <option value={"lowestRating"}>Lowest rating</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <p>Item types</p>
+                                        <FormGroup>
+                                            <FormControlLabel
+                                                control={<Checkbox defaultChecked onChange={handleFilterChange} name={"albums"}
+                                                                   sx={{
+                                                                       color: 'var(--secondary-colour)',
+                                                                       '&.Mui-checked': {
+                                                                           color: 'var(--primary-colour)',
+                                                                       },
+                                                                   }}
+                                                />}
+                                                label="Albums" />
+                                            <FormControlLabel
+                                                control={<Checkbox defaultChecked onChange={handleFilterChange} name={"artists"}
+                                                                   sx={{
+                                                                       color: 'var(--secondary-colour)',
+                                                                       '&.Mui-checked': {
+                                                                           color: 'var(--primary-colour)',
+                                                                       },
+                                                                   }}
+                                                />}
+                                                label="Artists" />
+                                            <FormControlLabel
+                                                control={<Checkbox defaultChecked onChange={handleFilterChange} name={"songs"}
+                                                                   sx={{
+                                                                       color: 'var(--secondary-colour)',
+                                                                       '&.Mui-checked': {
+                                                                           color: 'var(--primary-colour)',
+                                                                       },
+                                                                   }}
+                                                />}
+                                                label="Songs" />
+                                        </FormGroup>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p>Order</p>
-                                    <select defaultValue={"newest"} onChange={handleOrderChange}>
-                                        <option value={"newest"}>Newest</option>
-                                        <option value={"oldest"}>Oldest</option>
-                                        <option value={"highestRating"}>Highest rating</option>
-                                        <option value={"lowestRating"}>Lowest rating</option>
-                                    </select>
-                                </div>
-                            </div>
+                            }
                         </div>
-                        <ReviewsList reviews={reviews} isOwnPage={isOwnPage} setReviews={setReviews} orderFunc={orderFunc} includedTypes={includedTypes} />
+                        {reviews.length > 0 ?
+                            <ReviewsList reviews={reviews} isOwnPage={isOwnPage} setReviews={setReviews} orderFunc={orderFunc} includedTypes={includedTypes} />
+                            :
+                            <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any reviews yet.</p>
+
+                        }
                     </div>
                     :
                     <LoadingIndicator />

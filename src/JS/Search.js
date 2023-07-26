@@ -1,18 +1,24 @@
 import {useEffect, useState} from "react";
-import {retrieveAllPublicUsers} from "./HDM.ts";
+import {isLoggedIn, retrieveAllPublicUsers, retrieveFollowing, retrieveLoggedUserID} from "./HDM.ts";
 import Fuse from 'fuse.js';
-import {StyledField} from "./SharedComponents.tsx";
+import SearchIcon from '@mui/icons-material/Search';
+import Input from "@mui/joy/Input";
 
 const Results = (props) => {
-    const {searchResults, width} = props;
+    const {searchResults, following} = props;
+
     return (
         <div className='results'>
             {/* Render search results */}
-            {searchResults.slice(0, 5).map(result => {
+            {searchResults.slice(0, 5).map((result, i) => {
+                const isFollowing = following.some(u => u.user_id === result.user_id);
                 return (
-                    <a className='result' href={`/profile/${result.user_id}`} key={result.user_id}>
+                    <a style={i < 5 && i < searchResults.length ? {borderBottom: '1px solid var(--transparent-colour)'} : {}} className='result' href={`/profile/${result.user_id}`} key={result.user_id}>
                         <div className='result-title'>
                             <h2>{result.username}</h2>
+                            {isFollowing &&
+                                <p>Following</p>
+                            }
                         </div>
                     </a>
                 );
@@ -22,11 +28,12 @@ const Results = (props) => {
 }
 
 const Search = (props) => {
-    const {showResults, width = 250} = props;
+    const {showResults} = props;
     const [searchResults, setSearchResults] = useState(null);
     const [cachedUsersMap, setCachedUsersMap] = useState({});
+    const [following, setFollowing] = useState([]);
 
-// Function to handle the search logic
+    // Function to handle the search logic
     const handleSearch = (searchParam) => {
         const options = {
             keys: ['username'],
@@ -35,7 +42,7 @@ const Search = (props) => {
 
         const fuse = new Fuse(Object.values(cachedUsersMap), options);
         const results = fuse.search(searchParam).map((result) => result.item).sort((a, b) => a.refIndex - b.refIndex);
-
+        console.log(results);
         setSearchResults(results);
     };
 
@@ -44,6 +51,12 @@ const Search = (props) => {
         const fetchData = async () => {
             // Retrieve all public users
             const users = await retrieveAllPublicUsers();
+
+            if(isLoggedIn()){
+                const user_id = await retrieveLoggedUserID();
+                const f = await retrieveFollowing(user_id);
+                setFollowing(f);
+            }
 
             // Create a map of usernames to user objects for efficient lookup
             const usersMap = {};
@@ -67,17 +80,39 @@ const Search = (props) => {
     }, [showResults]);
 
     return (
-        <div className='search-bar-container' style={{width: width}}>
-            {/* SearchBar component */}
-            <form autoComplete={"off"}>
-                <StyledField
-                    placeholder={'Search'}
-                    inputProps={{className: `search-label`}}
-                    onChange={(event) => handleSearch(event.target.value)}
-                />
-            </form>
-            {!!searchResults && (
-                <Results searchResults={searchResults}/>
+        <div style={{position: 'relative'}}>
+            <Input
+                placeholder={"Search"}
+                startDecorator={<SearchIcon style={{color: 'var(--primary-colour)'}} fontSize={'small'} />}
+                size="sm"
+                onChange={(e) => handleSearch(e.target.value)}
+                sx={{
+                    "--Input-placeholderOpacity": 0.5,
+                    '&::before': {
+                        display: 'none',
+                    },
+                    '&:focus-within': {
+                        outline: '2px solid var(--transparent-border-colour)',
+                        outlineOffset: '2px',
+                    },
+                    '&.MuiInput-root': {
+                        width: '200px',
+                        borderRadius: '20px',
+                        flexGrow: '1',
+                        color: 'var(--primary-colour)',
+                        background: 'rgba(125, 125, 125, 0.25)',
+                        border: 'none',
+                        transition: 'all 0.25s ease'
+
+                    },
+                    '&.MuiInput-input': {
+                        color: 'var(--primary-colour)',
+                        background: 'none',
+                    }
+                }}
+            />
+            {!!searchResults && searchResults.length > 0 && (
+                <Results searchResults={searchResults} following={following}/>
             )}
         </div>
     );
