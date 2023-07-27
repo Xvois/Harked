@@ -13,7 +13,7 @@ import {PageError} from "./SharedComponents.tsx";
 
 
 const SettingElement = (props: { name: string, value: string, button?: boolean, callback?, warning?: boolean }) => {
-    const {name, value, button = false, callback, warning} = props;
+    const {name, value, button = false, callback} = props;
     return (
         <div className={'setting-element'}>
             <p>{name}</p>

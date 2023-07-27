@@ -10,7 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {handleAlternateLogin} from "./Authentication";
 
 const RedirectElement = (props) => {
-    const {title, href, requiresLogIn = false, requiresLogOut = false, concise = false, callback = null} = props;
+    const {title, href, requiresLogIn = false, requiresLogOut = false, callback = null} = props;
 
     const link = (
         <a className={'subtle-button'} href={href}>
@@ -102,8 +102,7 @@ const TopBar = () => {
                             </a>
                             <button style={{border: 'none', background: 'none', color: 'var(--primary-colour)'}}
                                     onClick={() => {
-                                        const state = isMenuOpen;
-                                        setIsMenuOpen(!state)
+                                        setIsMenuOpen(state => !state)
                                     }}>
                                 {!isMenuOpen && <MenuIcon fontSize={'medium'}/>}
                                 {isMenuOpen && <CloseIcon fontSize={'medium'}/>}

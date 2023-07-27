@@ -114,7 +114,6 @@ const AnnotationEditModal = (props: {
     }, [playlistMetadata])
 
     const submitAnnotation = () => {
-        const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
         addAnnotation(user_id, playlist, targetSong.song_id, annotationRef.current.value).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
@@ -122,7 +121,6 @@ const AnnotationEditModal = (props: {
     }
 
     const removeAnnotation = () => {
-        const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
         deleteAnnotation(playlist, targetSong.song_id).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);

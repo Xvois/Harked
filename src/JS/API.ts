@@ -2,9 +2,6 @@ import axios from 'axios';
 import PocketBase from 'pocketbase';
 import {formatArtist, hashString, retrieveSongAnalytics} from "./HDM.ts";
 import {reAuthenticate} from "./Authentication";
-import LRUCache from 'lru-cache';
-
-const cache = new LRUCache({max: 500});
 
 const pb = new PocketBase("https://harked.fly.dev/");
 
@@ -408,11 +405,11 @@ export const getDelayedDatapoint = async (user_id, term, delay) => {
 /**
  *
  * @param user_id A global user ID.
- * @param term [short_term, medium_term, long_term]
+ * @param term
  * @param timeSens Whether or not the datapoint collection should be time sensitive.
  * @returns {Promise<*>} A datapoint object or false.
  */
-export const getDatapoint = async (user_id, term, timeSens) => {
+export const getDatapoint = async (user_id, term, timeSens): Promise<any> => {
     const WEEK_IN_MILLISECONDS = 6.048e+8;
     // Calculate the start boundary time.
     const d1 = new Date();
