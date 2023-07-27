@@ -59,12 +59,12 @@ const ReviewsList = (props: {
                 })
                 :
                 <>
-                    <div className={'placeholder'} style={{width: '330px', height: '330px', flexGrow: '1'}}/>
-                    <div className={'placeholder'} style={{width: '330px', height: '330px', flexGrow: '1'}}/>
-                    <div className={'placeholder'} style={{width: '330px', height: '330px', flexGrow: '1'}}/>
-                    <div className={'placeholder'} style={{width: '330px', height: '330px', flexGrow: '1'}}/>
-                    <div className={'placeholder'} style={{width: '330px', height: '330px', flexGrow: '1'}}/>
-                    <div className={'placeholder'} style={{width: '330px', height: '330px', flexGrow: '1'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
                 </>
             }
         </div>
@@ -82,46 +82,39 @@ const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDelete: F
     return (
         <div className={'review-wrapper'} style={{position: 'relative', width: 'max-content'}}>
             {review.id &&
-                <a style={{position: 'absolute', width: '100%', height: '85%', top: 0, left: 0}}
+                <a style={{position: 'absolute', width: '100%', height: '450px', top: 0, left: 0, zIndex: 1}}
                    href={`/review/${review.id}`}/>
             }
-            <img loading={"lazy"} style={{width: '100%', height: '150px', objectFit: 'cover', bottom: 0}}
-                 className={'backdrop-image'} alt={getLIName(review.item)} src={review.item.image}/>
             <div className={'review-heading'}>
-                <div>
-                    <p style={{
-                        margin: 0,
-                        color: 'var(--secondary-colour)'
-                    }}>{capitalize(type.slice(0, type.length - 1))}</p>
-                    <a className={'heavy-link'} href={review.item.link} style={{margin: 0}}>{getLIName(review.item)}</a>
-                    <p style={{margin: 0}}>{getLIDescription(review.item)}</p>
-                    <StyledRating
-                        readOnly
-                        value={review.rating}
-                        precision={0.5}
-                    />
-                    {review.description &&
-                        <p style={{
-                            whiteSpace: 'pre-line',
-                            maxHeight: '140px',
-                            overflow: 'hidden',
-                            marginBottom: 0
-                        }}>{review.description.length > 170 ? review.description.slice(0, 170) + "..." : review.description}</p>
-                    }
-                </div>
-                <div style={{display: "flex", justifyContent: 'space-between', alignItems: 'end', width: '100%'}}>
-                    <div style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>
-                        {created.getTime() !== edited.getTime() &&
-                            <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Edited last
-                                on <br/> {edited.toDateString()}</p>
-                        }
+                <p style={{
+                    margin: 0,
+                    color: 'var(--secondary-colour)'
+                }}>{capitalize(type.slice(0, type.length - 1))}</p>
+                <a className={'heavy-link'} href={review.item.link} style={{margin: 0}}>{getLIName(review.item)}</a>
+                <p style={{margin: 0}}>{getLIDescription(review.item)}</p>
+                <StyledRating
+                    readOnly
+                    value={review.rating}
+                    precision={0.5}
+                />
+            </div>
+            <div style={{position: 'relative'}}>
+                <img loading={"lazy"} className={'backdrop-image'} style={{filter: 'blur(100px) brightness(100%)', width: '300px', height: '300px', objectFit: 'cover'}} alt={getLIName(review.item)} src={review.item.image}/>
+                <img loading={"lazy"} className={'levitating-image'} style={{width: '300px', height: '300px', objectFit: 'cover'}} alt={getLIName(review.item)} src={review.item.image}/>
+            </div>
+            <div style={{display: "flex", justifyContent: 'space-between', alignItems: 'end', width: '100%'}}>
+                <div style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>
+                    {created.getTime() !== edited.getTime() ?
+                        <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Edited last
+                            on <br/> {edited.toDateString()}</p>
+                        :
                         <p style={{margin: 0, color: 'var(--secondary-colour)', fontSize: '14px'}}>Reviewed
                             on <br/> {created.toDateString()}</p>
-                    </div>
-                    {isOwnPage && review.id &&
-                        <button className={'subtle-button'} onClick={() => handleDelete(review)}>Delete</button>
                     }
                 </div>
+                {isOwnPage && review.id &&
+                    <button className={'subtle-button'} onClick={() => handleDelete(review)}>Delete</button>
+                }
             </div>
         </div>
     )
@@ -432,7 +425,7 @@ const Reviews = () => {
     const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
     const [page, setPage] = useState(1);
     const [sort, setSort] = useState("-created");
-    const perPage = 20;
+    const perPage = 10;
 
     // Function to update the current page with reviews data and adjacent pages
     const updatePage = async () => {

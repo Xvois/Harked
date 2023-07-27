@@ -4,6 +4,7 @@ import {isLoggedIn, retrieveLoggedUserID, retrieveReview} from "./HDM.ts";
 import {capitalize} from "@mui/material";
 import {CommentSection, StyledRating} from "./SharedComponents.tsx";
 import {getItemType, getLIDescription, getLIName} from "./Analysis";
+import "../CSS/Review.css"
 
 
 const Review = () => {
@@ -33,13 +34,12 @@ const Review = () => {
     return (
         review && possessive &&
         <>
-            <p style={{margin: 0}}>Review by</p>
-            <a className={'heavy-link'} style={{fontSize: '30px'}}
-               href={`/profile/${review.owner.user_id}`}>{review.owner.username}</a>
-            <div className={'review'}>
-                <img style={{width: '100%', height: '100px', top: 0}} className={'backdrop-image'}
-                     alt={getLIName(review.item)} src={review.item.image}/>
-                <div className={'review-heading'}>
+            <div className={'full-review-wrapper'}>
+                <div className={'review-wrapper'} style={{float: 'left', flexShrink: 0, flexGrow: 0, height: 'max-content'}}>
+                    <div>
+                        <img className={'backdrop-image'} alt={getLIName(review.item)} src={review.item.image} />
+                        <img className={'levitating-image'} alt={getLIName(review.item)} src={review.item.image} />
+                    </div>
                     <div>
                         <p style={{
                             margin: 0,
@@ -53,10 +53,15 @@ const Review = () => {
                             value={review.rating}
                             precision={0.5}
                         />
-                        {review.description &&
-                            <p style={{whiteSpace: 'pre-line', marginBottom: 0}}>{review.description}</p>
-                        }
                     </div>
+                </div>
+                <div className={'review-description'}>
+                    <p style={{margin: 0}}>Review by</p>
+                    <a className={'heavy-link'} style={{fontSize: '30px'}}
+                       href={`/profile/${review.owner.user_id}`}>{review.owner.username}</a>
+                    {review.description &&
+                        <p style={{whiteSpace: 'pre-line', marginBottom: 0}}>{review.description}</p>
+                    }
                 </div>
             </div>
             <div style={{marginTop: '25px'}}>
