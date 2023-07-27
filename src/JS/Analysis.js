@@ -307,8 +307,10 @@ function getMostFittingGenre(song) {
 }
 
 export const getItemAnalysis = function (item, type, user, selectedDatapoint, allDatapoints, term) {
-    const possessive = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'your' : `${user.username}'s`;
-    const pronoun = window.location.hash.slice(1, window.location.hash.length) === 'me' ? 'you' : `${user.username}`;
+    const regex = /\/profile\/(.+)/;
+    const match = window.location.pathname.match(regex)[1];
+    const possessive = match === 'me' ? 'your' : `${user.username}'s`;
+    const pronoun = match === 'me' ? 'you' : `${user.username}`;
     const name = getLIName(item);
     switch (type) {
         case "artists":
@@ -470,22 +472,22 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
         case "genres":
             const genreName = getLIName(item);
 
-            function calculatePopularityTrend(genrePopularity) {
-                const trendValues = genrePopularity.filter(index => index !== null);
+        function calculatePopularityTrend(genrePopularity) {
+            const trendValues = genrePopularity.filter(index => index !== null);
 
-                if (trendValues.length > 1) {
-                    const firstIndex = trendValues[0];
-                    const lastIndex = trendValues[trendValues.length - 1];
+            if (trendValues.length > 1) {
+                const firstIndex = trendValues[0];
+                const lastIndex = trendValues[trendValues.length - 1];
 
-                    if (lastIndex > firstIndex) {
-                        return "increasing";
-                    } else if (lastIndex < firstIndex) {
-                        return "decreasing";
-                    }
+                if (lastIndex > firstIndex) {
+                    return "increasing";
+                } else if (lastIndex < firstIndex) {
+                    return "decreasing";
                 }
-
-                return "consistent";
             }
+
+            return "consistent";
+        }
 
             // Analyze the popularity of the genre across different terms
             const genrePopularity = allDatapoints.map(datapoint => {
@@ -510,14 +512,16 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
             const genreArtists = selectedDatapoint.top_artists.filter(artist => artist.genres?.some(genre => genre === item));
             const topArtistLinks = genreArtists.slice(0, 4).map((artist, index) => (
                 <a key={getLIName(artist) + index} className="heavy-link" href={artist.link}>
-                    {getLIName(artist)}<span style={{fontWeight: 'normal'}}>{index !== genreArtists.length - 1 && index !== 3 && ', '}</span>
+                    {getLIName(artist)}<span
+                    style={{fontWeight: 'normal'}}>{index !== genreArtists.length - 1 && index !== 3 && ', '}</span>
                 </a>
             ));
             const remainingArtistCount = Math.max(0, genreArtists.length - 4);
 
             let artistAnalysis = "";
             if (genreArtists.length > 0) {
-                artistAnalysis = <span>{pronoun === 'you' ? 'Your' : `${possessive}`} favorite artists in this genre include {topArtistLinks}{remainingArtistCount > 0 ? ` and ${remainingArtistCount} more.` : '.'}</span>;
+                artistAnalysis =
+                    <span>{pronoun === 'you' ? 'Your' : `${possessive}`} favorite artists in this genre include {topArtistLinks}{remainingArtistCount > 0 ? ` and ${remainingArtistCount} more.` : '.'}</span>;
             }
 
             return (

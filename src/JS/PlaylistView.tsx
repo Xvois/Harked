@@ -38,7 +38,7 @@ const AnnotationViewModal = (props: {
     setIsOpen: React.SetStateAction<boolean>,
     setIsEditorOpen: React.SetStateAction<boolean>
 }) => {
-    
+
     const {targetSong, playlistMetadata, isOwnPlaylist, isOpen, setIsOpen, setIsEditorOpen} = props;
     const [metadata, setMetadata] = useState(playlistMetadata);
     useEffect(() => {
@@ -74,13 +74,16 @@ const AnnotationViewModal = (props: {
             }
             <div id={'annotation-editor-modal-button-wrapper'}>
                 {isOwnPlaylist && (
-                    <button className={'subtle-button'} onClick={() => {setIsOpen(false); setIsEditorOpen(true)}}>Edit</button>
+                    <button className={'subtle-button'} onClick={() => {
+                        setIsOpen(false);
+                        setIsEditorOpen(true)
+                    }}>Edit</button>
                 )}
             </div>
         </dialog>
     )
 }
-                             
+
 
 const AnnotationEditModal = (props: {
     user_id: string | null,
@@ -140,7 +143,7 @@ const AnnotationEditModal = (props: {
             }
             >x
             </button>
-            <Textarea />
+            <Textarea/>
             <div id={'annotation-modal-button-wrapper'}>
                 {metadata?.meta[targetSong?.song_id] !== undefined && (
                     <button className={'subtle-button'} onClick={removeAnnotation}>Delete</button>
@@ -164,7 +167,16 @@ const Track = (props: {
     windowWidth: number
 }) => {
 
-    const {track, index, isOwnPlaylist, annotation, setSelectedTrack, setIsEditorOpen, setIsViewerOpen, windowWidth} = props;
+    const {
+        track,
+        index,
+        isOwnPlaylist,
+        annotation,
+        setSelectedTrack,
+        setIsEditorOpen,
+        setIsViewerOpen,
+        windowWidth
+    } = props;
 
     return (
         <div className={'track-wrapper'}>
@@ -205,7 +217,8 @@ const Track = (props: {
                 </button>
                 :
                 isOwnPlaylist ?
-                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon subtle-button'}
+                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}}
+                            className={'annotation-icon subtle-button'}
                             onClick={() => {
                                 setSelectedTrack(track);
                                 if (annotation === undefined) {
@@ -222,8 +235,9 @@ const Track = (props: {
                     </button>
                     :
                     annotation !== undefined &&
-                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'} onClick={() => setIsViewerOpen(true)}>
-                            View annotation
+                    <button style={{animation: 'none', opacity: '0.5', right: '2.5%'}} className={'annotation-icon'}
+                            onClick={() => setIsViewerOpen(true)}>
+                        View annotation
                     </button>
             }
         </div>
@@ -253,12 +267,12 @@ const PlaylistView = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if(isLoggedIn()){
+            if (isLoggedIn()) {
                 const p: Playlist = await retrievePlaylist(playlist_id);
-                if(!p){
+                if (!p) {
                     setIsError(true);
                     setErrorDetails({description: "This playlist doesn't seem to exist.", errCode: "id_fetch_failed"});
-                }else{
+                } else {
                     const metadata = await retrievePlaylistMetadata(playlist_id);
                     const userID = await retrieveLoggedUserID();
                     if (p.owner.user_id === userID) {
@@ -270,7 +284,7 @@ const PlaylistView = () => {
                     setPlaylistAnalysis(getPlaylistAnalysis(p.tracks));
                     setPlaylistMetadata(metadata);
                 }
-            }else{
+            } else {
                 setIsError(true);
                 setErrorDetails({description: "You must be logged in to use Harked's playlist viewer.", errCode: null});
             }
@@ -283,7 +297,7 @@ const PlaylistView = () => {
     return (
         playlist === null || isError ?
             isError ?
-                <PageError description={errorDetails.description} errCode={errorDetails.errCode} />
+                <PageError description={errorDetails.description} errCode={errorDetails.errCode}/>
                 :
                 <LoadingIndicator/>
             :
@@ -359,7 +373,9 @@ const PlaylistView = () => {
                     <AnnotationEditModal user_id={loggedUserID} playlist={playlist} targetSong={selectedTrack}
                                          playlistMetadata={playlistMetadata} setPlaylistMetadata={setPlaylistMetadata}
                                          isOpen={isEditorModalOpen} setIsOpen={setIsEditorModalOpen}/>
-                    <AnnotationViewModal targetSong={selectedTrack} playlistMetadata={playlistMetadata} isOwnPlaylist={isOwnPlaylist} isOpen={isViewerModalOpen} setIsOpen={setIsViewerModalOpen} setIsEditorOpen={setIsEditorModalOpen} />
+                    <AnnotationViewModal targetSong={selectedTrack} playlistMetadata={playlistMetadata}
+                                         isOwnPlaylist={isOwnPlaylist} isOpen={isViewerModalOpen}
+                                         setIsOpen={setIsViewerModalOpen} setIsEditorOpen={setIsEditorModalOpen}/>
                 </div>
             </div>
     )

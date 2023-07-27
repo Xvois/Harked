@@ -13,7 +13,8 @@ const Results = (props) => {
             {searchResults.slice(0, 5).map((result, i) => {
                 const isFollowing = following.some(u => u.user_id === result.user_id);
                 return (
-                    <a style={i < 5 && i < searchResults.length ? {borderBottom: '1px solid var(--transparent-colour)'} : {}} className='result' href={`/profile/${result.user_id}`} key={result.user_id}>
+                    <a style={i < 5 && i < searchResults.length ? {borderBottom: '1px solid var(--transparent-colour)'} : {}}
+                       className='result' href={`/profile/${result.user_id}`} key={result.user_id}>
                         <div className='result-title'>
                             <h2>{result.username}</h2>
                             {isFollowing &&
@@ -52,7 +53,7 @@ const Search = (props) => {
             // Retrieve all public users
             const users = await retrieveAllPublicUsers();
 
-            if(isLoggedIn()){
+            if (isLoggedIn()) {
                 const user_id = await retrieveLoggedUserID();
                 const f = await retrieveFollowing(user_id);
                 setFollowing(f);
@@ -83,7 +84,7 @@ const Search = (props) => {
         <div style={{position: 'relative'}}>
             <Input
                 placeholder={"Search"}
-                startDecorator={<SearchIcon style={{color: 'var(--primary-colour)'}} fontSize={'small'} />}
+                startDecorator={<SearchIcon style={{color: 'var(--primary-colour)'}} fontSize={'small'}/>}
                 size="sm"
                 onChange={(e) => handleSearch(e.target.value)}
                 sx={{

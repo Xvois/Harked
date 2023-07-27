@@ -146,13 +146,13 @@ let databaseCache = {
 };
 const updateDatabaseCache = async (targets: [string] | [string, string] | [string, string, string]) => {
     let p = [];
-    if(targets.includes('artists')){
+    if (targets.includes('artists')) {
         p[0] = await pb.collection('artists').getFullList();
     }
-    if(targets.includes('songs')){
+    if (targets.includes('songs')) {
         p[1] = await pb.collection('songs').getFullList();
     }
-    if(targets.includes('genres')){
+    if (targets.includes('genres')) {
         p[2] = await pb.collection('genres').getFullList();
     }
     let cache = await Promise.all(p);
@@ -379,8 +379,15 @@ export const updateLocalData = async (collection, data, id) => {
     await pb.collection(collection).update(id, data).catch(handleUpdateException);
 }
 
-export const getFullLocalData = async (collection, filter = '') => {
-    return await pb.collection(collection).getFullList(filter).catch(handleFetchException);
+export const getFullLocalData = async (collection: string, filter = '', sort = '') => {
+    return await pb.collection(collection).getFullList({filter: filter, sort: sort}).catch(handleFetchException);
+}
+
+export const getPagedLocalData = async (collection: string, perPage: number, page = 0, filter = '', sort = '') => {
+    return await pb.collection(collection).getList(page, perPage, {
+        filter: filter,
+        sort: sort
+    }).catch(handleFetchException);
 }
 
 export const getAuthData = () => {

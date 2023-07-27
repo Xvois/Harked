@@ -72,3 +72,9 @@
     flex-grow: 1;
     justify-content: space-between;
 }
+
+.review {
+    position: relative;
+    flex-grow: 1;
+    margin-top: 15px;
+}

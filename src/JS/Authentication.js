@@ -63,9 +63,9 @@ function Authentication() {
     const navigate = useNavigate();
     const redirect = useCallback((path, refresh = false) => {
         console.warn("Redirecting...");
-        if(refresh){
+        if (refresh) {
             window.location.href = path;
-        }else{
+        } else {
             navigate(path);
         }
     }, [navigate]);

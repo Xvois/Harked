@@ -44,9 +44,10 @@ export const Settings = () => {
             ]
             await Promise.all(promises);
         }
-        if(isLoggedIn()){
+
+        if (isLoggedIn()) {
             retrieveData();
-        }else {
+        } else {
             setIsError(true);
             setErrorDetails({description: "Viewing settings requires being logged in."});
         }
@@ -59,7 +60,7 @@ export const Settings = () => {
     }
 
     const handleDeleteUser = () => {
-        if(window.confirm("Are you sure you want to delete your account?")){
+        if (window.confirm("Are you sure you want to delete your account?")) {
             deleteUser(user.user_id).then(() => {
                 handleCacheReset();
                 window.localStorage.clear();
@@ -72,25 +73,26 @@ export const Settings = () => {
 
     return (
         isError ?
-            <PageError description={errorDetails.description} errCode={errorDetails.errCode} />
+            <PageError description={errorDetails.description} errCode={errorDetails.errCode}/>
             :
             user && settings && (
-            <div>
-                <div className={'settings-section'}>
-                    <h3>Your account</h3>
-                    <p>Details about your account.</p>
-                    <SettingElement name={'Username'} value={user.username}/>
-                    <SettingElement name={'UserID'} value={user.user_id}/>
-                    <SettingElement name={'Profile created'} value={(new Date(user.created)).toDateString()}/>
+                <div>
+                    <div className={'settings-section'}>
+                        <h3>Your account</h3>
+                        <p>Details about your account.</p>
+                        <SettingElement name={'Username'} value={user.username}/>
+                        <SettingElement name={'UserID'} value={user.user_id}/>
+                        <SettingElement name={'Profile created'} value={(new Date(user.created)).toDateString()}/>
+                    </div>
+                    <div className={'settings-section'}>
+                        <h3>Privacy</h3>
+                        <p>Settings to control your privacy and data.</p>
+                        <SettingElement name={'Profile visibility'} value={settings.public ? 'Public' : 'Private'} button
+                                        callback={invertProfilePrivacy}/>
+                        <SettingElement name={'Delete profile'} value={'Delete'} button warning
+                                        callback={handleDeleteUser}/>
+                    </div>
                 </div>
-                <div className={'settings-section'}>
-                    <h3>Privacy</h3>
-                    <p>Settings to control your privacy and data.</p>
-                    <SettingElement name={'Profile visibility'} value={settings.public ? 'Public' : 'Private'} button
-                                    callback={invertProfilePrivacy}/>
-                    <SettingElement name={'Delete profile'} value={'Delete'} button warning callback={handleDeleteUser}/>
-                </div>
-            </div>
             )
     )
 }

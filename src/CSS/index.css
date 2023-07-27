@@ -148,6 +148,11 @@ select {
     background: rgba(125, 125, 125, 0.5);
 }
 
+.subtle-button:disabled {
+    color: var(--secondary-colour);
+    background: rgba(125, 125, 125, 0.1);
+}
+
 .warning-button {
     align-content: center;
     height: max-content;

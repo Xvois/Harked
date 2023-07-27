@@ -24,12 +24,12 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
                     added annotations to <a className={'heavy-link'}
-                                            href={`/playlist/${event.item.playlist_id}`}>{event.item.name}</a>.</p>
+                                            href={`/playlist/${event.item.playlist_id}`}>{getLIName(event.item)}</a>.</p>
             case 3:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                                href={`/reviews/${event.owner.user_id}`}>{event.owner.username}</a>
-                has reviewed <a className={'heavy-link'}
-                href={event.item.link}>{event.item.name}</a>.</p>
+                                                            href={`/reviews/${event.owner.user_id}`}>{event.owner.username}</a> has
+                    reviewed <a className={'heavy-link'}
+                                    href={event.item.link}>{getLIName(event.item)}</a>.</p>
             case 51:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
@@ -96,7 +96,7 @@ const Feed = () => {
             return await retrieveEventsForUser(user_id, feedPage, maxEventsPerLoad);
         }
 
-        if(isLoggedIn()){
+        if (isLoggedIn()) {
             fetchData().then((e: Array<UserEvent>) => {
                 setEvents(e)
                 if (e.length < maxEventsPerLoad) {
@@ -106,7 +106,7 @@ const Feed = () => {
                     console.info('Feed is truncated and will attempt to load more on scroll.')
                 }
             });
-        }else{
+        } else {
             setIsError(true);
             setErrorDetails({description: "Viewing the feed requires being logged in."});
         }
@@ -132,10 +132,14 @@ const Feed = () => {
     }
 
     window.onscroll = () => {
-        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight && isLoggedIn()) {
+        const buffer = 500;
+        if (window.innerHeight + document.documentElement.scrollTop >= ( document.documentElement.offsetHeight - buffer ) && isLoggedIn() && !isLoading) {
             fetchMoreEvents().catch(err => {
                 setIsError(true);
-                setErrorDetails({description: "There was a critical error fetching more events.", errCode: "fetchMoreEvents_failure"})
+                setErrorDetails({
+                    description: "There was a critical error fetching more events.",
+                    errCode: "fetchMoreEvents_failure"
+                })
                 console.error('Error fetching more events: ', err);
             });
         }
@@ -144,7 +148,7 @@ const Feed = () => {
 
     return (
         isError ?
-            <PageError description={errorDetails.description} errCode={errorDetails.errCode} />
+            <PageError description={errorDetails.description} errCode={errorDetails.errCode}/>
             :
             <div>
                 <h1 style={{margin: '15px 0 0 0px'}}>Your feed.</h1>
@@ -190,7 +194,7 @@ const Feed = () => {
                                 yet. <br/> <br/> Follow some more people and wait for them to get up to something!</p>
                         :
                         <>
-                            <LoadingObject num={7} />
+                            <LoadingObject num={7}/>
                         </>
                     }
                 </div>

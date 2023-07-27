@@ -188,9 +188,10 @@ const ShowcaseListItem = (props) => {
                             </div>
                         </div>
                         {
-                            recommendations.slice(0,3).map((r,i) => {
+                            recommendations.slice(0, 3).map((r, i) => {
                                 return (
-                                    <div key={getLIName(r)} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
+                                    <div key={getLIName(r)} className={'widget-item'}
+                                         style={{animationDelay: `${i / 10}s`}}>
                                         <a href={r.link} className={'widget-button'}>
                                             <h4 style={{margin: 0}}>{getLIName(r)}</h4>
                                             <p style={{margin: 0}}>{getLIDescription(r)}</p>
@@ -201,7 +202,7 @@ const ShowcaseListItem = (props) => {
                         }
                     </>
                     :
-                    <div className={'placeholder'} style={{width: '100%', height: '100%'}} />
+                    <div className={'placeholder'} style={{width: '100%', height: '100%'}}/>
                 }
             </div>
         )
@@ -252,20 +253,20 @@ const ShowcaseListItem = (props) => {
                     <div className={"showcase-list-item-expanded"}>
                         <div className={'item-top-element'}>
                             {window.innerWidth > 650 &&
-                            <div className={'item-image supplemental-content'}>
-                                <img alt={'decorative blur'} src={image} className={'backdrop-image'} style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    animation: 'fadeIn 0.25s'
-                                }}/>
-                                <img alt={getLIName(element)} src={image} className={'levitating-image'} style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    animation: 'fadeIn 0.25s'
-                                }}/>
-                            </div>
+                                <div className={'item-image supplemental-content'}>
+                                    <img alt={'decorative blur'} src={image} className={'backdrop-image'} style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        animation: 'fadeIn 0.25s'
+                                    }}/>
+                                    <img alt={getLIName(element)} src={image} className={'levitating-image'} style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        animation: 'fadeIn 0.25s'
+                                    }}/>
+                                </div>
                             }
                             <div className={'item-description'}>
                                 <div style={{
@@ -385,20 +386,21 @@ function ComparisonLink(props) {
 const RecommendationSelectionModal = (props) => {
     const {showModal, setShowModal, recommendations, setRecommendations, pageGlobalUserID, initialItem = null} = props;
 
-    const handleSubmit = async (selectedItem, type, descriptionRef) => {
+    const handleSubmit = async (selectedItem, type, description) => {
+
         let submissionItem = selectedItem;
         if (type === 'songs') {
             submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
         }
-        await submitRecommendation(pageGlobalUserID, submissionItem, type, descriptionRef.current.value).then(() => {
+        await submitRecommendation(pageGlobalUserID, submissionItem, type, description).then(() => {
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
         });
     }
 
-    const handleModify = async (selectedItem, type, descriptionRef) => {
+    const handleModify = async (selectedItem, type, description) => {
         const existingRecIndex = recommendations.findIndex(r => r.item[`${type.slice(0, type.length - 1)}_id`] === selectedItem[`${type.slice(0, type.length - 1)}_id`]);
         const existingRec = recommendations[existingRecIndex];
-        await modifyRecommendation(pageGlobalUserID, existingRec, type, descriptionRef.current.value).then(() => {
+        await modifyRecommendation(pageGlobalUserID, existingRec, type, description).then(() => {
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
         })
     }
@@ -469,8 +471,10 @@ const ProfileRecommendations = (props) => {
                     <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any recommendations yet.</p>
                 }
             </div>
-            <RecommendationSelectionModal initialItem={initialItem} showModal={showSelection} setShowModal={setShowSelection}
-                            recommendations={recs} setRecommendations={setRecs} pageGlobalUserID={pageGlobalUserID}/>
+            <RecommendationSelectionModal initialItem={initialItem} showModal={showSelection}
+                                          setShowModal={setShowSelection}
+                                          recommendations={recs} setRecommendations={setRecs}
+                                          pageGlobalUserID={pageGlobalUserID}/>
         </div>
     )
 }
@@ -562,7 +566,7 @@ const ArtistAnalysis = (props) => {
                 }
             }
         );
-        if(isOwnPage){
+        if (isOwnPage) {
             followingContentsSearch(user_id, artist, "artists", term).then(
                 result => {
                     setFollowingWithArtist(result);
@@ -575,9 +579,9 @@ const ArtistAnalysis = (props) => {
     }, [playlists])
 
     useEffect(() => {
-        if(isOwnPage){
+        if (isOwnPage) {
             setIsReady(followingWithArtist && artistsAlbumsWithLikedSongs);
-        }else{
+        } else {
             setIsReady(!!artistsAlbumsWithLikedSongs);
         }
     }, [followingWithArtist, artistsAlbumsWithLikedSongs])
@@ -585,21 +589,27 @@ const ArtistAnalysis = (props) => {
     return (
         <div className={`list-widget-wrapper`}>
             {isReady ?
-                    showing === "albums" ?
+                showing === "albums" ?
                     <>
                         <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                            <div className={'widget-button'} onClick={() => {if(isOwnPage){switchShowing()}}}>
+                            <div className={'widget-button'} onClick={() => {
+                                if (isOwnPage) {
+                                    switchShowing()
+                                }
+                            }}>
                                 <p style={{margin: 0}}>Most listened to albums by</p>
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
                             </div>
                         </div>
                         {orderedAlbums.length > 0 ?
-                            orderedAlbums.map((a,i) => {
+                            orderedAlbums.map((a, i) => {
                                 return (
-                                    <div key={getLIName(a)} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
+                                    <div key={getLIName(a)} className={'widget-item'}
+                                         style={{animationDelay: `${i / 10}s`}}>
                                         <a href={a.link} className={'widget-button'}>
                                             <h4 style={{margin: 0}}>{getLIName(a)}</h4>
-                                            <p style={{margin: 0}}>{a.saved_songs.length} saved song{a.saved_songs.length === 1 ? '' : 's'}</p>
+                                            <p style={{margin: 0}}>{a.saved_songs.length} saved
+                                                song{a.saved_songs.length === 1 ? '' : 's'}</p>
                                         </a>
                                     </div>
                                 )
@@ -608,7 +618,8 @@ const ArtistAnalysis = (props) => {
                             <div className={'widget-item'} style={{animationDelay: `0.1s`}}>
                                 <div className={'widget-button'}>
                                     <h4 style={{margin: 0}}>An analysis is not available.</h4>
-                                    <p style={{margin: 0}}>No public playlists with this artist found on this profile.</p>
+                                    <p style={{margin: 0}}>No public playlists with this artist found on this
+                                        profile.</p>
                                 </div>
                             </div>
                         }
@@ -622,9 +633,10 @@ const ArtistAnalysis = (props) => {
                             </div>
                         </div>
                         {followingWithArtist.length > 0 ?
-                            followingWithArtist.map((u,i) => {
+                            followingWithArtist.map((u, i) => {
                                 return (
-                                    <div key={u.user_id} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
+                                    <div key={u.user_id} className={'widget-item'}
+                                         style={{animationDelay: `${i / 10}s`}}>
                                         <a href={`/profile/${u.user_id}`} className={'widget-button'}>
                                             <h4 style={{margin: 0}}>{u.username}</h4>
                                         </a>
@@ -641,7 +653,7 @@ const ArtistAnalysis = (props) => {
                         }
                     </>
                 :
-                <div className={'placeholder'} style={{width: '100%', height: '100%'}} />
+                <div className={'placeholder'} style={{width: '100%', height: '100%'}}/>
             }
         </div>
     )
@@ -666,11 +678,11 @@ const SongAnalysis = (props) => {
                             if (includedKeys.findIndex(e => e === key) !== -1) {
                                 const rawAnalytic = analytics[key];
                                 const translated = rawAnalytic < 0.3 ? translateAnalyticsLow[key] : translateAnalytics[key];
-                                const val = rawAnalytic < 0.3 ? 1-rawAnalytic : rawAnalytic;
-                                const shadow = rawAnalytic < 0.3 ? 1-averageAnalytics[key] : averageAnalytics[key];
+                                const val = rawAnalytic < 0.3 ? 1 - rawAnalytic : rawAnalytic;
+                                const shadow = rawAnalytic < 0.3 ? 1 - averageAnalytics[key] : averageAnalytics[key];
                                 return (
-                                    <div key={key} className={'widget-item'} >
-                                        <div style={{transform: `scale(${206/221})`, padding: '15px'}}>
+                                    <div key={key} className={'widget-item'}>
+                                        <div style={{transform: `scale(${206 / 221})`, padding: '15px'}}>
                                             <StatBlock name={translated.name}
                                                        description={translated.description}
                                                        value={val * 100} alignment={'left'}
@@ -730,7 +742,7 @@ const GenreBreakdown = (props) => {
             ]
     );
     darkModePreference.addEventListener("change", e => {
-        if(e.matches){
+        if (e.matches) {
             setBgColor(
                 [
                     'rgba(200, 200, 200, 0.1)',
@@ -741,7 +753,7 @@ const GenreBreakdown = (props) => {
                     'rgba(200, 200, 200, 0.2)',
                 ]
             )
-        }else{
+        } else {
             setBgColor(
                 [
                     'rgba(125, 125, 125, 0.1)',
@@ -759,7 +771,7 @@ const GenreBreakdown = (props) => {
     const artistWeights = artists.map(e => selectedDatapoint.top_artists.length - selectedDatapoint.top_artists.findIndex(a => a.artist_id === e.artist_id));
     const totalWeights = artistWeights.reduce((partialSum, a) => partialSum + a, 0);
     const percentages = [];
-    for(let i = 0; i < artists.length; i++){
+    for (let i = 0; i < artists.length; i++) {
         percentages.push((artistWeights[i] / totalWeights) * 100);
     }
 
@@ -789,17 +801,24 @@ const GenreBreakdown = (props) => {
     return (
         <div id={'genre-breakdown-wrapper'}>
             <div style={{display: 'flex', justifyContent: 'center'}}>
-                <select style={{margin: 0}} id={'genre-select'} defaultValue={selectedDatapoint.top_genres[0]} onChange={handleSelect}>
-                    {selectedDatapoint.top_genres.slice(0,9).map(g => {
+                <select style={{margin: 0}} id={'genre-select'} defaultValue={selectedDatapoint.top_genres[0]}
+                        onChange={handleSelect}>
+                    {selectedDatapoint.top_genres.slice(0, 9).map(g => {
                         return <option key={g} value={g}>{g}</option>
                     })}
                 </select>
             </div>
             <div id={'genre-breakdown'}>
                 <div id={'genre-chart-wrapper'}>
-                    <Doughnut options={options} data={data} updateMode={"show"} />
+                    <Doughnut options={options} data={data} updateMode={"show"}/>
                 </div>
-                <div className={'item-description'} style={{height: 'max-content', padding: '15px', background: 'var(--transparent-colour)', border: '1px solid var(--transparent-border-colour)', maxWidth: '400px'}}>
+                <div className={'item-description'} style={{
+                    height: 'max-content',
+                    padding: '15px',
+                    background: 'var(--transparent-colour)',
+                    border: '1px solid var(--transparent-border-colour)',
+                    maxWidth: '400px'
+                }}>
                     {getItemAnalysis(selectedGenre, "genres", pageUser, selectedDatapoint, allDatapoints, term)}
                 </div>
             </div>
@@ -817,7 +836,11 @@ const TopSongsOfArtists = (props) => {
                 if (topSongIndex > -1) {
                     return (
                         <div key={artist.artist_id} className={'stat-block'}
-                             style={{padding: '15px', background: 'var(--transparent-colour)', border: '1px solid rgba(125, 125, 125, 0.5)'}}>
+                             style={{
+                                 padding: '15px',
+                                 background: 'var(--transparent-colour)',
+                                 border: '1px solid rgba(125, 125, 125, 0.5)'
+                             }}>
                             <h3 style={{margin: '0'}}>{selectedDatapoint.top_songs[topSongIndex].title}</h3>
                             <p style={{margin: '0'}}>{artist.name}</p>
                         </div>
@@ -885,7 +908,7 @@ function TermSelection(props) {
             <h3 style={{margin: 0}}>Time frame</h3>
             <p style={{marginTop: 0}}>Select the range of time to view information for.</p>
             <div className={'terms-container'}>
-                {terms.map((t,i) => {
+                {terms.map((t, i) => {
                     return <button type={'button'} onClick={() => setTermIndex(i)} key={t}
                                    className={'subtle-button'} style={terms[termIndex] === t ? {
                         background: 'var(--primary-colour)',
@@ -1212,12 +1235,12 @@ const Profile = () => {
                             console.warn("ALL TERMS ELIMINATED. NOT ENOUGH DATA.");
                             setIsError(true);
                             userExists(loadID).then(exists => {
-                                if(exists){
+                                if (exists) {
                                     setErrorDetails({
                                         description: 'We do not have enough information about this user to generate a profile for them.',
                                         errCode: 'complete_term_elimination'
                                     });
-                                }else{
+                                } else {
                                     setErrorDetails({
                                         description: "This user isn't on Harked yet so you can't view their profile.",
                                     });
@@ -1395,9 +1418,12 @@ const Profile = () => {
                                                         margin: '0 0 16px 0',
                                                         textTransform: 'uppercase'
                                                     }}>for each genre</p>
-                                                    <p>The distribution of artists that contribute most to {possessive} listening time
+                                                    <p>The distribution of artists that contribute most
+                                                        to {possessive} listening time
                                                         in each of {possessive} top 10 genres.</p>
-                                                    <GenreBreakdown selectedDatapoint={selectedDatapoint} pageUser={pageUser} allDatapoints={allDatapoints} term={terms[termIndex]}/>
+                                                    <GenreBreakdown selectedDatapoint={selectedDatapoint}
+                                                                    pageUser={pageUser} allDatapoints={allDatapoints}
+                                                                    term={terms[termIndex]}/>
                                                 </div>
                                         }
                                     </div>
@@ -1454,7 +1480,8 @@ const Profile = () => {
                                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Recommendations</h2>
                                     {isLoggedIn() ?
                                         <>
-                                            <p><span style={{textTransform: 'capitalize'}}>{possessive}</span> artists and songs
+                                            <p><span style={{textTransform: 'capitalize'}}>{possessive}</span> artists
+                                                and songs
                                                 that are recommended to others.</p>
                                         </>
                                         :
@@ -1509,7 +1536,8 @@ const Profile = () => {
                                 gap: '10px',
                                 width: '100%'
                             }}>
-                                <CommentSection sectionID={hashString(pageGlobalUserID)} owner={pageUser} isAdmin={isOwnPage}/>
+                                <CommentSection sectionID={hashString(pageGlobalUserID)} owner={pageUser}
+                                                isAdmin={isOwnPage}/>
                             </div>
                         </div>
                     </div>

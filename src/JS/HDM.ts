@@ -12,6 +12,7 @@ import {
     getFullLocalData,
     getLocalData,
     getLocalDataByID,
+    getPagedLocalData,
     getUser,
     postDatapoint,
     putLocalData,
@@ -33,7 +34,7 @@ export interface Record {
 
 export interface Review extends Record {
     description: string,
-    item: Artist | Song | Album | {id: string, type: string},
+    item: Artist | Song | Album | { id: string, type: string },
     owner: string,
     rating: number
 }
@@ -162,16 +163,16 @@ const user_cache = new LRUCache<string, User, unknown>({max: 100});
 let me = undefined;
 
 export const validateUser = async () => {
-    if(window.localStorage.getItem("pocketbase_auth")){
+    if (window.localStorage.getItem("pocketbase_auth")) {
         console.info('Validating user...');
         const authData = JSON.parse(window.localStorage.getItem("pocketbase_auth"));
         const user = authData.model;
         const exists = !!(await getLocalDataByID("users", user.id));
-        if(!exists){
+        if (!exists) {
             console.warn('User invalid. Logging out...');
             window.localStorage.clear();
             window.location.href = '/';
-        }else{
+        } else {
             console.info('User is valid.')
         }
     }
@@ -224,7 +225,7 @@ export const followsUser = async function (primaryUserID: string, targetUserID: 
     }
     let follows = false;
     const targetUser: User = await getUser(targetUserID);
-    if(!targetUser){
+    if (!targetUser) {
         console.warn('Null value returned from followsUser.');
         return null;
     }
@@ -404,7 +405,6 @@ export const submitComment = async function (user_id: string, owner_record_id: s
         }
 
 
-
         return {...comment, user: user};
     } catch (error) {
         console.error("Error submitting comment:", error);
@@ -509,12 +509,19 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
         case 'artists':
             const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
             const artistItemObj = {type: type, id: artistRefID}
-            const artistReview = {id: id, owner: user.id, item: artistItemObj, rating: rating, description: description};
+            const artistReview = {
+                id: id,
+                owner: user.id,
+                item: artistItemObj,
+                rating: rating,
+                description: description
+            };
             try {
-                await putLocalData("reviews", artistReview).then(() => {createEvent(3, user_id, item, type)});
+                await putLocalData("reviews", artistReview).then(() => {
+                    createEvent(3, user_id, item, type)
+                });
                 break;
-            }
-            catch (e) {
+            } catch (e) {
                 throw new Error("Failed to submit review.", e);
             }
         case 'songs':
@@ -522,43 +529,69 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
             const songItemObj = {type: type, id: songRefID}
             const songReview = {id: id, owner: user.id, item: songItemObj, rating: rating, description: description};
             try {
-                await putLocalData("reviews", songReview).then(() => {createEvent(3, user_id, item, type)});
+                await putLocalData("reviews", songReview).then(() => {
+                    createEvent(3, user_id, item, type)
+                });
                 break;
-            }
-            catch (e) {
+            } catch (e) {
                 throw new Error("Failed to submit review.", e);
             }
         case 'albums':
             const albumItemObj = {id: item.album_id, type: type};
             const albumReview = {id: id, owner: user.id, item: albumItemObj, rating: rating, description: description};
             try {
-                await putLocalData("reviews", albumReview).then(() => {createEvent(3, user_id, item, type)});
+                await putLocalData("reviews", albumReview).then(() => {
+                    createEvent(3, user_id, item, type)
+                });
                 break;
-            }
-            catch (e) {
+            } catch (e) {
                 throw new Error("Failed to submit review.", e);
             }
     }
 }
+
 /**
  * Retrieves all reviews from a user.
  * @param user_id
  */
-export const retrieveReviews = async (user_id: string) => {
-    let reviews = await getLocalData("reviews", `owner.user_id="${user_id}"`, "-created");
-
+export const retrievePaginatedReviews = async (user_id: string, page: number, itemsPerPage: number, sort: string = "-created") => {
+    let reviewsPage = await getPagedLocalData("reviews", itemsPerPage, page, `owner.user_id="${user_id}"`, sort);
+    let reviews = reviewsPage.items;
     if (reviews === undefined) {
         return [];
     }
 
-    // Resolve all the items in the recommendations
+    const resolveAlbums = async (reviewBatch) => {
+        const albumIds = reviewBatch
+            .filter((e) => e.item.type === "albums")
+            .map((e) => e.item.id);
+
+        // Batch process albums if there are any to fetch
+        if (albumIds.length > 0) {
+            const batchSize = 20;
+            for (let i = 0; i < albumIds.length; i += batchSize) {
+                const batchIds = albumIds.slice(i, i + batchSize);
+                const albums: Album[] = (await fetchData(`albums?ids=${batchIds.join(",")}`)).albums;
+                for (const e of reviewBatch) {
+                    if (e.item.type === "albums") {
+                        let album = albums.find((a) => a.id === e.item.id);
+                        if (album) {
+                            album = formatAlbum(album);
+                            e.item = album;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     for (let i = 0; i < reviews.length; i++) {
         let e = reviews[i];
         if (e.item.type === "artists") {
             let artist: Artist = await getLocalDataByID("artists", e.item.id, "genres");
             artist.genres = artist.expand.genres;
             if (artist.genres !== undefined) {
-                artist.genres = artist.genres.map(e => e.genre);
+                artist.genres = artist.genres.map((e) => e.genre);
             }
             e.item = artist;
         } else if (e.item.type === "songs") {
@@ -566,20 +599,31 @@ export const retrieveReviews = async (user_id: string) => {
             song.artists = song.expand.artists;
             e.item = song;
         } else if (e.item.type === "albums") {
-            let album: Album = await fetchData(`albums/${e.item.id}`);
-            album = formatAlbum(album);
-            e.item = album;
+            // Albums will be resolved in the batch process
         } else {
             throw new Error("Unknown type fetched from reviews.");
         }
     }
 
-    return reviews;
+    // Resolve albums in the end to ensure all the batches are processed
+    await resolveAlbums(reviews);
+
+    return reviewsPage;
+};
+/**
+ * Returns all reviews from a user but without their items resolved.
+ *
+ * Is preferred in any case where the item of a review will not themselves be accessed.
+ * @param user_id
+ */
+export const retrieveUnresolvedReviews = async (user_id: string) => {
+    return (await getFullLocalData("reviews", `owner.user_id="${user_id}"`, '-created'));
 }
+
 
 export const retrieveReview = async (id: string) => {
     let review = await getLocalDataByID("reviews", id, "owner");
-    if(review === undefined) {
+    if (review === undefined) {
         return null;
     }
     review.owner = review.expand.owner;
@@ -686,19 +730,33 @@ export const createEvent = async function (event_ref_num: number, user_id: strin
 export const retrieveEventsForUser = async function (user_id: string, page: number = 1, eventsPerPage: number = 50) {
     const following: Array<User> = await retrieveFollowing(user_id);
     const followingMap = new Map();
-    // Create map to reference user from their db id
+    // Create a map to reference users from their db id
     following.forEach(u => followingMap.set(u.id, u));
     const conditions = following.map(u => `owner.id = "${u.id}"`);
     const filter = conditions.join(" || ");
 
     const events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
+
+    // Extract album IDs from events
+    const albumIds = events
+        .filter(e => e.item.type === "albums")
+        .map(e => e.item.id);
+
+    let albums : Album[];
+
+    // Batch process albums if there are any to fetch
+    if (albumIds.length > 0) {
+        const batchSize = 20;
+        for (let i = 0; i < albumIds.length; i += batchSize) {
+            const batchIds = albumIds.slice(i, i + batchSize);
+            albums = (await fetchData(`albums?ids=${batchIds.join(",")}`)).albums;
+        }
+    }
+
+    // Resolve other types of items for remaining events
     for (const e of events) {
         e.owner = followingMap.get(e.owner);
         switch (e.item.type) {
-            case "albums":
-                const album = await fetchData(`albums/${e.item.id}`);
-                e.item = formatAlbum(album);
-                break;
             case "songs":
                 e.item = await getLocalDataByID("songs", e.item.id, "artists");
                 break;
@@ -711,12 +769,17 @@ export const retrieveEventsForUser = async function (user_id: string, page: numb
             case "playlists":
                 e.item = await retrievePlaylist(e.item.id, false);
                 break;
+            case "albums":
+                e.item = formatAlbum(albums.find(a => a.id === e.item.id));
+                break;
             default:
-                throw new Error(`Unknown type of item in event ${e.id}`);
+                throw new Error(`Unknown type of item in event ${e.id}. ${e.item.type}`);
         }
     }
+
     return events;
 }
+
 
 
 /**
@@ -830,9 +893,9 @@ export const milliToHighestOrder = function (milliseconds) {
  * @param query
  * @param type
  * @param limit
- * @returns Artist | Song
+ * @returns Promise<Array<any>>
  */
-export const retrieveSearchResults = async function (query: string, type: "artists" | "songs" | "albums", limit : number = 10) {
+export const retrieveSearchResults = async function (query: string, type: "artists" | "songs" | "albums", limit: number = 10) {
     let typeParam;
     switch (type) {
         case 'artists':
@@ -925,7 +988,7 @@ export const retrievePlaylists = async function (user_id: string) {
 export const retrievePlaylist = async function (playlist_id: string, retrieveTracks: boolean = true) {
     let playlist = await fetchData(`playlists/${playlist_id}`).catch(err => console.warn(err));
 
-    if(!playlist){
+    if (!playlist) {
         return null;
     }
 
@@ -1070,7 +1133,7 @@ export const isLoggedIn = function () {
 export const retrieveDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
     const cacheID = `${user_id}_${term}`;
     //console.log(`Has ${cacheID}: `, dp_cache.has(cacheID));
-    if(dp_cache.has(cacheID)){
+    if (dp_cache.has(cacheID)) {
         console.log(`[Cache] Returning cached datapoint.`)
         return dp_cache.get(cacheID);
     }
@@ -1101,7 +1164,7 @@ export const retrieveDatapoint = async function (user_id: string, term: "short_t
 
 
     currDatapoint = formatDatapoint(currDatapoint);
-    dp_cache.set(cacheID, currDatapoint )
+    dp_cache.set(cacheID, currDatapoint)
     return currDatapoint;
 }
 
@@ -1190,7 +1253,7 @@ const formatDatapoint = function (d: Datapoint) {
     return d;
 };
 export const retrieveLoggedUserID = async function () {
-    if(!me){
+    if (!me) {
         me = await fetchData('me');
     }
     return me.id;
@@ -1201,9 +1264,9 @@ export const retrieveLoggedUserID = async function () {
  * @returns User
  */
 export const retrieveUser = async function (user_id: string) {
-    if(user_cache.has(user_id)){
+    if (user_cache.has(user_id)) {
         return user_cache.get(user_id);
-    }else{
+    } else {
         const user = await getUser(user_id);
         user_cache.set(user_id, user);
         return user;
@@ -1294,16 +1357,16 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Arr
         return [];
     }
 
-    let albums : Array<Album>;
+    let albums: Array<Album>;
 
-    if(albums_cache.has(artistID)){
+    if (albums_cache.has(artistID)) {
         console.log('[Cache] Returning cached albums.')
         albums = albums_cache.get(artistID);
-    }else{
+    } else {
         albums = (await fetchData(`artists/${artistID}/albums`)).items;
         const albumPromises = albums.map((album) => fetchData(`albums/${album.id}/tracks`));
         const albumTracks = await Promise.all(albumPromises);
-        albums.forEach((a,i) => {
+        albums.forEach((a, i) => {
             a.tracks = albumTracks[i].items;
             albums_cache.set(artistID, albums);
         });
@@ -1508,16 +1571,16 @@ export const hydrateDatapoints = async function () {
         const unresolvedIDs = [];
         datapoint.top_songs.forEach(s => {
             s.artists.forEach(a => {
-                if(!artist_cache[a.artist_id]) {
+                if (!artist_cache[a.artist_id]) {
                     unresolvedIDs.push(a.artist_id);
                 }
             })
         });
-        if(unresolvedIDs.length > 0){
+        if (unresolvedIDs.length > 0) {
             const resolvedArtists = await batchArtists(unresolvedIDs);
             resolvedArtists.forEach(a => artist_cache[a.artist_id] = a);
         }
-        for(let song of datapoint.top_songs){
+        for (let song of datapoint.top_songs) {
             song.artists = song.artists.map(a => artist_cache[a.artist_id]);
         }
         datapoints.push(datapoint);

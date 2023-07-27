@@ -128,20 +128,21 @@ export const StatBlock = (props: {
     )
 }
 
-export function LoadingObject(props: { num: number, height? : number }) {
+export function LoadingObject(props: { num: number, height?: number }) {
 
     const {num, height = 156} = props;
 
     const arr = [];
 
-    for(let i = 0; i < num; i++) {
+    for (let i = 0; i < num; i++) {
         arr.push(i);
     }
 
     return (
         <div style={{width: '100%', height: '100%'}}>
             <div className="loading-object-instance">
-                {arr.map(i => <div className="animated-background" key={`loading_object_${i}`} style={{animationDelay: `${i / 10}s`, height: `${height}px`}}></div>)}
+                {arr.map(i => <div className="animated-background" key={`loading_object_${i}`}
+                                   style={{animationDelay: `${i / 10}s`, height: `${height}px`}}></div>)}
             </div>
         </div>
     )
@@ -316,7 +317,11 @@ export function CommentSection(props: { sectionID: string, owner: User, isAdmin:
                         </div>
                         <div style={{margin: "0 0 0 auto", width: "max-content"}}>
                             <button className="std-button"
-                                    style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} type={"button"} onClick={handleSubmit}>
+                                    style={{
+                                        background: 'rgba(125, 125, 125, 0.1)',
+                                        borderColor: 'rgba(125, 125, 125, 0.2)',
+                                        borderTop: "none"
+                                    }} type={"button"} onClick={handleSubmit}>
                                 Submit
                             </button>
                         </div>
@@ -396,7 +401,10 @@ export const SimpleModal = (props: {
 
     return (
         <dialog id={id}>
-            <button className={'modal-exit-button'} onClick={() => {setShowModal(false);}}>x</button>
+            <button className={'modal-exit-button'} onClick={() => {
+                setShowModal(false);
+            }}>x
+            </button>
             {children}
         </dialog>
     )
@@ -412,7 +420,15 @@ export const SelectionModal = (props: {
     rating?: boolean
 }) => {
 
-    const {showModal, setShowModal, onSubmit, onModify = null, description = false, rating = false, modifyTarget = null} = props;
+    const {
+        showModal,
+        setShowModal,
+        onSubmit,
+        onModify = null,
+        description = false,
+        rating = false,
+        modifyTarget = null
+    } = props;
     const [searchResults, setSearchResults] = useState(null);
     const [selectedItem, setSelectedItem] = useState(modifyTarget);
     const [processing, setProcessing] = useState(false);
@@ -482,7 +498,11 @@ export const SelectionModal = (props: {
                     />
                     <div style={{width: "max-content", marginLeft: 'auto'}}>
                         <button className="std-button"
-                                style={{background: 'rgba(125, 125, 125, 0.1)', borderColor: 'rgba(125, 125, 125, 0.2)', borderTop: "none"}} type={"button"} onClick={handleSearch}>
+                                style={{
+                                    background: 'rgba(125, 125, 125, 0.1)',
+                                    borderColor: 'rgba(125, 125, 125, 0.2)',
+                                    borderTop: "none"
+                                }} type={"button"} onClick={handleSearch}>
                             Search
                         </button>
                     </div>
@@ -564,11 +584,17 @@ export const SelectionModal = (props: {
                                             if (!!modifyTarget) {
                                                 setProcessing(true);
                                                 onModify(selectedItem, type, descriptionRef.current.value, stars).then(
-                                                    () => { setProcessing(false); successCleanup(); });
+                                                    () => {
+                                                        setProcessing(false);
+                                                        successCleanup();
+                                                    });
                                             } else {
                                                 setProcessing(true);
                                                 onSubmit(selectedItem, type, descriptionRef.current.value, stars).then(
-                                                    () => { setProcessing(false); successCleanup(); });
+                                                    () => {
+                                                        setProcessing(false);
+                                                        successCleanup();
+                                                    });
                                             }
                                         }}>
                                     Submit

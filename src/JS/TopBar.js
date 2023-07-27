@@ -74,7 +74,7 @@ const TopBar = () => {
 
     return (
         <header className='header-pin'>
-            <div className="header">
+            <div className="header" style={(windowWidth < 700) ? {background: 'var(--bg-colour)'} : {}}>
                 <div>
                     {(windowWidth > 700) ?
                         <div className={'element-container'}>
@@ -83,7 +83,7 @@ const TopBar = () => {
                             </a>
                             {
                                 redirects.map(r => {
-                                  return <RedirectElement key={r.title} {...r} />
+                                    return <RedirectElement key={r.title} {...r} />
                                 })
                             }
                             <Search showSearchResults/>
