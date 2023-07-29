@@ -215,7 +215,7 @@ export function ValueIndicator(props: { value: number, diameter?: number }) {
     return (
         <div style={{
             padding: '3px',
-            border: `3px solid var(--primary-colour)`,
+            border: `2px solid rgba(125,125,125, 0.5)`,
             borderRadius: '100%',
             height: 'max-content',
             width: 'max-content',
@@ -235,7 +235,7 @@ export function ValueIndicator(props: { value: number, diameter?: number }) {
                     position: 'absolute',
                     height: `${diameter + 2 * padding}px`,
                     width: `${diameter + 2 * padding}px`,
-                    background: 'var(--accent-colour)',
+                    background: 'rgba(125,125,125, 0.25)',
                     top: '0',
                     left: '0',
                     animation: 'rise 1s ease-out'

@@ -65,7 +65,7 @@ const TopBar = () => {
 
     const updateSize = () => {
         setWindowWidth(window.innerWidth);
-        if (window.innerWidth > 700 && isMenuOpen) {
+        if (window.innerWidth > 800 && isMenuOpen) {
             setIsMenuOpen(false);
         }
     }
@@ -74,9 +74,9 @@ const TopBar = () => {
 
     return (
         <header className='header-pin'>
-            <div className="header" style={(windowWidth < 700) ? {background: 'var(--bg-colour)'} : {}}>
+            <div className="header" style={(windowWidth < 800) ? {background: 'var(--bg-colour)'} : {}}>
                 <div>
-                    {(windowWidth > 700) ?
+                    {(windowWidth > 800) ?
                         <div className={'element-container'}>
                             <a id='logo' href={'/'}>
                                 <BlurOn fontSize={'large'}/>

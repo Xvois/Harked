@@ -12,11 +12,8 @@
     position: relative;
 
     gap: 15px;
-
-    margin-left: auto;
     margin-bottom: 15px;
 
-    overflow: hidden;
 }
 
 @media screen and (max-width: 700px) {

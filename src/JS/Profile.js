@@ -1373,26 +1373,27 @@ const Profile = () => {
                                                   playlists={playlists}
                                                   datapoint={selectedDatapoint} type={type} start={0} end={9}
                                                   term={terms[termIndex]} isOwnPage={isOwnPage}/>
-                                    <div className={'section-footer'}>
-                                        {type === 'songs' ?
-                                            <div style={{textAlign: 'left'}}>
-                                                <p style={{
-                                                    margin: '16px 0 0 0',
-                                                    textTransform: 'uppercase'
-                                                }}>{possessive}</p>
-                                                <h2 style={{margin: '0', textTransform: 'uppercase'}}>average song
-                                                    stats</h2>
-                                                <p style={{
-                                                    margin: '0 0 16px 0',
-                                                    textTransform: 'uppercase'
-                                                }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
-                                                <p>All of {possessive} taste in music
-                                                    of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described
-                                                    in one place.</p>
-                                                <SongAnalysisAverage selectedDatapoint={selectedDatapoint}/>
-                                            </div>
-                                            :
-                                            type === 'artists' ?
+                                    {type !== 'genres' &&
+                                        <div className={'section-footer'}>
+                                            {type === 'songs' ?
+                                                <div style={{textAlign: 'left'}}>
+                                                    <p style={{
+                                                        margin: '16px 0 0 0',
+                                                        textTransform: 'uppercase'
+                                                    }}>{possessive}</p>
+                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>average song
+                                                        stats</h2>
+                                                    <p style={{
+                                                        margin: '0 0 16px 0',
+                                                        textTransform: 'uppercase'
+                                                    }}>Of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]}</p>
+                                                    <p>All of {possessive} taste in music
+                                                        of {termIndex !== 2 ? 'the last' : ''} {translateTerm[terms[termIndex]]} described
+                                                        in one place.</p>
+                                                    <SongAnalysisAverage selectedDatapoint={selectedDatapoint}/>
+                                                </div>
+                                                :
+                                                type === 'artists' &&
                                                 <div style={{textAlign: 'left'}}>
                                                     <p style={{
                                                         margin: '16px 0 0 0',
@@ -1406,27 +1407,9 @@ const Profile = () => {
                                                     <TopSongsOfArtists selectedDatapoint={selectedDatapoint}
                                                                        number={10}/>
                                                 </div>
-                                                :
-                                                <div style={{textAlign: 'left', width: '100%'}}>
-                                                    <p style={{
-                                                        margin: '16px 0 0 0',
-                                                        textTransform: 'uppercase'
-                                                    }}>{possessive}</p>
-                                                    <h2 style={{margin: '0', textTransform: 'uppercase'}}>top
-                                                        artists</h2>
-                                                    <p style={{
-                                                        margin: '0 0 16px 0',
-                                                        textTransform: 'uppercase'
-                                                    }}>for each genre</p>
-                                                    <p>The distribution of artists that contribute most
-                                                        to {possessive} listening time
-                                                        in each of {possessive} top 10 genres.</p>
-                                                    <GenreBreakdown selectedDatapoint={selectedDatapoint}
-                                                                    pageUser={pageUser} allDatapoints={allDatapoints}
-                                                                    term={terms[termIndex]}/>
-                                                </div>
-                                        }
-                                    </div>
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             )
                         })}

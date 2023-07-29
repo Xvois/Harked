@@ -8,8 +8,6 @@
 .review-description {
     flex-grow: 1;
     padding: 15px;
-    background: var(--transparent-colour);
-    border: 1px solid var(--transparent-border-colour);
 }
 
 @media screen and (max-width: 650px) {

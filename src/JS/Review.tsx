@@ -71,8 +71,7 @@ const Review = () => {
                             margin: '16px 0 0 0',
                             textTransform: 'uppercase'
                         }}>{possessive}</p>
-                        <h3 style={{margin: '0', textTransform: 'uppercase'}}>Review comments</h3>
-                        <p>Have anything to add to {possessive} review of {getLIName(review.item)}?</p>
+                        <h3 style={{marginBottom: '15px', marginTop: '0', textTransform: 'uppercase'}}>Review comments</h3>
                     </div>
                 </div>
                 <CommentSection sectionID={id} owner={review.owner} isAdmin={false}/>

@@ -110,7 +110,7 @@ const Comparison = () => {
                     marginTop: '15px',
                     width: 'max-content'
                 } : {marginTop: '15px', width: 'max-content'}}>
-                    <a className={'std-button'} href={`/profile/${user.user_id}`}>View profile</a>
+                    <a className={'subtle-button'} href={`/profile/${user.user_id}`}>View profile</a>
                 </div>
             </div>
         )

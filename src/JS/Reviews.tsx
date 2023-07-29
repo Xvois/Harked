@@ -22,7 +22,7 @@ import {
     ValueIndicator
 } from "./SharedComponents.tsx";
 import {getItemType, getLIDescription, getLIName} from "./Analysis";
-import {capitalize, Checkbox, FormControlLabel, FormGroup} from "@mui/material";
+import {capitalize} from "@mui/material";
 import "./../CSS/Reviews.css";
 import {Bar} from "react-chartjs-2";
 import {BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip,} from 'chart.js';
@@ -469,7 +469,7 @@ const Reviews = () => {
     const decrementPage = async () => {
         const nextPage = reviewsPage;
         setReviewsPage(adjacentPages[0]);
-        if (page - 2 < 0) {
+        if (page - 2 <= 0) {
             // If there is no previous page, set the adjacent pages to [null, nextPage]
             setAdjacentPages([null, nextPage]);
         } else {
@@ -590,54 +590,17 @@ const Reviews = () => {
                                 </div>
                             }
                         </div>
-                        {reviewsPage?.items.length > 0 && reviewsPage !== null &&
-                            <div className={'mod-section'}>
-                                <div>
-                                    <p>Order</p>
-                                    <select defaultValue={"newest"} onChange={handleOrderChange}>
-                                        <option value={"newest"}>Newest</option>
-                                        <option value={"oldest"}>Oldest</option>
-                                        <option value={"highestRating"}>Highest rating</option>
-                                        <option value={"lowestRating"}>Lowest rating</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <p>Item types</p>
-                                    <FormGroup>
-                                        <FormControlLabel
-                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"albums"}
-                                                               sx={{
-                                                                   color: 'var(--secondary-colour)',
-                                                                   '&.Mui-checked': {
-                                                                       color: 'var(--primary-colour)',
-                                                                   },
-                                                               }}
-                                            />}
-                                            label="Albums"/>
-                                        <FormControlLabel
-                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"artists"}
-                                                               sx={{
-                                                                   color: 'var(--secondary-colour)',
-                                                                   '&.Mui-checked': {
-                                                                       color: 'var(--primary-colour)',
-                                                                   },
-                                                               }}
-                                            />}
-                                            label="Artists"/>
-                                        <FormControlLabel
-                                            control={<Checkbox defaultChecked onChange={handleFilterChange} name={"songs"}
-                                                               sx={{
-                                                                   color: 'var(--secondary-colour)',
-                                                                   '&.Mui-checked': {
-                                                                       color: 'var(--primary-colour)',
-                                                                   },
-                                                               }}
-                                            />}
-                                            label="Songs"/>
-                                    </FormGroup>
-                                </div>
+                        <div className={'mod-section'}>
+                            <div>
+                                <p>Order</p>
+                                <select defaultValue={"newest"} onChange={handleOrderChange}>
+                                    <option value={"newest"}>Newest</option>
+                                    <option value={"oldest"}>Oldest</option>
+                                    <option value={"highestRating"}>Highest rating</option>
+                                    <option value={"lowestRating"}>Lowest rating</option>
+                                </select>
                             </div>
-                        }
+                        </div>
                     </div>
                     {reviewsPage && reviewsPage?.totalPages > 1 && (
                         <div style={{display: 'flex', justifyContent: 'center', marginBottom: '15px'}}>
