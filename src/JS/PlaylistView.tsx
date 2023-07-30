@@ -10,14 +10,13 @@ import {
     Song,
     User
 } from "./HDM.ts";
-import {LoadingIndicator, PageError} from "./SharedComponents.tsx";
+import {LoadingIndicator, PageError, StyledField} from "./SharedComponents.tsx";
 import {getLIDescription, getLIName, getPlaylistAnalysis} from "./Analysis"
 import "./../CSS/PlaylistView.css"
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import {useParams} from "react-router-dom";
-import {Textarea} from "@mui/joy";
 
 interface Playlist {
     playlist_id: string,
@@ -133,7 +132,7 @@ const AnnotationEditModal = (props: {
                 <h3>Write an annotation.</h3>
                 <p>Describe the importance of this song in this playlist.</p>
             </div>
-            <button id={'modal-exit-button'} onClick={() => {
+            <button className={'modal-exit-button'} onClick={() => {
                 setIsOpen(false);
                 const modal = document.getElementById('annotation-editor-modal') as HTMLDialogElement;
                 modal.close();
@@ -141,7 +140,14 @@ const AnnotationEditModal = (props: {
             }
             >x
             </button>
-            <Textarea/>
+            <StyledField
+                fullWidth
+                variant='outlined'
+                rows={2}
+                multiline
+                inputRef={annotationRef}
+                inputProps={{maxLength: 100}}
+            />
             <div id={'annotation-modal-button-wrapper'}>
                 {metadata?.meta[targetSong?.song_id] !== undefined && (
                     <button className={'subtle-button'} onClick={removeAnnotation}>Delete</button>
