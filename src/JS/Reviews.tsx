@@ -23,6 +23,7 @@ import {
 } from "./SharedComponents.tsx";
 import {getItemType, getLIDescription, getLIName} from "./Analysis";
 import {capitalize} from "@mui/material";
+import NotesSharpIcon from '@mui/icons-material/NotesSharp';
 import "./../CSS/Reviews.css";
 import {Bar} from "react-chartjs-2";
 import {BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip,} from 'chart.js';
@@ -65,13 +66,17 @@ const ReviewsList = (props: {
                     <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
                     <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
                     <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
+                    <div className={'placeholder'} style={{width: '332px', height: '516px'}}/>
                 </>
             }
         </div>
     )
 }
 
-const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDelete: Function }) => {
+export const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDelete: Function }) => {
     const {review, isOwnPage, handleDelete} = props;
 
     const created = new Date(review.created);
@@ -86,6 +91,11 @@ const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDelete: F
                    href={`/review/${review.id}`}/>
             }
             <div className={'review-heading'}>
+                {review.description &&
+                    <div style={{position: 'absolute', top: 15, right: 15}}>
+                        <NotesSharpIcon fontSize={'small'} />
+                    </div>
+                }
                 <p style={{
                     margin: 0,
                     color: 'var(--secondary-colour)'
@@ -500,33 +510,39 @@ const Reviews = () => {
                 if (loggedID === user_id) {
                     window.location.href = '/reviews/me';
                 }
-            }
-
-            if (pageID === "me") {
-                setPossessive('your');
-                user_id = loggedID;
-            }
-            const u: User = await retrieveUser(user_id);
-            setPageUser(u);
-            if (!u) {
+                if (pageID === "me") {
+                    setPossessive('your');
+                    user_id = loggedID;
+                }
+                const u: User = await retrieveUser(user_id);
+                setPageUser(u);
+                if (!u) {
+                    setIsError(true);
+                    setErrorDetails({
+                        description: "This user's reviews can't be found right now.",
+                        errCode: "user_is_undefined"
+                    });
+                } else {
+                    // Retrieve and set the initial data for reviews and unresolved reviews
+                    const r = await retrievePaginatedReviews(user_id, 1, perPage, sort);
+                    setReviewsPage(r);
+                    const a = await retrievePaginatedReviews(user_id, 2, perPage, sort);
+                    setAdjacentPages([null, a]);
+                    const unresolved = await retrieveUnresolvedReviews(user_id);
+                    setUnresolvedReviews(unresolved);
+                    console.log(unresolved);
+                    if (pageID !== "me") {
+                        setPossessive(`${u.username}'s`);
+                    }
+                }
+            }else {
                 setIsError(true);
                 setErrorDetails({
-                    description: "This user's reviews can't be found right now.",
-                    errCode: "user_is_undefined"
+                    description: "You must be logged in to view user reviews.",
+                    errCode: null
                 });
-            } else {
-                // Retrieve and set the initial data for reviews and unresolved reviews
-                const r = await retrievePaginatedReviews(user_id, 1, perPage, sort);
-                setReviewsPage(r);
-                const a = await retrievePaginatedReviews(user_id, 2, perPage, sort);
-                setAdjacentPages([null, a]);
-                const unresolved = await retrieveUnresolvedReviews(user_id);
-                setUnresolvedReviews(unresolved);
-                console.log(unresolved);
-                if (pageID !== "me") {
-                    setPossessive(`${u.username}'s`);
-                }
             }
+
         };
 
         // Fetch data for the user's reviews on component mount

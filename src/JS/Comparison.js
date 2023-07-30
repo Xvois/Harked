@@ -10,18 +10,21 @@ import './../CSS/Comparison.css';
 import './../CSS/Profile.css';
 import './../CSS/Focus.css';
 
-import {retrieveDatapoint, retrieveUser} from "./HDM.ts";
+import {resolveItems, retrieveDatapoint, retrieveUnresolvedReviews, retrieveUser} from "./HDM.ts";
 import {
     analyticsMetrics,
     calculateSimilarity,
     getAverageAnalytics,
     getGenresRelatedArtists,
+    getItemType,
     getLIDescription,
     getLIName,
     getMatchingItems,
     translateAnalytics
 } from "./Analysis";
-import {StatBlock, ValueIndicator} from "./SharedComponents.tsx";
+import {StatBlock, StyledRating, ValueIndicator} from "./SharedComponents.tsx";
+import NotesSharpIcon from "@mui/icons-material/NotesSharp";
+import {capitalize} from "@mui/material";
 
 const Comparison = () => {
     let re = /[^#&]+/g;
@@ -149,6 +152,71 @@ const Comparison = () => {
         )
     }
 
+    function MatchingReviews() {
+        const [matchingReviews, setMatchingReviews] = useState(undefined);
+
+        useEffect(() => {
+            const fetchData = async () => {
+                const u0Reviews = await retrieveUnresolvedReviews(users[0].user_id);
+                const u1Reviews = await retrieveUnresolvedReviews(users[1].user_id);
+                let matches = u0Reviews.flatMap(r0 =>
+                    u1Reviews
+                        .filter(r1 => r0.item && r1.item && r0.item.id === r1.item.id && r0.item.type === r1.item.type)
+                        .map(r1 => [r0, r1])
+                );
+                for (let match of matches) {
+                    await resolveItems(match);
+                }
+                setMatchingReviews(matches);
+                console.log(matches);
+            }
+            if(users){
+                fetchData();
+            }
+        }, [users]);
+
+        return (
+            matchingReviews?.length > 0 ?
+            <div className={'block-wrapper'} style={{width: '100%'}}>
+                    {matchingReviews.map(match => {
+                        return <div className={'stat-block'}>
+                            <p style={{
+                                margin: 0,
+                                color: 'var(--secondary-colour)'
+                            }}>{capitalize(getItemType(match[0].item).slice(0, getItemType(match[0].item).length - 1))}</p>
+                            <a className={'heavy-link'} href={match[0].item.link} style={{margin: 0}}>{getLIName(match[0].item)}</a>
+                            <p style={{margin: 0}}>{getLIDescription(match[0].item)}</p>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '5px', margin: '20px 0 0 0'}}>
+                                <div style={{display: 'flex', flexDirection: 'column', position: 'relative', width: 'max-content'}}>
+                                    {match[0].description &&
+                                        <div style={{position: 'absolute', top: 0, right: 0}}>
+                                            <NotesSharpIcon fontSize={'small'} />
+                                        </div>
+                                    }
+                                    <a className={'heavy-link'} href={`/review/${match[0].id}`} style={{margin: 0}}>{users[0].username}</a>
+                                    <StyledRating
+                                        readOnly
+                                        value={match[0].rating}
+                                        precision={0.5}
+                                    />
+                                </div>
+                                <div style={{display: 'flex', flexDirection: 'column', position: 'relative', width: 'max-content'}}>
+                                    <a className={'heavy-link'} href={`/review/${match[1].id}`} style={{margin: 0}}>{users[1].username}</a>
+                                    <StyledRating
+                                        readOnly
+                                        value={match[1].rating}
+                                        precision={0.5}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    })}
+                </div>
+                :
+                <p>It looks like {users[0].username} and {users[1].username} don't have any reviews in common.</p>
+        )
+    }
+
     return (
         <>
             {
@@ -217,6 +285,16 @@ const Comparison = () => {
                         </div>
                         <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
                             <MatchingItems type={'artists'}/>
+                        </div>
+                        <div style={{textAlign: 'center', margin: '50px 0 0 0'}}>
+                            <p style={{
+                                margin: '0',
+                                textTransform: 'uppercase'
+                            }}>A look at</p>
+                            <h2 style={{margin: '0 0 16px 0', textTransform: 'uppercase'}}>Matching reviews</h2>
+                        </div>
+                        <div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                            <MatchingReviews />
                         </div>
                     </div>
                     :

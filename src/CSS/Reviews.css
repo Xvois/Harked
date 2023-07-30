@@ -39,12 +39,12 @@
     transition: all 0.2s ease-out;
     background: var(--transparent-colour);
     border: 1px solid var(--transparent-border-colour);
+
+    animation: fadeIn 0.2s ease-out;
 }
 
 .review-heading {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    position: relative;
     flex-grow: 1;
     justify-content: space-between;
     padding: 15px;

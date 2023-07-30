@@ -21,6 +21,7 @@ function Homepage() {
 
     const handleLogOut = () => {
         window.localStorage.clear();
+        window.location.reload();
     }
 
     let exploreMessage = "Begin by exploring your own profile from a new perspective, or maybe discovering how you compare to others? It's your choice.";
@@ -53,7 +54,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.5</span></p>
+                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.6</span></p>
             </div>
         </div>
     );

@@ -270,7 +270,6 @@ export const genresToRefIDs = async (genres) => {
     return ids;
 }
 export const songsToRefIDs = async (songs) => {
-    console.log(databaseCache);
     if (databaseCache.songs.length === 0) {
         await updateDatabaseCache(['songs']);
     }

@@ -2,12 +2,18 @@
 .full-review-wrapper {
     display: flex;
     flex-direction: row;
+    padding: 15px;
     gap: 15px;
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
 }
 
 .review-description {
+    height: max-content;
     flex-grow: 1;
     padding: 15px;
+    background: var(--transparent-colour);
+    border: 1px solid var(--transparent-border-colour);
 }
 
 @media screen and (max-width: 650px) {

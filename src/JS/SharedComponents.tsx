@@ -470,8 +470,7 @@ export const SelectionModal = (props: {
             {selectedItem === null ?
                 <div style={{justifyContent: 'right'}}>
                     <button className={'modal-exit-button'} onClick={() => {
-                        setShowModal(false);
-                        setSearchResults(null)
+                        successCleanup();
                     }}>x
                     </button>
                     <h3 style={{margin: 0}}>Type</h3>

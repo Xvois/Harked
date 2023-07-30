@@ -549,18 +549,13 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
             }
     }
 }
-
 /**
- * Retrieves all reviews from a user.
- * @param user_id
+ * This function will resolve the items in an array of records with
+ * item objects in them. It works directly off the object references so returns
+ * nothing.
+ * @param unresolvedItemRecords
  */
-export const retrievePaginatedReviews = async (user_id: string, page: number, itemsPerPage: number, sort: string = "-created") => {
-    let reviewsPage = await getPagedLocalData("reviews", itemsPerPage, page, `owner.user_id="${user_id}"`, sort);
-    let reviews = reviewsPage.items;
-    if (reviews === undefined) {
-        return [];
-    }
-
+export const resolveItems = async (unresolvedItemRecords) => {
     const resolveAlbums = async (reviewBatch) => {
         const albumIds = reviewBatch
             .filter((e) => e.item.type === "albums")
@@ -585,8 +580,8 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
         }
     };
 
-    for (let i = 0; i < reviews.length; i++) {
-        let e = reviews[i];
+    for (let i = 0; i < unresolvedItemRecords.length; i++) {
+        let e = unresolvedItemRecords[i];
         if (e.item.type === "artists") {
             let artist: Artist = await getLocalDataByID("artists", e.item.id, "genres");
             artist.genres = artist.expand.genres;
@@ -606,7 +601,21 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
     }
 
     // Resolve albums in the end to ensure all the batches are processed
-    await resolveAlbums(reviews);
+    await resolveAlbums(unresolvedItemRecords);
+}
+
+/**
+ * Retrieves all reviews from a user.
+ * @param user_id
+ */
+export const retrievePaginatedReviews = async (user_id: string, page: number, itemsPerPage: number, sort: string = "-created") => {
+    let reviewsPage = await getPagedLocalData("reviews", itemsPerPage, page, `owner.user_id="${user_id}"`, sort);
+    let reviews = reviewsPage.items;
+    if (reviews === undefined) {
+        return [];
+    }
+
+    await resolveItems(reviews);
 
     return reviewsPage;
 };
@@ -737,45 +746,7 @@ export const retrieveEventsForUser = async function (user_id: string, page: numb
 
     const events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
 
-    // Extract album IDs from events
-    const albumIds = events
-        .filter(e => e.item.type === "albums")
-        .map(e => e.item.id);
-
-    let albums : Album[];
-
-    // Batch process albums if there are any to fetch
-    if (albumIds.length > 0) {
-        const batchSize = 20;
-        for (let i = 0; i < albumIds.length; i += batchSize) {
-            const batchIds = albumIds.slice(i, i + batchSize);
-            albums = (await fetchData(`albums?ids=${batchIds.join(",")}`)).albums;
-        }
-    }
-
-    // Resolve other types of items for remaining events
-    for (const e of events) {
-        e.owner = followingMap.get(e.owner);
-        switch (e.item.type) {
-            case "songs":
-                e.item = await getLocalDataByID("songs", e.item.id, "artists");
-                break;
-            case "artists":
-                e.item = await getLocalDataByID("artists", e.item.id, "genres");
-                break;
-            case "users":
-                e.item = await getLocalDataByID("users", e.item.id);
-                break;
-            case "playlists":
-                e.item = await retrievePlaylist(e.item.id, false);
-                break;
-            case "albums":
-                e.item = formatAlbum(albums.find(a => a.id === e.item.id));
-                break;
-            default:
-                throw new Error(`Unknown type of item in event ${e.id}. ${e.item.type}`);
-        }
-    }
+    await resolveItems(events);
 
     return events;
 }

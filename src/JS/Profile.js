@@ -1429,7 +1429,7 @@ const Profile = () => {
                                         :
                                         <>
                                             <p>Viewing someone's playlists requires being logged in.</p>
-                                            <button className={'std-button'} onClick={handleAlternateLogin}>Log-in
+                                            <button className={'subtle-button'} onClick={handleAlternateLogin}>Log-in
                                             </button>
                                         </>
                                     }
@@ -1470,7 +1470,7 @@ const Profile = () => {
                                         :
                                         <>
                                             <p>Viewing someone's recommendations requires being logged in.</p>
-                                            <button className={'std-button'} onClick={handleAlternateLogin}>Log-in
+                                            <button className={'subtle-button'} onClick={handleAlternateLogin}>Log-in
                                             </button>
                                         </>
                                     }
@@ -1496,8 +1496,18 @@ const Profile = () => {
                                         textTransform: 'uppercase'
                                     }}>{possessive}</p>
                                     <h2 style={{margin: '0', textTransform: 'uppercase'}}>Reviews</h2>
-                                    <p>Have a look at {possessive} reviews on albums, artists and songs.</p>
-                                    <a className={'subtle-button'} href={`/reviews/${pageUser.user_id}`}>View</a>
+                                    {isLoggedIn() ?
+                                        <>
+                                            <p>Have a look at {possessive} reviews on albums, artists and songs.</p>
+                                            <a className={'subtle-button'} href={`/reviews/${pageUser.user_id}`}>View</a>
+                                        </>
+                                        :
+                                        <>
+                                            <p>Viewing someone's reviews requires being logged in.</p>
+                                            <button className={'subtle-button'} onClick={handleAlternateLogin}>Log-in
+                                            </button>
+                                        </>
+                                    }
                                 </div>
                             </div>
                         </div>
