@@ -186,7 +186,7 @@ const Comparison = () => {
                             }}>{capitalize(getItemType(match[0].item).slice(0, getItemType(match[0].item).length - 1))}</p>
                             <a className={'heavy-link'} href={match[0].item.link} style={{margin: 0}}>{getLIName(match[0].item)}</a>
                             <p style={{margin: 0}}>{getLIDescription(match[0].item)}</p>
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '5px', margin: '20px 0 0 0'}}>
+                            <div style={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px', margin: '20px 0 0 0'}}>
                                 <div style={{display: 'flex', flexDirection: 'column', position: 'relative', width: 'max-content'}}>
                                     {match[0].description &&
                                         <div style={{position: 'absolute', top: 0, right: 0}}>
