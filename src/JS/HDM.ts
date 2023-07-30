@@ -744,7 +744,14 @@ export const retrieveEventsForUser = async function (user_id: string, page: numb
     const conditions = following.map(u => `owner.id = "${u.id}"`);
     const filter = conditions.join(" || ");
 
-    const events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
+    let events: Array<UserEvent> = await getLocalData("events", filter, '-created', page, eventsPerPage);
+
+    // Replace the owner.id with the actual user object in the events array
+    events.forEach(event => {
+        if (event.owner && followingMap.has(event.owner)) {
+            event.owner = followingMap.get(event.owner);
+        }
+    });
 
     await resolveItems(events);
 

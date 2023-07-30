@@ -12,6 +12,7 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
     const time = milliToHighestOrder(milliDiff);
 
     const getDescription = () => {
+        console.log(event.owner)
         const itemType = getItemType(event.item);
         switch (event.ref_num) {
             case 1:
