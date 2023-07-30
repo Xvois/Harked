@@ -62,7 +62,7 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
             <div>
                 {event.ref_num < 51 && <h3 style={{margin: '0 0 10px 0'}}><a
                     style={{textDecoration: 'none', color: 'var(--primary-colour)'}}
-                    href={`/profile#${event.owner.user_id}`}>{event.owner.username}</a></h3>}
+                    href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a></h3>}
                 {getDescription()}
             </div>
             <p style={{
