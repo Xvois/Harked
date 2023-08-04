@@ -374,7 +374,7 @@ export const getItemAnalysis = function (item, type, user, selectedDatapoint, al
                 case "short_term":
                     // If this artist is totally new to them
                     if (indexes[2] === -1 && indexes[1] === -1) {
-                        firstPartArtist = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} discovered ${name}'s music.`;
+                        firstPartArtist = `In the last 4 weeks, ${pronoun} ${pronoun === 'you' ? 'have' : 'has'} shown a new interest in ${name}'s music.`;
                     }
                     // If they have listened to less of this artist in the last 4 weeks than usual
                     else if ((indexes[1] < indexes[0] && indexes[2] < indexes[0]) || (indexes[1] < indexes[0] && indexes[2] === -1)) {

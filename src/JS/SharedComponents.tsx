@@ -12,7 +12,7 @@ import {
     submitComment,
     User
 } from "./HDM.ts"
-import {Rating, Select, styled, TextField} from "@mui/material";
+import {Pagination, Rating, Select, styled, TextField} from "@mui/material";
 import {getLIDescription, getLIName} from "./Analysis"
 
 export const StyledField = styled(TextField)({
@@ -84,6 +84,20 @@ export const StyledRating = styled(Rating)({
         color: 'var(--primary-colour)',
     },
 });
+
+export const StyledPagination = styled(Pagination)({
+    '& .MuiButtonBase-root': {
+        color: 'var(--primary-colour)',
+        background: 'var(--transparent-colour)',
+        borderColor: 'var(--transparent-border-colour)',
+    },
+    '& .MuiPaginationItem-ellipsis': {
+        color: 'var(--primary-colour)'
+    },
+    '& .Mui-selected': {
+        backgroundColor: 'var(--transparent-border-colour)'
+    }
+})
 
 export const StatBlock = (props: {
     name: string,

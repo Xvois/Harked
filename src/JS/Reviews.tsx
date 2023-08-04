@@ -18,6 +18,7 @@ import {
     SelectionModal,
     SimpleModal,
     StyledField,
+    StyledPagination,
     StyledRating,
     ValueIndicator
 } from "./SharedComponents.tsx";
@@ -93,7 +94,7 @@ export const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDe
             <div className={'review-heading'}>
                 {review.description &&
                     <div style={{position: 'absolute', top: 15, right: 15}}>
-                        <NotesSharpIcon fontSize={'small'} />
+                        <NotesSharpIcon fontSize={'small'}/>
                     </div>
                 }
                 <p style={{
@@ -109,8 +110,12 @@ export const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDe
                 />
             </div>
             <div style={{position: 'relative'}}>
-                <img loading={"lazy"} className={'backdrop-image'} style={{filter: 'blur(100px) brightness(100%)', width: '300px', height: '300px', objectFit: 'cover'}} alt={getLIName(review.item)} src={review.item.image}/>
-                <img loading={"lazy"} className={'levitating-image'} style={{width: '300px', height: '300px', objectFit: 'cover'}} alt={getLIName(review.item)} src={review.item.image}/>
+                <img loading={"lazy"} className={'backdrop-image'}
+                     style={{filter: 'blur(100px) brightness(100%)', width: '300px', height: '300px', objectFit: 'cover'}}
+                     alt={getLIName(review.item)} src={review.item.image}/>
+                <img loading={"lazy"} className={'levitating-image'}
+                     style={{width: '300px', height: '300px', objectFit: 'cover'}} alt={getLIName(review.item)}
+                     src={review.item.image}/>
             </div>
             <div style={{display: "flex", justifyContent: 'space-between', alignItems: 'end', width: '100%'}}>
                 <div style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>
@@ -130,7 +135,7 @@ export const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDe
     )
 }
 
-const CreateRecommendationForm = (props: { user_id: string, reviews: Review[], updatePage: Function}) => {
+const CreateRecommendationForm = (props: { user_id: string, reviews: Review[], updatePage: Function }) => {
     const {user_id, reviews, updatePage} = props;
 
     const [showModal, setShowModal] = useState(false);
@@ -268,7 +273,7 @@ const UserDetails = (props: { user: User, possessive: string, numOfReviews: numb
 }
 
 
-const ImportForm = (props: { user_id: string, updatePage: Function}) => {
+const ImportForm = (props: { user_id: string, updatePage: Function }) => {
     const {user_id, updatePage} = props;
     const [completed, setCompleted] = useState(0);
     const [numOfItems, setNumOfItems] = useState(undefined);
@@ -294,6 +299,7 @@ const ImportForm = (props: { user_id: string, updatePage: Function}) => {
 
             return results.flat();
         }
+
         const batchSize = 50;
         const searchResultsPromises = data.map((d) =>
             retrieveSearchResults(d.title + " " + d.artist, "albums", 1)
@@ -302,7 +308,7 @@ const ImportForm = (props: { user_id: string, updatePage: Function}) => {
         const searchResults = await resolveInBatches(searchResultsPromises, batchSize);
         const items = searchResults.flat();
         const reviews = items.map((item, index) => {
-            if(getLIName(item) === data[index].title){
+            if (getLIName(item) === data[index].title) {
                 return {item: item, rating: data[index].rating}
             }
         });
@@ -386,42 +392,6 @@ const ImportForm = (props: { user_id: string, updatePage: Function}) => {
     )
 }
 
-interface PaginationButtonsProps {
-    page: number;
-    totalPages: number;
-    onDecrement: () => Promise<void>;
-    onIncrement: () => Promise<void>;
-}
-
-const PaginationButtons: React.FC<PaginationButtonsProps> = ({ page, totalPages, onDecrement, onIncrement }) => {
-    const [loading, setLoading] = useState(false);
-
-    const handleDecrement = async () => {
-        setLoading(true);
-        await onDecrement();
-        setLoading(false);
-    };
-
-    const handleIncrement = async () => {
-        setLoading(true);
-        await onIncrement();
-        setLoading(false);
-    };
-
-    return (
-        <div style={{display: 'flex', gap: '20px', alignItems: 'center', width: 'max-content'}}>
-            <button className={'subtle-button'} style={{background: 'none'}} disabled={loading || page <= 1} onClick={handleDecrement}>
-                {"<"}-
-            </button>
-            <p>
-                {page} / {totalPages}
-            </p>
-            <button className={'subtle-button'} style={{background: 'none'}} disabled={loading || page >= totalPages} onClick={handleIncrement}>
-                -{">"}
-            </button>
-        </div>
-    );
-};
 
 const Reviews = () => {
     const pageID = (useParams()).id;
@@ -435,17 +405,19 @@ const Reviews = () => {
     const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
     const [page, setPage] = useState(1);
     const [sort, setSort] = useState("-created");
+    const [paginationLoading, setPaginationLoading] = useState(false);
     const perPage = 10;
 
     // Function to update the current page with reviews data and adjacent pages
-    const updatePage = async () => {
+    const updatePage = async (overridePage?: number) => {
+        const targetPage = overridePage || page;
         // Retrieve the current page of reviews
-        const curr = await retrievePaginatedReviews(pageUser.user_id, page, perPage, sort);
+        const curr = await retrievePaginatedReviews(pageUser.user_id, targetPage, perPage, sort);
         setReviewsPage(curr);
 
         // Retrieve the previous and next pages of reviews, if available
-        const prev = page - 1 > 0 ? await retrievePaginatedReviews(pageUser.user_id, page - 1, perPage, sort) : null;
-        const next = page + 1 <= curr.totalPages ? await retrievePaginatedReviews(pageUser.user_id, page + 1, perPage, sort) : null;
+        const prev = targetPage - 1 > 0 ? await retrievePaginatedReviews(pageUser.user_id, targetPage - 1, perPage, sort) : null;
+        const next = targetPage + 1 <= curr.totalPages ? await retrievePaginatedReviews(pageUser.user_id, targetPage + 1, perPage, sort) : null;
 
         // Update the adjacent pages with the previous and next page data
         setAdjacentPages([prev, next]);
@@ -495,6 +467,28 @@ const Reviews = () => {
         setPage(currPage => currPage - 1);
     };
 
+    const handlePageChange = (e, value) => {
+        console.log(value);
+        if (value < page) {
+            setPaginationLoading(true);
+            if (value === page - 1) {
+                // To utilise caching.
+                decrementPage().then(() => setPaginationLoading(false));
+            } else {
+                setPage(value);
+                updatePage(value).then(() => setPaginationLoading(false));
+            }
+        } else if (value > page) {
+            if (value === page + 1) {
+                // To utilise caching.
+                incrementPage().then(() => setPaginationLoading(false));
+            } else {
+                setPage(value);
+                updatePage(value).then(() => setPaginationLoading(false));
+            }
+        }
+    }
+
     // useEffect hook to update reviews page data when the sorting criteria changes
     useEffect(() => {
         updatePage();
@@ -535,7 +529,7 @@ const Reviews = () => {
                         setPossessive(`${u.username}'s`);
                     }
                 }
-            }else {
+            } else {
                 setIsError(true);
                 setErrorDetails({
                     description: "You must be logged in to view user reviews.",
@@ -586,7 +580,8 @@ const Reviews = () => {
             :
             pageUser ?
                 <div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap'}}>
+                    <div
+                        style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap'}}>
                         <UserDetails user={pageUser} possessive={possessive} numOfReviews={reviewsPage?.totalItems}
                                      isOwnPage={isOwnPage}/>
                         <RatingDistribution reviews={unresolvedReviews}/>
@@ -601,7 +596,8 @@ const Reviews = () => {
                             <p>A look at all of {possessive} reviews. Click on any one of them to explore.</p>
                             {isOwnPage &&
                                 <div style={{display: 'flex', gap: '15px'}}>
-                                    <CreateRecommendationForm user_id={pageUser.user_id} reviews={reviewsPage?.items} updatePage={updatePage} />
+                                    <CreateRecommendationForm user_id={pageUser.user_id} reviews={reviewsPage?.items}
+                                                              updatePage={updatePage}/>
                                     <ImportForm user_id={pageUser.user_id} updatePage={updatePage}/>
                                 </div>
                             }
@@ -620,16 +616,14 @@ const Reviews = () => {
                     </div>
                     {reviewsPage && reviewsPage?.totalPages > 1 && (
                         <div style={{display: 'flex', justifyContent: 'center', marginBottom: '15px'}}>
-                            <PaginationButtons
-                                page={page}
-                                totalPages={reviewsPage.totalPages}
-                                onDecrement={decrementPage}
-                                onIncrement={incrementPage}
-                            />
+                            <StyledPagination variant="outlined" shape="rounded" disabled={paginationLoading}
+                                              defaultValue={page} onChange={handlePageChange}
+                                              count={reviewsPage.totalPages}/>
                         </div>
                     )}
                     {reviewsPage?.items.length > 0 || reviewsPage === null ?
-                        <ReviewsList reviews={reviewsPage?.items} isOwnPage={isOwnPage} includedTypes={includedTypes} updatePage={updatePage}/>
+                        <ReviewsList reviews={reviewsPage?.items} isOwnPage={isOwnPage} includedTypes={includedTypes}
+                                     updatePage={updatePage}/>
                         :
                         <p style={{color: 'var(--secondary-colour)'}}>Looks like there aren't any reviews yet.</p>
                     }
