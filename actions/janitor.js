@@ -1,13 +1,15 @@
 const axios = require("axios");
 const request = require("request");
 const AbortController = require('abort-controller'); // Import the polyfill
+const fetch = require('node-fetch'); // Import node-fetch
 
 async function runJanitor() {
 
     const {default: PocketBase} = await import("pocketbase");
 
-    // Provide the polyfill for AbortController
+    // Provide the polyfills for AbortController and fetch
     global.AbortController = AbortController;
+    global.fetch = fetch;
 
 // Spotify API authentication
     let client_id, client_secret, token, pb_email, pb_password = null;

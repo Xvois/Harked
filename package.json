@@ -23,6 +23,7 @@
     "fuse.js": "^6.6.2",
     "helmet": "^6.0.0",
     "lru-cache": "^7.18.3",
+    "node-fetch": "^3.3.2",
     "pocketbase": "^0.14.3",
     "rc-dropdown": "^4.0.1",
     "react": "^18.2.0",
