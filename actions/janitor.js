@@ -22,7 +22,7 @@ async function runJanitor() {
         client_id = process.argv[2];
         client_secret = process.argv[3];
         pb_email = process.argv[4];
-        pb_password = process[5];
+        pb_password = process.argv[5];
     }
 
     console.log({client_id, pb_email, pb_password});

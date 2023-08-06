@@ -22,4 +22,4 @@ jobs:
         run: npm install
 
       - name: Run janitor.js
-        run: node actions/janitor.js '$CLIENT_ID' '$CLIENT_SECRET' '$POCKETBASE_EMAIL' '$POCKETBASE_PASSWORD'
+        run: node actions/janitor.js ${{ secrets.CLIENT_ID }} ${{ secrets.CLIENT_SECRET }} ${{ secrets.POCKETBASE_EMAIL }} ${{ secrets.POCKETBASE_PASSWORD }}
