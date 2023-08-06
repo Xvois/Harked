@@ -1,6 +1,6 @@
-import PocketBase from "pocketbase";
-import axios from "axios";
-import request from "request";
+const PocketBase = require("pocketbase");
+const axios = require("axios");
+const request = require("request");
 
 // Spotify API authentication
 let client_id, client_secret, token, pb_email, pb_password = null;
