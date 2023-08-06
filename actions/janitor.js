@@ -25,6 +25,8 @@ async function runJanitor() {
         pb_password = process[5];
     }
 
+    console.log({client_id, pb_email, pb_password});
+
 
 // PocketBase authentication
     const pb = new PocketBase('https://harked.fly.dev/');
