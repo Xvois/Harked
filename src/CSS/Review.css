@@ -9,7 +9,6 @@
 }
 
 .review-description {
-    height: max-content;
     flex-grow: 1;
     padding: 15px;
     background: var(--transparent-colour);
