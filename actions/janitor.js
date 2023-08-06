@@ -1,7 +1,7 @@
 const axios = require("axios");
 const request = require("request");
 const AbortController = require('abort-controller'); // Import the polyfill
-const fetch = require('node-fetch'); // Import node-fetch
+const fetch = require('cross-fetch'); // Import cross-fetch
 
 async function runJanitor() {
 
