@@ -1,10 +1,9 @@
-
+const axios = require("axios");
+const request = require("request");
 
 async function runJanitor() {
 
-    const PocketBase = await import("pocketbase");
-    const axios = await import("axios");
-    const request = await import("request");
+      const { default: PocketBase } = await import("pocketbase");
 
 // Spotify API authentication
     let client_id, client_secret, token, pb_email, pb_password = null;
