@@ -45,21 +45,15 @@ export const handleAlternateLogin = async () => {
 }
 
 export function reAuthenticate() {
-    const code = window.localStorage.get("code");
-    if (!!code) {
-        const url = new URL(window.location);
-        const params = new URLSearchParams([
-            ["client_id", "a0b3f8d150d34dd79090608621999149"],
-            ["redirect_uri", `${url.origin}/authentication`],
-            ["response_type", "token"],
-            ["scope", ['user-top-read']]
-        ])
-        window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
-        window.location.href = `https://accounts.spotify.com/authorize?${params}`;
-    } else {
-        window.localStorage.clear();
-        handleAlternateLogin();
-    }
+    const url = new URL(window.location);
+    const params = new URLSearchParams([
+        ["client_id", "a0b3f8d150d34dd79090608621999149"],
+        ["redirect_uri", `${url.origin}/authentication`],
+        ["response_type", "token"],
+        ["scope", ['user-top-read']]
+    ])
+    window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
+    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
 
 function Authentication() {
@@ -100,8 +94,10 @@ function Authentication() {
         const url = new URL(window.location);
         const redirectURL = `${url.origin}/authentication`;
 
-        // Store core for use in alternate reauth
-        localStorage.setItem('code', code);
+        if (code) {
+            // Store core for use in alternate reauth
+            localStorage.setItem('code', code);
+        }
 
         // Get provider
         let provider = JSON.parse(localStorage.getItem('provider'));
