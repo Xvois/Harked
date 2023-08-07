@@ -8,9 +8,6 @@ import PocketBase from "pocketbase";
 import {formatUser, hashString, userExists} from "./HDM.ts";
 import {putLocalData} from "./API.ts";
 
-// TODO: FIX ISSUE THAT STATES THAT USERNAME MUST BE IN VALID FORMAT
-// LIKELY AN ISSUE WITH USERNAMES WITH SPACES
-
 const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
 
 
@@ -48,15 +45,21 @@ export const handleAlternateLogin = async () => {
 }
 
 export function reAuthenticate() {
-    const url = new URL(window.location);
-    const params = new URLSearchParams([
-        ["client_id", "a0b3f8d150d34dd79090608621999149"],
-        ["redirect_uri", `${url.origin}/authentication`],
-        ["response_type", "token"],
-        ["scope", ['user-top-read']]
-    ])
-    window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
-    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
+    const code = window.localStorage.get("code");
+    if (!!code) {
+        const url = new URL(window.location);
+        const params = new URLSearchParams([
+            ["client_id", "a0b3f8d150d34dd79090608621999149"],
+            ["redirect_uri", `${url.origin}/authentication`],
+            ["response_type", "token"],
+            ["scope", ['user-top-read']]
+        ])
+        window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
+        window.location.href = `https://accounts.spotify.com/authorize?${params}`;
+    } else {
+        window.localStorage.clear();
+        handleAlternateLogin();
+    }
 }
 
 function Authentication() {
