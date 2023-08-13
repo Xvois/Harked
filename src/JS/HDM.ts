@@ -595,6 +595,9 @@ export const resolveItems = async (unresolvedItemRecords) => {
             e.item = song;
         } else if (e.item.type === "albums") {
             // Albums will be resolved in the batch process
+        } else if (e.item.type === "users") {
+            let user: User = await getLocalDataByID("users", e.item.id);
+            e.item = user;
         } else {
             throw new Error("Unknown type fetched from reviews.");
         }
@@ -757,7 +760,6 @@ export const retrieveEventsForUser = async function (user_id: string, page: numb
 
     return events;
 }
-
 
 
 /**
