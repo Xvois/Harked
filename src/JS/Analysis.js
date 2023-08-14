@@ -44,6 +44,8 @@ export const getLIName = function (data, maxLength = 30) {
         result = data.title;
     } else if (data.hasOwnProperty('album_id')) {
         result = data.name;
+    } else if (data.hasOwnProperty('playlist_id')){
+        result = data.name;
     } else {
         result = data;
     }
