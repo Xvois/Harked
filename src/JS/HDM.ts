@@ -582,6 +582,7 @@ export const resolveItems = async (unresolvedItemRecords) => {
 
     for (let i = 0; i < unresolvedItemRecords.length; i++) {
         let e = unresolvedItemRecords[i];
+        console.log(e.item.type)
         if (e.item.type === "artists") {
             let artist: Artist = await getLocalDataByID("artists", e.item.id, "genres");
             artist.genres = artist.expand.genres;
@@ -598,6 +599,9 @@ export const resolveItems = async (unresolvedItemRecords) => {
         } else if (e.item.type === "users") {
             let user: User = await getLocalDataByID("users", e.item.id);
             e.item = user;
+        }else if (e.item.type === "playlists") {
+            let playlist = await retrievePlaylist(e.item.id, false);
+            e.item = playlist;
         } else {
             throw new Error("Unknown type fetched from reviews.");
         }
