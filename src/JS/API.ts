@@ -392,12 +392,13 @@ export const getAuthData = () => {
 
 
 export const getDelayedDatapoint = async (user_id, term, delay) => {
-    const dps = await pb.collection("datapoints").getFullList({
+    const dps = await pb.collection("datapoints").getList(0, delay + 1, {
         expand: 'top_songs,top_artists,top_genres,top_artists.genres,top_songs.artists,top_songs.artists.genres',
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
     }).catch(handleFetchException);
-    return dps[delay];
+    console.log(dps);
+    return dps.items[delay];
 }
 
 
