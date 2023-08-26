@@ -74,15 +74,10 @@ async function runJanitor() {
             });
             return data;
         } catch (err) {
-            if (err.response === undefined) {
-                console.warn("[Error in Spotify API call] " + err);
-            } else if (err.response.status === 401) {
-                throw new Error('Token expired.');
-            } else if (err.response.status === 429 || err.response.status === 503) {
-                console.warn(`[Error in API call] CODE : ${err.response.status}`);
-            }
+            const errorData = err.response ? err.response.data : err.message;
+            throw new Error(`[Error in Spotify API call] ${errorData}`);
         }
-    };
+    }
 
     function chunks(array, size) {
         const result = [];
@@ -167,7 +162,10 @@ async function runJanitor() {
         if (!genre.hasOwnProperty("id")) {
             throw new Error("Genre must have database id before posting!");
         }
-        await pb.collection('genres').create(genre).catch(err => console.error(err));
+        await pb.collection('genres').create(genre).catch(err => {
+            console.log(err.response.data);
+            throw new Error(`Creation failed: ${err.response.status} | ${err.response.message}`);
+        });
         updateDatabaseCacheWithItems({genres: [genre]});
     }
 
