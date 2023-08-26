@@ -162,8 +162,8 @@ async function runJanitor() {
         if (!genre.hasOwnProperty("id")) {
             throw new Error("Genre must have database id before posting!");
         }
+        console.info("Posting: ", genre.genre);
         await pb.collection('genres').create(genre).catch(err => {
-            console.log(err.response.data);
             throw new Error(`Creation failed: ${err.response.status} | ${err.response.message}`);
         });
         updateDatabaseCacheWithItems({genres: [genre]});
@@ -213,6 +213,7 @@ async function runJanitor() {
             retrievedInstance.genres = await genresToRefIDs(retrievedInstance.genres);
 
             try {
+                console.info("Updating: ", artist.name)
                 await pb.collection('artists').update(hashString(artist.artist_id), retrievedInstance);
                 artistsModified++;
             } catch (err) {
