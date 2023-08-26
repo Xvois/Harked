@@ -162,9 +162,10 @@ async function runJanitor() {
         if (!genre.hasOwnProperty("id")) {
             throw new Error("Genre must have database id before posting!");
         }
-        console.info("Posting: ", genre.genre);
+        console.info("Posting:", genre.genre, genre.id);
         await pb.collection('genres').create(genre).catch(err => {
-            throw new Error(`Creation failed: ${err.response.status} | ${err.response.message}`);
+            console.error(err.response.data);
+            throw new Error(`Creation failed: ${err.status} | ${err.response.message}`);
         });
         updateDatabaseCacheWithItems({genres: [genre]});
     }
@@ -175,7 +176,7 @@ async function runJanitor() {
         }
         let ids = [];
         // Genres are added as an array of strings, but stored in cache as having their string and id
-        const newGenres = genres.filter(g1 => !databaseCache.genres.some(g2 => g2.genre === g1));
+        const newGenres = genres.filter(g1 => !databaseCache.genres.some(g2 => g2.id === hashString(g1)));
 
         for (let i = 0; i < genres.length; i++) {
             let genre = genres[i];
@@ -209,11 +210,14 @@ async function runJanitor() {
         const allGenresExist = !(artist.genres?.map(g1 => instanceGenresHashes.some(g2 => g1 === g2)).some(bool => bool === false));
         const genresMatch = lengthMatch && allGenresExist;
 
-        if (retrievedInstance.profile_picture !== artist.profile_picture || !genresMatch) {
+        if ( (retrievedInstance.image !== artist.image && artist.image !== null && retrievedInstance.image !== null) || !genresMatch) {
             retrievedInstance.genres = await genresToRefIDs(retrievedInstance.genres);
 
             try {
-                console.info("Updating: ", artist.name)
+                console.info("Updating:", artist.name, "Picture mismatch:", retrievedInstance.image !== artist.image, "Genres mismatch:", !genresMatch);
+                if (!genresMatch) {
+                    console.log("Expanding mismatch: lengthMatch", lengthMatch, "allGenresExist", allGenresExist);
+                }
                 await pb.collection('artists').update(hashString(artist.artist_id), retrievedInstance);
                 artistsModified++;
             } catch (err) {
