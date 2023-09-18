@@ -181,7 +181,7 @@ function Authentication() {
              hatch for this, simply logging the user out in that
              case.
              */
-        } else if (!pb.authStore.isValid && !code) {
+        } else {
             console.info('Session expired.')
             window.localStorage.clear();
             window.location = '/';
