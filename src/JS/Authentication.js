@@ -55,7 +55,7 @@ export function reAuthenticate() {
     if (!url.pathname.includes("authentication")) {
         window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
     }
-    //window.location.href = `https://accounts.spotify.com/authorize?${params}`;
+    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
 
 function Authentication() {
@@ -97,7 +97,7 @@ function Authentication() {
 
         const redirectURL = `${url.origin}/authentication`;
 
-        if(code) {
+        if (code) {
             window.localStorage.setItem('code', code);
         }
 
@@ -169,7 +169,7 @@ function Authentication() {
             }).catch((err) => {
                 console.log("Failed to exchange code.\n" + err);
             });
-        } else if(pb.authStore.isValid) {
+        } else if (pb.authStore.isValid) {
             console.info('Attempting to catch spotify token.')
             if (window.location.hash) {
                 CATCH_SPOTIFY_TOKEN()
