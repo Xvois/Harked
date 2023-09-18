@@ -24,7 +24,7 @@ export async function fetchData(path, retryCount = 0) {
         if (err.response === undefined) {
             console.warn("[Error in Spotify API call] " + err);
         } else if (err.response.status === 401) {
-            console.warn('Token expired. Attempting reauthentication.');
+            console.warn('Token expired. Attempting to reauthenticate.');
             reAuthenticate()
         } else if (err.response.status === 429 || err.response.status === 503) {
             if (retryCount < 3) {

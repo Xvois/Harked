@@ -52,8 +52,10 @@ export function reAuthenticate() {
         ["response_type", "token"],
         ["scope", ['user-top-read']]
     ])
-    window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
-    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
+    if (!url.pathname.includes("authentication")) {
+        window.localStorage.setItem("redirect", `${url.pathname + url.hash}`);
+    }
+    //window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }
 
 function Authentication() {
@@ -92,11 +94,11 @@ function Authentication() {
 
         // Create the redirect url for pb authentication
         const url = new URL(window.location);
+
         const redirectURL = `${url.origin}/authentication`;
 
-        if (code) {
-            // Store core for use in alternate reauth
-            localStorage.setItem('code', code);
+        if(code) {
+            window.localStorage.setItem('code', code);
         }
 
         // Get provider
@@ -104,10 +106,10 @@ function Authentication() {
 
         // Authenticate with pb
         const pb = new PocketBase("https://harked.fly.dev/");
-        console.log(pb.authStore);
         // Are we authed already?
-        if (!pb.authStore.isValid) {
-            console.info('pb authStore is not valid')
+        if (!pb.authStore.isValid && code) {
+            console.info('pb authStore is not valid: ', pb.authStore);
+            console.log(code);
             pb.collection('users').authWithOAuth2Code(
                 provider.name,
                 code,
@@ -167,11 +169,22 @@ function Authentication() {
             }).catch((err) => {
                 console.log("Failed to exchange code.\n" + err);
             });
-        } else {
+        } else if(pb.authStore.isValid) {
             console.info('Attempting to catch spotify token.')
             if (window.location.hash) {
                 CATCH_SPOTIFY_TOKEN()
             }
+            /*
+             FIXME: Sometimes a authStore session will expire
+             but the auth expects to only reauth spotify tokens
+             so will infinitely reauth them. This is an escape
+             hatch for this, simply logging the user out in that
+             case.
+             */
+        } else if (!pb.authStore.isValid && !code) {
+            console.info('Session expired.')
+            window.localStorage.clear();
+            window.location = '/';
         }
     }, [redirect])
 
@@ -185,4 +198,4 @@ function Authentication() {
     )
 }
 
-export default Authentication
+export default Authentication;

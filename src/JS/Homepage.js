@@ -54,7 +54,7 @@ function Homepage() {
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.6</span></p>
+                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.6 Hotfix</span></p>
             </div>
         </div>
     );
