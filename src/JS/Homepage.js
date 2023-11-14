@@ -41,6 +41,7 @@ function Homepage() {
                         <>
                             <button className="subtle-button" onClick={handleAlternateLogin}>Login with Spotify</button>
                             <a className="subtle-button" href={'/profile/sonn-gb'}>View a sample profile</a>
+                            <a className={'subtle-button'} href={"https://gist.github.com/Xvois/06c27a5b9ec33d1ea13b23ea6e5a67dd"}>Read the technical blog</a>
                         </>
                         :
                         <>
@@ -48,13 +49,18 @@ function Homepage() {
                         </>
                     }
                     {isLoggedIn() ?
-                        <button className={"subtle-button"} onClick={handleLogOut}>Log-out</button>
+                        <>
+                            <button className={"subtle-button"} onClick={handleLogOut}>Log-out</button>
+                            <a className={'subtle-button'} href={"https://gist.github.com/Xvois/06c27a5b9ec33d1ea13b23ea6e5a67dd"}>Read the technical blog</a>
+                        </>
+
                         :
                         <></>
                     }
                 </div>
                 <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px'}}>
-                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.6</span></p>
+                    UPDATE <span style={{fontWeight: 'bold'}}>1.4.7</span></p>
+
             </div>
         </div>
     );
