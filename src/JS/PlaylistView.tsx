@@ -9,7 +9,7 @@ import {
     retrievePlaylistMetadata,
     Song,
     User
-} from "./HDM.ts";
+} from "./Data Tools/HDM.ts";
 import {LoadingIndicator, PageError, StyledField} from "./SharedComponents.tsx";
 import {getLIDescription, getLIName, getPlaylistAnalysis} from "./Analysis"
 import "./../CSS/PlaylistView.css"

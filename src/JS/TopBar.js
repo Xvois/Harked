@@ -3,11 +3,11 @@
 import React, {useState} from 'react';
 import './../CSS/TopBar.css';
 import Search from "./Search"
-import {isLoggedIn} from "./HDM.ts";
+import {isLoggedIn} from "./Data Tools/HDM.ts";
 import {BlurOn} from "@mui/icons-material";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import {handleAlternateLogin} from "./Authentication";
+import {handleAlternateLogin} from "./Authentication/Authentication";
 
 const RedirectElement = (props) => {
     const {title, href, requiresLogIn = false, requiresLogOut = false, callback = null} = props;

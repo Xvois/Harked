@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {isLoggedIn, retrieveAllPublicUsers, retrieveFollowing, retrieveLoggedUserID} from "./HDM.ts";
+import {isLoggedIn, retrieveAllPublicUsers, retrieveFollowing, retrieveLoggedUserID} from "./Data Tools/HDM.ts";
 import Fuse from 'fuse.js';
 import SearchIcon from '@mui/icons-material/Search';
 import Input from "@mui/joy/Input";

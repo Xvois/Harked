@@ -6,11 +6,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "4bbmvunm",
         "name": "genre",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -35,19 +36,23 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "jn6tgjaw",
         "name": "item",
         "type": "json",
-        "system": false,
         "required": false,
-        "options": {}
+        "unique": false,
+        "options": {
+          "maxSize": 4096
+        }
       },
       {
+        "system": false,
         "id": "ekto2r4t",
         "name": "description",
         "type": "text",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -70,11 +75,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "rcgaknkm",
         "name": "song_id",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -82,11 +88,12 @@
         }
       },
       {
+        "system": false,
         "id": "4sgsbmet",
         "name": "title",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -94,11 +101,12 @@
         }
       },
       {
+        "system": false,
         "id": "xz8gedos",
         "name": "artists",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "d5kpanvycoam44i",
           "cascadeDelete": false,
@@ -108,34 +116,39 @@
         }
       },
       {
+        "system": false,
         "id": "opin3etl",
         "name": "link",
         "type": "url",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "exceptDomains": null,
           "onlyDomains": null
         }
       },
       {
+        "system": false,
         "id": "nn4c9ipt",
         "name": "image",
         "type": "url",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "exceptDomains": null,
           "onlyDomains": null
         }
       },
       {
+        "system": false,
         "id": "yup9hhok",
         "name": "analytics",
         "type": "json",
-        "system": false,
         "required": false,
-        "options": {}
+        "unique": false,
+         "options": {
+          "maxSize": 4096
+        }
       }
     ],
     "indexes": [
@@ -155,11 +168,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "3xiivbke",
         "name": "artist_id",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -167,11 +181,12 @@
         }
       },
       {
+        "system": false,
         "id": "nhvgtesn",
         "name": "name",
         "type": "text",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -179,33 +194,36 @@
         }
       },
       {
+        "system": false,
         "id": "z4obwbid",
         "name": "image",
         "type": "url",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "exceptDomains": null,
           "onlyDomains": null
         }
       },
       {
+        "system": false,
         "id": "bzl2av4t",
         "name": "link",
         "type": "url",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "exceptDomains": null,
           "onlyDomains": null
         }
       },
       {
+        "system": false,
         "id": "vacqxwrg",
         "name": "genres",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "2wusql9pqxt19ic",
           "cascadeDelete": false,
@@ -232,11 +250,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "2pskzwtd",
         "name": "user_id",
         "type": "text",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -244,11 +263,12 @@
         }
       },
       {
+        "system": false,
         "id": "sxqxtgu3",
         "name": "profile_picture",
         "type": "url",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "exceptDomains": null,
           "onlyDomains": null
@@ -281,11 +301,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "inkbq7jw",
         "name": "user",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -295,11 +316,12 @@
         }
       },
       {
+        "system": false,
         "id": "25uutxjc",
         "name": "followers",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": false,
@@ -324,11 +346,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "vtl6g1z0",
         "name": "user",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -338,11 +361,12 @@
         }
       },
       {
+        "system": false,
         "id": "9axqror8",
         "name": "public",
         "type": "bool",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {}
       }
     ],
@@ -361,11 +385,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "ajxncrrs",
         "name": "user",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -375,11 +400,12 @@
         }
       },
       {
+        "system": false,
         "id": "mn48juty",
         "name": "recommendations",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "zix5suasepyhgmq",
           "cascadeDelete": false,
@@ -404,11 +430,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "xfsh0ils",
         "name": "user",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -433,11 +460,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "ljwaptiu",
         "name": "owner",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -447,23 +475,27 @@
         }
       },
       {
+        "system": false,
         "id": "amde5zj3",
         "name": "ref_num",
         "type": "number",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "min": null,
           "max": null
         }
       },
       {
+        "system": false,
         "id": "imgkqsas",
         "name": "item",
         "type": "json",
-        "system": false,
         "required": true,
-        "options": {}
+        "unique": false,
+        "options": {
+          "maxSize": 4096
+        }
       }
     ],
     "indexes": [],
@@ -481,11 +513,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "z1nftac6",
         "name": "owner",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -495,11 +528,12 @@
         }
       },
       {
+        "system": false,
         "id": "jlgikwcp",
         "name": "term",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -507,11 +541,12 @@
         }
       },
       {
+        "system": false,
         "id": "o2zlalvy",
         "name": "top_songs",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "pv9gax2vt2oiyjz",
           "cascadeDelete": false,
@@ -521,11 +556,12 @@
         }
       },
       {
+        "system": false,
         "id": "9cdpl0ps",
         "name": "top_artists",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "d5kpanvycoam44i",
           "cascadeDelete": false,
@@ -535,11 +571,12 @@
         }
       },
       {
+        "system": false,
         "id": "apwprm25",
         "name": "top_genres",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "2wusql9pqxt19ic",
           "cascadeDelete": false,
@@ -564,11 +601,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "xxa6yvyc",
         "name": "playlist_id",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -576,12 +614,15 @@
         }
       },
       {
+        "system": false,
         "id": "oq6vuskt",
         "name": "meta",
         "type": "json",
-        "system": false,
         "required": false,
-        "options": {}
+        "unique": false,
+        "options": {
+          "maxSize": 4096
+        }
       }
     ],
     "indexes": [],
@@ -599,11 +640,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "awjkmmsm",
         "name": "user",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": true,
@@ -613,11 +655,12 @@
         }
       },
       {
+        "system": false,
         "id": "l6uva0qv",
         "name": "following",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": false,
@@ -642,11 +685,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "g8lfysr4",
         "name": "owner",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": false,
@@ -656,30 +700,35 @@
         }
       },
       {
+        "system": false,
         "id": "tilwsbhs",
         "name": "item",
         "type": "json",
-        "system": false,
         "required": false,
-        "options": {}
+        "unique": false,
+        "options": {
+          "maxSize": 4096
+        }
       },
       {
+        "system": false,
         "id": "h00d4ixl",
         "name": "rating",
         "type": "number",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "min": 0,
           "max": 5
         }
       },
       {
+        "system": false,
         "id": "6g7veqlu",
         "name": "description",
         "type": "text",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -702,11 +751,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "zelvcq2d",
         "name": "user",
         "type": "relation",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": false,
@@ -716,11 +766,12 @@
         }
       },
       {
+        "system": false,
         "id": "in97lbmt",
         "name": "parent",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "v7rgjynrw2og1i9",
           "cascadeDelete": false,
@@ -730,11 +781,12 @@
         }
       },
       {
+        "system": false,
         "id": "idmdgtzs",
         "name": "content",
         "type": "text",
-        "system": false,
         "required": true,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -757,11 +809,12 @@
     "system": false,
     "schema": [
       {
+        "system": false,
         "id": "hnrxkiev",
         "name": "owner",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "jjliyfj8n5u4g1t",
           "cascadeDelete": false,
@@ -771,11 +824,12 @@
         }
       },
       {
+        "system": false,
         "id": "d1umjznl",
         "name": "comments",
         "type": "relation",
-        "system": false,
         "required": false,
+        "unique": false,
         "options": {
           "collectionId": "v7rgjynrw2og1i9",
           "cascadeDelete": false,

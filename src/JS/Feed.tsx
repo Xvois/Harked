@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {isLoggedIn, milliToHighestOrder, retrieveEventsForUser, retrieveLoggedUserID, UserEvent} from "./HDM.ts";
+import {isLoggedIn, milliToHighestOrder, retrieveEventsForUser, retrieveLoggedUserID, UserEvent} from "./Data Tools/HDM.ts";
 import {getItemType, getLIName} from "./Analysis";
 import "./../CSS/Feed.css"
 import {LoadingIndicator, LoadingObject, PageError} from "./SharedComponents.tsx";

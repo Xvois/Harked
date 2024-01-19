@@ -7,7 +7,7 @@ import {
     retrieveLoggedUserID,
     retrieveSettings,
     retrieveUser
-} from "./HDM.ts";
+} from "./Data Tools/HDM.ts";
 import "./../CSS/Settings.css"
 import {PageError} from "./SharedComponents.tsx";
 

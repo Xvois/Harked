@@ -5,10 +5,10 @@
  * handelling a user declining the Spotify scopes.
  */
 
-import {isLoggedIn, validateUser} from './HDM.ts';
+import {isLoggedIn, validateUser} from './Data Tools/HDM.ts';
 import {useEffect} from 'react';
 import './../CSS/Homepage.css';
-import {handleAlternateLogin} from "./Authentication";
+import {handleAlternateLogin} from "./Authentication/Authentication";
 import {WarningRounded} from "@mui/icons-material";
 
 function Homepage() {

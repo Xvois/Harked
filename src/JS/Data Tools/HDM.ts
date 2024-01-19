@@ -1,6 +1,5 @@
 // @ts-ignore
 import {
-    artistsToRefIDs,
     deleteLocalData,
     disableAutoCancel,
     enableAutoCancel,
@@ -16,12 +15,11 @@ import {
     getUser,
     postDatapoint,
     putLocalData,
-    songsToRefIDs,
     subscribe,
     unsubscribe,
     updateLocalData,
     validDPExists
-} from "./API.ts";
+} from "../API/API.ts";
 import {containsElement, getLIName} from "./Analysis";
 import LRUCache from 'lru-cache';
 
@@ -94,41 +92,13 @@ export interface Artist extends Record {
     genres: Array<string> | Array<Genre>
 }
 
-export interface Song extends Record {
-    song_id: string,
-    title: string,
-    artists: Array<Artist> | Array<string>,
-    link: string,
-    image: string,
-    analytics: Analytics
-}
-
 export interface UserEvent extends Record {
     owner: User | string,
     ref_num: number
     item: { id: string, type: string } | Album | Artist | Song | User,
 }
 
-type Analytics = {
-    acousticness: number,
-    analysis_url: string,
-    danceability: number,
-    duration_ms: number,
-    energy: number,
-    id: string,
-    instrumentalness: number,
-    key: number,
-    liveness: number,
-    loudness: number,
-    mode: number,
-    speechiness: number,
-    tempo: number,
-    time_signature: number,
-    track_href: string,
-    type: string,
-    uri: string,
-    valence: number
-}
+
 
 interface ProfileRecommendations extends Record {
     user: User,
@@ -152,9 +122,7 @@ export interface Album {
     saved_songs?: Array<Song>
 }
 
-const dp_cache = new LRUCache<string, Datapoint, unknown>({
-    max: 100,
-});
+
 
 const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
 
@@ -436,7 +404,7 @@ export const submitRecommendation = async function (user_id: string, item: Song 
     }
     switch (type) {
         case 'artists':
-            const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
+            const artistRefID = hashString((item as Artist).artist_id);
             const artistItemObj = {type: type, id: artistRefID}
             const artistRecommendation = {id: id, item: artistItemObj, description: description};
             await putLocalData("recommendations", artistRecommendation);
@@ -447,7 +415,7 @@ export const submitRecommendation = async function (user_id: string, item: Song 
             await updateLocalData("profile_recommendations", newRecs_a, currRecommendations.id);
             break;
         case 'songs':
-            const [songRefID]: Array<string> = await songsToRefIDs([item]);
+            const songRefID = hashString((item as Song).song_id);
             const songItemObj = {type: type, id: songRefID}
             const songRecommendation = {id: id, item: songItemObj, description: description};
             await putLocalData("recommendations", songRecommendation);
@@ -455,7 +423,7 @@ export const submitRecommendation = async function (user_id: string, item: Song 
             await updateLocalData("profile_recommendations", newRecs_s, currRecommendations.id);
             break;
         case 'albums':
-            const albumItemObj = {id: item.album_id, type: type};
+            const albumItemObj = {id: (item as Album).album_id, type: type};
             const albumRecommendation = {id: id, item: albumItemObj, description: description};
             await putLocalData("recommendations", albumRecommendation);
             const newRecs_al = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
@@ -507,7 +475,7 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
     const id = hashString(getLIName(item) + description + user_id);
     switch (type) {
         case 'artists':
-            const [artistRefID]: Array<string> = await artistsToRefIDs([item]);
+            const artistRefID = hashString((item as Artist).artist_id);
             const artistItemObj = {type: type, id: artistRefID}
             const artistReview = {
                 id: id,
@@ -525,7 +493,7 @@ export const submitReview = async (user_id: string, item: Artist | Song | Album,
                 throw new Error("Failed to submit review.", e);
             }
         case 'songs':
-            const [songRefID]: Array<string> = await songsToRefIDs([item]);
+            const songRefID = hashString((item as Song).song_id);
             const songItemObj = {type: type, id: songRefID}
             const songReview = {id: id, owner: user.id, item: songItemObj, rating: rating, description: description};
             try {
@@ -1106,107 +1074,6 @@ export const isLoggedIn = function () {
  * @returns user_id
  */
 
-/**
- * Returns a valid datapoint for a given user in a given term.
- * If the function does not get a valid datapoint from the database, it will hydrate the user's datapoints
- * and return a valid one from that selection.
- * @param user_id
- * @param term [short_term, medium_term, long_term]
- * @returns {Promise<*>} A datapoint object.
- */
-export const retrieveDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
-    const cacheID = `${user_id}_${term}`;
-    //console.log(`Has ${cacheID}: `, dp_cache.has(cacheID));
-    if (dp_cache.has(cacheID)) {
-        console.log(`[Cache] Returning cached datapoint.`)
-        return dp_cache.get(cacheID);
-    }
-
-    let timeSensitive = false;
-    // Are we accessing the logged-in user?
-    // [Unknowingly]
-    if (isLoggedIn()) {
-        const loggedUserID = await retrieveLoggedUserID();
-        if (user_id === loggedUserID) {
-            timeSensitive = true
-        }
-    }
-
-    let currDatapoint: Datapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
-        console.warn("Error retrieving datapoint: ");
-        console.warn(err);
-    })
-    if (currDatapoint === undefined && timeSensitive) {
-        console.warn('Deprecated behaviour: Hydration is triggered by retrieveDatapoint method, not retrieveAllDatapoints.')
-        await hydrateDatapoints().then(async () =>
-            currDatapoint = await getDatapoint(user_id, term, timeSensitive).catch(function (err) {
-                console.warn("Error retrieving datapoint: ");
-                console.warn(err);
-            })
-        );
-    }
-
-
-    currDatapoint = formatDatapoint(currDatapoint);
-    dp_cache.set(cacheID, currDatapoint)
-    return currDatapoint;
-}
-
-export const retrievePrevDatapoint = async function (user_id: string, term: "short_term" | "medium_term" | "long_term") {
-    const datapoint: Datapoint = await getDelayedDatapoint(user_id, term, 1);
-    if (datapoint === undefined) {
-        return null
-    } else {
-        return formatDatapoint(datapoint);
-    }
-}
-
-
-export const retrieveAllDatapoints = async function (user_id) {
-
-    await disableAutoCancel();
-    const validExists = await validDPExists(user_id, 'long_term');
-    const terms = ['short_term', 'medium_term', 'long_term'];
-    let datapoints = [];
-
-    if (isLoggedIn() && user_id === await retrieveLoggedUserID() && validExists) {
-        // Retrieve datapoints for each term
-        for (const term of terms) {
-            const datapoint = await retrieveDatapoint(user_id, term);
-            datapoints.push(datapoint);
-        }
-    } else if (isLoggedIn() && user_id === await retrieveLoggedUserID() && !validExists) {
-        // Hydrate datapoints
-        datapoints = await hydrateDatapoints();
-    } else {
-        // Retrieve datapoints for each term
-        for (const term of terms) {
-            const datapoint = await retrieveDatapoint(user_id, term);
-            datapoints.push(datapoint);
-        }
-    }
-
-
-    await enableAutoCancel();
-
-    return datapoints;
-};
-
-export const retrievePrevAllDatapoints = async function (user_id) {
-
-    await disableAutoCancel();
-    const terms = ['short_term', 'medium_term', 'long_term'];
-    const datapoints = [];
-
-    for (const term of terms) {
-        const datapoint = await retrievePrevDatapoint(user_id, term);
-        datapoints.push(datapoint);
-    }
-
-    await enableAutoCancel();
-
-    return datapoints;
-};
 
 
 export function getAllIndexes(arr, val) {
@@ -1217,25 +1084,6 @@ export function getAllIndexes(arr, val) {
     return indexes;
 }
 
-const formatDatapoint = function (d: Datapoint) {
-    if (d === null || d === undefined) {
-        return null;
-    }
-    // Turn relation ids into the actual arrays / records themselves using
-    // pocketbase's expand property
-    d.top_artists = d.expand.top_artists;
-    d.top_songs = d.expand.top_songs;
-    d.top_genres = d.expand.top_genres.map(e => e.genre);
-    d.top_artists.map(e => e.genres = e.expand.genres?.map(g => g.genre));
-    d.top_songs.map(e => e.artists = e.expand.artists);
-    d.top_songs.map(e => e.artists.map(a => a.genres = a.expand.genres?.map(g => g.genre)));
-    // Delete redundant expansions
-    delete d.expand;
-    d.top_artists.forEach(e => delete e.expand);
-    d.top_songs.forEach(e => delete e.expand);
-    d.top_songs.forEach(e => e.artists.forEach(a => delete a.expand));
-    return d;
-};
 export const retrieveLoggedUserID = async function () {
     if (!me) {
         me = await fetchData('me');
@@ -1381,6 +1229,7 @@ export const formatArtist = (artist) => {
         }
     }
     return {
+        id: hashString(artist.id),
         artist_id: artist.id,
         name: artist.name,
         image: image,
@@ -1468,6 +1317,7 @@ export const formatSong = (song) => {
     }
     let artists: Array<Artist> = song.artists.map(a => formatArtist(a));
     return {
+        id: hashString(song.id),
         song_id: song.id,
         title: song.name,
         artists: artists,
@@ -1502,143 +1352,8 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
     return (await fetchData(`recommendations?${params}`)).tracks.map(t => formatSong(t));
 }
 
-/**
- * Creates a datapoint for each term for the logged-in user and posts them
- * to the database using postDatapoint
- *
- * **The hydration will optimistically return the datapoints prior to
- * posting.**
- * @returns {[short_term : Datapoint, medium_term : Datapoint, long_term : Datapoint]}
- */
-export const hydrateDatapoints = async function () {
-    console.time("Hydration."); // Start a timer for performance measurement
-    console.time("Compilation")
-    const terms = ['short_term', 'medium_term', 'long_term'];
-    const loggedUserID = await retrieveLoggedUserID();
-    const datapoints = [];
 
-    const artist_cache = {};
-
-    for (const term of terms) {
-        console.info("Hydrating: " + term);
-        let datapoint = {
-            user_id: loggedUserID,
-            term: term,
-            top_songs: [],
-            top_artists: [],
-            top_genres: [],
-        };
-        let top_songs;
-        let top_artists;
-
-        // Queue up promises for fetching top songs and top artists
-        let result = await Promise.all([fetchData(`me/top/tracks?time_range=${term}&limit=50`), fetchData(`me/top/artists?time_range=${term}&limit=50`)]);
-        top_songs = result[0].items;
-        top_artists = result[1].items;
-
-        // Add all the songs
-        datapoint.top_songs = top_songs.map(s => formatSong(s));
-        await batchAnalytics(datapoint.top_songs).then(res =>
-            datapoint.top_songs.map((e, i) =>
-                e.analytics = res[i]
-            )
-        );
-
-        // Add all the artists
-        datapoint.top_artists = top_artists.map(a => formatArtist(a));
-        // Add artists to artist cache.
-        top_artists.forEach(a => artist_cache[a.artist_id] = a);
-
-        datapoint.top_genres = calculateTopGenres(top_artists);
-
-        // Add genres and images to artists in songs
-        const unresolvedIDs = [];
-        datapoint.top_songs.forEach(s => {
-            s.artists.forEach(a => {
-                if (!artist_cache[a.artist_id]) {
-                    unresolvedIDs.push(a.artist_id);
-                }
-            })
-        });
-        if (unresolvedIDs.length > 0) {
-            const resolvedArtists = await batchArtists(unresolvedIDs);
-            resolvedArtists.forEach(a => artist_cache[a.artist_id] = a);
-        }
-        for (let song of datapoint.top_songs) {
-            song.artists = song.artists.map(a => artist_cache[a.artist_id]);
-        }
-        datapoints.push(datapoint);
-    }
-    console.timeEnd("Compilation");
-    console.info("Posting datapoints...");
-    // Create deep copy clone to prevent optimistic return
-    // resolving in to references via the API
-    let postClone = structuredClone(datapoints);
-    console.log(datapoints);
-    postHydration(postClone).then(() => {
-        console.info("Hydration over.");
-        console.timeEnd("Hydration."); // End the timer and display the elapsed time
-    });
-    return datapoints;
 };
 
-const postHydration = async (datapoints) => {
-    for (const datapoint of datapoints) {
-        await postDatapoint(datapoint).then(() => {
-            console.info(datapoint.term + " success!");
-        });
-    }
-}
-/**
- * Runs the argument callback function as a side effect of a successful
- * hydration by the argument user_id.
- * @param user_id
- * @param callback
- */
-export const onHydration = async (user_id: string, callback: Function) => {
-    const user = await retrieveUser(user_id);
-    const func = (e) => {
-        if (e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id) {
-            console.info("Hydration event noted!");
-            callback();
-            destroyOnHydration();
-        }
-    }
-    await subscribe("datapoints", "*", func);
-}
-/**
- * Destroys the onHydration subscription.
- *
- * **Should be called after a successful call of the
- * callback for the onHydration event.**
- */
-const destroyOnHydration = async () => {
-    await unsubscribe("datapoints", "*");
-}
 
-/**
- * Creates an ordered array of a users top genres based on an order list of artists.
- * @param artists
- * @returns {*[]}
- */
-const calculateTopGenres = function (artists: Array<Artist>) {
 
-    let topGenres = [];
-
-    artists.forEach((artist, i) => {
-        artist.genres.forEach((genre) => {
-            const existingGenre = topGenres.find((g) => g.genre === genre);
-
-            if (existingGenre) {
-                existingGenre.weight += artists.length - i;
-            } else {
-                topGenres.push({genre, weight: artists.length - i});
-            }
-        });
-    });
-
-    topGenres.sort((a, b) => b.weight - a.weight);
-
-    // Extract the genre names as an array of strings
-    return topGenres.map((genre) => genre.genre);
-};

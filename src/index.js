@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './CSS/index.css';
 import Homepage from './JS/Homepage';
-import Authentication from './JS/Authentication';
+import Authentication from './JS/Authentication/Authentication';
 import Comparison from './JS/Comparison'
 import reportWebVitals from './JS/reportWebVitals';
 import {BrowserRouter, Route, Routes} from "react-router-dom"; // Functionality to redirect the user to different pages.

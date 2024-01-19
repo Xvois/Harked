@@ -1,6 +1,6 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import {isLoggedIn, retrieveLoggedUserID, retrieveReview} from "./HDM.ts";
+import {isLoggedIn, retrieveLoggedUserID, retrieveReview} from "./Data Tools/HDM.ts";
 import {capitalize} from "@mui/material";
 import {CommentSection, StyledRating} from "./SharedComponents.tsx";
 import {getItemType, getLIDescription, getLIName} from "./Analysis";

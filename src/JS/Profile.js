@@ -30,7 +30,7 @@ import {
     submitRecommendation,
     unfollowUser,
     userExists
-} from './HDM.ts';
+} from './Data Tools/HDM.ts';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ClearAllOutlinedIcon from '@mui/icons-material/ClearAllOutlined';
@@ -48,7 +48,7 @@ import {
     translateAnalytics,
     translateAnalyticsLow
 } from "./Analysis";
-import {handleAlternateLogin} from "./Authentication";
+import {handleAlternateLogin} from "./Authentication/Authentication";
 import {
     CommentSection,
     LoadingIndicator,

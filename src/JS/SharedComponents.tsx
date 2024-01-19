@@ -11,7 +11,7 @@ import {
     Song,
     submitComment,
     User
-} from "./HDM.ts"
+} from "./Data Tools/HDM.ts"
 import {Pagination, Rating, Select, styled, TextField} from "@mui/material";
 import {getLIDescription, getLIName} from "./Analysis"
 

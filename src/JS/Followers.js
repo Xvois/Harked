@@ -7,7 +7,7 @@ import {
     retrieveLoggedUserID,
     retrieveUser,
     unfollowUser
-} from './HDM.ts';
+} from './Data Tools/HDM.ts';
 import './../CSS/Followers.css'
 
 const FollowersComponent = () => {

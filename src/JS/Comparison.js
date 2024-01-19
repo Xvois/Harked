@@ -10,7 +10,7 @@ import './../CSS/Comparison.css';
 import './../CSS/Profile.css';
 import './../CSS/Focus.css';
 
-import {resolveItems, retrieveDatapoint, retrieveUnresolvedReviews, retrieveUser} from "./HDM.ts";
+import {resolveItems, retrieveDatapoint, retrieveUnresolvedReviews, retrieveUser} from "./Data Tools/HDM.ts";
 import {
     analyticsMetrics,
     calculateSimilarity,

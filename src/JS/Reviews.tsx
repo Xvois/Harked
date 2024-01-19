@@ -11,7 +11,7 @@ import {
     Review,
     submitReview,
     User
-} from "./HDM.ts";
+} from "./Data Tools/HDM.ts";
 import {
     LoadingIndicator,
     PageError,
