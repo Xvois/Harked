@@ -1,16 +1,14 @@
 import {disableAutoCancel, enableAutoCancel, getDatapoint, getDelayedDatapoint, validDPExists} from "../API/API";
 import {hydrateDatapoints, isLoggedIn, retrieveLoggedUserID} from "./HDM";
 import { Artist } from "../API/artistInterfaces";
-import LRUCache from "lru-cache";
-import {Datapoint} from "./datapointInterfaces";
+import {Datapoint} from "./Interfaces/datapointInterfaces";
 import {fetchSpotifyData} from "../API/spotify";
 import {calculateTopGenres} from "./genres";
 import {TopItemsRequest} from "../API/spotifyResponseInterface";
 import {Track} from "../API/trackInterfaces";
+import {dp_cache} from "./cache";
 
-const dp_cache = new LRUCache<string, Datapoint, unknown>({
-    max: 100,
-});
+
 
 /**
  * Returns a valid datapoint for a given user in a given term.

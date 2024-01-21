@@ -1,5 +1,6 @@
 import PocketBase from "pocketbase";
-import {Datapoint} from "../Data Tools/datapointInterfaces";
+import {Datapoint} from "../Data Tools/Interfaces/datapointInterfaces";
+import {User} from "../Data Tools/Interfaces/databaseInterfaces";
 
 export const createNewPBInstance = () => {
     return new PocketBase("https://harked.pockethost.io/");
@@ -12,8 +13,8 @@ const pb = createNewPBInstance();
  * @param user_id The user's global user ID.
  * @returns {Promise<*>} A user object.
  */
-export const getUser = async (user_id) => {
-    return await pb.collection('users').getFirstListItem(`user_id="${user_id}"`)
+export const getUser = async (user_id): Promise<User | void> => {
+    return await pb.collection('users').getFirstListItem<User>(`user_id="${user_id}"`)
         .catch(
             function (err) {
                 console.warn("Error getting user: ");
@@ -80,16 +81,16 @@ export const deleteLocalData = async (collection, id) => {
     await pb.collection(collection).delete(id);
 }
 
-export const getLocalData = async (collection, filter = '', sort = '', page = 1, perPage = 50, autoCancel = true) => {
-    return (await pb.collection(collection).getList(page, perPage, {
+export const getLocalData = async <T>(collection, filter = '', sort = '', page = 1, perPage = 50, autoCancel = true) => {
+    return (await pb.collection(collection).getList<T>(page, perPage, {
         filter: filter,
         sort: sort,
         "$autoCancel": autoCancel
     }).catch(handleFetchException)).items;
 }
 
-export const getLocalDataByID = async (collection, id, expand = '') => {
-    return await pb.collection(collection).getOne(id, {expand: expand}).catch(handleFetchException);
+export const getLocalDataByID= async <T>(collection, id, expand = '') => {
+    return await pb.collection(collection).getOne<T>(id, {expand: expand}).catch(handleFetchException);
 }
 
 export const putLocalData = async (collection, data) => {

@@ -1,3 +1,5 @@
+import {Artist} from "../API/artistInterfaces";
+
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.
  * @param artists

@@ -124,46 +124,9 @@ export interface Album {
 
 
 
-const albums_cache = new LRUCache<string, Album, unknown>({max: 100})
 
-const user_cache = new LRUCache<string, User, unknown>({max: 100});
 
 let me = undefined;
-
-export const validateUser = async () => {
-    if (window.localStorage.getItem("pocketbase_auth")) {
-        console.info('Validating user...');
-        const authData = JSON.parse(window.localStorage.getItem("pocketbase_auth"));
-        const user = authData.model;
-        const exists = !!(await getLocalDataByID("users", user.id));
-        if (!exists) {
-            console.warn('User invalid. Logging out...');
-            window.localStorage.clear();
-            window.location.href = '/';
-        } else {
-            console.info('User is valid.')
-        }
-    }
-}
-
-export const handleCacheReset = () => {
-    if ('caches' in window) {
-        const cacheTypes = ['datapoints'];
-        cacheTypes.forEach(t => {
-            caches.delete(t).then(success => {
-                if (success) {
-                    console.log(`Cache ${t} has been cleared.`);
-                } else {
-                    console.log(`Cache ${t} does not exist.`);
-                }
-            }).catch(error => {
-                console.error(`Error while clearing cache ${t}: ${error}`);
-            });
-        })
-    } else {
-        console.warn('The caches API is not supported in this browser.');
-    }
-}
 
 export function hashString(inputString) {
     let hash = 0n; // Use BigInt to support larger values
@@ -180,99 +143,7 @@ export function hashString(inputString) {
 }
 
 
-/**
- * A boolean function that returns true if the currently logged-in user follows the target and false if not.
- * @returns {Promise<*>}
- * @param primaryUserID
- * @param targetUserID
- */
-export const followsUser = async function (primaryUserID: string, targetUserID: string) {
-    // If both are the same we can simply return false as a user cannot follow themselves.
-    if (primaryUserID === targetUserID) {
-        return false;
-    }
-    let follows = false;
-    const targetUser: User = await getUser(targetUserID);
-    if (!targetUser) {
-        console.warn('Null value returned from followsUser.');
-        return null;
-    }
-    // Get who the primary user follows
-    await getLocalData("user_following", `user.user_id="${primaryUserID}"`)
-        .then((res: FollowingRecord) => {
-            const item = res[0];
-            // Check if the record id of the target user is held in the array of
-            // the primary user's following array
-            if (item.following.some((e: string) => e === targetUser.id)) {
-                follows = true;
-            }
-        });
-    return follows;
-}
 
-/**
- * Will make the primary user follow the target user.
- *
- * **Has a built-in event creation side effect.**
- * @param primaryUserID
- * @param targetUserID
- */
-export const followUser = async function (primaryUserID: string, targetUserID: string) {
-    if (await followsUser(primaryUserID, targetUserID)) {
-        return;
-    }
-    // Get the record for who follows who for both the primary and target user
-    let [primaryObj, targetObj]: Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
-
-    // Since this is a relational key, .user is simply the record id for that user
-    if (!primaryObj.following.some(e => e === targetObj.user)) {
-        primaryObj.following.push(targetObj.user);
-        // Update the primary user's data to show they are following the target user
-        await updateLocalData("user_following", primaryObj, primaryObj.id);
-        getUser(targetUserID).then(targetUser => createEvent(52, primaryUserID, targetUser, "users"));
-        // Update the target user's data to show they are being followed by the primary user
-        await getLocalDataByID("user_followers", hashString(targetUserID)).then(res => {
-            let item = res;
-            item.followers.push(primaryObj.user);
-            updateLocalData("user_followers", item, item.id);
-        })
-    }
-}
-/**
- * Will make the primary user unfollow the target user.
- * @param primaryUserID
- * @param targetUserID
- */
-export const unfollowUser = async function (primaryUserID: string, targetUserID: string) {
-    // Get the record for who follows who for both the primary and target user
-    let [primaryObj, targetObj]: Array<FollowingRecord> = [await getLocalDataByID("user_following", hashString(primaryUserID)), await getLocalDataByID("user_following", hashString(targetUserID))];
-
-    // Since this is a relational key, .user is simply the record id for tha user
-    if (primaryObj.following.some(e => e === targetObj.user)) {
-        primaryObj.following = primaryObj.following.filter(e => e !== targetObj.user);
-        // Update the primary user's data to show they are not following the target user
-        await updateLocalData("user_following", primaryObj, primaryObj.id);
-        // Update the target user's data to show they are not being followed by the primary user
-        await getLocalDataByID("user_followers", hashString(targetUserID)).then((res: FollowersRecord) => {
-            let item = res;
-            item.followers = item.followers.filter(e => e !== primaryObj.user);
-            updateLocalData("user_followers", item, item.id);
-        })
-    }
-}
-/**
- * Returns the user records of the followers of the target.
- * @param user_id
- * @returns {Array<User>}
- */
-export const retrieveFollowers = async function (user_id: string) {
-    const res: FollowersRecord = await getLocalDataByID("user_followers", hashString(user_id), "followers");
-    if (res.followers.length > 0) {
-        return res.expand.followers;
-    } else {
-        return [];
-    }
-}
 /**
  * Returns whether a user exists in the database.
  * @param user_id
@@ -282,52 +153,10 @@ export const userExists = async function (user_id: string) {
     return !!(await getUser(user_id));
 }
 
-/**
- * Returns the user records who the target is following.
- * @param user_id
- * @returns {Array<User>}
- */
-export const retrieveFollowing = async function (user_id: string) {
-    console.log('retrieveFollowing called!')
-    const res: FollowingRecord = await getLocalDataByID("user_following", hashString(user_id), "following");
-    if (res.following.length > 0) {
-        return res.expand.following;
-    } else {
-        return [];
-    }
-}
 
 
-/**
- * Returns the settings of the target user.
- * @param user_id
- * @returns {Settings}
- */
-export const retrieveSettings = async function (user_id: string) {
-    const id: string = hashString(user_id);
-    const res: Settings = await getLocalDataByID("settings", id);
-    return res;
-}
 
-/**
- * Modifies the settings of the target user.
- * @param user_id
- * @param new_settings : Settings
- */
-export const changeSettings = async function (user_id: string, new_settings: Settings) {
-    const id = hashString(user_id);
-    await updateLocalData("settings", new_settings, id);
-}
 
-/**
- * Returns the profile data of the target user.
- * @param user_id
- * @returns ProfileData
- */
-export const retrieveProfileData = async function (user_id: string) {
-    const id = hashString(user_id);
-    return await getLocalDataByID("profile_data", id);
-}
 /**
  * Returns the comments from a given comment section.
  * **Special case if it is a profile comment section, the ID will be
@@ -387,79 +216,7 @@ export const submitComment = async function (user_id: string, owner_record_id: s
 export const deleteComment = async function (comment_id: string) {
     await deleteLocalData("comments", comment_id);
 }
-/**
- * Creates a recommendation for the target user on their page.
- *
- * **Has built in createEvent side-effect.**
- * @param user_id
- * @param item
- * @param type
- * @param description
- */
-export const submitRecommendation = async function (user_id: string, item: Song | Artist | Album, type: "songs" | "artists" | "albums", description: string) {
-    const id = hashString(getLIName(item) + description + user_id);
-    let currRecommendations: ProfileRecommendations = await getLocalDataByID("profile_recommendations", hashString(user_id));
-    if (currRecommendations.recommendations === null) {
-        currRecommendations.recommendations = [];
-    }
-    switch (type) {
-        case 'artists':
-            const artistRefID = hashString((item as Artist).artist_id);
-            const artistItemObj = {type: type, id: artistRefID}
-            const artistRecommendation = {id: id, item: artistItemObj, description: description};
-            await putLocalData("recommendations", artistRecommendation);
-            const newRecs_a: ProfileRecommendations = {
-                ...currRecommendations,
-                recommendations: currRecommendations.recommendations.concat(id)
-            }
-            await updateLocalData("profile_recommendations", newRecs_a, currRecommendations.id);
-            break;
-        case 'songs':
-            const songRefID = hashString((item as Song).song_id);
-            const songItemObj = {type: type, id: songRefID}
-            const songRecommendation = {id: id, item: songItemObj, description: description};
-            await putLocalData("recommendations", songRecommendation);
-            const newRecs_s = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
-            await updateLocalData("profile_recommendations", newRecs_s, currRecommendations.id);
-            break;
-        case 'albums':
-            const albumItemObj = {id: (item as Album).album_id, type: type};
-            const albumRecommendation = {id: id, item: albumItemObj, description: description};
-            await putLocalData("recommendations", albumRecommendation);
-            const newRecs_al = {...currRecommendations, recommendations: currRecommendations.recommendations.concat(id)}
-            await updateLocalData("profile_recommendations", newRecs_al, currRecommendations.id);
-            break;
-    }
-    createEvent(1, user_id, item, type);
-}
-/**
- * Modifies an existing recommendation with a new description.
- *
- * **Has built in createEvent side-effect.**
- * @param user_id
- * @param existingRecommendation
- * @param type
- * @param newDescription
- */
-export const modifyRecommendation = async (user_id: string, existingRecommendation: Recommendation, type: "songs" | "artists" | "albums", newDescription: string) => {
-    // We need to unresolve the item to its id and type
-    let unresolvedExistingRec = structuredClone(existingRecommendation);
-    let item = existingRecommendation.item;
-    let item_id;
-    if (type === "songs" || type === "artists") {
-        item_id = retrieveDatabaseID(item, type);
-    } else if (type === "albums") {
-        item_id = item["album_id"];
-    }
-    unresolvedExistingRec.item = {id: item_id, type: type};
-    const newRecommendation = {
-        ...unresolvedExistingRec,
-        description: newDescription
-    };
-    await updateLocalData("recommendations", newRecommendation, existingRecommendation.id).then(() => {
-        createEvent(53, user_id, existingRecommendation.item, type);
-    });
-}
+
 /**
  * Submits a review from the target user.
  *
@@ -734,13 +491,7 @@ export const retrieveEventsForUser = async function (user_id: string, page: numb
 }
 
 
-/**
- * Deletes a profile recommendation.
- * @param rec_id
- */
-export const deleteRecommendation = async function (rec_id: string) {
-    await deleteLocalData("recommendations", rec_id);
-}
+
 
 /**
  * Returns all the users currently in the database.
@@ -1351,9 +1102,6 @@ export const getTrackRecommendations = async (seed_artists, seed_genres, seed_tr
     ]);
     return (await fetchData(`recommendations?${params}`)).tracks.map(t => formatSong(t));
 }
-
-
-};
 
 
 
