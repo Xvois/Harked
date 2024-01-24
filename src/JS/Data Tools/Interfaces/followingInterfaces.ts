@@ -1,13 +1,13 @@
-import {Record, User} from './databaseInterfaces';
+import {Record, DatabaseUser} from './databaseInterfaces';
 
 export interface FollowingRecord extends Record {
     user: string;
     following: string[];
-    expand?: User[];
+    expand?: {following: DatabaseUser[]};
 }
 
 export interface FollowersRecord extends Record {
     user: string;
     followers: string[];
-    expand?: User[];
+    expand?: {followers: DatabaseUser[]};
 }

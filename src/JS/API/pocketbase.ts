@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase";
 import {Datapoint} from "../Data Tools/Interfaces/datapointInterfaces";
-import {User} from "../Data Tools/Interfaces/databaseInterfaces";
+import {DatabaseUser} from "../Data Tools/Interfaces/databaseInterfaces";
 
 export const createNewPBInstance = () => {
     return new PocketBase("https://harked.pockethost.io/");
@@ -13,8 +13,8 @@ const pb = createNewPBInstance();
  * @param user_id The user's global user ID.
  * @returns {Promise<*>} A user object.
  */
-export const getUser = async (user_id): Promise<User | void> => {
-    return await pb.collection('users').getFirstListItem<User>(`user_id="${user_id}"`)
+export const getDatabaseUser = async (user_id): Promise<DatabaseUser | void> => {
+    return await pb.collection('users').getFirstListItem<DatabaseUser>(`user_id="${user_id}"`)
         .catch(
             function (err) {
                 console.warn("Error getting user: ");

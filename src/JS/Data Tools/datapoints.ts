@@ -1,12 +1,12 @@
 import {disableAutoCancel, enableAutoCancel, getDatapoint, getDelayedDatapoint, validDPExists} from "../API/API";
-import {hydrateDatapoints, isLoggedIn, retrieveLoggedUserID} from "./HDM";
 import { Artist } from "../API/artistInterfaces";
-import {Datapoint} from "./Interfaces/datapointInterfaces";
 import {fetchSpotifyData} from "../API/spotify";
 import {calculateTopGenres} from "./genres";
 import {TopItemsRequest} from "../API/spotifyResponseInterface";
 import {Track} from "../API/trackInterfaces";
 import {dp_cache} from "./cache";
+import {Datapoint} from "./Interfaces/datapointInterfaces";
+import {isLoggedIn, retrieveLoggedUserID} from "./users";
 
 
 
@@ -130,20 +130,20 @@ export const hydrateDatapoints = async function (): Promise<[short_term: Datapoi
         let datapoint = {
             user_id: loggedUserID,
             term: term,
-            top_songs: [],
+            top_tracks: [],
             top_artists: [],
         };
-        let top_songs;
+        let top_tracks;
         let top_artists;
 
         // Queue up promises for fetching top songs and top artists
         let result = await Promise.all([fetchSpotifyData<TopItemsRequest<Track>>(`me/top/tracks?time_range=${term}&limit=50`), fetchSpotifyData<TopItemsRequest<Artist>>(`me/top/artists?time_range=${term}&limit=50`)]);
-        top_songs = result[0].items;
+        top_tracks = result[0].items;
         top_artists = result[1].items;
 
         // Turn in to just their ids
-        datapoint.top_songs = top_songs.map(song => song.id);
-        datapoint.top_artists = top_artists.map(artist => artist.id);
+        datapoint.top_tracks = top_tracks.map(t => t.id);
+        datapoint.top_artists = top_artists.map(a => a.id);
         datapoints.push(datapoint);
     }
     console.timeEnd("Compilation");
