@@ -7,7 +7,7 @@ import Comparison from './JS/Comparison'
 import reportWebVitals from './JS/reportWebVitals';
 import {BrowserRouter, Route, Routes} from "react-router-dom"; // Functionality to redirect the user to different pages.
 import TopBar from './JS/TopBar';
-import Profile from './JS/Profile';
+import Profile from './JS/Pages/Profile/Profile';
 import {Analytics} from '@vercel/analytics/react';
 import {Settings} from './JS/Settings.tsx'
 import Followers from "./JS/Followers";

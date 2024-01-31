@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@tools/*": [
+        "src/Tools/*"
+      ],
+      "@api/*": [
+        "src/API/*"
+      ],
+        "@components/*": [
+            "src/Components/*"
+        ],
+    },
+  }
+}
