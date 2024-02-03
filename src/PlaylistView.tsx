@@ -1,5 +1,5 @@
 import React, {SetStateAction, useEffect, useRef, useState} from "react";
-import {getLIDescription, getLIName, getPlaylistAnalysis} from "@/Tools/analysis"
+import {getLIDescription, getLIName, getPlaylistAnalysis} from "@/Analysis/analysis"
 import "./CSS/PlaylistView.css"
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
@@ -101,9 +101,9 @@ const AnnotationEditModal = (props: {
     const submitAnnotation = () => {
         if (annotationRef.current) {
             addAnnotation(user_id, playlist, targetSong.id, annotationRef.current.value).then((returnVal) => {
-            setPlaylistMetadata(returnVal);
-            setIsOpen(false);
-        });
+                setPlaylistMetadata(returnVal);
+                setIsOpen(false);
+            });
         }
     }
 
@@ -362,8 +362,9 @@ const PlaylistView = () => {
                     {playlist.tracks.map((t: Track, i: number) => {
                         let annotation = playlistMetadata?.meta[t.id];
                         return <TrackItem key={t.id} windowWidth={windowWidth} setSelectedTrack={setSelectedTrack}
-                                      track={t} index={i} isOwnPlaylist={isOwnPlaylist} annotation={annotation}
-                                      setIsEditorOpen={setIsEditorModalOpen} setIsViewerOpen={setIsViewerModalOpen}/>
+                                          track={t} index={i} isOwnPlaylist={isOwnPlaylist} annotation={annotation}
+                                          setIsEditorOpen={setIsEditorModalOpen}
+                                          setIsViewerOpen={setIsViewerModalOpen}/>
                     })}
                     <AnnotationEditModal user_id={loggedUserID} playlist={playlist} targetSong={selectedTrack}
                                          playlistMetadata={playlistMetadata} setPlaylistMetadata={setPlaylistMetadata}

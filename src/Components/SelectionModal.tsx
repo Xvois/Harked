@@ -1,5 +1,5 @@
 import React, {SetStateAction, useEffect, useRef, useState} from "react";
-import {getLIDescription, getLIName} from "@/Tools/analysis";
+import {getLIDescription, getLIName} from "@/Analysis/analysis";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";

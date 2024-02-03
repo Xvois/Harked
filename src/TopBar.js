@@ -5,7 +5,6 @@ import {BlurOn} from "@mui/icons-material";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import {isLoggedIn} from "@/Tools/users";
-import {handleLogin} from "./Authentication/login";
 
 const RedirectElement = (props) => {
     const {title, href, requiresLogIn = false, requiresLogOut = false, callback = null} = props;

@@ -3,79 +3,79 @@ interface ExternalUrls {
 }
 
 interface Image {
-  url: string;
-  height: number;
-  width: number;
+    url: string;
+    height: number;
+    width: number;
 }
 
 interface Restrictions {
-  reason: string;
+    reason: string;
 }
 
 interface Artist {
-  external_urls: ExternalUrls;
-  href: string;
-  id: string;
-  name: string;
-  type: string;
-  uri: string;
+    external_urls: ExternalUrls;
+    href: string;
+    id: string;
+    name: string;
+    type: string;
+    uri: string;
 }
 
 interface TrackItem {
     artists: Artist[];
-  available_markets: string[];
+    available_markets: string[];
     disc_number: number;
     duration_ms: number;
     explicit: boolean;
-  external_urls: ExternalUrls;
-  href: string;
-  id: string;
+    external_urls: ExternalUrls;
+    href: string;
+    id: string;
     is_playable: boolean;
     linked_from: Artist;
-  restrictions: Restrictions;
+    restrictions: Restrictions;
     name: string;
     preview_url: string;
     track_number: number;
-  type: string;
-  uri: string;
+    type: string;
+    uri: string;
     is_local: boolean;
 }
 
 interface Tracks {
-  href: string;
+    href: string;
     limit: number;
     next: string;
     offset: number;
     previous: string;
-  total: number;
+    total: number;
     items: TrackItem[];
 }
 
 interface Copyright {
     text: string;
-  type: string;
+    type: string;
 }
 
 interface ExternalIds {
-  isrc: string;
-  ean: string;
-  upc: string;
+    isrc: string;
+    ean: string;
+    upc: string;
 }
 
 export interface Album {
     album_type: string;
     total_tracks: number;
-  available_markets: string[];
-  external_urls: ExternalUrls;
-  href: string;
-  id: string;
+    available_markets: string[];
+    external_urls: ExternalUrls;
+    href: string;
+    id: string;
     images: Image[];
-  name: string;
+    name: string;
     release_date: string;
     release_date_precision: string;
     restrictions: Restrictions;
-  type: string;
-  uri: string;
+    type: string;
+    uri: string;
     artists: Artist[];
     tracks: Tracks;
     copyrights: Copyright[];

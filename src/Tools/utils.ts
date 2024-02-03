@@ -168,7 +168,11 @@ export function getAllIndexes(arr, val) {
     return indexes;
 }
 
-export function createPictureSources(images: { url: string, height: number, width: number }[], imageWidthPercentage: number) {
+export function createPictureSources(images: {
+    url: string,
+    height: number,
+    width: number
+}[], imageWidthPercentage: number) {
     return images.map((image, index, array) => {
         let width = image.width;
         if (index !== array.length - 1) {
@@ -180,22 +184,22 @@ export function createPictureSources(images: { url: string, height: number, widt
 }
 
 export function getInputRefValue(ref: RefObject<HTMLInputElement>): string | undefined {
-  return ref.current?.value;
+    return ref.current?.value;
 }
 
-export function isAlbum(item: Album | Track | Artist | Playlist): item is Album {
-    return 'images' in item && 'album_type' in item;
+export function isAlbum(item: Album | Track | Artist | Playlist | string): item is Album {
+    return typeof item !== 'string' && 'images' in item && 'album_type' in item;
 }
 
-export function isTrack(item: Album | Track | Artist | Playlist): item is Track {
-    return 'album' in item;
+export function isTrack(item: Album | Track | Artist | Playlist | string): item is Track {
+    return typeof item !== 'string' && 'album' in item;
 }
 
-export function isArtist(item: Album | Track | Artist | Playlist): item is Artist {
-    return 'images' in item && 'genres' in item;
+export function isArtist(item: Album | Track | Artist | Playlist | string): item is Artist {
+    return typeof item !== 'string' && 'images' in item && 'genres' in item;
 }
 
-export function isPlaylist(item: Album | Track | Artist | Playlist): item is Playlist {
-    return 'images' in item && 'tracks' in item;
+export function isPlaylist(item: Album | Track | Artist | Playlist | string): item is Playlist {
+    return typeof item !== 'string' && 'images' in item && 'tracks' in item;
 }
 

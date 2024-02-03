@@ -1,5 +1,4 @@
-import React, {useRef} from "react";
-import {ReactElement, SetStateAction, useEffect} from "react";
+import React, {ReactElement, SetStateAction, useEffect, useRef} from "react";
 import ReactDOM from "react-dom";
 
 export const SimpleModal = (props: {

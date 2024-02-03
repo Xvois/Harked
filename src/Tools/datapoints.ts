@@ -1,14 +1,13 @@
-import {Artist, RetrievedArtists} from "@/API/Interfaces/artistInterfaces";
+import {RetrievedArtists} from "@/API/Interfaces/artistInterfaces";
 import {fetchSpotifyData} from "@/API/spotify";
-import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
-import {RetrievedTracks, Track} from "@/API/Interfaces/trackInterfaces";
+import {MultipleAnalytics, RetrievedTracks} from "@/API/Interfaces/trackInterfaces";
 import {dp_cache} from "./cache";
 import {Datapoint, DatapointRecord, Term} from "./Interfaces/datapointInterfaces";
-import {isLoggedIn, retrieveLoggedUserID, retrieveUser} from "./users";
-import {hydrateDatapoints, postHydration} from "./hydration";
+import {isLoggedIn, retrieveLoggedUserID} from "./users";
+import {hydrateDatapoints} from "./hydration";
 import {
     disableAutoCancel,
-    enableAutoCancel, getDatabaseUser,
+    enableAutoCancel,
     getDatapointRecord,
     getDelayedDatapoint,
     validDPExists
@@ -65,17 +64,30 @@ export const retrieveDatapoint = async function (user_id: string, term: Term): P
 
 // Helper function to convert a datapoint record to a datapoint
 async function convertDatapointRecordToDatapoint(dpRecord: DatapointRecord): Promise<Datapoint> {
-    const top_tracks = (await fetchSpotifyData<RetrievedTracks>("tracks/?ids=" + dpRecord.top_tracks.join(","))).tracks;
-    const top_artists = (await fetchSpotifyData<RetrievedArtists>("artists/?ids=" + dpRecord.top_artists.join(","))).artists;
+    const [topTracksData, topArtistsData, analyticsData] = await Promise.all([
+        fetchSpotifyData<RetrievedTracks>("tracks/?ids=" + dpRecord.top_tracks.join(",")),
+        fetchSpotifyData<RetrievedArtists>("artists/?ids=" + dpRecord.top_artists.join(",")),
+        fetchSpotifyData<MultipleAnalytics>("audio-features/?ids=" + dpRecord.top_tracks.join(","))
+    ]);
+
+    const top_tracks = topTracksData.tracks;
+    const top_artists = topArtistsData.artists;
+    const analytics = analyticsData.audio_features;
+
+    // Create a new object with top_tracks properties & audio_features
+    const top_tracks_w_a = top_tracks.map((track, index) => ({
+        ...track,
+        audio_features: analytics[index]
+    }));
     const top_genres = calculateTopGenres(top_artists);
-    return { owner: dpRecord.owner, term: dpRecord.term, top_tracks, top_artists, top_genres };
+    return {owner: dpRecord.owner, term: dpRecord.term, top_tracks: top_tracks_w_a, top_artists, top_genres};
 }
 
 // Helper function to convert a datapoint to a datapoint record
-export async function convertDatapointToDatapointRecord(owner: string, term: Term,dp: Datapoint): Promise<Omit<DatapointRecord, "id" | "created" | "updated">> {
+export async function convertDatapointToDatapointRecord(owner: string, term: Term, dp: Datapoint): Promise<Omit<DatapointRecord, "id" | "created" | "updated">> {
     const top_tracks = dp.top_tracks.map(t => t.id);
     const top_artists = dp.top_artists.map(a => a.id);
-    return { owner: owner, term: term, top_tracks, top_artists };
+    return {owner: owner, term: term, top_tracks, top_artists};
 }
 
 export const retrievePrevDatapoint = async function (user_id: string, term: Term) {
@@ -91,7 +103,7 @@ export const retrievePrevDatapoint = async function (user_id: string, term: Term
 export const retrieveAllDatapoints = async function (user_id: string) {
     await disableAutoCancel();
     const db_id = window.localStorage.getItem("db_id");
-    if(!db_id){
+    if (!db_id) {
         throw new Error("User does not exist in the database to retrieve their datapoints.");
     }
     const validExists = await validDPExists(db_id, 'long_term');

@@ -45,8 +45,8 @@
     height: 156px;
 }
 
-@keyframes placeHolderShimmer{
-    0%{
+@keyframes placeHolderShimmer {
+    0% {
         background-position: 100% 0
     }
     100% {

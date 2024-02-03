@@ -1,12 +1,17 @@
 import React, {useEffect, useState} from "react";
 import {followingContentsSearch, getAlbumsWithTracks} from "@/Tools/search";
-import {getLIName} from "@/Tools/analysis";
+import {getLIName} from "@/Analysis/analysis";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
-import {Playlist} from "@/API/Interfaces/playlistInterfaces";
-import {Term} from "@/Tools/Interfaces/datapointInterfaces";
+import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
 
 
-export const ArtistAnalysis = (props: { user_id: string; artist: Artist; playlists: Playlist[]; term: Term; isOwnPage: boolean; }) => {
+export const ArtistAnalysis = (props: {
+    user_id: string;
+    artist: Artist;
+    playlists: Array<PlFromListWithTracks>;
+    term: string;
+    isOwnPage: boolean;
+}) => {
     const {user_id, artist, playlists, term, isOwnPage} = props;
 
     const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState(null);
@@ -27,8 +32,7 @@ export const ArtistAnalysis = (props: { user_id: string; artist: Artist; playlis
 
     useEffect(() => {
         const plTracks = playlists.map(e => e.tracks).flat(1);
-        const tracks = plTracks.map(t => t.items.map(i => i.track)).flat(1);
-        getAlbumsWithTracks(artist.id, tracks).then(
+        getAlbumsWithTracks(artist.id, plTracks).then(
             result => {
                 setArtistsAlbumsWithLikedSongs(result);
                 setOrderedAlbums(result.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4));
@@ -38,7 +42,7 @@ export const ArtistAnalysis = (props: { user_id: string; artist: Artist; playlis
             }
         );
         if (isOwnPage) {
-            followingContentsSearch(user_id, artist, "artists").then(
+            followingContentsSearch(user_id, artist).then(
                 result => {
                     setFollowingWithArtist(result);
                     if (result.length === 0) {

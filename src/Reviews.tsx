@@ -1,7 +1,6 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
-import {getItemType, getLIDescription, getLIName} from "@/Tools/analysis";
-import {capitalize} from "@mui/material";
+import {getLIDescription, getLIName} from "@/Analysis/analysis";
 import NotesSharpIcon from '@mui/icons-material/NotesSharp';
 import "./CSS/Reviews.css";
 import {Bar} from "react-chartjs-2";
@@ -48,8 +47,9 @@ const ReviewsList = (props: {
 
     return (
         <div className={'review-list'}>
+            <p>TYPE FILTERING DOES NOT WORK</p>
             {reviews !== undefined ?
-                reviews.filter(r => includedTypes.includes(getItemType(r.item))).map((r) => {
+                reviews.map((r) => {
                     return <ReviewItem key={r.id} review={r} isOwnPage={isOwnPage} handleDelete={handleDelete}/>
                 })
                 :
@@ -75,7 +75,6 @@ export const ReviewItem = (props: { review: ReviewWithItem<any>, isOwnPage: bool
 
     const created = new Date(review.created);
     const edited = new Date(review.updated)
-    const type = getItemType(review.item);
 
 
     return (
@@ -93,7 +92,7 @@ export const ReviewItem = (props: { review: ReviewWithItem<any>, isOwnPage: bool
                 <p style={{
                     margin: 0,
                     color: 'var(--secondary-colour)'
-                }}>{capitalize(type.slice(0, type.length - 1))}</p>
+                }}>[NEEDS TYPE]</p>
                 <a className={'heavy-link'} href={review.item.link} style={{margin: 0}}>{getLIName(review.item)}</a>
                 <p style={{margin: 0}}>{getLIDescription(review.item)}</p>
                 <StyledRating

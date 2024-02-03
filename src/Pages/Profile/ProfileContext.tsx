@@ -10,45 +10,63 @@ import {retrieveUser} from "@/Tools/users";
 import {retrieveProfileData, retrieveSettings} from "@/Tools/userMeta";
 
 export const ProfileContext = createContext({
-  terms: ["short_term", "medium_term", "long_term"] as string[],
-  setTerms: (() => {}) as React.Dispatch<React.SetStateAction<string[]>>,
-  selectedDatapoint: null as Datapoint,
-  setSelectedDatapoint: (() => {}) as React.Dispatch<React.SetStateAction<Datapoint>>,
-  selectedPrevDatapoint: null as Datapoint,
-  setSelectedPrevDatapoint: (() => {}) as React.Dispatch<React.SetStateAction<Datapoint>>,
-  termIndex: 2,
-  setTermIndex: (() => {}) as React.Dispatch<React.SetStateAction<number>>,
-  loaded: false,
-  setLoaded: (() => {}) as React.Dispatch<React.SetStateAction<boolean>>,
-  isLoggedUserFollowing: null as boolean,
-  setIsLoggedUserFollowing: (() => {}) as React.Dispatch<React.SetStateAction<boolean>>,
-  loggedUserID: null as string,
-  setLoggedUserID: (() => {}) as React.Dispatch<React.SetStateAction<string>>,
-  pageUser: null as User,
-  setPageUser: (() => {}) as React.Dispatch<React.SetStateAction<User>>,
-  isOwnPage: false,
-  setIsOwnPage: (() => {}) as React.Dispatch<React.SetStateAction<boolean>>,
-  followers: [] as DatabaseUser[],
-  setFollowers: (() => {}) as React.Dispatch<React.SetStateAction<DatabaseUser[]>>,
-  allDatapoints: [] as DatabaseUser[],
-  setAllDatapoints: (() => {}) as React.Dispatch<React.SetStateAction<DatabaseUser[]>>,
-  allPreviousDatapoints: [] as Datapoint[],
-  setAllPreviousDatapoints: (() => {}) as React.Dispatch<React.SetStateAction<Datapoint[]>>,
-  playlists: [] as PlFromListWithTracks[],
-  setPlaylists: (() => {}) as React.Dispatch<React.SetStateAction<PlFromListWithTracks[]>>,
-  possessive: '',
-  setPossessive: (() => {}) as React.Dispatch<React.SetStateAction<string>>,
-  settings: null as Settings,
-  setSettings: (() => {}) as React.Dispatch<React.SetStateAction<Settings>>,
-  profileData: {},
-  setProfileData: (() => {}) as React.Dispatch<React.SetStateAction<{}>>,
-  isError: false,
-  setIsError: (() => {}) as React.Dispatch<React.SetStateAction<boolean>>,
-  errorDetails: {description: null, errCode: null},
-  setErrorDetails: (() => {}) as React.Dispatch<React.SetStateAction<{description: null, errCode: null}>>
+    terms: ["short_term", "medium_term", "long_term"] as string[],
+    setTerms: (() => {
+    }) as React.Dispatch<React.SetStateAction<string[]>>,
+    selectedDatapoint: null as Datapoint,
+    setSelectedDatapoint: (() => {
+    }) as React.Dispatch<React.SetStateAction<Datapoint>>,
+    selectedPrevDatapoint: null as Datapoint,
+    setSelectedPrevDatapoint: (() => {
+    }) as React.Dispatch<React.SetStateAction<Datapoint>>,
+    termIndex: 2,
+    setTermIndex: (() => {
+    }) as React.Dispatch<React.SetStateAction<number>>,
+    loaded: false,
+    setLoaded: (() => {
+    }) as React.Dispatch<React.SetStateAction<boolean>>,
+    isLoggedUserFollowing: null as boolean,
+    setIsLoggedUserFollowing: (() => {
+    }) as React.Dispatch<React.SetStateAction<boolean>>,
+    loggedUserID: null as string,
+    setLoggedUserID: (() => {
+    }) as React.Dispatch<React.SetStateAction<string>>,
+    pageUser: null as User,
+    setPageUser: (() => {
+    }) as React.Dispatch<React.SetStateAction<User>>,
+    isOwnPage: false,
+    setIsOwnPage: (() => {
+    }) as React.Dispatch<React.SetStateAction<boolean>>,
+    followers: [] as DatabaseUser[],
+    setFollowers: (() => {
+    }) as React.Dispatch<React.SetStateAction<DatabaseUser[]>>,
+    allDatapoints: [] as Datapoint[],
+    setAllDatapoints: (() => {
+    }) as React.Dispatch<React.SetStateAction<Datapoint[]>>,
+    allPreviousDatapoints: [] as Datapoint[],
+    setAllPreviousDatapoints: (() => {
+    }) as React.Dispatch<React.SetStateAction<Datapoint[]>>,
+    playlists: [] as PlFromListWithTracks[],
+    setPlaylists: (() => {
+    }) as React.Dispatch<React.SetStateAction<PlFromListWithTracks[]>>,
+    possessive: '',
+    setPossessive: (() => {
+    }) as React.Dispatch<React.SetStateAction<string>>,
+    settings: null as Settings,
+    setSettings: (() => {
+    }) as React.Dispatch<React.SetStateAction<Settings>>,
+    profileData: {},
+    setProfileData: (() => {
+    }) as React.Dispatch<React.SetStateAction<{}>>,
+    isError: false,
+    setIsError: (() => {
+    }) as React.Dispatch<React.SetStateAction<boolean>>,
+    errorDetails: {description: null, errCode: null},
+    setErrorDetails: (() => {
+    }) as React.Dispatch<React.SetStateAction<{ description: null, errCode: null }>>
 });
 
-export const ProfileContextProvider = ({ children }) => {
+export const ProfileContextProvider = ({children}) => {
     const simpleDatapoints = ["artist", "track", "genre"];
     const pageID = (useParams()).id;
 
@@ -67,7 +85,7 @@ export const ProfileContextProvider = ({ children }) => {
     const [pageUser, setPageUser] = useState<User>(null);
     const [isOwnPage, setIsOwnPage] = useState<boolean>(false);
     const [followers, setFollowers] = useState<DatabaseUser[]>([]);
-    const [allDatapoints, setAllDatapoints] = useState<DatabaseUser[]>([]);
+    const [allDatapoints, setAllDatapoints] = useState<Datapoint[]>([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState<Datapoint[]>([]);
     const [playlists, setPlaylists] = useState<PlFromListWithTracks[]>([]);
     const [possessive, setPossessive] = useState<string>('');
@@ -106,45 +124,45 @@ export const ProfileContextProvider = ({ children }) => {
     }, [initializeStates]);
 
     return (
-    <ProfileContext.Provider value={{
-      terms,
-      setTerms,
-      selectedDatapoint,
-      setSelectedDatapoint,
-      selectedPrevDatapoint,
-      setSelectedPrevDatapoint,
-      termIndex,
-      setTermIndex,
-      loaded,
-      setLoaded,
-      isLoggedUserFollowing,
-      setIsLoggedUserFollowing,
-      loggedUserID,
-      setLoggedUserID,
-      pageUser,
-      setPageUser,
-      isOwnPage,
-      setIsOwnPage,
-      followers,
-      setFollowers,
-      allDatapoints,
-      setAllDatapoints,
-      allPreviousDatapoints,
-      setAllPreviousDatapoints,
-      playlists,
-      setPlaylists,
-      possessive,
-      setPossessive,
-      settings,
-      setSettings,
-      profileData,
-      setProfileData,
-      isError,
-      setIsError,
-      errorDetails,
-      setErrorDetails
-    }}>
-      {children}
-    </ProfileContext.Provider>
-  );
+        <ProfileContext.Provider value={{
+            terms,
+            setTerms,
+            selectedDatapoint,
+            setSelectedDatapoint,
+            selectedPrevDatapoint,
+            setSelectedPrevDatapoint,
+            termIndex,
+            setTermIndex,
+            loaded,
+            setLoaded,
+            isLoggedUserFollowing,
+            setIsLoggedUserFollowing,
+            loggedUserID,
+            setLoggedUserID,
+            pageUser,
+            setPageUser,
+            isOwnPage,
+            setIsOwnPage,
+            followers,
+            setFollowers,
+            allDatapoints,
+            setAllDatapoints,
+            allPreviousDatapoints,
+            setAllPreviousDatapoints,
+            playlists,
+            setPlaylists,
+            possessive,
+            setPossessive,
+            settings,
+            setSettings,
+            profileData,
+            setProfileData,
+            isError,
+            setIsError,
+            errorDetails,
+            setErrorDetails
+        }}>
+            {children}
+        </ProfileContext.Provider>
+    );
 };

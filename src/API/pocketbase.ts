@@ -10,7 +10,7 @@ import {DatapointRecord, Term} from "@/Tools/Interfaces/datapointInterfaces";
  */
 export const createNewPBInstance = (): PocketBase => {
     const instance = new PocketBase("https://harked.pockethost.io/");
-    instance.beforeSend = function(url, options) {
+    instance.beforeSend = function (url, options) {
         options.headers['db_id'] = window.localStorage.getItem('db_id');
         return {url, options}
     }

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import {getItemType, getLIName} from "@/Tools/analysis";
 import "./CSS/Feed.css"
 import {UserEvent} from "@/Tools/Interfaces/eventInterfaces";
 import {milliToHighestOrder} from "@/Tools/utils";
@@ -20,29 +19,28 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
 
     const getDescription = () => {
         console.log(event.owner)
-        const itemType = getItemType(event.item);
         switch (event.ref_num) {
             case 1:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/profile/${event.owner}`}>{event.owner}</a> has
-                    added the {itemType.slice(0, itemType.length - 1)} <a className={'heavy-link'}
-                                                                          href={event.item.id}>{getLIName(event.item)}</a> to
+                    added [NEEDS INCLUSION] <a className={'heavy-link'}
+                                               href={event.item.id}>{event.item.id}</a> to
                     their recommendations.</p>
             case 2:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/profile/${event.owner}`}>{event.owner}</a> has
                     added annotations to <a className={'heavy-link'}
-                                            href={`/playlist/${event.item.id}`}>{getLIName(event.item)}</a>.
+                                            href={`/playlist/${event.item.id}`}>{event.item.id}</a>.
                 </p>
             case 3:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/reviews/${event.owner}`}>{event.owner}</a> has
                     reviewed <a className={'heavy-link'}
-                                href={event.item.id}>{getLIName(event.item)}</a>.</p>
+                                href={event.item.id}>{event.item.id}</a>.</p>
             case 51:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/profile/${event.owner}`}>{event.owner}</a> has
-                    removed <a className={'heavy-link'} href={event.item.id}>{getLIName(event.item)}</a> from their
+                    removed <a className={'heavy-link'} href={event.item.id}>{event.item.id}</a> from their
                     recommendations.</p>
             case 52:
                 const targetPronoun = user_id === event.item.id ? 'you' : event.item.id;
@@ -52,8 +50,8 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
             case 53:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
                                                             href={`/profile/${event.owner}`}>{event.owner}</a> has
-                    edited their recommendation for the {itemType.slice(0, itemType.length - 1)} <a
-                        className={'heavy-link'} href={event.item.id}>{getLIName(event.item)}</a>.</p>
+                    edited their recommendation for the [NEEDS INCLUSION] <a
+                        className={'heavy-link'} href={event.item.id}>{event.item.id}</a>.</p>
         }
     }
 
@@ -65,7 +63,7 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
         } : {}}>
             <div className={'feed-image'} style={{position: 'relative'}}>
                 <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.id}/>
-                <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.id}/>
+                <img alt={event.item.id} className={'levitating-image'} src={event.item.id}/>
             </div>
             <div>
                 {event.ref_num < 51 && <h3 style={{margin: '0 0 10px 0'}}><a
@@ -89,12 +87,12 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
 
 const Feed = () => {
 
-    const [user_id, setUser_id] = useState(null);
-    const [events, setEvents] = useState(null);
-    const [feedPage, setFeedPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isError, setIsError] = useState(false);
+    const [user_id, setUser_id] = useState<string>(null);
+    const [events, setEvents] = useState<UserEvent[]>(null);
+    const [feedPage, setFeedPage] = useState<number>(1);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isError, setIsError] = useState<boolean>(false);
     const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
     const maxEventsPerLoad = 20;
 

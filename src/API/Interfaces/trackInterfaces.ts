@@ -45,8 +45,6 @@ interface Followers {
 
 interface ArtistInSong {
     external_urls: ExternalUrls;
-    followers: Followers;
-    genres: string[];
     href: string;
     id: string;
     images: Image[];
@@ -86,6 +84,10 @@ export interface Track {
     type: string;
     uri: string;
     is_local: boolean;
+}
+
+export interface TrackWithAnalytics extends Track {
+    audio_features: TrackAnalytics;
 }
 
 export interface RetrievedTracks {

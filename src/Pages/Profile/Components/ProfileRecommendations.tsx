@@ -6,7 +6,7 @@ import {
     submitRecommendation
 } from "@/Tools/recommendations";
 import {createEvent} from "@/Tools/events";
-import {getLIDescription, getLIName} from "@/Tools/analysis";
+import {getLIDescription, getLIName} from "@/Analysis/analysis";
 import {SpotifyLink} from "@/Components/SpotifyLink";
 import {SelectionModal} from "@/Components/SelectionModal";
 import {FormattedProfileRecommendations, FormattedRecommendation} from "@/Tools/Interfaces/recommendationInterfaces";
@@ -73,7 +73,12 @@ const ProfileRecommendations = (props: { pageGlobalUserID: string; isOwnPage: bo
     )
 }
 
-const Recommendation = (props: { rec: FormattedRecommendation<Album | Track | Artist>; isOwnPage: boolean; handleDelete: (e: FormattedRecommendation<any>) => void; handleEdit: (e: FormattedRecommendation<any>) => void; }) => {
+const Recommendation = (props: {
+    rec: FormattedRecommendation<Album | Track | Artist>;
+    isOwnPage: boolean;
+    handleDelete: (e: FormattedRecommendation<any>) => void;
+    handleEdit: (e: FormattedRecommendation<any>) => void;
+}) => {
     const {rec, isOwnPage, handleDelete, handleEdit} = props;
     let images;
     if (isTrack(rec.item)) {
@@ -132,12 +137,12 @@ const Recommendation = (props: { rec: FormattedRecommendation<Album | Track | Ar
     )
 }
 type RecommendationSelectionModalProps = {
-  showModal: boolean;
-  setShowModal: (show: boolean) => void;
-  recommendations: FormattedProfileRecommendations;
-  setRecommendations: (recs: FormattedProfileRecommendations) => void;
-  pageGlobalUserID: string;
-  initialItem?: Track | Album | Artist; //
+    showModal: boolean;
+    setShowModal: (show: boolean) => void;
+    recommendations: FormattedProfileRecommendations;
+    setRecommendations: (recs: FormattedProfileRecommendations) => void;
+    pageGlobalUserID: string;
+    initialItem?: Track | Album | Artist; //
 };
 const RecommendationSelectionModal = (props: RecommendationSelectionModalProps) => {
     const {showModal, setShowModal, recommendations, setRecommendations, pageGlobalUserID, initialItem = null} = props;

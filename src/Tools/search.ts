@@ -4,7 +4,7 @@ import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {SpotifySearch} from "@/Tools/Interfaces/searchInterfaces";
 import {retrieveFollowing} from "@/Tools/following";
 import {retrieveAllDatapoints} from "@/Tools/datapoints";
-import {containsElement} from "./analysis";
+import {containsElement} from "../Analysis/analysis";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {albums_cache} from "@/Tools/cache";
@@ -39,15 +39,15 @@ export const retrieveSearchResults = async function (query: string, type: "artis
 /**
  * Returns all the users that have a matching item in their most recent datapoints.
  */
-export const followingContentsSearch = async function (user_id: string, item: Artist | Track | string, type: 'artists' | 'songs' | 'genres') {
-    const following= await retrieveFollowing(user_id);
+export const followingContentsSearch = async function (user_id: string, item: Artist | Track | string) {
+    const following = await retrieveFollowing(user_id);
     const dpPromises = [];
     following.forEach((user) => {
         dpPromises.push(retrieveAllDatapoints(user.user_id));
     })
     let dps = await Promise.all(dpPromises);
     dps = dps.flat().filter(d => d !== null);
-    const ownerIDs = dps.filter(e => containsElement(item, e, type)).map(e => e.owner);
+    const ownerIDs = dps.filter(e => containsElement(item, e)).map(e => e.owner);
     return following.filter(e => ownerIDs.some((id: string) => id === e.id));
 }
 

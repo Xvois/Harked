@@ -1,7 +1,6 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import {capitalize} from "@mui/material";
-import {getItemType, getLIDescription, getLIName} from "@/Tools/analysis";
+import {getLIDescription, getLIName} from "@/Analysis/analysis";
 import "./CSS/Review.css"
 import {retrieveReview} from "@/Tools/reviews";
 import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
@@ -13,7 +12,6 @@ const Review = () => {
     const id = (useParams()).id
     const [review, setReview] = useState(undefined);
     const [possessive, setPossessive] = useState(undefined);
-    const type = review ? getItemType(review.item) : undefined;
 
     useEffect(() => {
         console.log(id);
@@ -47,7 +45,7 @@ const Review = () => {
                         <p style={{
                             margin: 0,
                             color: 'var(--secondary-colour)'
-                        }}>{capitalize(type.slice(0, type.length - 1))}</p>
+                        }}>[NEEDS TYPE]</p>
                         <a className={'heavy-link'} href={review.item.link}
                            style={{margin: 0}}>{getLIName(review.item)}</a>
                         <p style={{margin: 0}}>{getLIDescription(review.item)}</p>

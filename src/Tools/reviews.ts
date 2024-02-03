@@ -8,7 +8,7 @@ import {Album} from "@/API/Interfaces/albumInterfaces";
 import {createEvent} from "./events";
 import {Item, ItemType} from "./Interfaces/databaseInterfaces";
 import {Review, ReviewWithItem} from "./Interfaces/reviewInterfaces";
-import {getLIName} from "./analysis";
+import {getLIName} from "../Analysis/analysis";
 import {fetchSpotifyData} from "@/API/spotify";
 import {ListResult} from "pocketbase";
 

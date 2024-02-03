@@ -15,14 +15,12 @@ import {
     calculateSimilarity,
     getAverageAnalytics,
     getGenresRelatedArtists,
-    getItemType,
     getLIDescription,
     getLIName,
     getMatchingItems,
     translateAnalytics
-} from "@/Tools/analysis";
+} from "@/Analysis/analysis";
 import NotesSharpIcon from "@mui/icons-material/NotesSharp";
-import {capitalize} from "@mui/material";
 import {retrieveUnresolvedReviews} from "@/Tools/reviews";
 import {StyledRating} from "@/Components/styles";
 import {ValueIndicator} from "@/Components/ValueIndicator";
@@ -189,7 +187,7 @@ const Comparison = () => {
                             <p style={{
                                 margin: 0,
                                 color: 'var(--secondary-colour)'
-                            }}>{capitalize(getItemType(match[0].item).slice(0, getItemType(match[0].item).length - 1))}</p>
+                            }}>[ITEM TYPE]</p>
                             <a className={'heavy-link'} href={match[0].item.link}
                                style={{margin: 0}}>{getLIName(match[0].item)}</a>
                             <p style={{margin: 0}}>{getLIDescription(match[0].item)}</p>

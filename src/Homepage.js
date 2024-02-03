@@ -10,6 +10,7 @@ import './CSS/Homepage.css';
 import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
 import {handleLogin} from "./Authentication/login";
 import {validateUser} from "./Authentication/validateUser";
+import {reAuthorise} from "@/Authentication/reAuth";
 
 function Homepage() {
 
@@ -68,8 +69,10 @@ function Homepage() {
                         :
                         <></>
                     }
+                    <button onClick={reAuthorise}>Attempt reauth</button>
                 </div>
-                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px', fontWeight: 'bold'}}>1.5.0 [Branch]</p>
+                <p style={{fontFamily: 'Inter Tight', marginTop: '20px', fontSize: '10px', fontWeight: 'bold'}}>1.5.0
+                    [Branch]</p>
             </div>
         </div>
     );

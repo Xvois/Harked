@@ -1,5 +1,5 @@
-import {getDatabaseUser, postDatapointRecord, subscribe, unsubscribe} from "@/API/pocketbase";
-import {retrieveLoggedUserID, retrieveUser} from "./users";
+import {postDatapointRecord, subscribe, unsubscribe} from "@/API/pocketbase";
+import {retrieveUser} from "./users";
 import {Record, RecordSubscription} from "pocketbase";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {convertDatapointToDatapointRecord} from "@/Tools/datapoints";

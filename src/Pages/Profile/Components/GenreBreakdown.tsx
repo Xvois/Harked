@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Doughnut} from "react-chartjs-2";
-import {getItemAnalysis, getLIName} from "@/Tools/analysis";
+import {getLIName} from "@/Analysis/analysis";
+import {ItemDescriptor} from "@/Analysis/ItemDescriptor";
 
 /**
  * File: src/Pages/Profile/Components/GenreBreakdown.tsx
@@ -10,7 +11,7 @@ import {getItemAnalysis, getLIName} from "@/Tools/analysis";
  */
 
 const GenreBreakdown = (props) => {
-    const {selectedDatapoint, pageUser, allDatapoints, term} = props;
+    const {selectedDatapoint, pageUser, allDatapoints, term, isOwnPage} = props;
     const [selectedGenre, setSelectedGenre] = useState(selectedDatapoint.top_genres[0]);
 
     // Custom CSS variables don't work in the data attribute so this is my workaround.
@@ -113,7 +114,8 @@ const GenreBreakdown = (props) => {
                     border: '1px solid var(--transparent-border-colour)',
                     maxWidth: '400px'
                 }}>
-                    {getItemAnalysis(selectedGenre, "genres", pageUser, selectedDatapoint, allDatapoints, term)}
+                    <ItemDescriptor item={selectedGenre} user={pageUser} selectedDatapoint={selectedDatapoint}
+                                    allDatapoints={allDatapoints} term={term} isOwnPage={isOwnPage}/>
                 </div>
             </div>
         </div>

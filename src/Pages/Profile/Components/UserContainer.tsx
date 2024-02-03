@@ -5,7 +5,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {followUser, unfollowUser} from "@/Tools/following"
 import {isLoggedIn} from "@/Tools/users";
 import {retrieveDatapoint} from "@/Tools/datapoints";
-import {calculateSimilarity} from "@/Tools/analysis";
+import {calculateSimilarity} from "@/Analysis/analysis";
 import {SpotifyLink} from "@/Components/SpotifyLink";
 import {ValueIndicator} from "@/Components/ValueIndicator";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";

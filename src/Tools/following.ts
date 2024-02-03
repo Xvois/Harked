@@ -53,7 +53,10 @@ export const followUser = async function (primaryUserID: string, targetUserID: s
         primaryObj.following.push(targetObj.user);
         // Update the primary user's data to show they are following the target user
         await updateLocalData("user_following", primaryObj, primaryObj.id);
-        retrieveUser(targetUserID).then(targetUser => createEvent(52, primaryUserID, {id: targetUser.id, type: "user"}));
+        retrieveUser(targetUserID).then(targetUser => createEvent(52, primaryUserID, {
+            id: targetUser.id,
+            type: "user"
+        }));
         // Update the target user's data to show they are being followed by the primary user
         await getLocalDataByID<FollowersRecord>("user_followers", hashString(targetUserID)).then(res => {
             let item = res;

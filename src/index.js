@@ -31,7 +31,7 @@ root.render(
                 <Route path="/feed" element={<Feed/>}/>
                 <Route path="/playlist/:id" element={<PlaylistView/>}/>
                 <Route path="/reviews/:id" element={<Reviews/>}/>
-                <Route path="/review/:id" element={<Review />}/>
+                <Route path="/review/:id" element={<Review/>}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>
