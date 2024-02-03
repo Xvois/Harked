@@ -1,15 +1,28 @@
 import React, {useState} from "react";
-import {isLoggedIn} from "@tools/users";
-import {UserContainer} from "./UserContainer";
+import {isLoggedIn} from "@/Tools/users";
+import {ComparisonLink, UserContainer} from "./UserContainer";
+import {User} from "@/Tools/Interfaces/userInterfaces";
+import {DatabaseUser} from "@/Tools/Interfaces/databaseInterfaces";
+import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 
-function TopContainer(props) {
+export function TopContainer(props: {
+    pageUser: User;
+    followers: DatabaseUser[];
+    isLoggedUserFollowing: boolean;
+    isOwnPage: boolean;
+    loggedUserID: string;
+    selectedDatapoint: Datapoint;
+    terms: string[];
+    setTermIndex: React.Dispatch<React.SetStateAction<number>>;
+    termIndex: number;
+}) {
     const {
         pageUser,
         followers,
         isLoggedUserFollowing,
         isOwnPage,
         loggedUserID,
-        longTermDP,
+        selectedDatapoint,
         terms,
         setTermIndex,
         termIndex
@@ -21,7 +34,15 @@ function TopContainer(props) {
 
     return (
         <div>
-<           UserContainer {...{windowWidth, pageUser, followers, isLoggedUserFollowing, isOwnPage, loggedUserID, longTermDP}} />
+            <UserContainer {...{
+                windowWidth,
+                pageUser,
+                followers,
+                isLoggedUserFollowing,
+                isOwnPage,
+                loggedUserID,
+                selectedDatapoint
+            }}/>
             <div style={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -30,9 +51,9 @@ function TopContainer(props) {
                 alignItems: 'left',
                 gap: '15px'
             }}>
-                <TermSelection terms={terms} termIndex={termIndex} setTermIndex={setTermIndex}/>
                 {!isOwnPage && isLoggedIn() && windowWidth > 700 &&
-                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID} longTermDP={longTermDP}/>
+                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID}
+                                    selectedDatapoint={selectedDatapoint}/>
                 }
             </div>
         </div>

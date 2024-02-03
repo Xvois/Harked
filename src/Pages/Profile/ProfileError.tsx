@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
-import { ProfileContext } from './ProfileContext';
-import { PageError } from "@components/PageError";
+import React, {useContext} from 'react';
+import {ProfileContext} from './ProfileContext';
+import {PageError} from "@/Components/PageError";
 
 export const ProfileError = () => {
   const { isError, errorDetails } = useContext(ProfileContext);

@@ -1,4 +1,4 @@
-import {Artist} from "@api/Interfaces/artistInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
 
 /**
  * Creates an ordered array of a users top genres based on an order list of artists.

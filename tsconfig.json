@@ -9,5 +9,8 @@
     "jsx": "react",
     "allowJs": true,
   },
+ "include": [
+    "src"
+  ],
   "extends": "./tsconfig.paths.json"
 }

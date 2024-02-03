@@ -1,9 +1,15 @@
-import {useEffect, useState} from "react";
-import {isLoggedIn, milliToHighestOrder, retrieveEventsForUser, retrieveLoggedUserID, UserEvent} from "./Tools/HDM.ts";
-import {getItemType, getLIName} from "@tools/analysis";
-import "./../CSS/Feed.css"
-import {LoadingIndicator, LoadingObject, PageError} from "@components/SharedComponents.tsx";
-import React from "react";
+import React, {useEffect, useState} from "react";
+import {getItemType, getLIName} from "@/Tools/analysis";
+import "./CSS/Feed.css"
+import {UserEvent} from "@/Tools/Interfaces/eventInterfaces";
+import {milliToHighestOrder} from "@/Tools/utils";
+import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
+import {retrieveEventsForUser} from "@/Tools/events";
+import {PageError} from "@/Components/PageError";
+import {LoadingIndicator} from "@/Components/LoadingIndicator";
+import {LoadingObject} from "@/Components/LoadingObject";
+
+//TODO : REWRITE TO ACTUALLY INCLUDE THE USER'S PROFILE
 
 function FeedObject(props: { user_id: string, event: UserEvent, index: number, maxEventsPerLoad: number }) {
 
@@ -18,36 +24,36 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
         switch (event.ref_num) {
             case 1:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner}`}>{event.owner}</a> has
                     added the {itemType.slice(0, itemType.length - 1)} <a className={'heavy-link'}
-                                                                          href={event.item.link}>{getLIName(event.item)}</a> to
+                                                                          href={event.item.id}>{getLIName(event.item)}</a> to
                     their recommendations.</p>
             case 2:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner}`}>{event.owner}</a> has
                     added annotations to <a className={'heavy-link'}
-                                            href={`/playlist/${event.item.playlist_id}`}>{getLIName(event.item)}</a>.
+                                            href={`/playlist/${event.item.id}`}>{getLIName(event.item)}</a>.
                 </p>
             case 3:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/reviews/${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/reviews/${event.owner}`}>{event.owner}</a> has
                     reviewed <a className={'heavy-link'}
-                                href={event.item.link}>{getLIName(event.item)}</a>.</p>
+                                href={event.item.id}>{getLIName(event.item)}</a>.</p>
             case 51:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
-                    removed <a className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a> from their
+                                                            href={`/profile/${event.owner}`}>{event.owner}</a> has
+                    removed <a className={'heavy-link'} href={event.item.id}>{getLIName(event.item)}</a> from their
                     recommendations.</p>
             case 52:
-                const targetPronoun = user_id === event.item.user_id ? 'you' : event.item.username;
+                const targetPronoun = user_id === event.item.id ? 'you' : event.item.id;
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> followed <a
-                    className={'heavy-link'} href={`/profile/${event.item.user_id}`}>{targetPronoun}</a>.</p>
+                                                            href={`/profile/${event.owner}`}>{event.owner}</a> followed <a
+                    className={'heavy-link'} href={`/profile/${event.item}`}>{targetPronoun}</a>.</p>
             case 53:
                 return <p className={'feed-object-desc'}><a className={'heavy-link'}
-                                                            href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a> has
+                                                            href={`/profile/${event.owner}`}>{event.owner}</a> has
                     edited their recommendation for the {itemType.slice(0, itemType.length - 1)} <a
-                        className={'heavy-link'} href={event.item.link}>{getLIName(event.item)}</a>.</p>
+                        className={'heavy-link'} href={event.item.id}>{getLIName(event.item)}</a>.</p>
         }
     }
 
@@ -58,13 +64,13 @@ function FeedObject(props: { user_id: string, event: UserEvent, index: number, m
             animationDelay: `${(index % maxEventsPerLoad) / 20}s`
         } : {}}>
             <div className={'feed-image'} style={{position: 'relative'}}>
-                <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.image}/>
-                <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.image}/>
+                <img alt={'backdrop-blur'} className={'backdrop-image'} src={event.item.id}/>
+                <img alt={getLIName(event.item)} className={'levitating-image'} src={event.item.id}/>
             </div>
             <div>
                 {event.ref_num < 51 && <h3 style={{margin: '0 0 10px 0'}}><a
                     style={{textDecoration: 'none', color: 'var(--primary-colour)'}}
-                    href={`/profile/${event.owner.user_id}`}>{event.owner.username}</a></h3>}
+                    href={`/profile/${event.owner}`}>{event.owner}</a></h3>}
                 {getDescription()}
             </div>
             <p style={{
@@ -110,8 +116,6 @@ const Feed = () => {
                 }
             });
         } else {
-            setIsError(true);
-            setErrorDetails({description: "Viewing the feed requires being logged in."});
         }
 
     }, [])

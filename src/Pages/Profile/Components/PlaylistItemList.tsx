@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {retrievePlaylistMetadata} from "@tools/playlists";
-import {Playlist, PlaylistFromList, PlaylistMeta} from "@api/Interfaces/playlistInterfaces";
-import {createPictureSources} from "@tools/utils";
+import {retrievePlaylistMetadata} from "@/Tools/playlists";
+import {Playlist, PlaylistFromList, PlaylistMeta} from "@/API/Interfaces/playlistInterfaces";
+import {createPictureSources} from "@/Tools/utils";
 
 
 const PlaylistItem = function (props: { playlist: PlaylistFromList | Playlist; }) {

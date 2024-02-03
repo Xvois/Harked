@@ -3,8 +3,10 @@
  * authorisation by the Spotify OAuth service.
  */
 import React from "react";
-import {useAuthenticationLogic} from "./authenticationLogic";
+import useAuthenticationLogic from "./authenticationLogic";
 import {useRedirect} from "./redirect";
+
+ export const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
 
 
 function Authentication() {

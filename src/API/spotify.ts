@@ -1,4 +1,5 @@
 import axios from "axios";
+import {reAuthorise} from "@/Authentication/reAuth";
 
 /**
  * Fetches data from the Spotify API at the specified endpoint.
@@ -28,8 +29,19 @@ export async function fetchSpotifyData<T>(endpoint: string, retryCount: number =
         switch (responseStatus) {
             case UNAUTHENTICATED_STATUS:
                 console.warn('Token expired. Attempting to reauthenticate.');
-                throw new Error('Reauthentication not implemented.');
+                reAuthorise().then(() => {
+                    console.info('Reauthentication successful. Retrying request.');
+                    return fetchSpotifyData<T>(endpoint, retryCount);
+                })
             case RATE_LIMIT_STATUS:
+                if (retryCount < MAX_RETRIES) {
+                    console.warn(`[Error in API call] CODE : ${responseStatus}. Retrying...`);
+                    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchSpotifyData<T>(endpoint, retryCount + 1);
+                } else {
+                    console.warn(`[Error in API call] CODE : ${responseStatus}. Maximum retries exceeded.`);
+                    return null;
+                }
             case SERVER_ISSUE_STATUS:
                 if (retryCount < MAX_RETRIES) {
                     console.warn(`[Error in API call] CODE : ${responseStatus}. Retrying...`);

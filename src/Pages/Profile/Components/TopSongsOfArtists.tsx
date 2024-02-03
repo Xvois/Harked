@@ -1,5 +1,5 @@
 import React from "react";
-import {Datapoint, DatapointRecord} from "@tools/Interfaces/datapointInterfaces";
+import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 
 
 const TopSongsOfArtists = (props: { selectedDatapoint: Datapoint; number: number; }) => {

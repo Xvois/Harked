@@ -1,14 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {
-    followUser,
-    isLoggedIn,
-    retrieveFollowers,
-    retrieveFollowing,
-    retrieveLoggedUserID,
-    retrieveUser,
-    unfollowUser
-} from './Tools/HDM.ts';
-import './../CSS/Followers.css'
+import './CSS/Followers.css'
+import {isLoggedIn, retrieveLoggedUserID, retrieveUser} from "@/Tools/users";
+import {followUser, retrieveFollowers, retrieveFollowing, unfollowUser} from "@/Tools/following";
 
 const FollowersComponent = () => {
     const [followers, setFollowers] = useState([]);

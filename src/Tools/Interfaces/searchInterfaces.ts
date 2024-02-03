@@ -1,8 +1,8 @@
-import {SpotifyList} from "@api/Interfaces/spotifyResponseInterface";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {Artist} from "@api/Interfaces/artistInterfaces";
-import {Album} from "@api/Interfaces/albumInterfaces";
-import {Playlist} from "@api/Interfaces/playlistInterfaces";
+import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {Playlist} from "@/API/Interfaces/playlistInterfaces";
 
 export interface SpotifySearch {
   tracks: SpotifyList<Track>;

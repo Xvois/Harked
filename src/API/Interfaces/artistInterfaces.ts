@@ -29,3 +29,7 @@ export interface Artist {
 export interface RetrievedArtists {
     artists: Artist[];
 }
+
+export interface RelatedArtists {
+    artists: Artist[];
+}

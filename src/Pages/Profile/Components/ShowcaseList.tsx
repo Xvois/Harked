@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
-import {isLoggedIn} from "@tools/users";
+import {isLoggedIn} from "@/Tools/users";
 import ArrowCircleDownIcon from "@mui/icons-material/ArrowCircleDown";
 import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
 import ClearAllOutlinedIcon from "@mui/icons-material/ClearAllOutlined";
 import FlareIcon from "@mui/icons-material/Flare";
-import {getSimilarArtists, getTrackRecommendations} from "@tools/similar";
-import {getAverageAnalytics, getItemAnalysis, getItemIndexChange, getLIDescription, getLIName} from "@tools/analysis";
+import {getGenresRelatedArtists, getSimilarArtists, getTrackRecommendations} from "@/Tools/similar";
+import {getAverageAnalytics, getItemAnalysis, getItemIndexChange, getLIDescription, getLIName} from "@/Tools/analysis";
 import {SongAnalysis} from "./SongAnalysis";
 import {ArtistAnalysis} from "./ArtistAnalysis";
 
@@ -177,7 +177,8 @@ const ShowcaseListItem = (props) => {
     }
 
     const analysis = getItemAnalysis(element, type, pageUser, selectedDatapoint, allDatapoints, term);
-    const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0])?.image;
+    // TODO: CREATE SRCSET
+    const image = element.image ? element.image : (getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0])?.images[0];
 
     return (
         <div className={"showcase-list-item"}

@@ -1,8 +1,12 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {capitalize} from "@mui/material";
-import {getItemType, getLIDescription, getLIName} from "@tools/analysis";
-import "../CSS/Review.css"
+import {getItemType, getLIDescription, getLIName} from "@/Tools/analysis";
+import "./CSS/Review.css"
+import {retrieveReview} from "@/Tools/reviews";
+import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
+import {StyledRating} from "@/Components/styles";
+import {CommentSection} from "@/Components/CommentSection";
 
 
 const Review = () => {
@@ -17,14 +21,14 @@ const Review = () => {
             setReview(r);
             if (isLoggedIn()) {
                 retrieveLoggedUserID().then((user_id) => {
-                    if (user_id === r.owner.user_id) {
+                    if (user_id === r.owner) {
                         setPossessive('your');
                     } else {
-                        setPossessive(`${r.owner.username}'s`);
+                        setPossessive(`${r.owner}'s`);
                     }
                 })
             } else {
-                setPossessive(`${r.owner.username}'s`);
+                setPossessive(`${r.owner}'s`);
             }
         });
     }, [])

@@ -1,7 +1,7 @@
 import {DatabaseUser, Item, Record} from "./databaseInterfaces";
-import {Album} from "../../API/Interfaces/albumInterfaces";
-import {Artist} from "../../API/Interfaces/artistInterfaces";
-import {Track} from "../../API/Interfaces/trackInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {Track} from "@/API/Interfaces/trackInterfaces";
 
 export interface Recommendation extends Record {
     item: Item,

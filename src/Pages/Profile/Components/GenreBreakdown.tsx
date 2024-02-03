@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Doughnut} from "react-chartjs-2";
-import {getItemAnalysis, getLIName} from "@tools/analysis";
+import {getItemAnalysis, getLIName} from "@/Tools/analysis";
 
 /**
  * File: src/Pages/Profile/Components/GenreBreakdown.tsx

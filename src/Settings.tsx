@@ -1,9 +1,8 @@
-import React from "react";
-import {useEffect, useState} from "react";
-import "./../CSS/Settings.css"
-import {deleteUser, isLoggedIn, retrieveLoggedUserID, retrieveUser} from "@tools/users";
-import {changeSettings, retrieveSettings} from "@tools/userMeta";
-import {PageError} from "@components/PageError";
+import React, {useEffect, useState} from "react";
+import "./CSS/Settings.css"
+import {deleteUser, isLoggedIn, retrieveLoggedUserID, retrieveUser} from "@/Tools/users";
+import {changeSettings, retrieveSettings} from "@/Tools/userMeta";
+import {PageError} from "@/Components/PageError";
 
 
 const SettingElement = (props: { name: string, value: string, button?: boolean, callback?, warning?: boolean }) => {
@@ -42,8 +41,6 @@ export const Settings = () => {
         if (isLoggedIn()) {
             retrieveData();
         } else {
-            setIsError(true);
-            setErrorDetails({description: "Viewing settings requires being logged in."});
         }
     }, [])
 
@@ -56,7 +53,7 @@ export const Settings = () => {
     const handleDeleteUser = () => {
         if (window.confirm("Are you sure you want to delete your account?")) {
             deleteUser(user.user_id).then(() => {
-                handleCacheReset();
+                // TODO: HANDLE CACHE RESET
                 window.localStorage.clear();
                 window.location.href = '/';
             }).catch(err => {

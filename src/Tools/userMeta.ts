@@ -1,4 +1,4 @@
-import {getLocalDataByID, updateLocalData} from "@api/pocketbase";
+import {getLocalDataByID, updateLocalData} from "@/API/pocketbase";
 import {hashString} from "./utils";
 import {Settings} from "./Interfaces/userMeta";
 

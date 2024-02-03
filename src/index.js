@@ -1,20 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './CSS/index.css';
-import Homepage from './JS/Homepage';
-import Authentication from './JS/Authentication/Authentication';
-import Comparison from './JS/Comparison'
-import reportWebVitals from './JS/reportWebVitals';
-import {BrowserRouter, Route, Routes} from "react-router-dom"; // Functionality to redirect the user to different pages.
-import TopBar from './JS/TopBar';
-import Profile from './JS/Pages/Profile/Profile';
-import {Analytics} from '@vercel/analytics/react';
-import {Settings} from './JS/Settings.tsx'
-import Followers from "./JS/Followers";
-import Feed from "./JS/Feed.tsx";
-import PlaylistView from "./JS/PlaylistView.tsx";
-import Reviews from "./JS/Reviews.tsx";
-import Review from "./JS/Review.tsx";
+import TopBar from "./TopBar";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {Analytics} from "@vercel/analytics/react";
+import Review from "./Review";
+import Reviews from "./Reviews";
+import PlaylistView from "./PlaylistView";
+import Feed from "./Feed";
+import {Settings} from "./Settings";
+import Followers from "./Followers";
+import Comparison from "./Comparison";
+import Authentication from "./Authentication/Authentication";
+import Homepage from "./Homepage";
+import reportWebVitals from "./reportWebVitals";
+import {Profile} from "@/Pages/Profile/Profile";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -1,4 +1,4 @@
-import {Record} from "@tools/Interfaces/databaseInterfaces";
+import {Record} from "@/Tools/Interfaces/databaseInterfaces";
 
 interface Image {
     url: string;

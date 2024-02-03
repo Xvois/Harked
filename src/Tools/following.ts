@@ -1,4 +1,4 @@
-import {getLocalData, getLocalDataByID, updateLocalData} from "@api/pocketbase";
+import {getLocalData, getLocalDataByID, updateLocalData} from "@/API/pocketbase";
 import {FollowersRecord, FollowingRecord} from "./Interfaces/followingInterfaces";
 import {hashString} from "./utils";
 import {createEvent} from "./events";

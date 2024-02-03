@@ -1,4 +1,4 @@
-import { getLocalDataByID } from "@api/pocketbase";
+import {getLocalDataByID} from "@/API/pocketbase";
 
 export const validateUser = async () => {
     if (window.localStorage.getItem("pocketbase_auth")) {

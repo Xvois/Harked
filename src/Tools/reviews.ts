@@ -1,15 +1,16 @@
-import {Artist} from "@api/Interfaces/artistInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {User} from "./Interfaces/userInterfaces";
 import {retrieveUser} from "./users";
 import {hashString, resolveItems} from "./utils";
-import {deleteLocalData, getFullLocalData, getLocalDataByID, getPagedLocalData, putLocalData} from "@api/pocketbase";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {Album} from "@api/Interfaces/albumInterfaces";
+import {deleteLocalData, getFullLocalData, getLocalDataByID, getPagedLocalData, putLocalData} from "@/API/pocketbase";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
 import {createEvent} from "./events";
 import {Item, ItemType} from "./Interfaces/databaseInterfaces";
 import {Review, ReviewWithItem} from "./Interfaces/reviewInterfaces";
 import {getLIName} from "./analysis";
-import {fetchSpotifyData} from "@api/spotify";
+import {fetchSpotifyData} from "@/API/spotify";
+import {ListResult} from "pocketbase";
 
 /**
  * Submits a review from the target user.
@@ -80,13 +81,13 @@ export const submitReview = async (user_id: string, item: Item, type: ItemType, 
  * @param {string} [sort="-created"] - The sorting order.
  * @returns {Promise<ReviewWithItem<any>[]>} - A promise that resolves to an array of reviews with their associated resolved items.
  */
-export const retrievePaginatedReviews = async (user_id: string, page: number, itemsPerPage: number, sort: string = "-created") => {
+export const retrievePaginatedReviews = async (user_id: string, page: number, itemsPerPage: number, sort: string = "-created"): Promise<ListResult<ReviewWithItem<any>>> => {
     let reviewsPage = await getPagedLocalData<Review>("reviews", itemsPerPage, page, `owner.user_id="${user_id}"`, sort);
     let reviews = reviewsPage.items;
     let formattedReviews: ReviewWithItem<any>[] = [];
 
     if (reviews === undefined) {
-        return [];
+        return {items: undefined, page: 0, perPage: 0, totalItems: 0, totalPages: 0};
     }
 
     // Extract the 'item' property from each review
@@ -102,8 +103,7 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
             item: resolvedItems[i]
         });
     }
-
-    return formattedReviews;
+    return {...reviewsPage, items: formattedReviews};
 };
 
 /**
@@ -113,7 +113,7 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
  * @param user_id
  */
 export const retrieveUnresolvedReviews = async (user_id: string) => {
-    return (await getFullLocalData("reviews", `owner.user_id="${user_id}"`, '-created'));
+    return (await getFullLocalData<Review>("reviews", `owner.user_id="${user_id}"`, '-created'));
 }
 
 

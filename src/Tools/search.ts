@@ -1,14 +1,14 @@
-import {fetchSpotifyData} from "@api/spotify";
-import {SpotifyList} from "@api/Interfaces/spotifyResponseInterface";
-import {Artist} from "@api/Interfaces/artistInterfaces";
-import {SpotifySearch} from "@tools/Interfaces/searchInterfaces";
-import {retrieveFollowing} from "@tools/following";
-import {retrieveAllDatapoints} from "@tools/datapoints";
+import {fetchSpotifyData} from "@/API/spotify";
+import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {SpotifySearch} from "@/Tools/Interfaces/searchInterfaces";
+import {retrieveFollowing} from "@/Tools/following";
+import {retrieveAllDatapoints} from "@/Tools/datapoints";
 import {containsElement} from "./analysis";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {Album} from "@api/Interfaces/albumInterfaces";
-import {albums_cache} from "@tools/cache";
-import {PlTrack} from "@api/Interfaces/playlistInterfaces";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {albums_cache} from "@/Tools/cache";
+import {PlTrack} from "@/API/Interfaces/playlistInterfaces";
 
 /**
  * Returns the results of a query of a certain type.

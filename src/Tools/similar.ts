@@ -1,4 +1,6 @@
-import {fetchSpotifyData} from "@api/spotify";
+import {fetchSpotifyData} from "@/API/spotify";
+import {Artist, RelatedArtists} from "@/API/Interfaces/artistInterfaces";
+import {TrackRecommendations} from "@/API/Interfaces/trackInterfaces";
 
 /**
  * Returns similar artists to the artist id passed in.
@@ -6,7 +8,7 @@ import {fetchSpotifyData} from "@api/spotify";
  * @returns Array<Artist>
  */
 export const getSimilarArtists = async (id: string) => {
-    return (await fetchSpotifyData(`artists/${id}/related-artists`)).artists;
+    return (await fetchSpotifyData<RelatedArtists>(`artists/${id}/related-artists`)).artists;
 }
 
 /**
@@ -24,5 +26,21 @@ export const getTrackRecommendations = async (seed_artists: string[], seed_genre
     params.append("seed_tracks", seed_tracks.join(','));
     params.append("limit", limit.toString());
 
-    return (await fetchSpotifyData(`recommendations?${params}`)).tracks;
+    return (await fetchSpotifyData<TrackRecommendations>(`recommendations?${params}`)).tracks;
 }
+
+// A function that gets similar artists to a particular genre.
+
+/**
+ * Returns similar artists to the genre id passed in.
+ * @returns Array<Artist>
+ * @param genre
+ * @param artists
+ */
+export const getGenresRelatedArtists = (genre: string, artists: Artist[]) => {
+    return artists.filter(a => a.genres ? a.genres.some(g => g === genre) : false)
+}
+
+
+
+

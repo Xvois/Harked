@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
-import {isLoggedIn, retrieveAllPublicUsers, retrieveFollowing, retrieveLoggedUserID} from "./Tools/HDM.ts";
 import Fuse from 'fuse.js';
 import SearchIcon from '@mui/icons-material/Search';
 import Input from "@mui/joy/Input";
+import {isLoggedIn, retrieveAllPublicUsers, retrieveLoggedUserID} from "@/Tools/users";
+import {retrieveFollowing} from "@/Tools/following";
 
 const Results = (props) => {
     const {searchResults, following} = props;

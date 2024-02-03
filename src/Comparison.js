@@ -6,11 +6,10 @@
  */
 
 import React, {useEffect, useState} from "react";
-import './../CSS/Comparison.css';
-import './../CSS/Profile.css';
-import './../CSS/Focus.css';
+import './CSS/Comparison.css';
+import './CSS/Profile.css';
+import './CSS/Focus.css';
 
-import {resolveItems, retrieveDatapoint, retrieveUnresolvedReviews, retrieveUser} from "./Tools/HDM.ts";
 import {
     analyticsMetrics,
     calculateSimilarity,
@@ -21,10 +20,16 @@ import {
     getLIName,
     getMatchingItems,
     translateAnalytics
-} from "@tools/analysis";
-import {StatBlock, StyledRating, ValueIndicator} from "@components/SharedComponents.tsx";
+} from "@/Tools/analysis";
 import NotesSharpIcon from "@mui/icons-material/NotesSharp";
 import {capitalize} from "@mui/material";
+import {retrieveUnresolvedReviews} from "@/Tools/reviews";
+import {StyledRating} from "@/Components/styles";
+import {ValueIndicator} from "@/Components/ValueIndicator";
+import {retrieveUser} from "@/Tools/users";
+import {retrieveDatapoint} from "@/Tools/datapoints";
+import {resolveItems} from "@/Tools/utils";
+import {StatBlock} from "@/Components/StatBlock";
 
 const Comparison = () => {
     let re = /[^#&]+/g;
@@ -165,6 +170,7 @@ const Comparison = () => {
                         .map(r1 => [r0, r1])
                 );
                 for (let match of matches) {
+                    // TODO: FIX THIS
                     await resolveItems(match);
                 }
                 setMatchingReviews(matches);

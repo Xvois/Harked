@@ -1,4 +1,4 @@
-import {fetchSpotifyData} from "@api/spotify";
+import {fetchSpotifyData} from "@/API/spotify";
 import {
     Playlist,
     PlaylistFromList,
@@ -6,9 +6,9 @@ import {
     PlFromListWithTracks,
     PlItem,
     PlTrack
-} from "@api/Interfaces/playlistInterfaces";
-import {SpotifyList} from "@api/Interfaces/spotifyResponseInterface";
-import {deleteLocalData, getLocalData, putLocalData, updateLocalData} from "@api/pocketbase";
+} from "@/API/Interfaces/playlistInterfaces";
+import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
+import {deleteLocalData, getLocalData, putLocalData, updateLocalData} from "@/API/pocketbase";
 import {createEvent} from "./events";
 
 

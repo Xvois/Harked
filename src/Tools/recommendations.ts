@@ -1,9 +1,9 @@
 import {hashString, retrieveID} from "./utils";
-import {deleteLocalData, getLocalDataByID, putLocalData, updateLocalData} from "@api/pocketbase";
-import {Artist} from "@api/Interfaces/artistInterfaces";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {Album} from "@api/Interfaces/albumInterfaces";
-import {fetchSpotifyData} from "@api/spotify";
+import {deleteLocalData, getLocalDataByID, putLocalData, updateLocalData} from "@/API/pocketbase";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {fetchSpotifyData} from "@/API/spotify";
 import {createEvent} from "./events";
 import {ItemType} from "./Interfaces/databaseInterfaces";
 import {

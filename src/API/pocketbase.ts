@@ -1,13 +1,20 @@
 import PocketBase, {Record, RecordSubscription} from "pocketbase";
-import {DatapointRecord} from "../Tools/Interfaces/datapointInterfaces";
-import {DatabaseUser} from "../Tools/Interfaces/databaseInterfaces";
+import {DatabaseUser} from "@/Tools/Interfaces/databaseInterfaces";
+import {DatapointRecord, Term} from "@/Tools/Interfaces/datapointInterfaces";
+
+// TODO: MUST ADD HEADERS TO SEND db_id SO IT CAN BE CHECKED SERVER SIDE
 
 /**
  * Creates a new instance of PocketBase.
  * @returns {PocketBase} A new PocketBase instance.
  */
-export const createNewPBInstance = () => {
-    return new PocketBase("https://harked.pockethost.io/");
+export const createNewPBInstance = (): PocketBase => {
+    const instance = new PocketBase("https://harked.pockethost.io/");
+    instance.beforeSend = function(url, options) {
+        options.headers['db_id'] = window.localStorage.getItem('db_id');
+        return {url, options}
+    }
+    return instance;
 }
 
 const pb = createNewPBInstance();
@@ -63,7 +70,7 @@ const handleFetchException = (err) => {
  * @param {string} term The term to check.
  * @returns {Promise<boolean>} True if a valid datapoint exists, false otherwise.
  */
-export const validDPExists = async (owner, term) => {
+export const validDPExists = async (owner: string, term: Term) => {
     const d = new Date();
     const WEEK_IN_MILLISECONDS = 6.048e+8;
     d.setMilliseconds(d.getMilliseconds() - WEEK_IN_MILLISECONDS);
@@ -149,7 +156,6 @@ export const getDelayedDatapoint = async (user_id, term, delay) => {
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
     }).catch(handleFetchException);
-    console.log(dps);
     return dps.items[delay];
 }
 
@@ -191,7 +197,7 @@ export const getDatapointRecord = async (user_id, term, timeSens): Promise<Datap
         });
 }
 
-export const postDatapointRecord = async (record: DatapointRecord) => {
+export const postDatapointRecord = async (record: Omit<DatapointRecord, "id" | "created" | "updated">) => {
     // Check if a valid datapoint already exists.
     const validExists = await validDPExists(record.owner, record.term);
     // If a valid one already exists, don't post.

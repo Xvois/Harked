@@ -116,3 +116,17 @@ export interface TrackAnalytics {
 export interface MultipleAnalytics {
     audio_features: TrackAnalytics[]
 }
+
+interface Seed {
+    afterFilteringSize: number;
+    afterRelinkingSize: number;
+    href: string;
+    id: string;
+    initialPoolSize: number;
+    type: string;
+}
+
+export interface TrackRecommendations {
+    seeds: Seed[];
+    tracks: Track[];
+}

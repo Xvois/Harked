@@ -1,4 +1,4 @@
-import {deleteLocalData, getLocalDataByID, putLocalData, updateLocalData} from "@api/pocketbase";
+import {deleteLocalData, getLocalDataByID, putLocalData, updateLocalData} from "@/API/pocketbase";
 import {CommentSection, CommentWithUser} from "./Interfaces/commentInterfaces";
 import {chunks, hashString} from "./utils";
 import {retrieveUser} from "./users";

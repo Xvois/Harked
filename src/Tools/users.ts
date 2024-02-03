@@ -1,4 +1,4 @@
-import {fetchSpotifyData} from "@api/spotify";
+import {fetchSpotifyData} from "@/API/spotify";
 import {user_cache} from "./cache";
 import {User} from "./Interfaces/userInterfaces";
 import {
@@ -8,7 +8,7 @@ import {
     getDatabaseUser,
     getFullLocalData,
     getLocalData
-} from "@api/pocketbase";
+} from "@/API/pocketbase";
 import {hashString} from "./utils";
 import {DatapointRecord} from "./Interfaces/datapointInterfaces";
 import {DatabaseUser} from "./Interfaces/databaseInterfaces";
@@ -30,6 +30,7 @@ export const retrieveUser = async function (user_id: string): Promise<User> {
         return user;
     }
 };
+
 
 /**
  * Returns all the users currently in the database.

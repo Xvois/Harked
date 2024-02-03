@@ -1,13 +1,13 @@
-import {createNewPBInstance} from "@api/pocketbase";
+import {createNewPBInstance} from "@/API/pocketbase";
+import {CLIENT_ID} from "@/Authentication/Authentication";
 
 /**
  * Initiates the OAuth process with Spotify by redirecting the user to the Spotify authorization page.
  * @async
  */
 export const handleLogin = async () => {
+    console.info('Attempting to log in.')
     const pb = createNewPBInstance();
-
-    const CLIENT_ID = "a0b3f8d150d34dd79090608621999149";
 
     const url = new URL(window.location.toString());
     const redirect = `${url.origin}/authentication`;

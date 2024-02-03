@@ -4,20 +4,17 @@ import {
     modifyRecommendation,
     retrieveProfileRecommendations,
     submitRecommendation
-} from "@tools/recommendations";
-import {createEvent} from "@tools/events";
-import {getItemType, getLIDescription, getLIName} from "@tools/analysis";
-import {SpotifyLink} from "@components/SpotifyLink";
-import {SelectionModal} from "@components/SelectionModal";
-import {
-    FormattedProfileRecommendations,
-    FormattedRecommendation,
-    Recommendation
-} from "@tools/Interfaces/recommendationInterfaces";
-import {Album} from "@api/Interfaces/albumInterfaces";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {Artist} from "@api/Interfaces/artistInterfaces";
-import {createPictureSources, isTrack} from "@tools/utils";
+} from "@/Tools/recommendations";
+import {createEvent} from "@/Tools/events";
+import {getLIDescription, getLIName} from "@/Tools/analysis";
+import {SpotifyLink} from "@/Components/SpotifyLink";
+import {SelectionModal} from "@/Components/SelectionModal";
+import {FormattedProfileRecommendations, FormattedRecommendation} from "@/Tools/Interfaces/recommendationInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {createPictureSources, isAlbum, isArtist, isTrack} from "@/Tools/utils";
+import {ItemType} from "@/Tools/Interfaces/databaseInterfaces";
 
 const ProfileRecommendations = (props: { pageGlobalUserID: string; isOwnPage: boolean; }) => {
     const {pageGlobalUserID, isOwnPage} = props;
@@ -145,19 +142,24 @@ type RecommendationSelectionModalProps = {
 const RecommendationSelectionModal = (props: RecommendationSelectionModalProps) => {
     const {showModal, setShowModal, recommendations, setRecommendations, pageGlobalUserID, initialItem = null} = props;
 
-    const handleSubmit = async (selectedItem, type, description) => {
+    const handleSubmit = async (selectedItem: Track | Album | Artist, type: ItemType, description: string) => {
 
-        let submissionItem = selectedItem;
-        if (type === 'songs') {
-            submissionItem.analytics = await retrieveSongAnalytics(submissionItem.song_id);
-        }
-        await submitRecommendation(pageGlobalUserID, submissionItem, type, description).then(() => {
+        await submitRecommendation(pageGlobalUserID, selectedItem, type, description).then(() => {
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
         });
     }
 
-    const handleModify = async (selectedItem, type, description) => {
-        const existingRecIndex = recommendations.findIndex(r => r.item[`${type.slice(0, type.length - 1)}_id`] === selectedItem[`${type.slice(0, type.length - 1)}_id`]);
+    const handleModify = async (selectedItem: Track | Album | Artist, type: ItemType, description: string) => {
+        let existingRecIndex = -1;
+        if (isTrack(selectedItem)) {
+            existingRecIndex = recommendations.tracks.findIndex(r => r.item.id === selectedItem.id);
+        } else if (isAlbum(selectedItem)) {
+            existingRecIndex = recommendations.albums.findIndex(r => r.item.id === selectedItem.id);
+        } else if (isArtist(selectedItem)) {
+            existingRecIndex = recommendations.artists.findIndex(r => r.item.id === selectedItem.id);
+        } else {
+            throw new Error('Invalid item type in handleModify recommendation.');
+        }
         const existingRec = recommendations[existingRecIndex];
         await modifyRecommendation(pageGlobalUserID, existingRec, type, description).then(() => {
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));

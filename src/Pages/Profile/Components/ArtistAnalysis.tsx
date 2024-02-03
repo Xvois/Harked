@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {followingContentsSearch, getAlbumsWithTracks} from "@tools/search";
-import {getLIName} from "@tools/analysis";
-import {Artist} from "@api/Interfaces/artistInterfaces";
-import {Playlist, PlaylistFromList} from "@api/Interfaces/playlistInterfaces";
-import {Term} from "@tools/Interfaces/datapointInterfaces";
+import {followingContentsSearch, getAlbumsWithTracks} from "@/Tools/search";
+import {getLIName} from "@/Tools/analysis";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {Playlist} from "@/API/Interfaces/playlistInterfaces";
+import {Term} from "@/Tools/Interfaces/datapointInterfaces";
 
 
 export const ArtistAnalysis = (props: { user_id: string; artist: Artist; playlists: Playlist[]; term: Term; isOwnPage: boolean; }) => {

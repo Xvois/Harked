@@ -1,13 +1,11 @@
-// noinspection HtmlUnknownAnchorTarget
-
 import React, {useState} from 'react';
-import './../CSS/TopBar.css';
+import './CSS/TopBar.css';
 import Search from "./Search"
-import {isLoggedIn} from "./Tools/HDM.ts";
 import {BlurOn} from "@mui/icons-material";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import {handleAlternateLogin} from "./Authentication/Authentication";
+import {isLoggedIn} from "@/Tools/users";
+import {handleLogin} from "./Authentication/login";
 
 const RedirectElement = (props) => {
     const {title, href, requiresLogIn = false, requiresLogOut = false, callback = null} = props;
@@ -56,11 +54,6 @@ const TopBar = () => {
             {title: 'Reviews', href: '/reviews/me', requiresLogIn: true},
             {title: 'Feed', href: '/feed', requiresLogIn: true},
             {title: 'Settings', href: '/settings', requiresLogIn: true},
-            {
-                title: 'Login',
-                callback: handleAlternateLogin,
-                requiresLogOut: true
-            }
         ]
 
     const updateSize = () => {

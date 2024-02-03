@@ -1,6 +1,6 @@
 import React from "react";
-import {getLIName, getTopInterestingAnalytics, translateAnalytics, translateAnalyticsLow} from "@tools/analysis";
-import {StatBlock} from "@components/StatBlock";
+import {getLIName, getTopInterestingAnalytics, translateAnalytics, translateAnalyticsLow} from "@/Tools/analysis";
+import {StatBlock} from "@/Components/StatBlock";
 
 export const SongAnalysis = (props) => {
     const {song, averageAnalytics} = props;

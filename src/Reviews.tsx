@@ -1,11 +1,26 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
-import {getItemType, getLIDescription, getLIName} from "@tools/analysis";
+import {getItemType, getLIDescription, getLIName} from "@/Tools/analysis";
 import {capitalize} from "@mui/material";
 import NotesSharpIcon from '@mui/icons-material/NotesSharp';
-import "./../CSS/Reviews.css";
+import "./CSS/Reviews.css";
 import {Bar} from "react-chartjs-2";
 import {BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip,} from 'chart.js';
+import {deleteReview, retrievePaginatedReviews, retrieveUnresolvedReviews, submitReview} from "@/Tools/reviews";
+import {StyledField, StyledPagination, StyledRating} from "@/Components/styles";
+import {retrieveSearchResults} from "@/Tools/search";
+import {LoadingIndicator} from "@/Components/LoadingIndicator";
+import {Review, ReviewWithItem} from "@/Tools/Interfaces/reviewInterfaces";
+import {SelectionModal} from "@/Components/SelectionModal";
+import {User} from "@/Tools/Interfaces/userInterfaces";
+import {createPictureSources} from "@/Tools/utils";
+import {SimpleModal} from "@/Components/SimpleModal";
+import {ValueIndicator} from "@/Components/ValueIndicator";
+import {isLoggedIn, retrieveLoggedUserID, retrieveUser} from "@/Tools/users";
+import {PageError} from "@/Components/PageError";
+
+// TODO: DOESN"T WORK NEEDS CHANGES WITH ITEMS
+
 
 ChartJS.register(
     CategoryScale,
@@ -18,7 +33,7 @@ ChartJS.register(
 
 
 const ReviewsList = (props: {
-    reviews: Array<Review>,
+    reviews: Array<ReviewWithItem<any>>,
     isOwnPage: boolean,
     includedTypes: Array<string>,
     updatePage: Function
@@ -55,7 +70,7 @@ const ReviewsList = (props: {
     )
 }
 
-export const ReviewItem = (props: { review: Review, isOwnPage: boolean, handleDelete: Function }) => {
+export const ReviewItem = (props: { review: ReviewWithItem<any>, isOwnPage: boolean, handleDelete: Function }) => {
     const {review, isOwnPage, handleDelete} = props;
 
     const created = new Date(review.created);
@@ -228,21 +243,20 @@ const RatingDistribution = (props: { reviews: Array<Review> }) => {
 
 const UserDetails = (props: { user: User, possessive: string, numOfReviews: number, isOwnPage: boolean }) => {
     const {user, possessive, numOfReviews, isOwnPage} = props;
-
+    const pictures = user.images;
+    const imageSrcSet = createPictureSources(pictures, 0.1);
     return (
         <div className='user-container' style={{marginBottom: '25px', width: 'max-content', maxWidth: '100%'}}>
             <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px', gap: '15px'}}>
-                {user.profile_picture && (
-                    <div className={'profile-picture'}>
-                        <img alt={'profile picture'} className={'levitating-image'} src={user.profile_picture}
-                             style={{height: '100%', width: '100%', objectFit: 'cover'}}/>
-                    </div>
-                )}
+                <div className={'profile-picture'}>
+                    <img alt={'profile picture'} className={'levitating-image'} srcSet={imageSrcSet}
+                         style={{height: '100%', width: '100%', objectFit: 'cover'}}/>
+                </div>
                 <div className={'user-details'}>
                     <p style={{margin: '0 0 -5px 0'}}>Reviews from</p>
-                    <a className={'heavy-link'} href={`/profile/${user.user_id}`}
+                    <a className={'heavy-link'} href={`/profile/${user.id}`}
                        style={{fontSize: '30px', wordBreak: 'break-all'}}>
-                        {user.username}
+                        {user.display_name}
                     </a>
                     {numOfReviews !== undefined && numOfReviews !== null ?
                         <p style={{margin: 0}}><span style={{fontWeight: 'bold'}}>{numOfReviews}</span> reviews</p>
@@ -262,12 +276,16 @@ const ImportForm = (props: { user_id: string, updatePage: Function }) => {
     const [numOfItems, setNumOfItems] = useState(undefined);
     const [processing, setProcessing] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const tableRef = useRef('');
+    const tableRef = useRef<HTMLTextAreaElement | null>(null);
 
     const importFromRYM = async () => {
         setProcessing(true);
-        console.log(tableRef.current.value);
-        const data = parseTable(tableRef.current.value);
+        let data;
+        if (tableRef.current) {
+            data = parseTable(tableRef.current.value);
+        } else {
+            return;
+        }
         setNumOfItems(data.length);
 
         // Function to resolve promises in batches
@@ -285,7 +303,7 @@ const ImportForm = (props: { user_id: string, updatePage: Function }) => {
 
         const batchSize = 50;
         const searchResultsPromises = data.map((d) =>
-            retrieveSearchResults(d.title + " " + d.artist, "albums", 1)
+            retrieveSearchResults(d.title + " " + d.artist, "album", 1)
         );
 
         const searchResults = await resolveInBatches(searchResultsPromises, batchSize);
@@ -297,7 +315,7 @@ const ImportForm = (props: { user_id: string, updatePage: Function }) => {
         });
 
         for (const review of reviews) {
-            await submitReview(user_id, review.item, "albums", review.rating, '');
+            await submitReview(user_id, review.item, "album", review.rating, '');
             // Use the previous state updater form of setCompleted
             setCompleted(prevCompleted => prevCompleted + 1);
 
@@ -509,7 +527,7 @@ const Reviews = () => {
                     setUnresolvedReviews(unresolved);
                     console.log(unresolved);
                     if (pageID !== "me") {
-                        setPossessive(`${u.username}'s`);
+                        setPossessive(`${u.display_name}'s`);
                     }
                 }
             } else {

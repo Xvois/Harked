@@ -1,10 +1,11 @@
 import {Item, ItemType} from "./Interfaces/databaseInterfaces";
-import {fetchSpotifyData} from "@api/spotify";
-import {Album, RetrievedAlbums} from "@api/Interfaces/albumInterfaces";
-import {RetrievedTracks, Track} from "@api/Interfaces/trackInterfaces";
-import {Artist, RetrievedArtists} from "@api/Interfaces/artistInterfaces";
-import {Playlist} from "@api/Interfaces/playlistInterfaces";
+import {fetchSpotifyData} from "@/API/spotify";
+import {Album, RetrievedAlbums} from "@/API/Interfaces/albumInterfaces";
+import {RetrievedTracks, Track} from "@/API/Interfaces/trackInterfaces";
+import {Artist, RetrievedArtists} from "@/API/Interfaces/artistInterfaces";
+import {Playlist} from "@/API/Interfaces/playlistInterfaces";
 import {User} from "./Interfaces/userInterfaces";
+import {RefObject} from 'react';
 
 export function hashString(inputString: string) {
     // @ts-ignore
@@ -177,8 +178,6 @@ export function createPictureSources(images: { url: string, height: number, widt
         return `${image.url} ${width}w`;
     }).join(', ');
 }
-
-import { RefObject } from 'react';
 
 export function getInputRefValue(ref: RefObject<HTMLInputElement>): string | undefined {
   return ref.current?.value;

@@ -1,10 +1,9 @@
-import {useEffect, useRef, useState} from "react";
-import React from "react";
-import {isLoggedIn, retrieveLoggedUserID} from "@tools/users";
-import {deleteComment, retrieveComments, submitComment} from "@tools/comments";
-import {User} from "@tools/Interfaces/userInterfaces";
-import {StyledField} from "@components/styles";
-import {CommentWithUser} from "@tools/Interfaces/commentInterfaces";
+import React, {useEffect, useRef, useState} from "react";
+import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
+import {deleteComment, retrieveComments, submitComment} from "@/Tools/comments";
+import {User} from "@/Tools/Interfaces/userInterfaces";
+import {StyledField} from "@/Components/styles";
+import {CommentWithUser} from "@/Tools/Interfaces/commentInterfaces";
 
 export function CommentSection(props: { sectionID: string, owner: User, isAdmin: boolean }) {
     // An admin will be able to delete all comments in the comment section

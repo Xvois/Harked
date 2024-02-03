@@ -1,13 +1,12 @@
-import {SetStateAction, useEffect, useRef, useState} from "react";
-import {getLIDescription, getLIName} from "@tools/analysis";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {Artist} from "@api/Interfaces/artistInterfaces";
-import {Album} from "@api/Interfaces/albumInterfaces";
-import {retrieveSearchResults} from "@tools/search";
-import {LoadingIndicator} from "@components/LoadingIndicator";
-import React from "react";
-import {StyledField, StyledRating} from "@components/styles";
-import {createPictureSources, getInputRefValue, isTrack} from "@tools/utils";
+import React, {SetStateAction, useEffect, useRef, useState} from "react";
+import {getLIDescription, getLIName} from "@/Tools/analysis";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {retrieveSearchResults} from "@/Tools/search";
+import {LoadingIndicator} from "@/Components/LoadingIndicator";
+import {StyledField, StyledRating} from "@/Components/styles";
+import {createPictureSources, getInputRefValue, isTrack} from "@/Tools/utils";
 // TODO: REMAKE THIS
 export const SelectionModal = (props: {
     showModal: boolean,

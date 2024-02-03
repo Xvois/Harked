@@ -1,11 +1,13 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import {User} from "@tools/Interfaces/userInterfaces";
-import {FollowersRecord} from "@tools/Interfaces/followingInterfaces";
-import {DatabaseUser} from "@tools/Interfaces/databaseInterfaces";
-import {Datapoint} from "@tools/Interfaces/datapointInterfaces";
-import {Playlist, PlaylistFromList, PlFromListWithTracks} from "@api/Interfaces/playlistInterfaces";
-import {Settings} from "@tools/Interfaces/userMeta";
+import React, {createContext, useCallback, useEffect, useState} from 'react';
+import {useParams} from 'react-router-dom';
+import {User} from "@/Tools/Interfaces/userInterfaces";
+import {DatabaseUser} from "@/Tools/Interfaces/databaseInterfaces";
+import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
+import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
+import {Settings} from "@/Tools/Interfaces/userMeta";
+import {retrieveAllDatapoints, retrievePrevAllDatapoints} from "@/Tools/datapoints";
+import {retrieveUser} from "@/Tools/users";
+import {retrieveProfileData, retrieveSettings} from "@/Tools/userMeta";
 
 export const ProfileContext = createContext({
   terms: ["short_term", "medium_term", "long_term"] as string[],
@@ -26,8 +28,6 @@ export const ProfileContext = createContext({
   setPageUser: (() => {}) as React.Dispatch<React.SetStateAction<User>>,
   isOwnPage: false,
   setIsOwnPage: (() => {}) as React.Dispatch<React.SetStateAction<boolean>>,
-  pageGlobalUserID: null as string,
-  setPageGlobalUserID: (() => {}) as React.Dispatch<React.SetStateAction<string>>,
   followers: [] as DatabaseUser[],
   setFollowers: (() => {}) as React.Dispatch<React.SetStateAction<DatabaseUser[]>>,
   allDatapoints: [] as DatabaseUser[],
@@ -66,7 +66,6 @@ export const ProfileContextProvider = ({ children }) => {
     // Uninitialised variables
     const [pageUser, setPageUser] = useState<User>(null);
     const [isOwnPage, setIsOwnPage] = useState<boolean>(false);
-    const [pageGlobalUserID, setPageGlobalUserID] = useState<string>(null);
     const [followers, setFollowers] = useState<DatabaseUser[]>([]);
     const [allDatapoints, setAllDatapoints] = useState<DatabaseUser[]>([]);
     const [allPreviousDatapoints, setAllPreviousDatapoints] = useState<Datapoint[]>([]);
@@ -81,7 +80,32 @@ export const ProfileContextProvider = ({ children }) => {
     const [isError, setIsError] = useState(false);
     const [errorDetails, setErrorDetails] = useState({description: null, errCode: null});
 
-  return (
+
+    const initializeStates = useCallback(async () => {
+        const [user, datapoints, prevDatapoints, settings, profileData] = await Promise.all([
+            retrieveUser(pageID),
+            retrieveAllDatapoints(pageID),
+            retrievePrevAllDatapoints(pageID),
+            retrieveSettings(pageID),
+            retrieveProfileData(pageID),
+        ]);
+
+        setPageUser(user);
+        setAllDatapoints(datapoints);
+        setSelectedDatapoint(datapoints[termIndex]);
+        setAllPreviousDatapoints(prevDatapoints);
+        setSelectedPrevDatapoint(prevDatapoints[termIndex]);
+        setSettings(settings);
+        setProfileData(profileData);
+    }, [pageID, termIndex]);
+
+    useEffect(() => {
+        console.log("ProfileContextProvider: useEffect");
+        initializeStates().then(() => setLoaded(true));
+
+    }, [initializeStates]);
+
+    return (
     <ProfileContext.Provider value={{
       terms,
       setTerms,
@@ -101,8 +125,6 @@ export const ProfileContextProvider = ({ children }) => {
       setPageUser,
       isOwnPage,
       setIsOwnPage,
-      pageGlobalUserID,
-      setPageGlobalUserID,
       followers,
       setFollowers,
       allDatapoints,

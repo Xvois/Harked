@@ -1,8 +1,8 @@
 import {User} from "./Interfaces/userInterfaces";
 import {retrieveUser} from "./users";
-import {getLocalData, putLocalData} from "@api/pocketbase";
-import {Item, ItemType} from "./Interfaces/databaseInterfaces";
-import {resolveItems, retrieveID} from "./utils";
+import {getLocalData, putLocalData} from "@/API/pocketbase";
+import {Item} from "./Interfaces/databaseInterfaces";
+import {resolveItems} from "./utils";
 import {retrieveFollowing} from "./following";
 import {ResUserEvent, UserEvent} from "./Interfaces/eventInterfaces";
 
@@ -33,7 +33,6 @@ import {ResUserEvent, UserEvent} from "./Interfaces/eventInterfaces";
  * @param event_ref_num
  * @param user_id
  * @param item
- * @param item_type
  */
 export const createEvent = async function (event_ref_num: number, user_id: string, item: Item) {
     //await disableAutoCancel();

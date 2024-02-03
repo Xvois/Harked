@@ -1,30 +1,33 @@
-import React, {useEffect, useRef, useState} from "react";
-import {getLIDescription, getLIName, getPlaylistAnalysis} from "@tools/analysis"
-import "./../CSS/PlaylistView.css"
+import React, {SetStateAction, useEffect, useRef, useState} from "react";
+import {getLIDescription, getLIName, getPlaylistAnalysis} from "@/Tools/analysis"
+import "./CSS/PlaylistView.css"
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import {useParams} from "react-router-dom";
-import {Playlist, PlaylistMeta} from "@api/Interfaces/playlistInterfaces";
-import {Track} from "@api/Interfaces/trackInterfaces";
-import {LoadingIndicator} from "@components/LoadingIndicator";
-import {PageError} from "@components/PageError";
-import {isLoggedIn, retrieveLoggedUserID} from "@tools/users";
-import {retrievePlaylist, retrievePlaylistMetadata} from "@tools/playlists";
+import {Playlist, PlaylistMeta} from "@/API/Interfaces/playlistInterfaces";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {LoadingIndicator} from "@/Components/LoadingIndicator";
+import {PageError} from "@/Components/PageError";
+import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
+import {addAnnotation, deleteAnnotation, retrievePlaylist, retrievePlaylistMetadata} from "@/Tools/playlists";
+import {StyledField} from "@/Components/styles";
+import {createPictureSources} from "@/Tools/utils";
 
 const AnnotationViewModal = (props: {
     targetSong: Track,
     playlistMetadata: PlaylistMeta,
     isOwnPlaylist: boolean,
     isOpen: boolean,
-    setIsOpen: React.SetStateAction<boolean>,
-    setIsEditorOpen: React.SetStateAction<boolean>
+    setIsOpen: React.Dispatch<SetStateAction<boolean>>,
+    setIsEditorOpen: React.Dispatch<SetStateAction<boolean>>
 }) => {
 
     const {targetSong, playlistMetadata, isOwnPlaylist, isOpen, setIsOpen, setIsEditorOpen} = props;
     const [metadata, setMetadata] = useState(playlistMetadata);
     useEffect(() => {
-        const modal: HTMLDialogElement = document.getElementById('annotation-viewer-modal');
+
+        const modal = document.getElementById('annotation-viewer-modal') as HTMLDialogElement;
         if (isOpen) {
             modal.showModal();
         } else {
@@ -70,16 +73,16 @@ const AnnotationViewModal = (props: {
 const AnnotationEditModal = (props: {
     user_id: string | null,
     playlist: Playlist,
-    targetSong: Song,
-    playlistMetadata: PlaylistMetadata,
-    setPlaylistMetadata: React.SetStateAction<PlaylistMetadata>,
+    targetSong: Track,
+    playlistMetadata: PlaylistMeta,
+    setPlaylistMetadata: React.Dispatch<SetStateAction<PlaylistMeta>>,
     isOpen: boolean,
-    setIsOpen: React.SetStateAction<boolean>
+    setIsOpen: React.Dispatch<SetStateAction<boolean>>
 }) => {
 
     const {user_id, playlist, targetSong, playlistMetadata, setPlaylistMetadata, isOpen, setIsOpen} = props;
 
-    const annotationRef = useRef('');
+    const annotationRef = useRef<HTMLTextAreaElement | null>(null);
     const [metadata, setMetadata] = useState(playlistMetadata);
 
     useEffect(() => {
@@ -96,14 +99,16 @@ const AnnotationEditModal = (props: {
     }, [playlistMetadata])
 
     const submitAnnotation = () => {
-        addAnnotation(user_id, playlist, targetSong.song_id, annotationRef.current.value).then((returnVal) => {
+        if (annotationRef.current) {
+            addAnnotation(user_id, playlist, targetSong.id, annotationRef.current.value).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
         });
+        }
     }
 
     const removeAnnotation = () => {
-        deleteAnnotation(playlist, targetSong.song_id).then((returnVal) => {
+        deleteAnnotation(playlist, targetSong.id).then((returnVal) => {
             setPlaylistMetadata(returnVal);
             setIsOpen(false);
         });
@@ -132,7 +137,7 @@ const AnnotationEditModal = (props: {
                 inputProps={{maxLength: 100}}
             />
             <div id={'annotation-modal-button-wrapper'}>
-                {metadata?.meta[targetSong?.song_id] !== undefined && (
+                {metadata?.meta[targetSong?.id] !== undefined && (
                     <button className={'subtle-button'} onClick={removeAnnotation}>Delete</button>
                 )}
                 <button style={{marginLeft: 'auto'}} className={'subtle-button'} onClick={submitAnnotation}>Submit
@@ -143,8 +148,8 @@ const AnnotationEditModal = (props: {
 }
 
 
-const Track = (props: {
-    track: Song,
+const TrackItem = (props: {
+    track: Track,
     index: number,
     isOwnPlaylist: boolean,
     annotation: string | undefined,
@@ -165,12 +170,15 @@ const Track = (props: {
         windowWidth
     } = props;
 
+    const images = track.album.images;
+    const imageSrcSet = createPictureSources(images, 0.25);
+
     return (
         <div className={'track-wrapper'}>
             {index % 2 === 0 && <div className={'bg-element'}/>}
             <p className={'track-number'}>{index + 1}.</p>
             <div style={{position: 'relative'}} className={'track-img-wrapper'}>
-                <img className={'track-img'} src={track.image} alt={track.title}/>
+                <img className={'track-img'} srcSet={imageSrcSet} alt={track.name}/>
             </div>
             <div className={'track-text'}>
                 <h3>{getLIName(track)}</h3>
@@ -262,7 +270,7 @@ const PlaylistView = () => {
                 } else {
                     const metadata = await retrievePlaylistMetadata(playlist_id);
                     const userID = await retrieveLoggedUserID();
-                    if (p.owner.user_id === userID) {
+                    if (p.owner.id === userID) {
                         setIsOwnPlaylist(true);
                         console.info('Is own playlist.')
                     }
@@ -351,9 +359,9 @@ const PlaylistView = () => {
                 </div>
                 <h2>Track list</h2>
                 <div className={'playlist-view-tracks'}>
-                    {playlist.tracks.map((t: Song, i: number) => {
-                        let annotation = playlistMetadata?.meta[t.song_id];
-                        return <Track key={t.song_id} windowWidth={windowWidth} setSelectedTrack={setSelectedTrack}
+                    {playlist.tracks.map((t: Track, i: number) => {
+                        let annotation = playlistMetadata?.meta[t.id];
+                        return <TrackItem key={t.id} windowWidth={windowWidth} setSelectedTrack={setSelectedTrack}
                                       track={t} index={i} isOwnPlaylist={isOwnPlaylist} annotation={annotation}
                                       setIsEditorOpen={setIsEditorModalOpen} setIsViewerOpen={setIsViewerModalOpen}/>
                     })}
