@@ -1,4 +1,5 @@
 import {Record} from "@/Tools/Interfaces/databaseInterfaces";
+import {TrackAnalytics} from "@/API/Interfaces/trackInterfaces";
 
 interface Image {
     url: string;
@@ -82,6 +83,10 @@ export interface PlTrack {
     is_local: boolean;
 }
 
+export interface PLTrackWithAnalytics extends PlTrack {
+    audio_features: TrackAnalytics;
+}
+
 interface AddedBy {
     external_urls: ExternalUrls;
     followers: Followers;
@@ -125,6 +130,14 @@ export interface Playlist {
     uri: string;
 }
 
+export interface PlaylistWithTracks extends Omit<Playlist, 'tracks'> {
+    tracks: {
+        href: string;
+        total: number;
+        items: PlTrack[]
+    }
+}
+
 interface PlTracksFromList {
     href: string;
     total: number;
@@ -147,7 +160,11 @@ export interface PlaylistFromList {
 }
 
 export interface PlFromListWithTracks extends Omit<PlaylistFromList, 'tracks'> {
-    tracks: PlTrack[]
+    tracks: {
+        href: string;
+        total: number;
+        items: PlTrack[]
+    }
 }
 
 export interface PlaylistMeta extends Record {

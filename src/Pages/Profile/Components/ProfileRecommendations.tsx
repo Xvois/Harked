@@ -16,13 +16,13 @@ import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {createPictureSources, isAlbum, isArtist, isTrack} from "@/Tools/utils";
 import {ItemType} from "@/Tools/Interfaces/databaseInterfaces";
 
-const ProfileRecommendations = (props: { pageGlobalUserID: string; isOwnPage: boolean; }) => {
+export const ProfileRecommendations = (props: { pageGlobalUserID: string; isOwnPage: boolean; }) => {
     const {pageGlobalUserID, isOwnPage} = props;
 
     const [formattedRecs, setFormattedRecs] = useState<FormattedProfileRecommendations>(null);
-    const artistRecs = formattedRecs.artists;
-    const albumRecs = formattedRecs.albums;
-    const trackRecs = formattedRecs.tracks;
+    const artistRecs = formattedRecs?.artists;
+    const albumRecs = formattedRecs?.albums;
+    const trackRecs = formattedRecs?.tracks;
 
     const [showSelection, setShowSelection] = useState(false);
     const [initialItem, setInitialItem] = useState(null);
@@ -64,6 +64,7 @@ const ProfileRecommendations = (props: { pageGlobalUserID: string; isOwnPage: bo
                 margin: '16px 0',
             }}>
                 <p>RECS UNDER WORKS</p>
+                {trackRecs?.map(r => <Recommendation rec={r} isOwnPage={isOwnPage} handleDelete={handleDelete} handleEdit={handleEdit} />)}
             </div>
             <RecommendationSelectionModal initialItem={initialItem} showModal={showSelection}
                                           setShowModal={setShowSelection}

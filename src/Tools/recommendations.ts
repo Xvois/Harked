@@ -11,7 +11,7 @@ import {
     ProfileRecommendations,
     Recommendation
 } from "./Interfaces/recommendationInterfaces";
-import {getLIName} from "../Analysis/analysis";
+import {getLIName} from "@/Analysis/analysis";
 
 /**
  * Returns all the profile recommendations from the target user.

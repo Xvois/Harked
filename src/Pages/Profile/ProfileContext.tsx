@@ -6,8 +6,9 @@ import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
 import {Settings} from "@/Tools/Interfaces/userMeta";
 import {retrieveAllDatapoints, retrievePrevAllDatapoints} from "@/Tools/datapoints";
-import {retrieveUser} from "@/Tools/users";
+import {retrieveLoggedUserID, retrieveUser} from "@/Tools/users";
 import {retrieveProfileData, retrieveSettings} from "@/Tools/userMeta";
+import {retrievePlaylists} from "@/Tools/playlists";
 
 export const ProfileContext = createContext({
     terms: ["short_term", "medium_term", "long_term"] as string[],
@@ -100,12 +101,15 @@ export const ProfileContextProvider = ({children}) => {
 
 
     const initializeStates = useCallback(async () => {
-        const [user, datapoints, prevDatapoints, settings, profileData] = await Promise.all([
+        const [user, datapoints, prevDatapoints, settings, profileData, loggedUserID, playlists] = await Promise.all([
             retrieveUser(pageID),
             retrieveAllDatapoints(pageID),
             retrievePrevAllDatapoints(pageID),
             retrieveSettings(pageID),
             retrieveProfileData(pageID),
+            retrieveLoggedUserID(),
+            // FIXME: COULD BE MAJOR BOTTLNECK
+            retrievePlaylists(pageID)
         ]);
 
         setPageUser(user);
@@ -115,6 +119,9 @@ export const ProfileContextProvider = ({children}) => {
         setSelectedPrevDatapoint(prevDatapoints[termIndex]);
         setSettings(settings);
         setProfileData(profileData);
+        setLoggedUserID(loggedUserID);
+        setIsOwnPage(user.id === loggedUserID);
+        setPlaylists(playlists);
     }, [pageID, termIndex]);
 
     useEffect(() => {

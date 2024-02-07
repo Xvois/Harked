@@ -2,15 +2,27 @@ import {fetchSpotifyData} from "@/API/spotify";
 import {
     Playlist,
     PlaylistFromList,
-    PlaylistMeta,
+    PlaylistMeta, PlaylistWithTracks,
     PlFromListWithTracks,
     PlItem,
-    PlTrack
+    PlTrack, PLTrackWithAnalytics
 } from "@/API/Interfaces/playlistInterfaces";
 import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
 import {deleteLocalData, getLocalData, putLocalData, updateLocalData} from "@/API/pocketbase";
 import {createEvent} from "./events";
+import {MultipleAnalytics, TrackAnalytics, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
+import {chunks} from "@/Tools/utils";
 
+
+/**
+ * Returns an array of public non-collaborative playlists from a given user.
+ * @param user_id
+ * @returns {Promise<Array<PlaylistFromList>>}
+ */
+export const retrievePlaylistsNoTracks = async function (user_id: string): Promise<Array<PlaylistFromList>> {
+    let playlists = (await fetchSpotifyData<SpotifyList<PlaylistFromList>>(`users/${user_id}/playlists`)).items;
+    return playlists.filter(p => !p.collaborative && p.public);
+}
 
 /**
  * Returns an array of public non-collaborative playlists from a given user.
@@ -49,7 +61,7 @@ export const retrievePlaylists = async function (user_id: string): Promise<Array
 
     await Promise.all(playlistTrackPromises).then(tracksArrays => {
         tracksArrays.forEach((tracks, index) => {
-            formattedPlaylists[index] = {...playlists[index], tracks: tracks};
+            formattedPlaylists[index] = {...playlists[index], tracks: {href: playlists[index].tracks.href, total: playlists[index].tracks.total, items: tracks}}
         });
     });
 
@@ -60,10 +72,29 @@ export const retrievePlaylists = async function (user_id: string): Promise<Array
  * @param playlist_id
  * @returns Promise<Playlist>
  */
-export const retrievePlaylist = function (playlist_id: string) {
+export const retrievePlaylistWithNoTracks = function (playlist_id: string) {
     return fetchSpotifyData<Playlist>(`playlists/${playlist_id}`);
-
 }
+
+export const retrievePlaylist = async function (playlist_id: string): Promise<PlaylistWithTracks> {
+    let playlist = await retrievePlaylistWithNoTracks(playlist_id);
+    let totalTracks = playlist.tracks.total;
+    let numCalls = Math.ceil(totalTracks / 50);
+    let promises: Array<Promise<PlTrack[]>> = [];
+    for (let i = 0; i < numCalls; i++) {
+        let offset = i * 50;
+        let promise = fetchSpotifyData<SpotifyList<PlItem>>(`playlists/${playlist_id}/tracks?limit=50&offset=${offset}`)
+            .then(response => response.items.map(e => e.track))
+            .catch(error => {
+                console.error(`Failed to retrieve tracks for playlist ${playlist_id}. Error: ${error}`);
+                return [] as PlTrack[];
+            });
+        promises.push(promise);
+    }
+    let tracks = await Promise.all(promises).then(tracksArrays => tracksArrays.flat().filter(t => t !== null));
+    return {...playlist, tracks: {href: playlist.tracks.href, total: playlist.tracks.total, items: tracks}};
+}
+
 /**
  *
  * @param playlist_id
@@ -73,6 +104,23 @@ export const retrievePlaylistMetadata = async function (playlist_id: string) {
     return (await getLocalData<PlaylistMeta>("playlist_metadata", `playlist_id="${playlist_id}"`, undefined, undefined, undefined, false))[0];
 }
 
+export const attatchAnalytics = async function (tracks: PlTrack[]): Promise<PLTrackWithAnalytics[]> {
+    // Split trackIds into chunks of 100
+    const trackIds = tracks.map(t => t.id);
+    const chunksOfTrackIds = chunks<string[]>(trackIds, 100);
+
+    // Fetch data for each chunk
+    const promises = chunksOfTrackIds.map(chunk => fetchSpotifyData<MultipleAnalytics>(`audio-features?ids=${chunk.join(",")}`));
+
+    // Wait for all promises to resolve
+    const analytics = await Promise.all(promises);
+
+    const flattenedAnalytics = analytics.flat().map(e => e.audio_features).flat(1);
+
+    return tracks.map((track, index) => {
+        return {...track, audio_features: flattenedAnalytics[index]};
+    })
+}
 
 /**
  * Adds an annotation to an item in a playlist.
@@ -83,7 +131,7 @@ export const retrievePlaylistMetadata = async function (playlist_id: string) {
  * @param song_id
  * @param annotation
  */
-export const addAnnotation = async function (user_id: string, playlist: Playlist, song_id: string, annotation: string) {
+export const addAnnotation = async function (user_id: string, playlist: Playlist | PlaylistWithTracks, song_id: string, annotation: string) {
     let returnValue;
     let existingMeta = await retrievePlaylistMetadata(playlist.id);
     if (existingMeta) {
@@ -102,7 +150,7 @@ export const addAnnotation = async function (user_id: string, playlist: Playlist
     return returnValue;
 }
 
-export const deleteAnnotation = async function (playlist: Playlist, song_id: string) {
+export const deleteAnnotation = async function (playlist: Playlist | PlaylistWithTracks, song_id: string) {
     let returnValue;
     let existingMeta = await retrievePlaylistMetadata(playlist.id);
     if (existingMeta) {

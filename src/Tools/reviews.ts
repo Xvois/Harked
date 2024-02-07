@@ -1,14 +1,14 @@
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {User} from "./Interfaces/userInterfaces";
-import {retrieveUser} from "./users";
-import {hashString, resolveItems} from "./utils";
+import {retrieveLoggedUserID, retrieveUser} from "./users";
+import {hashString, isAlbum, isArtist, isTrack, resolveItems} from "./utils";
 import {deleteLocalData, getFullLocalData, getLocalDataByID, getPagedLocalData, putLocalData} from "@/API/pocketbase";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {createEvent} from "./events";
 import {Item, ItemType} from "./Interfaces/databaseInterfaces";
 import {Review, ReviewWithItem} from "./Interfaces/reviewInterfaces";
-import {getLIName} from "../Analysis/analysis";
+import {getLIName} from "@/Analysis/analysis";
 import {fetchSpotifyData} from "@/API/spotify";
 import {ListResult} from "pocketbase";
 
@@ -22,52 +22,46 @@ import {ListResult} from "pocketbase";
  * @param rating
  * @param description
  */
-export const submitReview = async (user_id: string, item: Item, type: ItemType, rating: number, description: string) => {
-    const user: User = await retrieveUser(user_id);
+export const submitReview = async (item: Artist | Track | Album, rating: number, description: string) => {
+    const user_id = await retrieveLoggedUserID();
+    const db_id = window.localStorage.getItem("db_id");
     const id = hashString(getLIName(item) + description + user_id);
-    switch (type) {
-        case 'artist':
-            const artist = item as Artist;
-            const artistItemObj: Item = {type: type, id: artist.id}
-            const artistReview = {
-                id: id,
-                owner: user.id,
-                item: artistItemObj,
-                rating: rating,
-                description: description
-            };
-            try {
-                await putLocalData("reviews", artistReview).then(() => {
-                    createEvent(3, user_id, artistItemObj)
-                });
-                break;
-            } catch (e) {
-                throw new Error(`Failed to submit review: ${e}`);
-            }
-        case 'track':
-            const track = item as Track;
-            const songItemObj: Item = {type: type, id: track.id}
-            const songReview = {id: id, owner: user.id, item: songItemObj, rating: rating, description: description};
-            try {
-                await putLocalData("reviews", songReview).then(() => {
-                    createEvent(3, user_id, songItemObj)
-                });
-                break;
-            } catch (e) {
-                throw new Error(`Failed to submit review: ${e}`);
-            }
-        case 'album':
-            const album = item as Album;
-            const albumItemObj: Item = {id: album.id, type: type};
-            const albumReview = {id: id, owner: user.id, item: albumItemObj, rating: rating, description: description};
-            try {
-                await putLocalData("reviews", albumReview).then(() => {
-                    createEvent(3, user_id, albumItemObj)
-                });
-                break;
-            } catch (e) {
-                throw new Error(`Failed to submit review: ${e}`);
-            }
+    if (isArtist(item)) {
+        const artistItemObj: Item = {type: 'artist', id: item.id}
+        const artistReview = {
+            id: id,
+            owner: db_id,
+            item: artistItemObj,
+            rating: rating,
+            description: description
+        };
+        try {
+            await putLocalData("reviews", artistReview).then(() => {
+                createEvent(3, user_id, artistItemObj)
+            });
+        } catch (e) {
+            throw new Error(`Failed to submit review: ${e}`);
+        }
+    } else if (isTrack(item)) {
+        const songItemObj: Item = {type: 'track', id: item.id}
+        const songReview = {id: id, owner: db_id, item: songItemObj, rating: rating, description: description};
+        try {
+            await putLocalData("reviews", songReview).then(() => {
+                createEvent(3, user_id, songItemObj)
+            });
+        } catch (e) {
+            throw new Error(`Failed to submit review: ${e}`);
+        }
+    } else if (isAlbum(item)) {
+        const albumItemObj: Item = {id: item.id, type: 'album'};
+        const albumReview = {id: id, owner: db_id, item: albumItemObj, rating: rating, description: description};
+        try {
+            await putLocalData("reviews", albumReview).then(() => {
+                createEvent(3, user_id, albumItemObj)
+            });
+        } catch (e) {
+            throw new Error(`Failed to submit review: ${e}`);
+        }
     }
 }
 
@@ -96,6 +90,8 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
     // Resolve the items
     let resolvedItems = await resolveItems(items);
 
+    console.log(resolvedItems);
+    // NEED TO SPLIT INTO ARTISTS AND TRACKS ETC...
     // Combine the resolved items with their associated reviews
     for (let i = 0; i < reviews.length; i++) {
         formattedReviews.push({
@@ -103,6 +99,9 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
             item: resolvedItems[i]
         });
     }
+
+    console.log(formattedReviews);
+
     return {...reviewsPage, items: formattedReviews};
 };
 

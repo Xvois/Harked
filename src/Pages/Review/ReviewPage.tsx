@@ -1,17 +1,25 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {getLIDescription, getLIName} from "@/Analysis/analysis";
-import "./CSS/Review.css"
+import "../../CSS/Review.css"
 import {retrieveReview} from "@/Tools/reviews";
 import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
 import {StyledRating} from "@/Components/styles";
 import {CommentSection} from "@/Components/CommentSection";
+import {Review, ReviewWithItem} from "@/Tools/Interfaces/reviewInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
+import {Track} from "@/API/Interfaces/trackInterfaces";
+import {Artist} from "@/API/Interfaces/artistInterfaces";
+import {createPictureSources, isTrack} from "@/Tools/utils";
 
 
-const Review = () => {
+const ReviewPage = () => {
     const id = (useParams()).id
-    const [review, setReview] = useState(undefined);
+    const [review, setReview] = useState<ReviewWithItem<Track | Artist | Album>>(null);
     const [possessive, setPossessive] = useState(undefined);
+
+    const images = isTrack(review.item) ? review.item.album.images : review.item.images;
+    const imageSrcSet = createPictureSources(images, 0.25);
 
     useEffect(() => {
         console.log(id);
@@ -38,15 +46,15 @@ const Review = () => {
                 <div className={'review-wrapper'}
                      style={{float: 'left', flexShrink: 0, flexGrow: 0, height: 'max-content'}}>
                     <div>
-                        <img className={'backdrop-image'} alt={getLIName(review.item)} src={review.item.image}/>
-                        <img className={'levitating-image'} alt={getLIName(review.item)} src={review.item.image}/>
+                        <img className={'backdrop-image'} alt={getLIName(review.item)} srcSet={imageSrcSet}/>
+                        <img className={'levitating-image'} alt={getLIName(review.item)} srcSet={imageSrcSet}/>
                     </div>
                     <div>
                         <p style={{
                             margin: 0,
                             color: 'var(--secondary-colour)'
                         }}>[NEEDS TYPE]</p>
-                        <a className={'heavy-link'} href={review.item.link}
+                        <a className={'heavy-link'} href={review.item.href}
                            style={{margin: 0}}>{getLIName(review.item)}</a>
                         <p style={{margin: 0}}>{getLIDescription(review.item)}</p>
                         <StyledRating
@@ -59,7 +67,7 @@ const Review = () => {
                 <div className={'review-description'}>
                     <p style={{margin: 0}}>Review by</p>
                     <a className={'heavy-link'} style={{fontSize: '30px'}}
-                       href={`/profile/${review.owner.user_id}`}>{review.owner.username}</a>
+                       href={`/profile/${review.owner}`}>{review.owner}</a>
                     {review.description &&
                         <p style={{whiteSpace: 'pre-line', marginBottom: 0}}>{review.description}</p>
                     }
@@ -76,10 +84,9 @@ const Review = () => {
                             comments</h3>
                     </div>
                 </div>
-                <CommentSection sectionID={id} owner={review.owner} isAdmin={false}/>
             </div>
         </>
     )
 }
 
-export default Review;
+export default ReviewPage;

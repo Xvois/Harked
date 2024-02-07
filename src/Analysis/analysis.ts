@@ -1,9 +1,10 @@
 import {isAlbum, isArtist, isPlaylist, isTrack} from "@/Tools/utils";
 import {Track, TrackAnalytics, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
-import {Playlist} from "@/API/Interfaces/playlistInterfaces";
+import {Playlist, PlTrack, PLTrackWithAnalytics} from "@/API/Interfaces/playlistInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {Datapoint, Term} from "@/Tools/Interfaces/datapointInterfaces";
+import {fetchSpotifyData} from "@/API/spotify";
 
 
 /**
@@ -18,7 +19,12 @@ export const translateAnalytics = {
     liveness: {name: 'live', description: 'Music performed in a live setting.'},
     loudness: {name: 'loud', description: 'Energetic and sonically powerful music.'},
     valence: {name: 'positive', description: 'Uplifting and feel-good melodies.'},
-    tempo: {name: 'tempo', description: 'Music with a fast and vibrant tempo.'}
+    tempo: {name: 'tempo', description: 'Music with a fast and vibrant tempo.'},
+    key: {name: 'key', description: 'The key of the track.'},
+    mode: {name: 'mode', description: 'The modality of the track.'},
+    speechiness: {name: 'speechiness', description: 'The presence of spoken words in the track.'},
+    duration_ms: {name: 'duration', description: 'The duration of the track in milliseconds.'},
+    time_signature: {name: 'time signature', description: 'The estimated overall time signature of the track.'}
 };
 
 export const translateAnalyticsLow = {
@@ -29,7 +35,12 @@ export const translateAnalyticsLow = {
     liveness: {name: 'studio recorded', description: 'Music that is recorded in a studio.'},
     loudness: {name: 'soft', description: 'Gentle and quiet music.'},
     valence: {name: 'negative', description: 'Music that feels downbeat.'},
-    tempo: {name: 'low tempo', description: 'Music that moves at a moderate pace.'}
+    tempo: {name: 'low tempo', description: 'Music that moves at a moderate pace.'},
+    key: {name: 'key', description: 'The key of the track.'},
+    mode: {name: 'mode', description: 'The modality of the track.'},
+    speechiness: {name: 'speechiness', description: 'The presence of spoken words in the track.'},
+    duration_ms: {name: 'duration', description: 'The duration of the track in milliseconds.'},
+    time_signature: {name: 'time signature', description: 'The estimated overall time signature of the track.'}
 };
 
 
@@ -144,8 +155,7 @@ export const calculateSimilarity = (dp1: Datapoint, dp2: Datapoint) => {
 }
 
 
-export const getAverageAnalytics = function (tracks) {
-    // noinspection SpellCheckingInspection
+export const getAverageAnalytics = function (tracks: PLTrackWithAnalytics[] | TrackWithAnalytics[]) {
     const avgAnalytics: TrackAnalytics = {
         id: null,
         analysis_url: null,
@@ -166,13 +176,14 @@ export const getAverageAnalytics = function (tracks) {
         duration_ms: 0,
         time_signature: 0
     }
-    const validTracks = tracks.filter(t => t.hasOwnProperty("audio_features") && t.audio_features !== null);
-    for (const track of validTracks) {
-        Object.keys(translateAnalytics).forEach(key => {
-            if (typeof track.audio_features[key] === 'number') {
-                avgAnalytics[key] += track.audio_features[key] / validTracks.length;
-            }
-        })
+    for (const track of tracks) {
+        if (track.audio_features) { // Check if track.audio_features is not undefined
+            Object.keys(translateAnalytics).forEach(key => {
+                if (typeof track.audio_features[key] === 'number') {
+                    avgAnalytics[key] += track.audio_features[key] / tracks.length;
+                }
+            })
+        }
     }
     return avgAnalytics;
 }
@@ -218,36 +229,56 @@ function getMaxValueAttribute(attributes) {
     return maxAttribute;
 }
 
-export function getMostInterestingAttribute(analytics) {
-    const ignoredAttributes = ["key", "mode", "duration_ms", "time_signature", "tempo", "loudness", "speechiness"];
+// Helper function to find the maximum value and its key in the analytics object
+const findMaxValueAndKey = (analytics, ignoredAttributes) => {
     let max = Number.MIN_SAFE_INTEGER;
-    let maxAnalytic;
-    let min = Number.MAX_SAFE_INTEGER;
-    let minAnalytic;
+    let maxKey;
 
     for (const key in analytics) {
         if (typeof analytics[key] === 'number' && !ignoredAttributes.includes(key)) {
             let value = analytics[key];
             if (value > max) {
                 max = value;
-                maxAnalytic = key;
-            }
-            if (value < min) {
-                // Having a vocal / studio recorded song is not interesting
-                if (key !== "instrumentalness" && key !== "liveness") {
-                    min = value;
-                    minAnalytic = key;
-                }
+                maxKey = key;
             }
         }
     }
+
+    return { max, maxKey };
+}
+
+// Helper function to find the minimum value and its key in the analytics object
+const findMinValueAndKey = (analytics, ignoredAttributes) => {
+    let min = Number.MAX_SAFE_INTEGER;
+    let minKey;
+
+    for (const key in analytics) {
+        if (typeof analytics[key] === 'number' && !ignoredAttributes.includes(key)) {
+            let value = analytics[key];
+            if (value < min && key !== "instrumentalness" && key !== "liveness") {
+                min = value;
+                minKey = key;
+            }
+        }
+    }
+
+    return { min, minKey };
+}
+
+export function getMostInterestingAttribute(analytics: TrackAnalytics) {
+    const ignoredAttributes = ["key", "mode", "duration_ms", "time_signature", "tempo", "loudness", "speechiness"];
+
+    const { max, maxKey } = findMaxValueAndKey(analytics, ignoredAttributes);
+    const { min, minKey } = findMinValueAndKey(analytics, ignoredAttributes);
+
     if (max === 0) {
         return null;
     }
+
     if (max >= (1 - min) || max > 0.7) {
-        return translateAnalytics[maxAnalytic]
+        return translateAnalytics[maxKey]
     } else if (max <= (1 - min) || min < 0.2) {
-        return translateAnalyticsLow[minAnalytic]
+        return translateAnalyticsLow[minKey]
     } else {
         return null;
     }
@@ -339,60 +370,71 @@ const regress = (x, y) => {
     return {slope, intercept, r, r2, sse, ssr, sst, sy, sx, see};
 };
 
-export const getPlaylistAnalysis = (tracks) => {
 
-    let message = '';
-
-    const avgAnalytics = getAverageAnalytics(tracks);
-
-    /**
-     * STANDARD DEVIATION CALCS
-     **/
-
-
-        // Calculate the sum of the squares of the differences of a track
-        // to the average analytics
-    const getSquaredAnalyticsDiff = (track, avgAnalytics) => {
-            let rollingTotal = 0;
-            for (const key of Object.keys(avgAnalytics)) {
-                if (key !== "tempo" && key !== "loudness") {
-                    rollingTotal += Math.pow((track.analytics[key] - avgAnalytics[key]), 2)
-                }
-            }
-            return rollingTotal;
+// Helper function to calculate squared analytics difference
+const getSquaredAnalyticsDiff = (track: TrackWithAnalytics | PLTrackWithAnalytics, avgAnalytics: TrackAnalytics) => {
+    let rollingTotal = 0;
+    for (const key of Object.keys(avgAnalytics)) {
+        if (key !== "tempo" && key !== "loudness" && typeof track.audio_features[key] === "number") {
+            rollingTotal += Math.pow((track.audio_features[key] - avgAnalytics[key]), 2)
         }
-    const tracksWithAnalytics = tracks.filter(t => t.hasOwnProperty("analytics") && t.analytics !== null);
-    const playlistStandardDeviation = Math.sqrt(
-        tracksWithAnalytics.reduce((accumulator, currentValue) => accumulator + getSquaredAnalyticsDiff(currentValue, avgAnalytics), 0) / tracksWithAnalytics.length
-    );
-
-    /**
-     * LINEAR TENDENCIES CALCS
-     *
-     * TAKEN INTO ACCOUNT:
-     * DECREASING (LINEARLY)
-     * STEADY
-     * INCREASING (LINEARLY)
-     *
-     **/
-    const yVals = [];
-
-    for (let i = 1; i <= tracksWithAnalytics.length; i++) {
-        yVals.push(i);
     }
+    return rollingTotal;
+}
 
-    let regressions = {
+// Helper function to calculate regressions
+const calculateRegressions = (yVals: any[], tracksWithAnalytics: TrackAnalytics[] | PLTrackWithAnalytics[]) => {
+    let regressions: TrackAnalytics = {
+        id: null,
+        analysis_url: null,
+        track_href: null,
+        type: null,
+        uri: null,
         acousticness: 0,
         danceability: 0,
         energy: 0,
         instrumentalness: 0,
         liveness: 0,
         valence: 0,
-    }
+        tempo: 0,
+        loudness: 0,
+        key: 0,
+        mode: 0,
+        speechiness: 0,
+        duration_ms: 0,
+        time_signature: 0
+    };
 
     for (const key of Object.keys(regressions)) {
-        regressions[key] = regress(yVals, tracksWithAnalytics.map(t => t.analytics[key])).slope;
+        if(typeof regressions[key] === "number"){
+            regressions[key] = regress(yVals, tracksWithAnalytics.map(t => t.audio_features[key])).slope;
+        }
     }
+
+    return regressions;
+}
+
+// Main function
+export const getPlaylistAnalysis = (tracks: PLTrackWithAnalytics[]) => {
+    console.log("Starting playlist analysis...");
+
+    const avgAnalytics = getAverageAnalytics(tracks);
+    console.log(avgAnalytics);
+    console.log("Average analytics calculated");
+
+
+    const playlistStandardDeviation = Math.sqrt(
+        tracks.reduce((accumulator, track) => accumulator + getSquaredAnalyticsDiff(track, avgAnalytics), 0) / tracks.length);
+
+    console.log("Calculated playlist standard deviation");
+
+    const yVals = [];
+    for (let i = 1; i <= tracks.length; i++) {
+        yVals.push(i);
+    }
+
+    const regressions = calculateRegressions(yVals, tracks);
+    console.log("Calculated regressions");
 
     const notableTrends = [];
     for (const key of Object.keys(regressions)) {
@@ -402,13 +444,12 @@ export const getPlaylistAnalysis = (tracks) => {
     }
 
     notableTrends.sort((a, b) => Math.abs(regressions[b]) - Math.abs(regressions[a]))
-
-    /**
-     * NOTABLE ANALYTICS CALCS
-     **/
+    console.log("Sorted notable trends");
 
     const notableAnalytic = getMostInterestingAttribute(avgAnalytics);
+    console.log("Calculated notable analytic");
 
+    console.log("Finished playlist analysis");
     return {
         variability: playlistStandardDeviation,
         vibe: notableAnalytic?.name,

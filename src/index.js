@@ -4,8 +4,8 @@ import './CSS/index.css';
 import TopBar from "./TopBar";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Analytics} from "@vercel/analytics/react";
-import Review from "./Review";
-import Reviews from "./Reviews";
+import ReviewPage from "./Pages/Review/ReviewPage";
+import Reviews from "./Pages/Reviews/Reviews";
 import PlaylistView from "./PlaylistView";
 import Feed from "./Feed";
 import {Settings} from "./Settings";
@@ -30,8 +30,6 @@ root.render(
                 <Route path="/settings" element={<Settings/>}/>
                 <Route path="/feed" element={<Feed/>}/>
                 <Route path="/playlist/:id" element={<PlaylistView/>}/>
-                <Route path="/reviews/:id" element={<Reviews/>}/>
-                <Route path="/review/:id" element={<Review/>}/>
             </Routes>
         </BrowserRouter>
         <Analytics/>

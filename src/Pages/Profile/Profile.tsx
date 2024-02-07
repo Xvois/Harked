@@ -7,9 +7,9 @@ import {ProfileLoader} from "@/Pages/Profile/ProfileLoader";
 export const Profile = () => {
     return (
         <ProfileContextProvider>
+            <ProfileLoader/>
             <ProfileContent/>
             <ProfileError/>
-            <ProfileLoader/>
         </ProfileContextProvider>
     )
 }

@@ -31,7 +31,7 @@ export const ArtistAnalysis = (props: {
     }
 
     useEffect(() => {
-        const plTracks = playlists.map(e => e.tracks).flat(1);
+        const plTracks = playlists.map(e => e.tracks.items).flat(1);
         getAlbumsWithTracks(artist.id, plTracks).then(
             result => {
                 setArtistsAlbumsWithLikedSongs(result);

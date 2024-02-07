@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {retrievePlaylistMetadata} from "@/Tools/playlists";
-import {Playlist, PlaylistFromList, PlaylistMeta} from "@/API/Interfaces/playlistInterfaces";
+import {Playlist, PlaylistFromList, PlaylistMeta, PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
 import {createPictureSources} from "@/Tools/utils";
 
 
-const PlaylistItem = function (props: { playlist: PlaylistFromList | Playlist; }) {
+const PlaylistItem = function (props: { playlist: PlaylistFromList | Playlist | PlFromListWithTracks; }) {
     const {playlist} = props;
 
     const [playlistMetadata, setPlaylistMetadata] = useState<PlaylistMeta>(null);
@@ -56,7 +56,7 @@ const PlaylistItem = function (props: { playlist: PlaylistFromList | Playlist; }
 }
 
 
-export function PlaylistItemList(props: { playlists: PlaylistFromList[]; }) {
+export function PlaylistItemList(props: { playlists: PlaylistFromList[] | Playlist[] | PlFromListWithTracks[]; }) {
     const {playlists} = props;
 
     const [listLength, setListLength] = useState<number>(5);
@@ -69,6 +69,7 @@ export function PlaylistItemList(props: { playlists: PlaylistFromList[]; }) {
             gap: '10px',
             width: '100%'
         }}>
+            Hello!!
             {playlists.slice(0, listLength).map(p => {
                 return (
                     <PlaylistItem key={p.id} playlist={p}/>

@@ -5,12 +5,18 @@ import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import NoiseAwareIcon from '@mui/icons-material/NoiseAware';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import {useParams} from "react-router-dom";
-import {Playlist, PlaylistMeta} from "@/API/Interfaces/playlistInterfaces";
+import {Playlist, PlaylistMeta, PlaylistWithTracks} from "@/API/Interfaces/playlistInterfaces";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {LoadingIndicator} from "@/Components/LoadingIndicator";
 import {PageError} from "@/Components/PageError";
 import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
-import {addAnnotation, deleteAnnotation, retrievePlaylist, retrievePlaylistMetadata} from "@/Tools/playlists";
+import {
+    addAnnotation,
+    attatchAnalytics,
+    deleteAnnotation,
+    retrievePlaylist,
+    retrievePlaylistMetadata
+} from "@/Tools/playlists";
 import {StyledField} from "@/Components/styles";
 import {createPictureSources} from "@/Tools/utils";
 
@@ -72,7 +78,7 @@ const AnnotationViewModal = (props: {
 
 const AnnotationEditModal = (props: {
     user_id: string | null,
-    playlist: Playlist,
+    playlist: Playlist | PlaylistWithTracks,
     targetSong: Track,
     playlistMetadata: PlaylistMeta,
     setPlaylistMetadata: React.Dispatch<SetStateAction<PlaylistMeta>>,
@@ -244,7 +250,7 @@ const PlaylistView = () => {
     const playlist_id = (useParams()).id;
 
     const [loggedUserID, setLoggedUserID] = useState(null);
-    const [playlist, setPlaylist] = useState(null);
+    const [playlist, setPlaylist] = useState<PlaylistWithTracks>(null);
     const [playlistAnalysis, setPlaylistAnalysis] = useState(null);
     const [playlistMetadata, setPlaylistMetadata] = useState(null);
     const [isOwnPlaylist, setIsOwnPlaylist] = useState(false);
@@ -263,7 +269,7 @@ const PlaylistView = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (isLoggedIn()) {
-                const p: Playlist = await retrievePlaylist(playlist_id);
+                const p = await retrievePlaylist(playlist_id);
                 if (!p) {
                     setIsError(true);
                     setErrorDetails({description: "This playlist doesn't seem to exist.", errCode: "id_fetch_failed"});
@@ -274,9 +280,11 @@ const PlaylistView = () => {
                         setIsOwnPlaylist(true);
                         console.info('Is own playlist.')
                     }
+                    const tracksWAnalysis = await attatchAnalytics(p.tracks.items);
+                    const plAnalysis = getPlaylistAnalysis(tracksWAnalysis);
                     setLoggedUserID(userID);
                     setPlaylist(p);
-                    setPlaylistAnalysis(getPlaylistAnalysis(p.tracks));
+                    setPlaylistAnalysis(plAnalysis);
                     setPlaylistMetadata(metadata);
                 }
             } else {
@@ -301,11 +309,9 @@ const PlaylistView = () => {
                     <div style={{position: 'relative', width: '250px', flexShrink: 0}}
                          className={'supplemental-content'}>
                         <img alt={'decorative-blur'} className={'backdrop-image'}
-                             style={{width: '100%', height: '100%', aspectRatio: '1', objectFit: 'cover'}}
-                             src={playlist.image}/>
+                             style={{width: '100%', height: '100%', aspectRatio: '1', objectFit: 'cover'}}/>
                         <img alt={'playlist-art'} className={'levitating-image'}
-                             style={{width: '100%', height: '100%', aspectRatio: '1', objectFit: 'cover'}}
-                             src={playlist.image}/>
+                             style={{width: '100%', height: '100%', aspectRatio: '1', objectFit: 'cover'}}/>
                     </div>
                     <div className={'header-text'}>
                         <div className={'header-main-text'}>
@@ -349,17 +355,13 @@ const PlaylistView = () => {
                             )}
                         </div>
                         <div className={'header-sub-text'}>
-                            <p>
-                                by <a
-                                href={`/profile#${playlist.owner.user_id}`}>{playlist.owner.username}</a> · {playlist.tracks.length} songs
-                                · {playlist.followers} follower{playlist.followers !== 1 && 's'}
-                            </p>
+                            WRITE SOMETHING HERE
                         </div>
                     </div>
                 </div>
                 <h2>Track list</h2>
                 <div className={'playlist-view-tracks'}>
-                    {playlist.tracks.map((t: Track, i: number) => {
+                    {playlist.tracks.items.map((t: Track, i: number) => {
                         let annotation = playlistMetadata?.meta[t.id];
                         return <TrackItem key={t.id} windowWidth={windowWidth} setSelectedTrack={setSelectedTrack}
                                           track={t} index={i} isOwnPlaylist={isOwnPlaylist} annotation={annotation}
