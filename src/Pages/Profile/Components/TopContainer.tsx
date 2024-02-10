@@ -43,19 +43,6 @@ export function TopContainer(props: {
                 loggedUserID,
                 selectedDatapoint
             }}/>
-            <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                marginTop: '25px',
-                width: '100%',
-                alignItems: 'left',
-                gap: '15px'
-            }}>
-                {!isOwnPage && isLoggedIn() && windowWidth > 700 &&
-                    <ComparisonLink pageUser={pageUser} loggedUserID={loggedUserID}
-                                    selectedDatapoint={selectedDatapoint}/>
-                }
-            </div>
         </div>
     );
 }

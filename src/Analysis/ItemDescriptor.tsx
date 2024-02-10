@@ -138,9 +138,13 @@ const ArtistDescriptor = function () {
     return (
         <p>
             {firstPartArtist}
-            <br/>
-            <br/>
-            {secondPartArtist}
+            {secondPartArtist &&
+                <React.Fragment>
+                    <br/>
+                    <br/>
+                    {secondPartArtist}
+                </React.Fragment>
+            }
         </p>
     )
 }
@@ -170,9 +174,14 @@ const TrackDescriptor = function () {
         return (
             <p>
                 {firstPartSong}
-                <br/>
-                <br/>
-                {secondPartSong}
+                {secondPartSong &&
+                    <React.Fragment>
+                        <br/>
+                        <br/>
+                        {secondPartSong}
+                    </React.Fragment>
+
+                }
             </p>
         );
     } else {

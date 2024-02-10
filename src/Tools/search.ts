@@ -56,15 +56,15 @@ export const followingContentsSearch = async function (user_id: string, item: Ar
  * @param artistID
  * @param tracks
  */
-export const getAlbumsWithTracks = async function (artistID: string, tracks: Track[] | PlTrack[]) {
-    let albumsWithTracks = [];
+export const getAlbumsContainingTracks = async function (artistID: string, tracks: Track[] | PlTrack[]) {
+    let albumsContainingTracks: Album[] = [];
 
     if (!tracks) {
         return [];
     }
 
     let albums: Array<Album>;
-    const trackMap = new Map();
+    const trackMap: Map<string, Track[]> = new Map();
 
     if (albums_cache.has(artistID)) {
         console.log('[Cache] Returning cached albums.')
@@ -78,10 +78,9 @@ export const getAlbumsWithTracks = async function (artistID: string, tracks: Tra
     const albumTracks = await Promise.all(albumPromises);
     albumTracks.forEach((t, i) => trackMap.set(albums[i].id, t.items));
 
-    albumsWithTracks = albums.filter(album => {
+    albumsContainingTracks = albums.filter(album => {
         const albumTrackIds = trackMap.get(album.id).map(track => track.id);
         return tracks.some(track => albumTrackIds.includes(track.id));
     });
-
-    return albumsWithTracks;
+    return albumsContainingTracks;
 }

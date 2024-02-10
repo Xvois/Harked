@@ -674,7 +674,7 @@ select.dropdown {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--primary-colour);
+    background: hsl(var(--foreground));
     animation: lds-grid 2.25s ease-in infinite;
 }
 

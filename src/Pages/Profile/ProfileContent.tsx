@@ -50,7 +50,16 @@ export const ProfileContent = () => {
                     selectedPrevDatapoint,
                     isOwnPage
                 }}
-                              term={terms[termIndex] as Term} start={0} end={9} type={'genre'}/>
+                              term={terms[termIndex] as Term} start={0} end={9} type={'track'}/>
+                <ShowcaseList {...{
+                    pageUser,
+                    playlists,
+                    allDatapoints,
+                    selectedDatapoint,
+                    selectedPrevDatapoint,
+                    isOwnPage
+                }}
+                              term={terms[termIndex] as Term} start={0} end={9} type={'artist'}/>
                 <ProfileRecommendations isOwnPage={isOwnPage} pageGlobalUserID={pageUser.id} />
                 <PlaylistItemList playlists={playlists}/>
                 <CommentSection sectionID={pageUser.id} owner={pageUser} isAdmin={isOwnPage} />

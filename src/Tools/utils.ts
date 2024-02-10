@@ -7,6 +7,9 @@ import {Playlist} from "@/API/Interfaces/playlistInterfaces";
 import {User} from "./Interfaces/userInterfaces";
 import {RefObject} from 'react';
 
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
 export function hashString(inputString: string) {
     // @ts-ignore
     let hash = 0n; // Use BigInt to support larger values
@@ -201,5 +204,13 @@ export function isArtist(item: Album | Track | Artist | Playlist | string): item
 
 export function isPlaylist(item: Album | Track | Artist | Playlist | string): item is Playlist {
     return typeof item !== 'string' && 'images' in item && 'tracks' in item;
+}
+
+
+/*
+    Used for shadcn components.
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 

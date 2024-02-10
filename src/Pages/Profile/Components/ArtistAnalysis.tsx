@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {followingContentsSearch, getAlbumsWithTracks} from "@/Tools/search";
+import {followingContentsSearch, getAlbumsContainingTracks} from "@/Tools/search";
 import {getLIName} from "@/Analysis/analysis";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
+import {Album} from "@/API/Interfaces/albumInterfaces";
 
 
 export const ArtistAnalysis = (props: {
@@ -14,9 +15,8 @@ export const ArtistAnalysis = (props: {
 }) => {
     const {user_id, artist, playlists, term, isOwnPage} = props;
 
-    const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState(null);
+    const [artistsAlbumsWithLikedSongs, setArtistsAlbumsWithLikedSongs] = useState<Album[]>(null);
     const [followingWithArtist, setFollowingWithArtist] = useState(null);
-    const [orderedAlbums, setOrderedAlbums] = useState(null);
     const [isReady, setIsReady] = useState(false);
     const [showing, setShowing] = useState("albums");
 
@@ -32,10 +32,9 @@ export const ArtistAnalysis = (props: {
 
     useEffect(() => {
         const plTracks = playlists.map(e => e.tracks.items).flat(1);
-        getAlbumsWithTracks(artist.id, plTracks).then(
+        getAlbumsContainingTracks(artist.id, plTracks).then(
             result => {
                 setArtistsAlbumsWithLikedSongs(result);
-                setOrderedAlbums(result.sort((a, b) => b.saved_songs.length - a.saved_songs.length).slice(0, 4));
                 if (result.length === 0 && isOwnPage) {
                     setShowing("following")
                 }
@@ -55,7 +54,7 @@ export const ArtistAnalysis = (props: {
 
     useEffect(() => {
         if (isOwnPage) {
-            setIsReady(followingWithArtist && artistsAlbumsWithLikedSongs);
+            setIsReady(followingWithArtist && artistsAlbumsWithLikedSongs !== null);
         } else {
             setIsReady(!!artistsAlbumsWithLikedSongs);
         }
@@ -76,15 +75,13 @@ export const ArtistAnalysis = (props: {
                                 <h3 style={{margin: 0}}>{getLIName(artist)}</h3>
                             </div>
                         </div>
-                        {orderedAlbums.length > 0 ?
-                            orderedAlbums.map((a, i) => {
+                        {artistsAlbumsWithLikedSongs.length > 0 ?
+                            artistsAlbumsWithLikedSongs.map((a, i) => {
                                 return (
                                     <div key={getLIName(a)} className={'widget-item'}
                                          style={{animationDelay: `${i / 10}s`}}>
-                                        <a href={a.link} className={'widget-button'}>
+                                        <a href={a.href} className={'widget-button'}>
                                             <h4 style={{margin: 0}}>{getLIName(a)}</h4>
-                                            <p style={{margin: 0}}>{a.saved_songs.length} saved
-                                                song{a.saved_songs.length === 1 ? '' : 's'}</p>
                                         </a>
                                     </div>
                                 )

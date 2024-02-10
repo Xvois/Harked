@@ -1,11 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './CSS/index.css';
+import './CSS/output.css';
+import './CSS/globals.css'
 import TopBar from "./TopBar";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Analytics} from "@vercel/analytics/react";
-import ReviewPage from "./Pages/Review/ReviewPage";
-import Reviews from "./Pages/Reviews/Reviews";
 import PlaylistView from "./PlaylistView";
 import Feed from "./Feed";
 import {Settings} from "./Settings";
@@ -15,8 +14,30 @@ import Authentication from "./Authentication/Authentication";
 import Homepage from "./Homepage";
 import reportWebVitals from "./reportWebVitals";
 import {Profile} from "@/Pages/Profile/Profile";
+import {Toaster} from "@/Components/ui/toaster";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const htmlElement = document.documentElement;
+
+window.addEventListener('load', () => {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    htmlElement.classList.add('dark');
+  }
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  const newColorScheme = e.matches ? "dark" : "light";
+
+  if (newColorScheme === 'dark') {
+    htmlElement.classList.add('dark');
+  } else {
+    htmlElement.classList.remove('dark');
+  }
+});
+
+const rootElement = document.getElementById('root');
+
+const root = ReactDOM.createRoot(rootElement);
+
 root.render(
     <>
         <TopBar/>
@@ -32,6 +53,7 @@ root.render(
                 <Route path="/playlist/:id" element={<PlaylistView/>}/>
             </Routes>
         </BrowserRouter>
+        <Toaster/>
         <Analytics/>
     </>
 );

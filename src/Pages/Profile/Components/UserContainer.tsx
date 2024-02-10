@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import IosShareIcon from "@mui/icons-material/IosShare";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {followUser, unfollowUser} from "@/Tools/following"
@@ -11,6 +10,8 @@ import {ValueIndicator} from "@/Components/ValueIndicator";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {User} from "@/Tools/Interfaces/userInterfaces";
 import {createPictureSources} from "@/Tools/utils";
+import {Badge} from "@/Components/ui/badge";
+
 
 export function ComparisonLink(props: {
     pageUser: User;
@@ -78,57 +79,6 @@ export function UserContainer(props: {
         isOwnPage,
         selectedDatapoint
     } = props;
-    const ShareProfileButton = (props: { simple?: boolean; }) => {
-        const {simple = false} = props;
-        const location = window.location;
-        const origin = (new URL(location.toString())).origin;
-        const link = `${origin}/profile/{user.user_id}`;
-
-        const [copied, setCopied] = useState(false);
-
-        const handleShare = () => {
-            const content = {
-                title: "Harked",
-                text: `View ${pageUser.display_name}'s profile on Harked.`,
-                url: link
-            }
-            try {
-                if (navigator.canShare(content)) {
-                    navigator.share(content).then(() => setCopied(true));
-                } else {
-                    navigator.clipboard.writeText(`${origin}/profile/${pageUser.id}`).then(() => setCopied(true));
-                }
-            } catch (error) {
-                console.warn('Web Share API not supported. Copying to clipboard.', error);
-                navigator.clipboard.writeText(`${origin}/profile/${pageUser.id}`).then(() => setCopied(true));
-            }
-
-        }
-
-        window.addEventListener('copy', () => {
-            setCopied(false);
-        })
-
-        return (
-            <>
-                {simple ?
-                    <button
-                        style={{border: 'none', background: 'none', color: 'var(--primary-colour)', cursor: 'pointer'}}
-                        onClick={handleShare}>
-                        <IosShareIcon fontSize={'small'}/>
-                    </button>
-                    :
-                    <button className={'std-button'} onClick={handleShare}>
-                        {copied ?
-                            "Copied link!"
-                            :
-                            "Share profile"
-                        }
-                    </button>
-                }
-            </>
-        )
-    }
 
     const [isFollowing, setIsFollowing] = useState(isLoggedUserFollowing);
     // For optimistic updates
@@ -172,55 +122,34 @@ export function UserContainer(props: {
     const profileImageSrcSet = createPictureSources(profileImages, 0.1)
 
     return (
-        <div className='user-container'>
-            <div style={{display: 'flex', flexDirection: 'row', maxHeight: '150px', gap: '15px'}}>
-                {profileImages && (
-                    <div className={'profile-picture'}>
-                        <img alt={'profile picture'} className={'levitating-image'} srcSet={profileImageSrcSet}
-                             style={{height: '100%', width: '100%', objectFit: 'cover'}}/>
-                    </div>
-                )}
-                <div className={'user-details'}>
-                    <p style={{margin: '0'}}>Profile for</p>
-                    <h2 style={{margin: '-5px 0 0 0', fontSize: '30px', wordBreak: 'keep-all'}}>
-                        {pageUser.display_name}
-                        <ShareProfileButton simple/>
-                    </h2>
-                    <div style={{display: 'flex', flexDirection: 'row', gap: '5px', alignItems: 'center'}}>
-                        <a href={`/followers#${pageUser.id}`}
-                           style={{margin: '0', color: 'var(--primary-colour)', textDecoration: 'none'}}><span
-                            style={{fontWeight: 'bold'}}>{followerNumber}</span> follower{followerNumber !== 1 ? 's' : ''}
-                        </a>
-                        {isLoggedIn() && !isOwnPage && (
-                            <button style={{
-                                border: 'none',
-                                background: 'none',
-                                alignItems: 'center',
-                                height: '20px',
-                                width: '20px',
-                                margin: '0',
-                                padding: '0',
-                                color: 'var(--primary-colour)',
-                                cursor: 'pointer'
-                            }}
-                                    onClick={handleFollowClick}>
-                                {isFollowing ?
-                                    <CheckCircleOutlineIcon fontSize={'small'}/>
-                                    :
-                                    <AddCircleOutlineIcon fontSize={'small'}/>
-                                }
-                            </button>
-                        )}
-                    </div>
+        <div className={"inline-flex gap-4"}>
+            {profileImages && (
+                <div>
+                    <img className={"w-16 h-16 rounded-full object-cover"} alt={'profile picture'} srcSet={profileImageSrcSet}/>
                 </div>
-                <div className={'user-links'}>
+            )}
+            <div className={"flex flex-col"}>
+
+                <div className={"inline-flex flex-row gap-2 items-center"}>
+                    <p className={"text-4xl font-bold"}>
+                        {pageUser.display_name}
+                    </p>
                     <SpotifyLink simple link={`https://open.spotify.com/user/${pageUser.id}`}/>
-                    <div style={{marginTop: 'auto'}}>
-                        {windowWidth < 700 && !isOwnPage && isLoggedIn() &&
-                            <ComparisonLink simple pageUser={pageUser} loggedUserID={loggedUserID}
-                                            selectedDatapoint={selectedDatapoint}/>
-                        }
-                    </div>
+                </div>
+
+                <div className={"inline-flex gap-2"}>
+                    <Badge variant={"outline"}>{selectedDatapoint.top_artists[0].name}</Badge>
+                    <Badge variant={"outline"}>{selectedDatapoint.top_tracks[0].name}</Badge>
+                    <Badge variant={"outline"}>{selectedDatapoint.top_genres[0]}</Badge>
+                </div>
+
+            </div>
+            <div>
+                <div style={{marginTop: 'auto'}}>
+                    {windowWidth < 700 && !isOwnPage && isLoggedIn() &&
+                        <ComparisonLink simple pageUser={pageUser} loggedUserID={loggedUserID}
+                                        selectedDatapoint={selectedDatapoint}/>
+                    }
                 </div>
             </div>
         </div>
