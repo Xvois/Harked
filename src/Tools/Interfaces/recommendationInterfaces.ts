@@ -9,6 +9,7 @@ export interface Recommendation extends Record {
 }
 
 export interface FormattedRecommendation<T extends Album | Track | Artist> {
+    id: string,
     item: T,
     description: string,
 }

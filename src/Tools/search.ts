@@ -9,6 +9,7 @@ import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {albums_cache} from "@/Tools/cache";
 import {PlTrack} from "@/API/Interfaces/playlistInterfaces";
+import {debounceAsync} from "@/Tools/utils";
 
 /**
  * Returns the results of a query of a certain type.
@@ -35,6 +36,9 @@ export const retrieveSearchResults = async function (query: string, type: "artis
             return search.albums.items;
     }
 }
+
+export const debouncedSearchResults = debounceAsync(retrieveSearchResults, 250);
+
 
 /**
  * Returns all the users that have a matching item in their most recent datapoints.

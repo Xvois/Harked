@@ -1,86 +1,141 @@
-import React, {useEffect, useState} from "react";
-import {
-    deleteRecommendation,
-    modifyRecommendation,
-    retrieveProfileRecommendations,
-    submitRecommendation
-} from "@/Tools/recommendations";
+import React, {useContext, useEffect, useState} from "react";
+import {deleteRecommendation, retrieveProfileRecommendations, submitRecommendation} from "@/Tools/recommendations";
 import {createEvent} from "@/Tools/events";
 import {getLIDescription, getLIName} from "@/Analysis/analysis";
-import {SpotifyLink} from "@/Components/SpotifyLink";
-import {SelectionModal} from "@/Components/SelectionModal";
 import {FormattedProfileRecommendations, FormattedRecommendation} from "@/Tools/Interfaces/recommendationInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
-import {createPictureSources, isAlbum, isArtist, isTrack} from "@/Tools/utils";
-import {ItemType} from "@/Tools/Interfaces/databaseInterfaces";
+import {createPictureSources, getImgSrcSet, isTrack} from "@/Tools/utils";
+import {Separator} from "@/Components/ui/separator";
+import {Button} from "@/Components/ui/button";
+import {Input} from "@/Components/ui/input";
+import {MultistageDialog} from "@/Components/MultistageDialog";
+import {debouncedSearchResults} from "@/Tools/search";
+import {Textarea} from "@/Components/ui/textarea";
+import {useMediaQuery} from "react-responsive";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/Components/ui/dropdown-menu";
 
-export const ProfileRecommendations = (props: { pageGlobalUserID: string; isOwnPage: boolean; }) => {
-    const {pageGlobalUserID, isOwnPage} = props;
+type ProfileRecommendationsContextProps = {
+    pageGlobalUserID: string;
+    isOwnPage: boolean;
+    formattedRecs: FormattedProfileRecommendations;
+    setFormattedRecs: React.Dispatch<React.SetStateAction<FormattedProfileRecommendations>>;
+    handleDelete: (e: FormattedRecommendation<any>) => void;
+    handleEdit: (e: FormattedRecommendation<any>) => void;
 
-    const [formattedRecs, setFormattedRecs] = useState<FormattedProfileRecommendations>(null);
-    const artistRecs = formattedRecs?.artists;
-    const albumRecs = formattedRecs?.albums;
-    const trackRecs = formattedRecs?.tracks;
+}
 
-    const [showSelection, setShowSelection] = useState(false);
-    const [initialItem, setInitialItem] = useState(null);
+export const ProfileRecommendationsContext = React.createContext<ProfileRecommendationsContextProps>({
+    pageGlobalUserID: '',
+    isOwnPage: false,
+    formattedRecs: {artists: [], albums: [], tracks: []},
+    setFormattedRecs: (() => {
+    }) as React.Dispatch<React.SetStateAction<FormattedProfileRecommendations>>,
+    handleDelete: (e: FormattedRecommendation<any>) => {
+    },
+    handleEdit: (e: FormattedRecommendation<any>) => {
+    }
+});
 
+const ProfileRecommendationsContextProvider = ({children, ...props}: {
+    children: React.ReactNode,
+    pageGlobalUserID: string,
+    isOwnPage: boolean
+}) => {
+    const {pageGlobalUserID} = props;
+    const [formattedRecs, setFormattedRecs] = useState<FormattedProfileRecommendations>({
+        artists: [],
+        albums: [],
+        tracks: []
+    })
 
     useEffect(() => {
-        retrieveProfileRecommendations(pageGlobalUserID).then(res => setFormattedRecs(res));
+        retrieveProfileRecommendations(props.pageGlobalUserID).then(res => setFormattedRecs(res));
     }, [])
 
-    const handleDelete = (e) => {
+    const handleDelete = (e: FormattedRecommendation<any>) => {
         console.log(e);
         deleteRecommendation(e.id).then(() => {
-            createEvent(51, pageGlobalUserID, e.item);
+            createEvent(51, pageGlobalUserID, {id: e.item.id, type: e.item.type});
             retrieveProfileRecommendations(pageGlobalUserID).then(res => setFormattedRecs(res));
         });
     }
 
     const handleEdit = (e) => {
-        setInitialItem(e.item);
-        setShowSelection(true);
     }
-    // TODO: FINISH RECS
+
+    const value = {
+        formattedRecs,
+        setFormattedRecs,
+        handleDelete,
+        handleEdit,
+        ...props
+    }
+
     return (
-        <div style={{width: '100%', position: 'relative'}}>
+        <ProfileRecommendationsContext.Provider value={value}>
+            {children}
+        </ProfileRecommendationsContext.Provider>
+    )
+}
+
+export const ProfileRecommendations = (props: { pageGlobalUserID: string, isOwnPage: boolean }) => {
+    return (
+        <ProfileRecommendationsContextProvider {...props}>
+            <ProfileRecommendationsContent/>
+        </ProfileRecommendationsContextProvider>
+    )
+}
+
+const ProfileRecommendationsContent = () => {
+    const {pageGlobalUserID, isOwnPage, formattedRecs, setFormattedRecs} = useContext(ProfileRecommendationsContext);
+    const types = ['artist', 'album', 'track']
+
+    return (
+        <div>
             {isOwnPage && (
-                <button className={'subtle-button'}
-                        onClick={() => {
-                            setShowSelection(true);
-                            setInitialItem(null);
-                        }}>
-                    New
-                </button>
+                <RecommendationSelectionModal/>
             )}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: '15px',
-                flexWrap: 'wrap',
-                margin: '16px 0',
-            }}>
-                <p>RECS UNDER WORKS</p>
-                {trackRecs?.map(r => <Recommendation rec={r} isOwnPage={isOwnPage} handleDelete={handleDelete} handleEdit={handleEdit} />)}
+            <div>
+                {types.map(t => {
+                    return (
+                        <RecommendationTypeShowcase type={t}/>
+                    )
+                })}
             </div>
-            <RecommendationSelectionModal initialItem={initialItem} showModal={showSelection}
-                                          setShowModal={setShowSelection}
-                                          recommendations={formattedRecs} setRecommendations={setFormattedRecs}
-                                          pageGlobalUserID={pageGlobalUserID}/>
         </div>
+    )
+}
+
+const RecommendationTypeShowcase = (props: { type: string }) => {
+    const {type} = props;
+    const {formattedRecs, isOwnPage, pageGlobalUserID} = useContext(ProfileRecommendationsContext);
+    const recs = formattedRecs[`${type}s`];
+    return (
+        recs.length > 0 && (
+            <div className={"max-w-screen-md"}>
+                <h3 className={"text-xl font-bold capitalize"}>{type}</h3>
+                <div className={"inline-flex flex-col gap-4 w-full"}>
+                    {recs.map(r => <Recommendation rec={r}/>)}
+                </div>
+            </div>
+        )
     )
 }
 
 const Recommendation = (props: {
     rec: FormattedRecommendation<Album | Track | Artist>;
-    isOwnPage: boolean;
-    handleDelete: (e: FormattedRecommendation<any>) => void;
-    handleEdit: (e: FormattedRecommendation<any>) => void;
 }) => {
-    const {rec, isOwnPage, handleDelete, handleEdit} = props;
+    const {isOwnPage, handleDelete, handleEdit} = useContext(ProfileRecommendationsContext);
+    const {rec} = props;
+    const isNotSmallScreen = useMediaQuery({minWidth: 640}); // Tailwind's sm breakpoint is 640px
     let images;
     if (isTrack(rec.item)) {
         images = rec.item.album.images;
@@ -89,97 +144,141 @@ const Recommendation = (props: {
     }
     const imageSrcSet = createPictureSources(images, 0.5);
     return (
-        <div key={rec.item.id} style={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexGrow: '1',
-            gap: '15px',
-            background: 'rgba(125, 125, 125, 0.1)',
-            border: '1px solid rgba(125, 125, 125, 0.75)',
-            padding: '15px',
-            width: 'max-content',
-            overflow: 'hidden',
-            wordBreak: 'break-word'
-        }}>
-            <div className={'supplemental-content'} style={{position: 'relative', height: '150px', width: '150px'}}>
-                <img alt={`${getLIName(rec.item)}`} srcSet={imageSrcSet} className={'backdrop-image'}
-                     style={{aspectRatio: '1', width: '125%', objectFit: 'cover'}}/>
-                <img alt={`${getLIName(rec.item)}`} srcSet={imageSrcSet} className={'levitating-image'}
-                     style={{aspectRatio: '1', width: '100%', objectFit: 'cover'}}/>
+        <div key={rec.item.id} className={"relative inline-flex gap-4 p-4 border-2 w-full justify-left"}>
+            <div>
+                <img srcSet={imageSrcSet} alt={getLIName(rec.item)} className={"h-32 w-32"}/>
             </div>
-            <div style={{display: 'flex', flexDirection: 'column', flexGrow: '1', minWidth: '200px'}}>
-                <h2 style={{margin: '0'}}>
-                    {getLIName(rec.item)}
-                    <span style={{margin: '5px 0 0 10px'}}>
-                                            <SpotifyLink simple link={rec.item.uri}/>
-                                        </span>
-                </h2>
-                <p style={{margin: '0'}}>{getLIDescription(rec.item)}</p>
+            <div className={'flex-grow'}>
+                <h2 className={"font-bold"}>{getLIName(rec.item)}</h2>
+                <Separator/>
+                <p>{getLIDescription(rec.item)}</p>
                 {rec.description.length > 0 && (
-                    <p style={{marginBottom: 0}}>
+                    <p>
                         <em>
-                            <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                            <span>"</span>
                             {rec.description}
-                            <span style={{color: 'var(--accent-colour)', margin: '0 2px'}}>"</span>
+                            <span>"</span>
                         </em>
                     </p>
                 )}
-                {isOwnPage && (
-                    <div style={{display: 'flex', margin: 'auto 0 0 auto', gap: '15px'}}>
-                        <button className={'subtle-button'} onClick={() => handleEdit(rec)}>Edit</button>
-                        <button className={'subtle-button'}
-                                onClick={() => handleDelete(rec)}>
-                            Delete
-                        </button>
-                    </div>
-                )}
+            </div>
+            <div className={'absolute bottom-4 right-4 inline-flex gap-4'}>
+                {isNotSmallScreen ? (
+                        <React.Fragment>
+                            <Button variant={'outline'} asChild>
+                                <a href={rec.item.uri}>Listen</a>
+                            </Button>
+                            {isOwnPage && (
+                                <React.Fragment>
+                                    <Button onClick={() => handleEdit(rec)}>Edit
+                                    </Button>
+                                    <Button onClick={() => handleDelete(rec)} variant={'destructive'}>
+                                        Delete
+                                    </Button>
+                                </React.Fragment>
+                            )}
+                        </React.Fragment>
+                    )
+                    :
+                    <DropdownMenu>
+                        <DropdownMenuTrigger><Button variant={'outline'}>More</Button></DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem>
+                                <a href={rec.item.uri}>Listen</a>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator/>
+                            <DropdownMenuItem onClick={() => handleEdit(rec)}>Edit</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDelete(rec)} className={"bg-destructive text-background"}>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                }
             </div>
         </div>
     )
 }
-type RecommendationSelectionModalProps = {
-    showModal: boolean;
-    setShowModal: (show: boolean) => void;
-    recommendations: FormattedProfileRecommendations;
-    setRecommendations: (recs: FormattedProfileRecommendations) => void;
-    pageGlobalUserID: string;
-    initialItem?: Track | Album | Artist; //
-};
-const RecommendationSelectionModal = (props: RecommendationSelectionModalProps) => {
-    const {showModal, setShowModal, recommendations, setRecommendations, pageGlobalUserID, initialItem = null} = props;
 
-    const handleSubmit = async (selectedItem: Track | Album | Artist, type: ItemType, description: string) => {
+const RecommendationSelectionModal = () => {
+    const {pageGlobalUserID} = useContext(ProfileRecommendationsContext);
+    const [selectedType, setSelectedType] = useState<"artist" | "track" | "album">('album');
+    const [selectedItem, setSelectedItem] = useState<Album | Track | Artist>(null);
+    const [searchInput, setSearchInput] = useState('');
+    const descriptionRef = React.createRef<HTMLTextAreaElement>();
+    const [processing, setProcessing] = useState(false);
 
-        await submitRecommendation(pageGlobalUserID, selectedItem, type, description).then(() => {
-            retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
-        });
-    }
-
-    const handleModify = async (selectedItem: Track | Album | Artist, type: ItemType, description: string) => {
-        let existingRecIndex = -1;
-        if (isTrack(selectedItem)) {
-            existingRecIndex = recommendations.tracks.findIndex(r => r.item.id === selectedItem.id);
-        } else if (isAlbum(selectedItem)) {
-            existingRecIndex = recommendations.albums.findIndex(r => r.item.id === selectedItem.id);
-        } else if (isArtist(selectedItem)) {
-            existingRecIndex = recommendations.artists.findIndex(r => r.item.id === selectedItem.id);
-        } else {
-            throw new Error('Invalid item type in handleModify recommendation.');
+    useEffect(() => {
+        if (searchInput) {
+            debouncedSearchResults(searchInput, selectedType).then(res => setSelectedItem(res[0]));
         }
-        const existingRec = recommendations[existingRecIndex];
-        await modifyRecommendation(pageGlobalUserID, existingRec, type, description).then(() => {
-            retrieveProfileRecommendations(pageGlobalUserID).then(res => setRecommendations(res));
-        })
-    }
+    }, [searchInput]);
 
+
+    const dialogProps = [
+        {
+            text: "New",
+            title: "New recommendation",
+            description: "Make a new profile recommendation.",
+            submissionCondition: !!selectedItem,
+        },
+        {
+            text: "New",
+            title: "New recommendation",
+            description: 'Write your profile recommendation.',
+            actionDescription: 'Submit',
+            action: () => {
+                if (selectedItem && descriptionRef.current.value.length > 0) {
+                    setProcessing(true);
+                    submitRecommendation(pageGlobalUserID, selectedItem, selectedType, descriptionRef.current.value).then(() => {
+                        setProcessing(false);
+                    })
+                }
+            },
+            submissionCondition: !processing
+        },
+    ]
     return (
-        <SelectionModal
-            showModal={showModal}
-            setShowModal={setShowModal}
-            onModify={handleModify}
-            onSubmit={handleSubmit}
-            modifyTarget={initialItem}
-            description
-        />
+        <MultistageDialog dialogProps={dialogProps}>
+            <div className={"flex flex-col gap-4"}>
+                <div>
+                    <h3>Item type</h3>
+                    <p className={"text-muted-foreground"}>Select the type of item you would like to
+                        recommend.</p>
+                </div>
+                <Separator/>
+                <div className={'inline-flex w-full gap-4'}>
+                    <Button variant={selectedType === 'album' ? 'default' : 'outline'}
+                            onClick={() => setSelectedType('album')}>Album</Button>
+                    <Button variant={selectedType === 'artist' ? 'default' : 'outline'}
+                            onClick={() => setSelectedType('artist')}>Artist</Button>
+                    <Button variant={selectedType === 'track' ? 'default' : 'outline'}
+                            onClick={() => setSelectedType('track')}>Track</Button>
+                </div>
+                <div>
+                    <h3><span className={"capitalize"}>{selectedType}</span> name</h3>
+                    <p className={"text-muted-foreground"}>Type in the name of the item you would like to recommend.</p>
+                </div>
+                <Separator/>
+                <div className={'inline-flex w-full gap-4'}>
+                    <Input placeholder={`Name of ${selectedType}`} onChange={(e) => setSearchInput(e.target.value)}/>
+                </div>
+            </div>
+
+            {selectedItem && (
+                <div className={"inline-flex gap-4 flex-col"}>
+                    <div className={"flex flex-col sm:flex-row w-full gap-4"}>
+                        <img srcSet={getImgSrcSet(selectedItem, 0.25)} alt={selectedItem?.name}
+                             className={"w-0 sm:w-32"}/>
+                        <div className={"flex-grow"}>
+                            <h4 className={"text-xl font-bold"}>{getLIName(selectedItem)}</h4>
+                            <Separator/>
+                            <p className={"text-muted-foreground text-sm"}>by {getLIDescription(selectedItem)}</p>
+                            <Textarea placeholder={"You can leave this empty"} ref={descriptionRef}/>
+                        </div>
+                    </div>
+                    <p className={"absolute left-6 bottom-6 text-muted-foreground text-sm underline"}>Not right?</p>
+                </div>
+            )}
+
+        </MultistageDialog>
     )
 }

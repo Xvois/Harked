@@ -37,13 +37,13 @@ export const retrieveProfileRecommendations = async function (user_id: string) {
         let e = recs[i];
         if (e.item.type === "artist") {
             let artist = await fetchSpotifyData<Artist>(`artists/${e.item.id}`)
-            formattedRecs.artists.push({item: artist, description: e.description});
+            formattedRecs.artists.push({id: e.id, item: artist, description: e.description});
         } else if (e.item.type === "track") {
             let track = await fetchSpotifyData<Track>(`tracks/${e.item.id}`);
-            formattedRecs.tracks.push({item: track, description: e.description});
+            formattedRecs.tracks.push({id: e.id, item: track, description: e.description});
         } else if (e.item.type === "album") {
             let album = await fetchSpotifyData<Album>(`albums/${e.item.id}`);
-            formattedRecs.albums.push({item: album, description: e.description});
+            formattedRecs.albums.push({id: e.id, item: album, description: e.description});
         } else {
             throw new Error("Unknown type fetched from profile recommendations.");
         }

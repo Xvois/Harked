@@ -6,7 +6,7 @@ import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
 import React, {createContext, PropsWithChildren, useContext, useState} from "react";
 import {isLoggedIn} from "@/Tools/users";
 import {getItemIndexChange, getLIDescription, getLIName} from "@/Analysis/analysis";
-import {createPictureSources, isArtist, isTrack} from "@/Tools/utils";
+import {createPictureSources, getImgSrcSet, isArtist, isTrack} from "@/Tools/utils";
 import ArrowCircleDownIcon from "@mui/icons-material/ArrowCircleDown";
 import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
 import ClearAllOutlinedIcon from "@mui/icons-material/ClearAllOutlined";
@@ -68,10 +68,6 @@ const DecorativeImages = (props: { srcSet: string, alternateState: boolean }) =>
     )
 }
 
-const getImgSrcSet = (element: Artist | TrackWithAnalytics | string, scale: number) => {
-    const images = isArtist(element) ? element.images : isTrack(element) ? element.album.images : null;
-    return createPictureSources(images, scale);
-}
 
 interface ShowcaseListItemContextProps {
     pageUser: User;
@@ -143,7 +139,7 @@ export const ShowcaseListItemContent = () => {
                     <h2 className={"font-bold text-2xl transition-all"}>{getLIName(element)}</h2>
                     <div>
                         <ChangeIndicator indexChange={indexChange} selectedPrevDatapoint={selectedPrevDatapoint}/>
-                        <p>{getLIDescription(element)}</p>
+                        <p className={"text-sm text-muted-foreground"}>{getLIDescription(element)}</p>
                     </div>
                 </div>
                 <div className={`grid transition-all duration-500 overflow-hidden `} style={{gridTemplateRows: `${level > 0 ? '1fr' : '0fr'}`}}>

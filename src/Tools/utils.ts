@@ -1,7 +1,7 @@
 import {Item, ItemType} from "./Interfaces/databaseInterfaces";
 import {fetchSpotifyData} from "@/API/spotify";
 import {Album, RetrievedAlbums} from "@/API/Interfaces/albumInterfaces";
-import {RetrievedTracks, Track} from "@/API/Interfaces/trackInterfaces";
+import {RetrievedTracks, Track, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
 import {Artist, RetrievedArtists} from "@/API/Interfaces/artistInterfaces";
 import {Playlist} from "@/API/Interfaces/playlistInterfaces";
 import {User} from "./Interfaces/userInterfaces";
@@ -186,6 +186,20 @@ export function createPictureSources(images: {
     }).join(', ');
 }
 
+export const getImgSrcSet = (element: Artist | Track | string | Album, scale: number) => {
+    let images;
+    if (isArtist(element)) {
+        images = element.images;
+    } else if (isTrack(element)) {
+        images = element.album.images;
+    } else if (isAlbum(element)) {
+        images = element.images;
+    } else {
+        images = null;
+    }
+    return createPictureSources(images, scale);
+}
+
 export function getInputRefValue(ref: RefObject<HTMLInputElement>): string | undefined {
     return ref.current?.value;
 }
@@ -214,3 +228,29 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function debounceAsync(func: (...args: any[]) => Promise<any>, wait: number) {
+    let timeoutId: NodeJS.Timeout | null;
+    let resolveLatest: (value: any) => void;
+    let rejectLatest: (reason?: any) => void;
+
+    return (...args: any[]) => {
+        return new Promise<any>((resolve, reject) => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+
+            resolveLatest = resolve;
+            rejectLatest = reject;
+
+            timeoutId = setTimeout(async () => {
+                try {
+                    const result = await func(...args);
+                    resolveLatest(result);
+                } catch (error) {
+                    rejectLatest(error);
+                }
+                timeoutId = null;
+            }, wait);
+        });
+    };
+}

@@ -1277,11 +1277,6 @@ dialog::backdrop {
   background: rgba(0, 0, 0, 0.5);
 }
 
-::selection {
-  background: var(--accent-colour);
-  color: var(--primary-colour);
-}
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
