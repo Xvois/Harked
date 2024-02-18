@@ -7,9 +7,9 @@
     "strict": false,
     "skipLibCheck": true,
     "jsx": "react",
-    "allowJs": true,
+    "allowJs": true
   },
- "include": [
+  "include": [
     "src"
   ],
   "extends": "./tsconfig.paths.json"

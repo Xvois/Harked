@@ -1,12 +1,11 @@
 import {Artist} from "@/API/Interfaces/artistInterfaces";
-import {User} from "./Interfaces/userInterfaces";
-import {retrieveLoggedUserID, retrieveUser} from "./users";
+import {retrieveLoggedUserID} from "./users";
 import {hashString, isAlbum, isArtist, isTrack, resolveItems} from "./utils";
 import {deleteLocalData, getFullLocalData, getLocalDataByID, getPagedLocalData, putLocalData} from "@/API/pocketbase";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {createEvent} from "./events";
-import {Item, ItemType} from "./Interfaces/databaseInterfaces";
+import {Item} from "./Interfaces/databaseInterfaces";
 import {Review, ReviewWithItem} from "./Interfaces/reviewInterfaces";
 import {getLIName} from "@/Analysis/analysis";
 import {fetchSpotifyData} from "@/API/spotify";

@@ -20,7 +20,7 @@ export const reAuthorise = async () => {
     const body = await fetch(url, payload);
     const response = await body.json();
 
-    if(response.access_token && response.refresh_token){
+    if (response.access_token && response.refresh_token) {
         localStorage.setItem('access-token', response.access_token);
         localStorage.setItem('refresh-token', response.refresh_token);
     }

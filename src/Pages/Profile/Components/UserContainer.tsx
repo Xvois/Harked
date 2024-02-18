@@ -1,16 +1,14 @@
-import React, {useEffect, useState} from "react";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import {followUser, unfollowUser} from "@/Tools/following"
-import {isLoggedIn} from "@/Tools/users";
+import React, {useContext, useEffect, useState} from "react";
 import {retrieveDatapoint} from "@/Tools/datapoints";
 import {calculateSimilarity} from "@/Analysis/analysis";
-import {SpotifyLink} from "@/Components/SpotifyLink";
 import {ValueIndicator} from "@/Components/ValueIndicator";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {User} from "@/Tools/Interfaces/userInterfaces";
-import {createPictureSources} from "@/Tools/utils";
 import {Badge} from "@/Components/ui/badge";
+import {UserRoundMinus, UserRoundPlus} from "lucide-react";
+import {ProfileContext} from "@/Pages/Profile/ProfileContext";
+import {useAuth} from "@/Authentication/AuthContext";
+import {Skeleton} from "@/Components/ui/skeleton";
 
 
 export function ComparisonLink(props: {
@@ -61,95 +59,58 @@ export function ComparisonLink(props: {
     )
 }
 
-export function UserContainer(props: {
-    windowWidth: any;
-    pageUser: User;
-    followers: any;
-    isLoggedUserFollowing: any;
-    loggedUserID: any;
-    isOwnPage: any;
-    selectedDatapoint: Datapoint;
-}) {
-    const {
-        windowWidth,
-        pageUser,
-        followers,
-        isLoggedUserFollowing,
-        loggedUserID,
-        isOwnPage,
-        selectedDatapoint
-    } = props;
-
-    const [isFollowing, setIsFollowing] = useState(isLoggedUserFollowing);
-    // For optimistic updates
-    const [followerNumber, setFollowerNumber] = useState(followers.length);
-
-    const handleFollowClick = () => {
-        if (!isFollowing) {
-            setIsFollowing(true);
-            const n = followerNumber;
-            setFollowerNumber(n + 1);
-            followUser(loggedUserID, pageUser.id).then(() => {
-                console.info('User followed!');
-            }).catch((err) => {
-                console.warn(`Error following user: `, err);
-                setIsFollowing(false);
-                setFollowerNumber(n);
-            })
-        } else {
-            setIsFollowing(false);
-            const n = followerNumber;
-            setFollowerNumber(n - 1);
-            unfollowUser(loggedUserID, pageUser.id).then(() => {
-                console.info('User unfollowed!');
-            }).catch((err) => {
-                console.warn(`Error unfollowing user: `, err);
-                setIsFollowing(true);
-                setFollowerNumber(n);
-            })
-        }
-    }
-
-    useEffect(() => {
-        setIsFollowing(isLoggedUserFollowing);
-    }, [isLoggedUserFollowing]);
-
-    useEffect(() => {
-        setFollowerNumber(followers.length);
-    }, [followers]);
-
-    const profileImages = pageUser.images;
-    const profileImageSrcSet = createPictureSources(profileImages, 0.1)
+export function UserContainer(props: {}) {
+    const {isAuthenticated} = useAuth();
+    const {pageUser, isLoggedUserFollowing, isOwnPage} = useContext(ProfileContext);
 
     return (
-        <div className={"inline-flex gap-4"}>
-            {profileImages && (
-                <div>
-                    <img className={"w-16 h-16 rounded-full object-cover"} alt={'profile picture'} srcSet={profileImageSrcSet}/>
-                </div>
-            )}
-            <div className={"flex flex-col"}>
+        <div className="py-6 lg:py-12">
+            <div className="grid gap-4 text-center md:gap-8 md:px-6">
+                <div className="flex flex-col items-center space-y-2">
+                    <div className="rounded-full overflow-hidden border-4">
+                        {pageUser ?
+                            <img alt="Profile Picture" className="aspect-square" height="100"
+                                 srcSet={pageUser.images[0].url}
+                                 width="100"/>
+                            :
+                            <Skeleton className={"h-24 w-24 rounded-full"}/>
+                        }
 
-                <div className={"inline-flex flex-row gap-2 items-center"}>
-                    <p className={"text-4xl font-bold"}>
-                        {pageUser.display_name}
-                    </p>
-                    <SpotifyLink simple link={`https://open.spotify.com/user/${pageUser.id}`}/>
-                </div>
+                    </div>
+                    <div className="space-y-1">
+                        {pageUser ?
+                            <h1 className="text-2xl font-bold tracking-tighter sm:text-4xl">
+                                {pageUser.display_name}
+                            </h1>
+                            :
+                            <Skeleton className={"h-8 w-48"}/>
+                        }
+                        {pageUser &&
+                            <div className={"space-y-2 justify-center"}>
+                                <div className={"flex justify-center gap-4"}>
+                                    <Badge className={"text-sm"}>{pageUser.followers.total} followers</Badge>
+                                    <Badge variant={"outline"} className={"w-max"}>Pro</Badge>
+                                    {isAuthenticated && !isOwnPage &&
+                                        (
+                                            isLoggedUserFollowing ?
+                                                <button className={"p-0 bg-none"}>
+                                                    <UserRoundMinus/>
+                                                </button>
+                                                :
+                                                <button className={"p-0 bg-none"}>
+                                                    <UserRoundPlus/>
+                                                </button>
+                                        )
 
-                <div className={"inline-flex gap-2"}>
-                    <Badge variant={"outline"}>{selectedDatapoint.top_artists[0].name}</Badge>
-                    <Badge variant={"outline"}>{selectedDatapoint.top_tracks[0].name}</Badge>
-                    <Badge variant={"outline"}>{selectedDatapoint.top_genres[0]}</Badge>
-                </div>
-
-            </div>
-            <div>
-                <div style={{marginTop: 'auto'}}>
-                    {windowWidth < 700 && !isOwnPage && isLoggedIn() &&
-                        <ComparisonLink simple pageUser={pageUser} loggedUserID={loggedUserID}
-                                        selectedDatapoint={selectedDatapoint}/>
-                    }
+                                    }
+                                </div>
+                                <div className={"flex justify-between gap-4"}>
+                                    <Badge variant={"secondary"}>Developer</Badge>
+                                    <Badge variant={"secondary"}>Tester</Badge>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>

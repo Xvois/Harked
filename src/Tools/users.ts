@@ -2,6 +2,7 @@ import {fetchSpotifyData} from "@/API/spotify";
 import {user_cache} from "./cache";
 import {User} from "./Interfaces/userInterfaces";
 import {
+    createNewPBInstance,
     deleteLocalData,
     disableAutoCancel,
     enableAutoCancel,
@@ -15,6 +16,12 @@ import {DatabaseUser} from "./Interfaces/databaseInterfaces";
 import {Settings} from "./Interfaces/userMeta";
 import {Comment} from "./Interfaces/commentInterfaces";
 
+
+
+export const searchUsers = async function (query: string): Promise<Array<DatapointRecord>> {
+    return await getLocalData<DatapointRecord>('users', `username ~ "${query}"`);
+
+}
 
 /**
  * Mapping of getUser with caching.

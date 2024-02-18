@@ -8,7 +8,11 @@ import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {createPictureSources, isTrack} from "@/Tools/utils";
 
-const ReviewItem = (props: { review: ReviewWithItem<Artist | Track | Album>, isOwnPage: boolean, handleDelete: Function }) => {
+const ReviewItem = (props: {
+    review: ReviewWithItem<Artist | Track | Album>,
+    isOwnPage: boolean,
+    handleDelete: Function
+}) => {
     const {review, isOwnPage, handleDelete} = props;
 
     const created = new Date(review.created);

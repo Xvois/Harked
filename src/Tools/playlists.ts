@@ -2,15 +2,17 @@ import {fetchSpotifyData} from "@/API/spotify";
 import {
     Playlist,
     PlaylistFromList,
-    PlaylistMeta, PlaylistWithTracks,
+    PlaylistMeta,
+    PlaylistWithTracks,
     PlFromListWithTracks,
     PlItem,
-    PlTrack, PLTrackWithAnalytics
+    PlTrack,
+    PLTrackWithAnalytics
 } from "@/API/Interfaces/playlistInterfaces";
 import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
 import {deleteLocalData, getLocalData, putLocalData, updateLocalData} from "@/API/pocketbase";
 import {createEvent} from "./events";
-import {MultipleAnalytics, TrackAnalytics, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
+import {MultipleAnalytics} from "@/API/Interfaces/trackInterfaces";
 import {chunks} from "@/Tools/utils";
 
 
@@ -61,7 +63,10 @@ export const retrievePlaylists = async function (user_id: string): Promise<Array
 
     await Promise.all(playlistTrackPromises).then(tracksArrays => {
         tracksArrays.forEach((tracks, index) => {
-            formattedPlaylists[index] = {...playlists[index], tracks: {href: playlists[index].tracks.href, total: playlists[index].tracks.total, items: tracks}}
+            formattedPlaylists[index] = {
+                ...playlists[index],
+                tracks: {href: playlists[index].tracks.href, total: playlists[index].tracks.total, items: tracks}
+            }
         });
     });
 

@@ -11,7 +11,7 @@ import {
 import {Button} from "@/Components/ui/button";
 
 export type DialogProps = {
-    text: string;
+    trigger: React.ReactNode;
     title: string;
     description: string;
     actionDescription?: string;
@@ -34,7 +34,7 @@ export const GenericDialog = ({children, submissionCondition = true, ...props}: 
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">{props.text}</Button>
+                {props.trigger}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

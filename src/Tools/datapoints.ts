@@ -9,7 +9,7 @@ import {
     disableAutoCancel,
     enableAutoCancel,
     getDatapointRecord,
-    getDelayedDatapoint,
+    getDelayedDatapointRecord,
     validDPExists
 } from "@/API/pocketbase";
 import {calculateTopGenres} from "@/Tools/genres";
@@ -62,6 +62,15 @@ export const retrieveDatapoint = async function (user_id: string, term: Term): P
     return datapoint;
 }
 
+export const retrievePrevDatapoint = async function (user_id: string, term: Term) {
+    const datapoint = await getDelayedDatapointRecord(user_id, term, 1);
+    if (datapoint === undefined) {
+        return null
+    } else {
+        return await convertDatapointRecordToDatapoint(datapoint);
+    }
+}
+
 // Helper function to convert a datapoint record to a datapoint
 async function convertDatapointRecordToDatapoint(dpRecord: DatapointRecord): Promise<Datapoint> {
     const [topTracksData, topArtistsData, analyticsData] = await Promise.all([
@@ -90,17 +99,8 @@ export async function convertDatapointToDatapointRecord(owner: string, term: Ter
     return {owner: owner, term: term, top_tracks, top_artists};
 }
 
-export const retrievePrevDatapoint = async function (user_id: string, term: Term) {
-    const datapoint = await getDelayedDatapoint(user_id, term, 1);
-    if (datapoint === undefined) {
-        return null
-    } else {
-        return datapoint;
-    }
-}
 
-
-export const retrieveAllDatapoints = async function (user_id: string) {
+export const retrieveAllDatapoints = async function (user_id: string): Promise<Datapoint[]> {
     await disableAutoCancel();
     const db_id = window.localStorage.getItem("db_id");
     if (!db_id) {
@@ -108,16 +108,13 @@ export const retrieveAllDatapoints = async function (user_id: string) {
     }
     const validExists = await validDPExists(db_id, 'long_term');
     const terms = ['short_term', 'medium_term', 'long_term'];
-    const datapoints = [];
+    let datapoints = [];
 
     const shouldHydrate = isLoggedIn() && !validExists;
     if (shouldHydrate) {
         datapoints.push(...await hydrateDatapoints());
     } else {
-        for (const term of terms) {
-            const datapoint = await retrieveDatapoint(user_id, (term as Term));
-            datapoints.push(datapoint);
-        }
+        datapoints = await Promise.all(terms.map(term => retrieveDatapoint(user_id, term as Term)));
     }
 
     await enableAutoCancel();

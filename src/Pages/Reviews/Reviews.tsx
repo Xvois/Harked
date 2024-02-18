@@ -1,11 +1,11 @@
 import React from 'react';
-import { ReviewsProvider } from './ReviewsContext';
+import {ReviewsProvider} from './ReviewsContext';
 import ReviewsContent from './ReviewsContent';
 
 const Reviews = () => {
     return (
         <ReviewsProvider>
-            <ReviewsContent />
+            <ReviewsContent/>
         </ReviewsProvider>
     );
 };

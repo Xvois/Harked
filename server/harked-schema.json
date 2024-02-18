@@ -146,7 +146,7 @@
         "type": "json",
         "required": false,
         "unique": false,
-         "options": {
+        "options": {
           "maxSize": 4096
         }
       }

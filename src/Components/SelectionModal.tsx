@@ -35,7 +35,7 @@ export const SelectionModal = (props: {
     const [stars, setStars] = useState(0);
     const typeChoices = ['track', 'artist', 'album'];
     const [type, setType] = useState(typeChoices[0]);
-    const images = selectedItem ? ( isTrack(selectedItem) ? selectedItem.album.images : selectedItem.images ) : null;
+    const images = selectedItem ? (isTrack(selectedItem) ? selectedItem.album.images : selectedItem.images) : null;
     const imageSrcSet = images ? createPictureSources(images, 0.25) : null;
 
     useEffect(() => {

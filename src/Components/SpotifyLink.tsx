@@ -6,7 +6,8 @@ export const SpotifyLink = (props: { link: string, simple?: boolean }) => {
     return (
         simple ?
             <a href={link} className={"h-max"}>
-                <img className={"w-6 h-6"} alt={'Spotify logo'} src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`}/>
+                <img className={"w-6 h-6"} alt={'Spotify logo'}
+                     src={`/Spotify_Icon_RGB_${!darkMode ? 'Black' : 'White'}.png`}/>
             </a>
             :
             <a className={'std-button'} href={link}>

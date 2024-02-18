@@ -3,10 +3,17 @@ import UserDetails from "@/Pages/Reviews/Components/UserDetails";
 import ReviewsList from "@/Pages/Reviews/Components/ReviewsList";
 import {ReviewsContext} from "@/Pages/Reviews/ReviewsContext";
 import CreateRecommendationForm from "@/Pages/Reviews/Components/CreateRecommendationForm";
-import InputForm from "@/Pages/Reviews/Components/InputForm";
 
 const ReviewsContent = () => {
-    const {pageUser, possessive, reviewsPage, isOwnPage, includedTypes, updatePage, isLoaded} = useContext(ReviewsContext);
+    const {
+        pageUser,
+        possessive,
+        reviewsPage,
+        isOwnPage,
+        includedTypes,
+        updatePage,
+        isLoaded
+    } = useContext(ReviewsContext);
 
     return (
         <div>

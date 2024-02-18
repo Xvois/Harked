@@ -51,7 +51,7 @@ const ImportForm = (props: { user_id: string, updatePage: Function }) => {
         });
 
         for (const review of reviews) {
-            await submitReview(review.item,  review.rating, '');
+            await submitReview(review.item, review.rating, '');
             // Use the previous state updater form of setCompleted
             setCompleted(prevCompleted => prevCompleted + 1);
 

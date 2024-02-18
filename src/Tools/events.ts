@@ -1,9 +1,6 @@
-import {User} from "./Interfaces/userInterfaces";
-import {retrieveUser} from "./users";
 import {getDatabaseUser, getLocalData, putLocalData} from "@/API/pocketbase";
 import {Item} from "./Interfaces/databaseInterfaces";
 import {resolveItems} from "./utils";
-import {retrieveFollowing} from "./following";
 import {ResUserEvent, UserEvent} from "./Interfaces/eventInterfaces";
 
 // TODO: REMAKE
@@ -36,22 +33,23 @@ import {ResUserEvent, UserEvent} from "./Interfaces/eventInterfaces";
  */
 export const createEvent = async function (event_ref_num: number, user_id: string, item: Item) {
     const user = await getDatabaseUser(user_id);
-    if(user) {
+    if (user) {
         await putLocalData("events",
-        {
-            owner: user.id,
-            ref_num: event_ref_num,
-            item: item
-        }
-    )
+            {
+                owner: user.id,
+                ref_num: event_ref_num,
+                item: item
+            }
+        )
     }
 }
 
+// TODO: ADD FOLLOWERS
 
 export const retrieveEventsForUser = async function (user_id: string, page: number = 1, eventsPerPage: number = 50) {
     let resolvedUserEvents: Array<ResUserEvent<any>> = [];
 
-    const following = await retrieveFollowing(user_id);
+    const following = null;
     const followingMap = new Map();
 
     // Create a map to reference users from their db id

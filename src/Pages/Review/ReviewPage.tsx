@@ -5,8 +5,7 @@ import "../../CSS/Review.css"
 import {retrieveReview} from "@/Tools/reviews";
 import {isLoggedIn, retrieveLoggedUserID} from "@/Tools/users";
 import {StyledRating} from "@/Components/styles";
-import {CommentSection} from "@/Components/CommentSection";
-import {Review, ReviewWithItem} from "@/Tools/Interfaces/reviewInterfaces";
+import {ReviewWithItem} from "@/Tools/Interfaces/reviewInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";

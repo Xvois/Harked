@@ -5,9 +5,10 @@ import {getLIDescription, getLIName} from "@/Analysis/analysis";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
+import {Separator} from "@/Components/ui/separator";
 
-export const ItemRecommendations = (props: {element: Artist | Track, selectedDatapoint: Datapoint}) => {
-    const {element, selectedDatapoint } = props;
+export const ItemRecommendations = (props: { element: Artist | Track, selectedDatapoint: Datapoint }) => {
+    const {element, selectedDatapoint} = props;
     const [recommendations, setRecommendations] = useState(null);
 
     useEffect(() => {
@@ -29,33 +30,34 @@ export const ItemRecommendations = (props: {element: Artist | Track, selectedDat
 
     const renderRecommendations = () => {
         if (!recommendations) {
-            return <div className={'placeholder'} style={{width: '100%', height: '100%'}}/>
+            return <div/>
         }
 
         return (
             <>
-                <div className={'widget-item'} style={{flexGrow: '0', height: '75px'}}>
-                    <div className={'widget-button'}>
-                        <p style={{margin: 0}}>Recommendations for</p>
-                        <h3 style={{margin: 0}}>{getLIName(element)}</h3>
-                    </div>
+                <div>
+                    <h3 className={"text-xl font-bold"}>Recommendations</h3>
+                    <p className={"text-sm text-muted-foreground"}>Tailored recommendations for you and this item.</p>
                 </div>
-                {
-                    recommendations.slice(0, 3).map((r, i) => (
-                        <div key={getLIName(r)} className={'widget-item'} style={{animationDelay: `${i / 10}s`}}>
-                            <a href={r.link} className={'widget-button'}>
-                                <h4 style={{margin: 0}}>{getLIName(r)}</h4>
-                                <p style={{margin: 0}}>{getLIDescription(r)}</p>
-                            </a>
-                        </div>
-                    ))
-                }
+                <Separator className={"my-4"}/>
+                <ul>
+                    {
+                        recommendations.slice(0, 3).map((r: Track | Artist, i) => (
+                            <li key={getLIName(r)}>
+                                <a href={r.uri}>
+                                    <h4 className={""}>{getLIName(r)}</h4>
+                                    <p className={"text-sm text-muted-foreground"}>{getLIDescription(r)}</p>
+                                </a>
+                            </li>
+                        ))
+                    }
+                </ul>
             </>
         )
     }
 
     return (
-        <div className={`list-widget-wrapper supplemental-content`}>
+        <div>
             {renderRecommendations()}
         </div>
     )

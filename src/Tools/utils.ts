@@ -1,14 +1,14 @@
 import {Item, ItemType} from "./Interfaces/databaseInterfaces";
 import {fetchSpotifyData} from "@/API/spotify";
 import {Album, RetrievedAlbums} from "@/API/Interfaces/albumInterfaces";
-import {RetrievedTracks, Track, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
+import {RetrievedTracks, Track} from "@/API/Interfaces/trackInterfaces";
 import {Artist, RetrievedArtists} from "@/API/Interfaces/artistInterfaces";
 import {Playlist} from "@/API/Interfaces/playlistInterfaces";
 import {User} from "./Interfaces/userInterfaces";
 import {RefObject} from 'react';
 
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import {type ClassValue, clsx} from "clsx"
+import {twMerge} from "tailwind-merge"
 
 export function hashString(inputString: string) {
     // @ts-ignore
@@ -173,12 +173,12 @@ export function getAllIndexes(arr, val) {
 
 export function createPictureSources(images: {
     url: string,
-    height: number,
-    width: number
+    height: number | null,
+    width: number | null
 }[], imageWidthPercentage: number) {
     return images.map((image, index, array) => {
-        let width = image.width;
-        if (index !== array.length - 1) {
+        let width = image.width !== null ? image.width : 1; // Provide a default value if width is null
+        if (index !== array.length - 1 && array[index + 1].width !== null) {
             // If it's not the last image, adjust the width by the imageWidthPercentage
             width = Math.floor(array[index + 1].width * imageWidthPercentage);
         }
@@ -225,7 +225,7 @@ export function isPlaylist(item: Album | Track | Artist | Playlist | string): it
     Used for shadcn components.
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+    return twMerge(clsx(inputs))
 }
 
 export function debounceAsync(func: (...args: any[]) => Promise<any>, wait: number) {

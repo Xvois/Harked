@@ -1,46 +1,31 @@
-import {User} from "@/Tools/Interfaces/userInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
-import {Datapoint, Term} from "@/Tools/Interfaces/datapointInterfaces";
-import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
-import React, {createContext, PropsWithChildren, useContext, useState} from "react";
-import {isLoggedIn} from "@/Tools/users";
-import {getItemIndexChange, getLIDescription, getLIName} from "@/Analysis/analysis";
-import {createPictureSources, getImgSrcSet, isArtist, isTrack} from "@/Tools/utils";
+import {Term} from "@/Tools/Interfaces/datapointInterfaces";
+import React, {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
+import {getAverageAnalytics, getItemIndexChange, getLIDescription, getLIName} from "@/Analysis/analysis";
+import {createPictureSources, isArtist, isTrack} from "@/Tools/utils";
 import ArrowCircleDownIcon from "@mui/icons-material/ArrowCircleDown";
 import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
 import ClearAllOutlinedIcon from "@mui/icons-material/ClearAllOutlined";
-import FlareIcon from "@mui/icons-material/Flare";
 import {ItemDescriptor} from "@/Analysis/ItemDescriptor";
+import {getGenresRelatedArtists} from "@/Tools/similar";
+import {Button} from "@/Components/ui/button";
+import {GenericDialog} from "@/Components/GenericDialog";
+import {ArtistAnalysis} from "@/Pages/Profile/Components/ArtistAnalysis";
+import {TrackAnalysis} from "@/Pages/Profile/Components/TrackAnalysis";
+import {ItemRecommendations} from "@/Pages/Profile/Components/ItemRecommendations";
+import {ProfileContext} from "@/Pages/Profile/ProfileContext";
 
-
-const ChangeIndicator = (props: { indexChange: number, selectedPrevDatapoint: Datapoint | null }) => {
-    const {indexChange, selectedPrevDatapoint} = props;
+const ChangeIndicator = (props: { indexChange: number | null }) => {
+    const {indexChange} = props;
     if (indexChange < 0) {
-        return <><span style={{
-            color: 'var(--primary-colour)',
-            fontSize: '10px',
-        }}>{indexChange}</span><ArrowCircleDownIcon style={{
-            color: 'var(--primary-colour)',
-            animation: 'down-change-animation 0.5s ease-out'
-        }}
-                                                    fontSize={"small"}></ArrowCircleDownIcon></>
+        return <ArrowCircleDownIcon fontSize={"small"}/>
     } else if (indexChange > 0) {
-        return <><span style={{
-            color: 'var(--primary-colour)',
-            fontSize: '10px'
-        }}>{indexChange}</span><ArrowCircleUpIcon style={{
-            color: 'var(--primary-colour)',
-            animation: 'up-change-animation 0.5s ease-out'
-        }}
-                                                  fontSize={"small"}></ArrowCircleUpIcon></>
+        return <ArrowCircleUpIcon fontSize={"small"}/>
     } else if (indexChange === 0) {
-        return <ClearAllOutlinedIcon
-            style={{color: 'var(--primary-colour)', animation: 'equals-animation 0.5s ease-out'}}
-            fontSize={"small"}></ClearAllOutlinedIcon>
-    } else if (selectedPrevDatapoint !== null) {
-        return
-        <FlareIcon style={{color: 'var(--primary-colour)', animation: 'fadeIn 0.5s ease-in'}} fontSize={"small"}/>
+        return <ClearAllOutlinedIcon fontSize={"small"}/>
+    } else if (indexChange === null) {
+        return <></>
     }
 }
 
@@ -70,18 +55,12 @@ const DecorativeImages = (props: { srcSet: string, alternateState: boolean }) =>
 
 
 interface ShowcaseListItemContextProps {
-    pageUser: User;
     element: Artist | TrackWithAnalytics | string;
     index: number;
-    allDatapoints: Datapoint[];
-    selectedDatapoint: Datapoint;
-    selectedPrevDatapoint: Datapoint;
-    playlists: Array<PlFromListWithTracks>;
-    type: string;
-    term: Term;
-    isOwnPage: boolean;
     level: number;
-    setLevel: React.Dispatch<React.SetStateAction<Number>>
+    setLevel: React.Dispatch<React.SetStateAction<Number>>;
+    modifiable: boolean;
+    setModifiableIndex: React.Dispatch<React.SetStateAction<number>>
 }
 
 const ShowcaseListItemContext = createContext<ShowcaseListItemContextProps | undefined>(undefined);
@@ -95,16 +74,39 @@ export const ShowcaseListItemProvider = ({children, ...props}: PropsWithChildren
 };
 
 const ShowcaseListItemWrapper = ({children}) => {
-    const {element, level, setLevel} = useContext(ShowcaseListItemContext);
+    const {selectedDatapoint} = useContext(ProfileContext);
+    const {
+        index,
+        element,
+        level,
+        setLevel,
+        modifiable,
+        setModifiableIndex
+    } = useContext(ShowcaseListItemContext);
+    let images;
+    if (isTrack(element)) {
+        images = element.album.images;
+    } else if (isArtist(element)) {
+        images = element.images;
+    } else {
+        images = getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].images;
+    }
+
+    useEffect(() => {
+        if (!modifiable && level > 0) {
+            setLevel(0);
+        }
+    }, [modifiable]);
 
     return (
         <div
-            className={`relative h-fit transition-height max-w-screen-lg bg-gradient-to-r from-border via-transparent to-border p-1 overflow-clip items-center justify-center`}
+            className={`relative h-fit transition-height bg-gradient-to-r from-border via-transparent to-border p-[1px] overflow-clip items-center justify-center cursor-pointer`}
             tabIndex={0}
             onClick={() => {
+                setModifiableIndex(index)
                 level === 0 ? setLevel(1) : setLevel(0)
             }}>
-            <DecorativeImages srcSet={getImgSrcSet(element, 0.01)} alternateState={level > 0}/>
+            <DecorativeImages srcSet={createPictureSources(images, 0.01)} alternateState={level > 0}/>
             {children}
         </div>
     )
@@ -114,45 +116,80 @@ const ShowcaseListItemWrapper = ({children}) => {
 export const ShowcaseListItemContent = () => {
     const {
         pageUser,
-        element,
-        index,
-        type,
         selectedDatapoint,
-        selectedPrevDatapoint,
         allDatapoints,
         playlists,
-        term,
+        terms,
+        termIndex,
         isOwnPage,
+        selectedPrevDatapoint
+    } = useContext(ProfileContext);
+    const {
+        element,
+        index,
         level,
-        setLevel
     } = useContext(ShowcaseListItemContext);
-    const [showAnalytics, setShowAnalytics] = useState(index === 0 ? (type !== 'genre' && isLoggedIn()) : false);
-    const indexChange = selectedPrevDatapoint ? getItemIndexChange(element, index, type, selectedPrevDatapoint) : null;
+    const indexChange: number | null = getItemIndexChange(element, index, selectedPrevDatapoint);
 
 
     return (
         <div className={`h-full bg-background text-foreground`}>
             <div
-                className={`relative inline-flex flex-col h-full w-full items-center group cursor-pointer p-8 transition-all`} style={{gap: `${level > 0 ? '1rem': '0'}`}}>
-                <p className={`absolute h-fit left-4 top-0 bottom-0 my-auto font-bold text-xl opacity-${level > 0 ? '0' : '35'} transition-opacity`}>{index + 1}.</p>
+                className={`relative inline-flex flex-col h-full w-full items-center group cursor-pointer p-8 transition-all`}
+                style={{gap: `${level > 0 ? '1rem' : '0'}`}}>
+                <div
+                    className={`inline-flex flex-row gap-2 items-center absolute h-fit left-4 top-0 bottom-0 my-auto font-bold text-xl opacity-${level > 0 ? '0' : '35'} transition-opacity`}>
+                    <p>{index + 1}</p>
+                    <ChangeIndicator indexChange={indexChange}/>
+                </div>
                 <div className={"inline-flex flex-col text-center justify-center items-center"}>
                     <h2 className={"font-bold text-2xl transition-all"}>{getLIName(element)}</h2>
                     <div>
-                        <ChangeIndicator indexChange={indexChange} selectedPrevDatapoint={selectedPrevDatapoint}/>
-                        <p className={"text-sm text-muted-foreground"}>{getLIDescription(element)}</p>
+                        <p className={"text-sm text-muted-foreground"}>
+                            {typeof element === 'string'
+                                ?
+                                getGenresRelatedArtists(element, selectedDatapoint.top_artists)[0].name
+                                :
+                                getLIDescription(element)
+                            }
+                        </p>
                     </div>
                 </div>
-                <div className={`grid transition-all duration-500 overflow-hidden `} style={{gridTemplateRows: `${level > 0 ? '1fr' : '0fr'}`}}>
+                <div className={`grid transition-all duration-500 overflow-hidden `}
+                     style={{gridTemplateRows: `${level > 0 ? '1fr' : '0fr'}`}}>
                     <div
-                        className={`text-center justify-center items-center m-auto overflow-hidden`}>
+                        className={`flex flex-col text-center justify-center items-center m-auto overflow-hidden gap-4`}>
                         <ItemDescriptor
                             item={element}
                             user={pageUser}
                             selectedDatapoint={selectedDatapoint}
                             allDatapoints={allDatapoints}
-                            term={term}
+                            term={terms[termIndex] as Term}
                             isOwnPage={isOwnPage}
                         />
+                        <GenericDialog trigger={
+                            <Button variant={"outline"}
+                                    className={"bg-transparent border-opacity-35 hover:bg-secondary/35"}>Explore</Button>
+                        } title={`Explore ${getLIName(element)}`} description={"Blah blah blah"}>
+                            {isArtist(element) ?
+                                <div className={"inline-flex flex-col gap-4"}>
+                                    <ArtistAnalysis user_id={pageUser.id} artist={element} playlists={playlists}
+                                                    term={terms[termIndex] as Term} isOwnPage={isOwnPage}/>
+                                    <ItemRecommendations element={element} selectedDatapoint={selectedDatapoint}/>
+                                </div>
+                                :
+                                isTrack(element) ?
+                                    <div className={"inline-flex flex-col gap-4"}>
+                                        <TrackAnalysis track={element} averageAnalytics={
+                                            getAverageAnalytics(selectedDatapoint.top_tracks)
+                                        }/>
+                                        <ItemRecommendations element={element} selectedDatapoint={selectedDatapoint}/>
+                                    </div>
+
+                                    :
+                                    <></>
+                            }
+                        </GenericDialog>
                     </div>
                 </div>
             </div>
@@ -161,16 +198,10 @@ export const ShowcaseListItemContent = () => {
 }
 
 export const ShowcaseListItem = (props: {
-    pageUser: User;
-    playlists: Array<PlFromListWithTracks>;
-    allDatapoints: Datapoint[];
-    selectedDatapoint: Datapoint;
-    selectedPrevDatapoint: Datapoint;
     element: Artist | TrackWithAnalytics | string;
     index: number;
-    type: string;
-    term: Term;
-    isOwnPage: boolean;
+    modifiable: boolean;
+    setModifiableIndex: React.Dispatch<React.SetStateAction<number>>
 }) => {
     const [level, setLevel] = useState(0);
     const value = {

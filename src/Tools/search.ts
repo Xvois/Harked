@@ -2,7 +2,6 @@ import {fetchSpotifyData} from "@/API/spotify";
 import {SpotifyList} from "@/API/Interfaces/spotifyResponseInterface";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {SpotifySearch} from "@/Tools/Interfaces/searchInterfaces";
-import {retrieveFollowing} from "@/Tools/following";
 import {retrieveAllDatapoints} from "@/Tools/datapoints";
 import {containsElement} from "../Analysis/analysis";
 import {Track} from "@/API/Interfaces/trackInterfaces";
@@ -44,7 +43,7 @@ export const debouncedSearchResults = debounceAsync(retrieveSearchResults, 250);
  * Returns all the users that have a matching item in their most recent datapoints.
  */
 export const followingContentsSearch = async function (user_id: string, item: Artist | Track | string) {
-    const following = await retrieveFollowing(user_id);
+    const following = null;
     const dpPromises = [];
     following.forEach((user) => {
         dpPromises.push(retrieveAllDatapoints(user.user_id));

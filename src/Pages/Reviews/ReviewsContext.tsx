@@ -37,8 +37,8 @@ type ReviewsContextType = {
     setUnresolvedReviews: React.Dispatch<React.SetStateAction<any>>,
     isError: boolean,
     setIsError: React.Dispatch<React.SetStateAction<boolean>>,
-    errorDetails: {description: string, errCode: string},
-    setErrorDetails: React.Dispatch<React.SetStateAction<{description: string, errCode: string}>>,
+    errorDetails: { description: string, errCode: string },
+    setErrorDetails: React.Dispatch<React.SetStateAction<{ description: string, errCode: string }>>,
     includedTypes: string[],
     setIncludedTypes: React.Dispatch<React.SetStateAction<string[]>>,
     isLoaded: boolean,
@@ -47,39 +47,58 @@ type ReviewsContextType = {
 
 export const ReviewsContext = createContext<ReviewsContextType>({
     page: 1,
-    setPage: () => {},
+    setPage: () => {
+    },
     sort: "-created",
-    setSort: () => {},
+    setSort: () => {
+    },
     paginationLoading: false,
-    setPaginationLoading: () => {},
+    setPaginationLoading: () => {
+    },
     perPage: 10,
-    updatePage: async () => {},
-    incrementPage: async () => {},
-    decrementPage: async () => {},
-    handlePageChange: () => {},
-    handleFilterChange: () => {},
-    handleOrderChange: () => {},
+    updatePage: async () => {
+    },
+    incrementPage: async () => {
+    },
+    decrementPage: async () => {
+    },
+    handlePageChange: () => {
+    },
+    handleFilterChange: () => {
+    },
+    handleOrderChange: () => {
+    },
     pageID: '',
     isOwnPage: false,
-    setIsOwnPage: () => {},
+    setIsOwnPage: () => {
+    },
     possessive: '',
-    setPossessive: () => {},
+    setPossessive: () => {
+    },
     pageUser: null,
-    setPageUser: () => {},
+    setPageUser: () => {
+    },
     reviewsPage: null,
-    setReviewsPage: () => {},
+    setReviewsPage: () => {
+    },
     adjacentPages: null,
-    setAdjacentPages: () => {},
+    setAdjacentPages: () => {
+    },
     unresolvedReviews: null,
-    setUnresolvedReviews: () => {},
+    setUnresolvedReviews: () => {
+    },
     isError: false,
-    setIsError: () => {},
+    setIsError: () => {
+    },
     errorDetails: {description: null, errCode: null},
-    setErrorDetails: () => {},
+    setErrorDetails: () => {
+    },
     includedTypes: ['artists', 'songs', 'albums'],
-    setIncludedTypes: () => {},
+    setIncludedTypes: () => {
+    },
     isLoaded: false,
-    setIsLoaded: () => {},
+    setIsLoaded: () => {
+    },
 });
 
 // Create the provider component
@@ -267,43 +286,43 @@ export const ReviewsProvider = ({children}) => {
 
 
     return (
-<ReviewsContext.Provider value={{
-    page,
-    setPage,
-    sort,
-    setSort,
-    paginationLoading,
-    setPaginationLoading,
-    perPage,
-    updatePage,
-    incrementPage,
-    decrementPage,
-    handlePageChange,
-    handleFilterChange,
-    handleOrderChange,
-    pageID,
-    isOwnPage,
-    setIsOwnPage,
-    possessive,
-    setPossessive,
-    pageUser,
-    setPageUser,
-    reviewsPage,
-    setReviewsPage,
-    adjacentPages,
-    setAdjacentPages,
-    unresolvedReviews,
-    setUnresolvedReviews,
-    isError,
-    setIsError,
-    errorDetails,
-    setErrorDetails,
-    includedTypes,
-    setIncludedTypes,
-    isLoaded,
-    setIsLoaded
-}}>
-    {children}
-</ReviewsContext.Provider>
+        <ReviewsContext.Provider value={{
+            page,
+            setPage,
+            sort,
+            setSort,
+            paginationLoading,
+            setPaginationLoading,
+            perPage,
+            updatePage,
+            incrementPage,
+            decrementPage,
+            handlePageChange,
+            handleFilterChange,
+            handleOrderChange,
+            pageID,
+            isOwnPage,
+            setIsOwnPage,
+            possessive,
+            setPossessive,
+            pageUser,
+            setPageUser,
+            reviewsPage,
+            setReviewsPage,
+            adjacentPages,
+            setAdjacentPages,
+            unresolvedReviews,
+            setUnresolvedReviews,
+            isError,
+            setIsError,
+            errorDetails,
+            setErrorDetails,
+            includedTypes,
+            setIncludedTypes,
+            isLoaded,
+            setIsLoaded
+        }}>
+            {children}
+        </ReviewsContext.Provider>
     );
 };

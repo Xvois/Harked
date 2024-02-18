@@ -125,15 +125,9 @@ const ArtistDescriptor = function () {
     // Construct the second part of the analysis
     let secondPartArtist;
     if (!!intAttribute && !!associatedSong) {
-        secondPartArtist =
-            <span>The songs {pronoun} listen{pronoun !== 'you' && 's'} to by {name} are predominantly {intAttribute.name}, with {possessive} top song by them of {term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')} being <a
-                className={'heavy-link'}
-                href={associatedSong?.href}>{getLIName(associatedSong)}</a> at number {associatedSongIndex + 1}.</span>
+        secondPartArtist = `The songs ${pronoun} listen${pronoun !== 'you' ? 's' : ''} to by ${name} are predominantly ${intAttribute.name}, with ${possessive} top song by them of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')} being "${getLIName(associatedSong)}" at number ${associatedSongIndex + 1}.`;
     } else if (!intAttribute && !!associatedSong) {
-        secondPartArtist =
-            <span>{capitalize(possessive)} top song by them of {term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')} being <a
-                className={'heavy-link'}
-                href={associatedSong?.href}>{getLIName(associatedSong)}</a> at number {associatedSongIndex + 1}.</span>
+        secondPartArtist = `${capitalize(possessive)} top song by them of ${term === 'long_term' ? 'all time' : (term === 'medium_term' ? 'the last 6 months' : 'the last 4 weeks')} being "${getLIName(associatedSong)}" at number ${associatedSongIndex + 1}.`;
     }
     return (
         <p>
@@ -237,22 +231,12 @@ const GenreDescriptor = function () {
 
     // Find the top artists associated with the genre
     const genreArtists = selectedDatapoint.top_artists.filter(artist => artist.genres?.some(genre => genre === item));
-    const topArtistLinks = genreArtists.slice(0, 4).map((artist, index) => (
-        <a key={getLIName(artist) + index} className="heavy-link" href={artist.href}>
-            {getLIName(artist)}<span
-            style={{fontWeight: 'normal'}}>{index !== genreArtists.length - 1 && index !== 3 && ', '}</span>
-        </a>
-    ));
     const remainingArtistCount = Math.max(0, genreArtists.length - 4);
 
     let artistAnalysis;
     if (genreArtists.length > 0) {
         artistAnalysis =
-            <span>{pronoun === 'you' ? 'Your' : `${possessive}`} favorite artists in this genre include {topArtistLinks.map((topArtistLink) => (
-                <div>
-                    {topArtistLink}
-                </div>
-            ))}{remainingArtistCount > 0 ? ` and ${remainingArtistCount} more.` : '.'}</span>;
+            <span>{pronoun === 'you' ? 'Your' : `${possessive}`} favorite artists in this genre include {genreArtists.splice(0, 4).map(a => a.name).join(', ')}{remainingArtistCount > 0 ? ` and ${remainingArtistCount} more.` : '.'}</span>;
     }
 
     return (

@@ -11,11 +11,14 @@ export interface CommentSection extends Record {
 // Must always be expanded
 export interface Comment extends Record {
     user: string;
-    parent: string;
+    children: string[];
     content: string;
+    likes: number
     expand: { user: DatabaseUser };
 }
 
-export interface CommentWithUser extends Omit<Comment, 'expand' | 'user'> {
+// Comment with user and children
+export interface CommentWUC extends Omit<Comment, 'expand' | 'user' | 'children'> {
     user: User;
+    children: CommentWUC[];
 }

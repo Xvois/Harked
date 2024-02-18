@@ -1,8 +1,7 @@
-import PocketBase, {Record, RecordSubscription} from "pocketbase";
+import PocketBase, {RecordSubscription} from "pocketbase";
 import {DatabaseUser} from "@/Tools/Interfaces/databaseInterfaces";
 import {DatapointRecord, Term} from "@/Tools/Interfaces/datapointInterfaces";
 
-// TODO: MUST ADD HEADERS TO SEND db_id SO IT CAN BE CHECKED SERVER SIDE
 
 /**
  * Creates a new instance of PocketBase.
@@ -24,7 +23,7 @@ const pb = createNewPBInstance();
  * @param {string} user_id The user's global user ID.
  * @returns {Promise<DatabaseUser | void>} A user object.
  */
-export const getDatabaseUser = async (user_id): Promise<DatabaseUser | void> => {
+export const getDatabaseUser = async (user_id: string): Promise<DatabaseUser | void> => {
     return await pb.collection('users').getFirstListItem<DatabaseUser>(`user_id="${user_id}"`)
         .catch(
             function (err) {
@@ -46,21 +45,21 @@ export const getAllUserIDs = async (): Promise<Array<string>> => {
 const handleCreationException = (err) => {
     switch (err.status) {
         default:
-            throw new Error(`Error ${err.status} creating database record: ${err.data}`)
+            throw new Error(`Error ${err.status} creating database record: ${JSON.stringify(err.data)}`)
     }
 }
 
 const handleUpdateException = (err) => {
     switch (err.status) {
         default:
-            throw new Error(`Error ${err.status} updating database record: ${err.data}`)
+            throw new Error(`Error ${err.status} updating database record: ${JSON.stringify(err.data)}`)
     }
 }
 
 const handleFetchException = (err) => {
     switch (err.status) {
         default:
-            throw new Error(`Error ${err.status} fetching database record: ${err.data}`)
+            throw new Error(`Error ${err.status} fetching database record: ${JSON.stringify(err.data)}`)
     }
 }
 
@@ -151,8 +150,8 @@ export const getAuthData = () => {
 }
 
 
-export const getDelayedDatapoint = async (user_id, term, delay) => {
-    const dps = await pb.collection("datapoints").getList(0, delay + 1, {
+export const getDelayedDatapointRecord = async (user_id: string, term: Term, delay: number): Promise<DatapointRecord> => {
+    const dps = await pb.collection("datapoints").getList<DatapointRecord>(0, delay + 1, {
         filter: `owner.user_id="${user_id}"&&term="${term}"`,
         sort: '-created'
     }).catch(handleFetchException);
@@ -208,10 +207,30 @@ export const postDatapointRecord = async (record: Omit<DatapointRecord, "id" | "
     await pb.collection('datapoints').create(record).catch(handleCreationException);
 }
 
-export const subscribe = async (collection: string, record: string = '*', sideEffect: (data: RecordSubscription<Record>) => void) => {
-    await pb.collection(collection).subscribe(record, sideEffect);
+/**
+ * Subscribes to a collection and a record in PocketBase.
+ *
+ * @param {string} collection - The name of the collection to subscribe to.
+ * @param {string} [record='*'] - The ID of the record to subscribe to. Defaults to all records.
+ * @param {function} sideEffect - The function to be called when the subscription receives data.
+ * @param params
+ * @returns {Promise<void>}
+ */
+export const subscribe = async (collection: string, record: string = '*', sideEffect: (data: RecordSubscription<any>) => void, params?: {
+    expand: string,
+    filter: string,
+    fields: string
+}): Promise<void> => {
+    await pb.collection(collection).subscribe(record, sideEffect, params);
 }
 
+/**
+ * Unsubscribes from a collection and a record in PocketBase.
+ *
+ * @param {string} collection - The name of the collection to unsubscribe from.
+ * @param {string} [record='*'] - The ID of the record to unsubscribe from. Defaults to all records.
+ * @returns {Promise<void>}
+ */
 export const unsubscribe = async (collection: string, record: string = '*') => {
     await pb.collection(collection).unsubscribe(record);
 }

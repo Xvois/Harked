@@ -1,10 +1,9 @@
 import {isAlbum, isArtist, isPlaylist, isTrack} from "@/Tools/utils";
 import {Track, TrackAnalytics, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
-import {Playlist, PlTrack, PLTrackWithAnalytics} from "@/API/Interfaces/playlistInterfaces";
+import {Playlist, PLTrackWithAnalytics} from "@/API/Interfaces/playlistInterfaces";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {Datapoint, Term} from "@/Tools/Interfaces/datapointInterfaces";
-import {fetchSpotifyData} from "@/API/spotify";
 
 
 /**
@@ -187,25 +186,21 @@ export const getAverageAnalytics = function (tracks: PLTrackWithAnalytics[] | Tr
     }
     return avgAnalytics;
 }
-
-export const getItemIndexChange = function (item, index, type, comparisonDP) {
+export const getItemIndexChange = function (item: Artist | Track | string, index: number, comparisonDP: Datapoint | null) {
     let lastIndex = -1;
-    switch (type) {
-        case "artists":
-            lastIndex = comparisonDP[`top_${type}`].findIndex((element) => element.artist_id === item.artist_id);
-            break;
-        case "songs":
-            lastIndex = comparisonDP[`top_${type}`].findIndex((element) => element.song_id === item.song_id);
-            break;
-        case "genres":
-            lastIndex = comparisonDP[`top_${type}`].indexOf(item);
-            break;
+    if(comparisonDP === null) {
+        return null;
+    }
+    if (isArtist(item)) {
+        lastIndex = comparisonDP.top_artists.findIndex((element) => element.id === item.id);
+    } else if (isTrack(item)) {
+        lastIndex = comparisonDP.top_tracks.findIndex((element) => element.id === item.id);
+    } else {
+        lastIndex = comparisonDP.top_genres.indexOf(item);
     }
     if (lastIndex < 0) {
         return null
     }
-    //console.log(`----${item.name || item}----`);
-    //console.log(`Prev: ${lastIndex}, New: ${index}, Diff: ${lastIndex - index}`);
     return lastIndex - index;
 }
 
@@ -244,7 +239,7 @@ const findMaxValueAndKey = (analytics, ignoredAttributes) => {
         }
     }
 
-    return { max, maxKey };
+    return {max, maxKey};
 }
 
 // Helper function to find the minimum value and its key in the analytics object
@@ -262,14 +257,14 @@ const findMinValueAndKey = (analytics, ignoredAttributes) => {
         }
     }
 
-    return { min, minKey };
+    return {min, minKey};
 }
 
 export function getMostInterestingAttribute(analytics: TrackAnalytics) {
     const ignoredAttributes = ["key", "mode", "duration_ms", "time_signature", "tempo", "loudness", "speechiness"];
 
-    const { max, maxKey } = findMaxValueAndKey(analytics, ignoredAttributes);
-    const { min, minKey } = findMinValueAndKey(analytics, ignoredAttributes);
+    const {max, maxKey} = findMaxValueAndKey(analytics, ignoredAttributes);
+    const {min, minKey} = findMinValueAndKey(analytics, ignoredAttributes);
 
     if (max === 0) {
         return null;
@@ -406,7 +401,7 @@ const calculateRegressions = (yVals: any[], tracksWithAnalytics: TrackAnalytics[
     };
 
     for (const key of Object.keys(regressions)) {
-        if(typeof regressions[key] === "number"){
+        if (typeof regressions[key] === "number") {
             regressions[key] = regress(yVals, tracksWithAnalytics.map(t => t.audio_features[key])).slope;
         }
     }

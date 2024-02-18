@@ -1,6 +1,6 @@
 import {postDatapointRecord, subscribe, unsubscribe} from "@/API/pocketbase";
 import {retrieveUser} from "./users";
-import {Record, RecordSubscription} from "pocketbase";
+import {RecordSubscription} from "pocketbase";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {convertDatapointToDatapointRecord} from "@/Tools/datapoints";
 import {fetchSpotifyData} from "@/API/spotify";
@@ -78,7 +78,7 @@ export const postHydration = async (datapoints: Datapoint[]) => {
  */
 export const onHydration = async (user_id: string, callback: Function) => {
     const user = await retrieveUser(user_id);
-    const func = (e: RecordSubscription<Record>) => {
+    const func = (e: RecordSubscription<Datapoint>) => {
         if (e.action === "create" && e.record.term === "long_term" && e.record.owner === user.id) {
             console.info("Hydration event noted!");
             callback();
