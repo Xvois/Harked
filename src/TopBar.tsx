@@ -70,7 +70,7 @@ const TopBar = () => {
 
     useEffect(() => {
         if (query !== '') {
-            debouncedSearchUsers('Sonny').then(res => setSearchResults(res));
+            debouncedSearchUsers(query).then(res => setSearchResults(res));
         } else {
             setSearchResults([]);
         }
