@@ -1,15 +1,27 @@
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {retrieveLoggedUserID} from "./users";
 import {hashString, isAlbum, isArtist, isTrack, resolveItems} from "./utils";
-import {deleteLocalData, getFullLocalData, getLocalDataByID, getPagedLocalData, putLocalData} from "@/API/pocketbase";
+import {
+    deleteLocalData,
+    getFullLocalData,
+    getLocalData,
+    getLocalDataByID,
+    getPagedLocalData,
+    putLocalData
+} from "@/API/pocketbase";
 import {Track} from "@/API/Interfaces/trackInterfaces";
 import {Album} from "@/API/Interfaces/albumInterfaces";
 import {createEvent} from "./events";
 import {Item} from "./Interfaces/databaseInterfaces";
-import {Review, ReviewWithItem} from "./Interfaces/reviewInterfaces";
+import {NumOfReviews, Review, ReviewWithItem} from "./Interfaces/reviewInterfaces";
 import {getLIName} from "@/Analysis/analysis";
 import {fetchSpotifyData} from "@/API/spotify";
 import {ListResult} from "pocketbase";
+
+
+export const retrieveNumberOfReviews = async (user_id: string): Promise<number | null> => {
+    return (await getLocalData<NumOfReviews>("review_count", `owner.user_id="${user_id}"`))[0]?.review_count;
+}
 
 /**
  * Submits a review from the target user.
@@ -89,17 +101,33 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
     // Resolve the items
     let resolvedItems = await resolveItems(items);
 
-    console.log(resolvedItems);
-    // NEED TO SPLIT INTO ARTISTS AND TRACKS ETC...
-    // Combine the resolved items with their associated reviews
-    for (let i = 0; i < reviews.length; i++) {
+    const artistReviews = reviews.filter((review) => review.item.type === "artist");
+    const trackReviews = reviews.filter((review) => review.item.type === "track");
+    const albumReviews = reviews.filter((review) => review.item.type === "album");
+
+    for(let i = 0; i < artistReviews.length; i++) {
         formattedReviews.push({
-            ...reviews[i],
-            item: resolvedItems[i]
+            ...artistReviews[i],
+            item: resolvedItems.artists[i]
+        });
+    }
+
+    for(let i = 0; i < trackReviews.length; i++) {
+        formattedReviews.push({
+            ...trackReviews[i],
+            item: resolvedItems.tracks[i]
+        });
+    }
+
+    for(let i = 0; i < albumReviews.length; i++) {
+        formattedReviews.push({
+            ...albumReviews[i],
+            item: resolvedItems.albums[i]
         });
     }
 
     console.log(formattedReviews);
+
 
     return {...reviewsPage, items: formattedReviews};
 };
@@ -120,7 +148,6 @@ export const retrieveReview = async (id: string) => {
     if (review === undefined) {
         return null;
     }
-    review.owner = review.expand.owner;
     if (review.item.type === "artist") {
         const artist = await fetchSpotifyData<Artist>(`artists/${review.item.id}`);
         return {...review, item: artist} as ReviewWithItem<Artist>;

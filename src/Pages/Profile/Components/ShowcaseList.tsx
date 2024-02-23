@@ -5,6 +5,8 @@ import {isArtist, isTrack} from "@/Tools/utils";
 import {ShowcaseListItem} from "@/Pages/Profile/Components/ShowcaseListItem";
 import {Button} from "@/Components/ui/button";
 import {ProfileContext} from "@/Pages/Profile/ProfileContext";
+import {Select, SelectContent, SelectItem, SelectTrigger} from "@/Components/ui/select";
+import {SelectItemText} from "@radix-ui/react-select";
 
 export const ShowcaseList = (props: {
     start: number;
@@ -28,7 +30,7 @@ export const ShowcaseList = (props: {
     return (
         <div>
             <div className={"space-y-4"}>
-                <div className={"space-x-4"}>
+                <Select>
                     {
                         terms.map((term, index) => {
                             return (
@@ -37,15 +39,21 @@ export const ShowcaseList = (props: {
                             )
                         })
                     }
-                </div>
-                <div className={"space-x-4"}>
-                    {["artist", "track", "genre"].map((type, index) => {
-                        return (
-                            <Button key={index} variant={selectedType === type ? 'default' : 'outline'}
-                                    onClick={() => setSelectedType(type)}>{type}</Button>
-                        )
-                    })}
-                </div>
+                </Select>
+                <Select onValueChange={(e) => setSelectedType(e)}>
+                    <SelectTrigger>
+                        {selectedType}
+                    </SelectTrigger>
+                    <SelectContent>
+                        {["artist", "track", "genre"].map((type, index) => {
+                            return (
+                                <SelectItem value={type}>
+                                    <SelectItemText>{type}</SelectItemText>
+                                </SelectItem>
+                            )
+                        })}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className={`flex flex-col h-[1400px] justify-evenly`}>

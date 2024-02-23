@@ -79,9 +79,10 @@ export function UserContainer(props: {}) {
                     </div>
                     <div className="space-y-1">
                         {pageUser ?
-                            <h1 className="text-2xl font-bold tracking-tighter sm:text-4xl">
-                                {pageUser.display_name}
-                            </h1>
+                            <div className="relative ">
+                                <h2 className={"text-2xl font-bold sm:text-4xl tracking-tighter"}>{pageUser.display_name}</h2>
+                                <Badge variant={"secondary"} className={"absolute left-[100%] bottom-100 -mx-4 -my-4 w-fit backdrop-blur hover:bg-secondary/50 bg-secondary/50"}>Pro</Badge>
+                            </div>
                             :
                             <Skeleton className={"h-8 w-48"}/>
                         }
@@ -89,7 +90,6 @@ export function UserContainer(props: {}) {
                             <div className={"space-y-2 justify-center"}>
                                 <div className={"flex justify-center gap-4"}>
                                     <Badge className={"text-sm"}>{pageUser.followers.total} followers</Badge>
-                                    <Badge variant={"outline"} className={"w-max"}>Pro</Badge>
                                     {isAuthenticated && !isOwnPage &&
                                         (
                                             isLoggedUserFollowing ?
@@ -103,10 +103,6 @@ export function UserContainer(props: {}) {
                                         )
 
                                     }
-                                </div>
-                                <div className={"flex justify-between gap-4"}>
-                                    <Badge variant={"secondary"}>Developer</Badge>
-                                    <Badge variant={"secondary"}>Tester</Badge>
                                 </div>
                             </div>
                         }

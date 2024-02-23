@@ -33,11 +33,11 @@ export const ArtistAnalysis = (props: {
         <div>
             <h3 className={"text-xl font-bold"}>Most listened to albums</h3>
             <p className={"text-sm text-muted-foreground"}>Ordered by number of songs included in public
-                playlists.</p>
+                playlists. TODO</p>
             <Separator className={'my-4'}/>
             {artistsAlbumsWithLikedSongs !== null ?
                 (artistsAlbumsWithLikedSongs.length > 0 ?
-                        artistsAlbumsWithLikedSongs.map((a, i) => {
+                        artistsAlbumsWithLikedSongs.slice(0,3).map((a, i) => {
                             return (
                                 <div key={getLIName(a)}>
                                     <a className={"inline-flex gap-4"} href={a.uri}>

@@ -65,7 +65,7 @@ export function PlaylistItemList(props: { playlists: PlaylistFromList[] | Playli
     const [listLength, setListLength] = useState<number>(5);
 
     return (
-        <div>
+        <div className={"relative"}>
             <div className={"flex flex-row flex-wrap gap-4"}>
                 {playlists ?
                     playlists.slice(0, listLength).map(p => {
@@ -84,12 +84,12 @@ export function PlaylistItemList(props: { playlists: PlaylistFromList[] | Playli
             </div>
             {playlists ? (
                 playlists.length > listLength ? (
-                    <Button onClick={() => {
+                    <Button variant={"secondary"} className={"absolute top-100 right-0 mt-4"} onClick={() => {
                         setListLength(playlists.length)
                     }}>See more</Button>
                 ) : (
                     playlists.length > 5 ? (
-                        <Button onClick={() => {
+                        <Button variant={"secondary"} className={"absolute top-100 right-0 mt-4"} onClick={() => {
                             setListLength(5)
                         }}>See less</Button>
                     ) : <></>

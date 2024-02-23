@@ -92,7 +92,8 @@ export const ProfileRecommendations = () => {
 }
 
 const ProfileRecommendationsContent = () => {
-    const types = ['artist', 'track', 'album'];
+    const {formattedRecs} = useContext(ProfileRecommendationsContext);
+    const types = ['artist', 'track', 'album'] as const;
 
     return (
         <div className={"flex flex-row gap-4 flex-wrap-reverse"}>
@@ -106,16 +107,20 @@ const ProfileRecommendationsContent = () => {
 }
 
 
-const RecommendationTypeShowcase = (props: { type: string }) => {
+const RecommendationTypeShowcase = (props: { type: 'artist' | 'track' | 'album' }) => {
     const {type} = props;
     const {isOwnPage, pageUser} = useContext(ProfileContext);
     const {formattedRecs} = useContext(ProfileRecommendationsContext);
     const recs = formattedRecs[`${type}s`];
     const emptyDivs = Array(3 - recs.length).fill(null).map((_, i) =>
-        <RecommendationSelectionModal fixedType={type as "artist" | "track" | "album"} key={`empty_rec_${type}_${i}`}/>
+        <RecommendationSelectionModal fixedType={type} key={`empty_rec_${type}_${i}`}/>
     );
     return (
         <div className={"flex flex-col gap-4 w-96 flex-grow"}>
+            <div>
+                <h2 className={"text-xl font-bold capitalize text-muted-foreground"}>{type}s</h2>
+            </div>
+            <Separator/>
             {pageUser && recs ?
                 <React.Fragment>
                     {recs.map(r => <Recommendation key={r.id} rec={r}/>)}

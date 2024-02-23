@@ -86,7 +86,7 @@ const TopBar = () => {
                 <Link to={"/"}>
                     <h1 className={"inline-flex justify-center"}>
                         <BlurOn fontSize={'large'}/>
-                        <span className={"text-3xl font-bold"}>Harked</span>
+                        <span className={"text-3xl font-bold hidden sm:block"}>Harked</span>
                     </h1>
                 </Link>
 
@@ -99,10 +99,10 @@ const TopBar = () => {
                                 className={"absolute top-full -mt-2 p-4 rounded-b border border-t-0 w-full backdrop-blur"}>
                                 {searchResults.map((userResult, index) => (
                                     <div key={index}>
-                                        <Link to={`/profile/${userResult.user_id}`}>
+                                        <a href={`/profile/${userResult.user_id}`}>
                                             <p className={"font-bold"}>{userResult.username}</p>
                                             <p className={"text-sm text-muted-foreground"}>@{userResult.user_id}</p>
-                                        </Link>
+                                        </a>
                                     </div>
                                 ))}
                             </div>

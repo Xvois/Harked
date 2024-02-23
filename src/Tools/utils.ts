@@ -213,7 +213,7 @@ export function isTrack(item: Album | Track | Artist | Playlist | string): item 
 }
 
 export function isArtist(item: Album | Track | Artist | Playlist | string): item is Artist {
-    return typeof item !== 'string' && 'images' in item && 'genres' in item;
+    return typeof item !== 'string' && 'images' in item && 'genres' in item && !('album_type' in item);
 }
 
 export function isPlaylist(item: Album | Track | Artist | Playlist | string): item is Playlist {

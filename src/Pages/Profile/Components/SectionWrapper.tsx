@@ -8,7 +8,7 @@ export const SectionWrapper = ({children, ...props}: {
     description: string
 }) => {
     return (
-        <section className={"w-screen max-w-screen-lg"}>
+        <section className={"w-full max-w-screen-lg"}>
             <div className={"my-4"}>
                 <h2 className={"text-2xl font-bold"}>{props.title}</h2>
                 <p className={"text-sm text-muted-foreground"}>{props.description}</p>

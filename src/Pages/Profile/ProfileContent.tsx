@@ -7,6 +7,7 @@ import {ProfileRecommendations} from "@/Pages/Profile/Components/ProfileRecommen
 import {PlaylistItemList} from "@/Pages/Profile/Components/PlaylistItemList";
 import CommentSection from "@/Components/CommentSection";
 import {hashString} from "@/Tools/utils";
+import {UserReviews} from "@/Components/UserReviews";
 
 
 export const ProfileContent = () => {
@@ -24,6 +25,10 @@ export const ProfileContent = () => {
                 <SectionWrapper title={'Profile Recommendations'}
                                 description={'These are the recommended profiles based on your preferences.'}>
                     <ProfileRecommendations/>
+                </SectionWrapper>
+
+                <SectionWrapper title={'Reviews'} description={'Blah blah blah'}>
+                    <UserReviews user={pageUser} />
                 </SectionWrapper>
 
                 <SectionWrapper title={'Playlist Items'} description={'These are the playlists available for you.'}>
