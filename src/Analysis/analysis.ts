@@ -110,48 +110,52 @@ export const getMatchingItems = (dp1: Datapoint, dp2: Datapoint, type: Term) => 
 }
 
 export const calculateSimilarity = (dp1: Datapoint, dp2: Datapoint) => {
-    let artistsSimilarity = 0;
-    let genresSimilarity = 0;
+    if (!dp1 || !dp2) {
+        throw new Error("Both datapoints must be provided");
+    }
+
+    let artistsSimilarity = dp1.top_artists.reduce((acc, artist1) => {
+        return acc + (dp2.top_artists.some(artist2 => artist2.name === artist1.name) ? 1 : 0);
+    }, 0) / dp1.top_artists.length;
+
     const avgGenreListLength = Math.floor((dp1.top_genres.length + dp2.top_genres.length) / 2);
-    let metricDelta = 0;
-    let u0Metrics = getAverageAnalytics(dp1.top_tracks);
-    let u1Metrics = getAverageAnalytics(dp2.top_tracks);
-    let similarity;
-    dp1.top_artists.forEach(artist1 => {
-        if (dp2.top_artists.some(artist2 => artist2.name === artist1.name)) {
-            artistsSimilarity++;
-        }
-    })
-    dp1.top_genres.forEach((genre, i1) => {
+    let genresSimilarity = dp1.top_genres.reduce((acc, genre, i1) => {
         const i2 = dp2.top_genres.findIndex(e => e === genre);
         if (i2 !== -1) {
             const diff = Math.abs(i1 - i2);
-            genresSimilarity += Math.abs(avgGenreListLength - diff) / avgGenreListLength;
+            return acc + Math.abs(avgGenreListLength - diff) / avgGenreListLength;
         }
-    })
-    artistsSimilarity /= dp1.top_artists.length;
-    genresSimilarity /= avgGenreListLength;
+        return acc;
+    }, 0) / avgGenreListLength;
+
     genresSimilarity = Math.pow(genresSimilarity, 0.25);
-    const excludedKeys = ['tempo', 'loudness'];
-    for (const key in u0Metrics) {
-        if (!excludedKeys.some(e => e === key)) {
-            metricDelta += Math.abs(u0Metrics[key] - u1Metrics[key]);
+
+    const u0Metrics = getAverageAnalytics(dp1.top_tracks);
+    const u1Metrics = getAverageAnalytics(dp2.top_tracks);
+    const excludedKeys = ['tempo', 'loudness', 'duration_ms', 'time_signature', 'key', 'mode', 'speechiness'];
+
+    let metricDelta = Object.keys(u0Metrics).reduce((acc, key) => {
+        if (!excludedKeys.some(e => e === key) && typeof u0Metrics[key] === 'number' && typeof u1Metrics[key] === 'number') {
+            return acc + Math.abs(u0Metrics[key] - u1Metrics[key]);
         }
-    }
-    metricDelta /= (Object.entries(u0Metrics).length - excludedKeys.length);
-    metricDelta = Math.sqrt(metricDelta);
-    similarity = ((2 * genresSimilarity + artistsSimilarity + 2 * (1 - metricDelta)) / 4);
+        return acc;
+    }, 0) / (Object.entries(u0Metrics).length - excludedKeys.length);
+
+
+    let similarity = ((2 * genresSimilarity + artistsSimilarity + 2 * (1 - Math.sqrt(metricDelta))) / 4);
     similarity = Math.round(100 * similarity)
+
     if (similarity > 100) {
-        similarity = 100
-    } // Ensure not over 100%
+        similarity = 100; // Ensure not over 100%
+    }
     return {
         artists: artistsSimilarity * 100,
         genres: genresSimilarity * 100,
-        metrics: (1 - metricDelta) * 100,
+        metrics: (1 -Math.sqrt(metricDelta)) * 100,
         overall: similarity
     };
 }
+
 
 
 export const getAverageAnalytics = function (tracks: PLTrackWithAnalytics[] | TrackWithAnalytics[]) {

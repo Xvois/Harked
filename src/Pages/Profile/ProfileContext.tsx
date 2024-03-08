@@ -5,12 +5,11 @@ import {DatabaseUser} from "@/Tools/Interfaces/databaseInterfaces";
 import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {PlFromListWithTracks} from "@/API/Interfaces/playlistInterfaces";
 import {Settings} from "@/Tools/Interfaces/userMeta";
-import {retrieveAllDatapoints, retrievePrevAllDatapoints} from "@/Tools/datapoints";
-import {retrieveLoggedUserID, retrieveUser} from "@/Tools/users";
-import {retrieveProfileData, retrieveSettings} from "@/Tools/userMeta";
+import {retrieveAllDatapoints} from "@/Tools/datapoints";
+import {retrieveUser} from "@/Tools/users";
 import {retrievePlaylists} from "@/Tools/playlists";
-import {fetchSpotifyData} from "@/API/spotify";
 import {useAuth} from "@/Authentication/AuthContext";
+import {followingContainsUser} from "@/Tools/following";
 
 export const ProfileContext = createContext({
     terms: ["short_term", "medium_term", "long_term"] as string[],
@@ -51,12 +50,12 @@ export const ProfileContext = createContext({
 export const ProfileContextProvider = ({children}) => {
     const pageID = (useParams()).id;
     const {user, isAuthenticated} = useAuth();
-    const isOwnPage = isAuthenticated && user.id === pageID;
+    const isOwnPage = isAuthenticated && (user.id === pageID);
 
     const [terms, setTerms] = useState(["short_term", "medium_term", "long_term"]);
     // The currently selected term
     const [termIndex, setTermIndex] = useState<number>(2);
-    const [isLoggedUserFollowing, setIsLoggedUserFollowing] = useState<boolean>(null);
+    const [isLoggedUserFollowing, setIsLoggedUserFollowing] = useState<boolean>(false);
 
     // Uninitialised variables
     const [pageUser, setPageUser] = useState<User>(null);
@@ -77,6 +76,9 @@ export const ProfileContextProvider = ({children}) => {
         retrieveAllDatapoints(pageID).then(res => setAllDatapoints(res));
         retrieveAllDatapoints(pageID).then(res => setAllPreviousDatapoints(res));
         retrievePlaylists(pageID).then(res => setPlaylists(res));
+        if (isAuthenticated) {
+            followingContainsUser(pageID).then(res => setIsLoggedUserFollowing(res));
+        }
     }, [pageID]);
 
     useEffect(() => {

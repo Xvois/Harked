@@ -126,9 +126,6 @@ export const retrievePaginatedReviews = async (user_id: string, page: number, it
         });
     }
 
-    console.log(formattedReviews);
-
-
     return {...reviewsPage, items: formattedReviews};
 };
 

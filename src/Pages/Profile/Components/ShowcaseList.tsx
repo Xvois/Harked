@@ -5,8 +5,7 @@ import {isArtist, isTrack} from "@/Tools/utils";
 import {ShowcaseListItem} from "@/Pages/Profile/Components/ShowcaseListItem";
 import {Button} from "@/Components/ui/button";
 import {ProfileContext} from "@/Pages/Profile/ProfileContext";
-import {Select, SelectContent, SelectItem, SelectTrigger} from "@/Components/ui/select";
-import {SelectItemText} from "@radix-ui/react-select";
+import {Select} from "@/Components/ui/select";
 
 export const ShowcaseList = (props: {
     start: number;
@@ -29,31 +28,36 @@ export const ShowcaseList = (props: {
 
     return (
         <div>
-            <div className={"space-y-4"}>
-                <Select>
-                    {
-                        terms.map((term, index) => {
-                            return (
-                                <Button key={index} variant={termIndex === index ? 'default' : 'outline'}
-                                        onClick={() => setTermIndex(index)}>{term}</Button>
-                            )
-                        })
-                    }
-                </Select>
-                <Select onValueChange={(e) => setSelectedType(e)}>
-                    <SelectTrigger>
-                        {selectedType}
-                    </SelectTrigger>
-                    <SelectContent>
-                        {["artist", "track", "genre"].map((type, index) => {
-                            return (
-                                <SelectItem value={type}>
-                                    <SelectItemText>{type}</SelectItemText>
-                                </SelectItem>
-                            )
-                        })}
-                    </SelectContent>
-                </Select>
+            <div className={"inline-flex justify-between w-full"}>
+                <div
+                    className="grid grid-cols-3 border rounded-lg overflow-hidden w-full max-w-sm items-stretch">
+                    <Button
+                        onClick={() => setSelectedType('artist')}
+                        variant={selectedType === 'artist' ? 'default' : 'outline'}
+                        className={"h-12 rounded-none border-none"}>
+                        Artists
+                    </Button>
+                    <Button
+                        onClick={() => setSelectedType('track')}
+                        variant={selectedType === 'track' ? 'default' : 'outline'}
+                        className={"h-12 rounded-none border-none"}>
+                        Tracks
+                    </Button>
+                    <Button
+                        onClick={() => setSelectedType('genre')}
+                        variant={selectedType === 'genre' ? 'default' : 'outline'}
+                        className={"h-12 rounded-none border-none"}>
+                        Genres
+                    </Button>
+                </div>
+                <div className="grid grid-cols-3 border rounded-lg overflow-hidden w-full max-w-sm items-stretch">
+                    {terms.map((term, index) => {
+                        return (
+                            <Button className={"h-12 rounded-none border-none"} key={index} variant={termIndex === index ? 'default' : 'outline'}
+                                    onClick={() => setTermIndex(index)}>{term}</Button>
+                        )
+                    })}
+                </div>
             </div>
 
             <div className={`flex flex-col h-[1400px] justify-evenly`}>

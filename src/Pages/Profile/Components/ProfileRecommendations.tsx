@@ -112,15 +112,11 @@ const RecommendationTypeShowcase = (props: { type: 'artist' | 'track' | 'album' 
     const {isOwnPage, pageUser} = useContext(ProfileContext);
     const {formattedRecs} = useContext(ProfileRecommendationsContext);
     const recs = formattedRecs[`${type}s`];
-    const emptyDivs = Array(3 - recs.length).fill(null).map((_, i) =>
+    const emptyDivs = Array(1 - recs.length).fill(null).map((_, i) =>
         <RecommendationSelectionModal fixedType={type} key={`empty_rec_${type}_${i}`}/>
     );
     return (
         <div className={"flex flex-col gap-4 w-96 flex-grow"}>
-            <div>
-                <h2 className={"text-xl font-bold capitalize text-muted-foreground"}>{type}s</h2>
-            </div>
-            <Separator/>
             {pageUser && recs ?
                 <React.Fragment>
                     {recs.map(r => <Recommendation key={r.id} rec={r}/>)}
@@ -189,7 +185,7 @@ const Recommendation = (props: {
     }
     const imageSrcSet = createPictureSources(images, 0.5);
     return (
-        <div key={rec.item.id} className={"relative inline-flex gap-4 p-4 border-2 justify-left"}>
+        <div key={rec.item.id} className={"relative h-fit max-h-96 inline-flex gap-4 p-4 border-2 justify-left"}>
             <div>
                 <img srcSet={imageSrcSet} alt={getLIName(rec.item)} className={"h-32 w-32"}/>
             </div>
@@ -214,13 +210,9 @@ const Recommendation = (props: {
                                 <a href={rec.item.uri}>Listen</a>
                             </Button>
                             {isOwnPage && (
-                                <React.Fragment>
-                                    <Button onClick={() => handleEdit(rec)}>Edit
-                                    </Button>
-                                    <Button onClick={() => handleDelete(rec)} variant={'destructive'}>
-                                        Delete
-                                    </Button>
-                                </React.Fragment>
+                                <Button onClick={() => handleDelete(rec)} variant={'destructive'}>
+                                    Delete
+                                </Button>
                             )}
                         </React.Fragment>
                     )

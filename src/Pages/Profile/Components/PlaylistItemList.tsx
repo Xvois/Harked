@@ -22,7 +22,7 @@ const PlaylistItem = function (props: { playlist: PlaylistFromList | Playlist | 
     }, [playlist])
 
     return (
-        <div className={"relative flex flex-grow gap-4 p-4 min-w-32 border"}>
+        <div className={"relative flex flex-grow gap-4 p-4 min-w-32 border break-words"}>
             {imageSrcSet && (
                 <img className={"h-32 w-32"} alt={'playlist'}
                      srcSet={imageSrcSet}></img>

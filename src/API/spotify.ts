@@ -61,25 +61,23 @@ export async function fetchSpotifyData<T>(endpoint: string, retryCount: number =
 /**
  * Makes a put request to the Spotify api.
  * @param path
+ * @param data
  */
-export const putData = (path) => {
-    axios.put(`https://api.spotify.com/v1/${path}`, {}, {
+export const putSpotifyData = async (path: string, data: object) => {
+    await axios.put(`https://api.spotify.com/v1/${path}`, data, {
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            Authorization: `Bearer ${window.localStorage.getItem("access-token")}`
         },
-    }).catch(function (err) {
-        console.warn("[Error in Spotify API put] " + err);
     })
 }
 
-export const deleteData = (path) => {
-    axios.delete(`https://api.spotify.com/v1/${path}`, {
+export const deleteSpotifyData = async (path: string, data: object) => {
+    await axios.delete(`https://api.spotify.com/v1/${path}`, {
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            Authorization: `Bearer ${window.localStorage.getItem("access-token")}`
         },
-    }).catch(function (err) {
-        console.warn("[Error in Spotify API delete] " + err);
+        data: data
     })
 }

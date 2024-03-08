@@ -9,6 +9,7 @@ import {UserRoundMinus, UserRoundPlus} from "lucide-react";
 import {ProfileContext} from "@/Pages/Profile/ProfileContext";
 import {useAuth} from "@/Authentication/AuthContext";
 import {Skeleton} from "@/Components/ui/skeleton";
+import {followUser, unfollowUser} from "@/Tools/following";
 
 
 export function ComparisonLink(props: {
@@ -19,10 +20,7 @@ export function ComparisonLink(props: {
 }) {
     const {pageUser, loggedUserID, selectedDatapoint, simple = false} = props;
     const [loggedDP, setLoggedDP] = useState(null);
-    useEffect(() => {
-        retrieveDatapoint(loggedUserID, "long_term").then(res => setLoggedDP(res));
-        console.log(selectedDatapoint)
-    }, [])
+
 
     return (
         <div style={{
@@ -60,8 +58,33 @@ export function ComparisonLink(props: {
 }
 
 export function UserContainer(props: {}) {
-    const {isAuthenticated} = useAuth();
-    const {pageUser, isLoggedUserFollowing, isOwnPage} = useContext(ProfileContext);
+    const {user, isAuthenticated} = useAuth();
+    const {pageUser, isLoggedUserFollowing, isOwnPage, selectedDatapoint, setIsLoggedUserFollowing} = useContext(ProfileContext);
+
+    const [loggedDP, setLoggedDP] = useState(null);
+    const similarity = loggedDP && selectedDatapoint ? calculateSimilarity(loggedDP, selectedDatapoint).overall : null;
+
+    useEffect(() => {
+        if (user && isAuthenticated) {
+            retrieveDatapoint(user.id, "long_term").then(res => setLoggedDP(res));
+        }
+    }, [user, isAuthenticated])
+
+    const handleFollow = () => {
+        setIsLoggedUserFollowing(true); // Optimistically set state
+        followUser(pageUser.id).catch(() => {
+            // If the request fails, revert the state
+            setIsLoggedUserFollowing(false);
+        });
+    };
+
+    const handleUnfollow = () => {
+        setIsLoggedUserFollowing(false); // Optimistically set state
+        unfollowUser(pageUser.id).catch(() => {
+            // If the request fails, revert the state
+            setIsLoggedUserFollowing(true);
+        });
+    };
 
     return (
         <div className="py-6 lg:py-12">
@@ -81,26 +104,34 @@ export function UserContainer(props: {}) {
                         {pageUser ?
                             <div className="relative ">
                                 <h2 className={"text-2xl font-bold sm:text-4xl tracking-tighter"}>{pageUser.display_name}</h2>
-                                <Badge variant={"secondary"} className={"absolute left-[100%] bottom-100 -mx-4 -my-4 w-fit backdrop-blur hover:bg-secondary/50 bg-secondary/50"}>Pro</Badge>
+                                <Badge variant={"secondary"}
+                                       className={"absolute left-[100%] bottom-100 -mx-6 -my-5 w-fit backdrop-blur hover:bg-secondary/50 bg-secondary/50"}>Pro</Badge>
                             </div>
                             :
                             <Skeleton className={"h-8 w-48"}/>
                         }
                         {pageUser &&
                             <div className={"space-y-2 justify-center"}>
-                                <div className={"flex justify-center gap-4"}>
+                                <div className={"flex justify-center gap-4 flex-wrap max-w-48"}>
                                     <Badge className={"text-sm"}>{pageUser.followers.total} followers</Badge>
                                     {isAuthenticated && !isOwnPage &&
                                         (
                                             isLoggedUserFollowing ?
-                                                <button className={"p-0 bg-none"}>
+                                                <button className={"p-0 bg-none"}
+                                                        onClick={handleUnfollow}>
                                                     <UserRoundMinus/>
                                                 </button>
                                                 :
-                                                <button className={"p-0 bg-none"}>
+                                                <button className={"p-0 bg-none"}
+                                                        onClick={handleFollow}>
                                                     <UserRoundPlus/>
                                                 </button>
                                         )
+
+                                    }
+                                    {
+                                        !isOwnPage && similarity &&
+                                        <Badge variant={"outline"}>{similarity}%</Badge>
 
                                     }
                                 </div>

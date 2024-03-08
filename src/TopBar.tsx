@@ -38,12 +38,6 @@ const UserDropdown = (props: { user: User }) => {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                    <Link className={'inline-flex items-center'} to={`/reviews/${user.id}`}>
-                        <Star className="mr-2 h-4 w-4"/>
-                        <span>Reviews</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
                     <Link className={'inline-flex items-center'} to={'/settings#account'}>
                         <Settings className="mr-2 h-4 w-4"/>
                         <span>Settings</span>
@@ -76,9 +70,6 @@ const TopBar = () => {
         }
     }, [query])
 
-    useEffect(() => {
-        console.log(searchResults[0]?.username)
-    }, [searchResults]);
 
     return (
         <header className={'fixed flex top-0 left-0 w-full bg-background border-b z-10'}>

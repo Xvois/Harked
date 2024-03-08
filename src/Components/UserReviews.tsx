@@ -4,15 +4,6 @@
  */
 import {Input} from "@/Components/ui/input"
 import React, {useEffect} from "react"
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious
-} from "@/Components/ui/pagination";
 import {ReviewWithItem} from "@/Tools/Interfaces/reviewInterfaces";
 import {getLIDescription, getLIName} from "@/Analysis/analysis";
 import {Album} from "@/API/Interfaces/albumInterfaces";
@@ -29,6 +20,16 @@ import {Separator} from "@/Components/ui/separator";
 import {Textarea} from "@/Components/ui/textarea";
 import {Label} from "@/Components/ui/label";
 import {debouncedSearchResults} from "@/Tools/search";
+
+import {NotepadText} from "lucide-react";
+import {
+    Carousel,
+    CarouselApi,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious
+} from "@/Components/ui/carousel";
 
 
 function SkeletonReviewItem() {
@@ -53,8 +54,8 @@ function ReviewItem(props: { review: ReviewWithItem<Artist | Track | Album> }) {
     }
     const imgSrcSet = createPictureSources(images, 0.25)
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex-shrink-0 w-fit">
+        <div className="flex flex-col gap-4 w-fit">
+            <div className="flex-shrink-0">
                 <img
                     width={300}
                     height={300}
@@ -63,10 +64,10 @@ function ReviewItem(props: { review: ReviewWithItem<Artist | Track | Album> }) {
                     srcSet={imgSrcSet}
                 />
             </div>
-            <div>
+            <div className={"relative w-100"}>
                 <h2 className="font-semibold text-lg line-clamp-2">{getLIName(props.review.item)}</h2>
                 <p className="text-sm text-muted-foreground line-clamp-2">{getLIDescription(props.review.item)}</p>
-                <div className="flex items-center gap-1 my-1">
+                <div className="flex items-end gap-1 my-1">
                     {
                         Array(Math.floor(props.review.rating)).fill(0).map((_, i) => {
                             return <StarIcon key={i} className="w-4 h-4 fill-primary"/>
@@ -77,7 +78,12 @@ function ReviewItem(props: { review: ReviewWithItem<Artist | Track | Album> }) {
                             return <StarIcon key={i} className="w-4 h-4"/>
                         })
                     }
-                    <span className="text-xs text-muted-foreground dark:text-muted-muted">({props.review.rating})</span>
+                    <span className="text-xs text-muted-foreground">({props.review.rating})</span>
+                    {
+                        props.review.description &&
+                        <NotepadText className="absolute top-1.5 right-0 w-4 h-4 text-muted-foreground"/>
+
+                    }
                 </div>
             </div>
         </div>
@@ -89,6 +95,7 @@ function NewReviewDialog() {
     const [selectedType, setSelectedType] = React.useState<'album' | 'artist' | 'track'>('album')
     const [searchInput, setSearchInput] = React.useState('')
     const [selectedItem, setSelectedItem] = React.useState<Artist | Track | Album | null>(null)
+    const [selectedRating, setSelectedRating] = React.useState(5)
     const descriptionRef = React.useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
@@ -107,7 +114,7 @@ function NewReviewDialog() {
             trigger: <Button variant={'secondary'}>New</Button>,
             title: "Write a description",
             description: "Write a description for your item.",
-            action: () => submitReview(selectedItem, 5, descriptionRef.current?.value),
+            action: () => submitReview(selectedItem, selectedRating, descriptionRef.current?.value),
             actionDescription: "Submit",
         }
     ]
@@ -143,7 +150,7 @@ function NewReviewDialog() {
 
 
             {selectedItem &&
-                <div>
+                <div className={"space-y-2"}>
                     <div className="border p-4 rounded">
                         <Label className="sr-only" htmlFor="song">
                             {getLIName(selectedItem)}
@@ -151,11 +158,28 @@ function NewReviewDialog() {
                         <h3>{getLIName(selectedItem)}</h3>
                         <p className={"text-sm text-muted-foreground"}>{getLIDescription(selectedItem)}</p>
                     </div>
-                    <div className="mt-4">
+                    <div className={"inline-flex gap-2 ml-2 items-end"}>
+                        {Array(5).fill(0).map((_, i) => {
+                            return (
+                                <Button className={"p-0 bg-none"} variant={'ghost'} asChild onClick={() => {
+                                    if (selectedRating === i + 1) {
+                                        setSelectedRating(i + 0.5)
+                                    } else {
+                                        setSelectedRating(i + 1)
+                                    }
+                                }}>
+                                    <StarIcon className={`w-6 h-6 ${selectedRating >= i + 1 ? 'fill-primary' : ''}`}/>
+                                </Button>
+                            )
+                        })}
+                        <p className={'text-sm text-muted-foreground'}>({selectedRating})</p>
+                    </div>
+                    <div>
                         <Label className="sr-only" htmlFor="review">
                             Review Content
                         </Label>
-                        <Textarea className="min-h-[10rem]" id="review" placeholder="Write your review here."/>
+                        <Textarea className="min-h-[10rem]" id="review" ref={descriptionRef}
+                                  placeholder="Write your review here."/>
                     </div>
                 </div>
             }
@@ -167,11 +191,10 @@ function NewReviewDialog() {
 
 export function UserReviews(props: { user: User | null }) {
     const {user} = props
-
-    const [focusedPage, setFocusedPage] = React.useState(1)
     const [numOfReviews, setNumOfReviews] = React.useState(1)
     const numOfPages = Math.ceil(numOfReviews / 3)
     const [reviews, setReviews] = React.useState<ReviewWithItem<Artist | Track | Album>[]>([])
+    const [carouselApi, setCarouselApi] = React.useState<CarouselApi>(null)
 
     React.useEffect(() => {
         if (user) {
@@ -179,81 +202,41 @@ export function UserReviews(props: { user: User | null }) {
                     setNumOfReviews(res)
                 }
             )
-            retrievePaginatedReviews(user.id, focusedPage, 3).then(res => {
+            retrievePaginatedReviews(user.id, 1, 6).then(res => {
                 setReviews(res.items)
             })
         }
     }, [user])
 
-    React.useEffect(() => {
-        if (user) {
-            setReviews([])
-            retrievePaginatedReviews(user.id, focusedPage, 3).then(res => {
-                setReviews(res.items)
-            })
-        }
-
-    }, [focusedPage])
-
-    console.log(numOfReviews)
 
 
     return (
-        <div className="px-4 py-6 max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col items-center px-4 py-6 mx-auto space-y-6">
             <Input placeholder="Search..." type="search"/>
-            <div className="relative grid gap-4 md:grid-cols-2 xl:grid-cols-3 h-96">
-                {
-                    reviews.map((review, i) => {
-                        return <ReviewItem key={i} review={review}/>
-                    })
-                }
-                {
-                    Array(3 - reviews.length).fill(0).map((_, i) => {
-                        return <SkeletonReviewItem key={i}/>
-                    })
-                }
-                {
-                    reviews.length === 0 &&
-                    <p className={"centre font-bold text-3xl"}>[PH] ARRAY EMPTY [PH]</p>
-                }
-            </div>
-            <Pagination>
-                <PaginationContent>
-
-                    {focusedPage > 1 &&
-                        <React.Fragment>
-                            <PaginationItem>
-                                <PaginationPrevious onClick={() => setFocusedPage(curr => curr - 1)}/>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <Button variant={'ghost'}
-                                        onClick={() => setFocusedPage(curr => curr - 1)}>{focusedPage - 1}</Button>
-                            </PaginationItem>
-                        </React.Fragment>
+            <Carousel className="w-full max-w-xs lg:max-w-full">
+                <CarouselContent>
+                    {
+                        reviews.length > 0 ?
+                            reviews.map((review, index) => {
+                                return (
+                                    <CarouselItem className={"lg:basis-1/3"} key={index}>
+                                        <ReviewItem review={review}/>
+                                    </CarouselItem>
+                                )
+                            })
+                            :
+                            Array(3).fill(0).map((_, i) => {
+                                return (
+                                    <CarouselItem className={"lg:basis-1/3"} key={i}>
+                                        <SkeletonReviewItem/>
+                                    </CarouselItem>
+                                )
+                            })
                     }
-                    <PaginationItem>
-                        <PaginationLink className={"border"} href="#">{focusedPage}</PaginationLink>
-                    </PaginationItem>
-
-                    {focusedPage < numOfPages &&
-                        <PaginationItem>
-                            <Button variant={'ghost'}
-                                    onClick={() => setFocusedPage(curr => curr + 1)}>{focusedPage + 1}</Button>
-                        </PaginationItem>
-                    }
-
-                    {focusedPage <= numOfPages - 1 &&
-                        <React.Fragment>
-                            <PaginationItem>
-                                <PaginationEllipsis/>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationNext onClick={() => setFocusedPage(curr => curr + 1)}/>
-                            </PaginationItem>
-                        </React.Fragment>
-                    }
-                </PaginationContent>
-            </Pagination>
+                </CarouselContent>
+                <CarouselPrevious className={"hidden sm:block"}/>
+                <CarouselNext className={"hidden sm:block"}/>
+            </Carousel>
             <NewReviewDialog/>
         </div>
     )
