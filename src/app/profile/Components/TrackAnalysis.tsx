@@ -2,7 +2,7 @@ import React from "react";
 import {getLIName, getTopInterestingAnalytics, translateAnalytics, translateAnalyticsLow} from "@/Analysis/analysis";
 import {StatBlock} from "@/Components/StatBlock";
 import {TrackAnalytics, TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
-import {SectionWrapper} from "@/Pages/Profile/Components/SectionWrapper";
+import {SectionWrapper} from "@/Pages/profile/Components/SectionWrapper";
 import {Separator} from "@/Components/ui/separator";
 
 export const TrackAnalysis = (props: { track: TrackWithAnalytics; averageAnalytics: TrackAnalytics; }) => {

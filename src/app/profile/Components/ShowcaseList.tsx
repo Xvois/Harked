@@ -2,9 +2,9 @@ import React, {useContext, useState} from "react";
 import {Artist} from "@/API/Interfaces/artistInterfaces";
 import {TrackWithAnalytics} from "@/API/Interfaces/trackInterfaces";
 import {isArtist, isTrack} from "@/Tools/utils";
-import {ShowcaseListItem} from "@/Pages/Profile/Components/ShowcaseListItem";
+import {ShowcaseListItem} from "@/Pages/profile/Components/ShowcaseListItem";
 import {Button} from "@/Components/ui/button";
-import {ProfileContext} from "@/Pages/Profile/ProfileContext";
+import {ProfileContext} from "@/Pages/profile/ProfileContext";
 import {Select} from "@/Components/ui/select";
 
 export const ShowcaseList = (props: {

@@ -1,10 +1,10 @@
 import React, {useContext} from 'react';
-import {TopContainer} from "./Components/TopContainer";
-import {ShowcaseList} from "@/Pages/Profile/Components/ShowcaseList";
-import {SectionWrapper} from "@/Pages/Profile/Components/SectionWrapper";
-import {ProfileContext} from "@/Pages/Profile/ProfileContext";
-import {ProfileRecommendations} from "@/Pages/Profile/Components/ProfileRecommendations";
-import {PlaylistItemList} from "@/Pages/Profile/Components/PlaylistItemList";
+import {TopContainer} from "../Components/TopContainer";
+import {ShowcaseList} from "@/Pages/profile/Components/ShowcaseList";
+import {SectionWrapper} from "@/Pages/profile/Components/SectionWrapper";
+import {ProfileContext} from "@/Pages/profile/ProfileContext";
+import {ProfileRecommendations} from "@/Pages/profile/Components/ProfileRecommendations";
+import {PlaylistItemList} from "@/Pages/profile/Components/PlaylistItemList";
 import CommentSection from "@/Components/CommentSection";
 import {hashString} from "@/Tools/utils";
 import {UserReviews} from "@/Components/UserReviews";
@@ -22,7 +22,7 @@ export const ProfileContent = () => {
                     <ShowcaseList start={0} end={9}/>
                 </SectionWrapper>
 
-                <SectionWrapper title={'Profile Recommendations'}
+                <SectionWrapper title={'profile Recommendations'}
                                 description={'These are the recommended profiles based on your preferences.'}>
                     <ProfileRecommendations/>
                 </SectionWrapper>

@@ -4,7 +4,7 @@ import {getLIName} from "@/Analysis/analysis";
 import {ItemDescriptor} from "@/Analysis/ItemDescriptor";
 
 /**
- * File: src/Pages/Profile/Components/GenreBreakdown.tsx
+ * File: src/Pages/profile/Components/GenreBreakdown.tsx
  *
  * WARNING: This file is currently not in use and is not suitable for production.
  * Please do not use this file without further modifications.

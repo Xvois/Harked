@@ -11,10 +11,10 @@ import {ItemDescriptor} from "@/Analysis/ItemDescriptor";
 import {getGenresRelatedArtists} from "@/Tools/similar";
 import {Button} from "@/Components/ui/button";
 import {GenericDialog} from "@/Components/GenericDialog";
-import {ArtistAnalysis} from "@/Pages/Profile/Components/ArtistAnalysis";
-import {TrackAnalysis} from "@/Pages/Profile/Components/TrackAnalysis";
-import {ItemRecommendations} from "@/Pages/Profile/Components/ItemRecommendations";
-import {ProfileContext} from "@/Pages/Profile/ProfileContext";
+import {ArtistAnalysis} from "@/Pages/profile/Components/ArtistAnalysis";
+import {TrackAnalysis} from "@/Pages/profile/Components/TrackAnalysis";
+import {ItemRecommendations} from "@/Pages/profile/Components/ItemRecommendations";
+import {ProfileContext} from "@/Pages/profile/ProfileContext";
 
 const ChangeIndicator = (props: { indexChange: number | null }) => {
     const {indexChange} = props;

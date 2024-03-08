@@ -6,7 +6,7 @@ import {Datapoint} from "@/Tools/Interfaces/datapointInterfaces";
 import {User} from "@/Tools/Interfaces/userInterfaces";
 import {Badge} from "@/Components/ui/badge";
 import {UserRoundMinus, UserRoundPlus} from "lucide-react";
-import {ProfileContext} from "@/Pages/Profile/ProfileContext";
+import {ProfileContext} from "@/Pages/profile/ProfileContext";
 import {useAuth} from "@/Authentication/AuthContext";
 import {Skeleton} from "@/Components/ui/skeleton";
 import {followUser, unfollowUser} from "@/Tools/following";

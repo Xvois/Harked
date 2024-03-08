@@ -21,7 +21,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/Components/ui/dropdown-menu";
-import {ProfileContext} from "@/Pages/Profile/ProfileContext";
+import {ProfileContext} from "@/Pages/profile/ProfileContext";
 import {Skeleton} from "@/Components/ui/skeleton";
 
 type ProfileRecommendationsContextProps = {

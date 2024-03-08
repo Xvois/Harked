@@ -12,7 +12,7 @@ import Comparison from "./Comparison";
 import Authentication from "./Authentication/Authentication";
 import Homepage from "./Homepage";
 import reportWebVitals from "./reportWebVitals";
-import {Profile} from "@/Pages/Profile/Profile";
+import {Profile} from "@/Pages/profile/profile";
 import {Toaster} from "@/Components/ui/toaster";
 import {AuthProvider} from "@/Authentication/AuthContext";
 
